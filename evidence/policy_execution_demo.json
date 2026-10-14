@@ -1,0 +1,192 @@
+{
+  "generated_at": "2026-10-14T14:38:56+00:00",
+  "chain": "Base Sepolia (84532)",
+  "mode": "unsigned instruction + human execution + on-chain receipt verification",
+  "agent_holds_key": false,
+  "execution_config": {
+    "rpc_url_masked": "https://sepolia.base.org",
+    "treasury_address": "0x2222222222222222222222222222222222222222",
+    "reserve_address": "0x1111111111111111111111111111111111111111",
+    "max_per_tx": 100.0,
+    "max_cumulative": 300.0,
+    "permission_ttl_hours": 24,
+    "dry_run": true,
+    "timeout_seconds": 30,
+    "secret_env_vars_present": [],
+    "agent_holds_key": false
+  },
+  "cases": [
+    {
+      "intent_id": "I1",
+      "action_type": "transfer",
+      "amount_usdc": 100.0,
+      "recipient": "0x1111111111111111111111111111111111111111",
+      "verdict": "ALLOW",
+      "deny_codes": [],
+      "rules_evaluated": [
+        {
+          "rule": "R1-chain",
+          "result": "OK",
+          "note": "84532"
+        },
+        {
+          "rule": "R2-asset",
+          "result": "OK",
+          "note": ""
+        },
+        {
+          "rule": "R3-recipient",
+          "result": "OK",
+          "note": ""
+        },
+        {
+          "rule": "R4-amount",
+          "result": "OK",
+          "note": "100.0 <= 100.0"
+        },
+        {
+          "rule": "R5-cumulative",
+          "result": "OK",
+          "note": "100.0 <= 300.0"
+        },
+        {
+          "rule": "R6-permission",
+          "result": "OK",
+          "note": "2026-10-15T14:38:56.971422+00:00"
+        },
+        {
+          "rule": "R7-idempotency",
+          "result": "OK",
+          "note": ""
+        },
+        {
+          "rule": "R8-action",
+          "result": "OK",
+          "note": "transfer"
+        }
+      ],
+      "instruction": {
+        "to": "0x036cbd53842c5426634e7929541eC2318f3dCF7e",
+        "calldata": "0xa9059cbb00000000000000000000000011111111111111111111111111111111111111110000000000000000000000000000000000000000000000000000000005f5e100",
+        "note": "human executes this transfer; the agent never holds the key"
+      }
+    },
+    {
+      "intent_id": "I2",
+      "action_type": "transfer",
+      "amount_usdc": 500.0,
+      "recipient": "0x1111111111111111111111111111111111111111",
+      "verdict": "DENY",
+      "deny_codes": [
+        "AMOUNT_ABOVE_TX_CAP",
+        "AMOUNT_ABOVE_PERIOD_CAP"
+      ],
+      "rules_evaluated": [
+        {
+          "rule": "R1-chain",
+          "result": "OK",
+          "note": "84532"
+        },
+        {
+          "rule": "R2-asset",
+          "result": "OK",
+          "note": ""
+        },
+        {
+          "rule": "R3-recipient",
+          "result": "OK",
+          "note": ""
+        },
+        {
+          "rule": "R4-amount",
+          "result": "FAIL",
+          "code": "AMOUNT_ABOVE_TX_CAP"
+        },
+        {
+          "rule": "R5-cumulative",
+          "result": "FAIL",
+          "code": "AMOUNT_ABOVE_PERIOD_CAP"
+        },
+        {
+          "rule": "R6-permission",
+          "result": "OK",
+          "note": "2026-10-15T14:38:56.971422+00:00"
+        },
+        {
+          "rule": "R7-idempotency",
+          "result": "OK",
+          "note": ""
+        }
+      ],
+      "instruction": null
+    },
+    {
+      "intent_id": "I3",
+      "action_type": "change_policy",
+      "amount_usdc": 100.0,
+      "recipient": "0x1111111111111111111111111111111111111111",
+      "verdict": "REQUIRE_APPROVAL",
+      "deny_codes": [
+        "ACTION_NEEDS_HUMAN_APPROVAL"
+      ],
+      "rules_evaluated": [
+        {
+          "rule": "R1-chain",
+          "result": "OK",
+          "note": "84532"
+        },
+        {
+          "rule": "R2-asset",
+          "result": "OK",
+          "note": ""
+        },
+        {
+          "rule": "R3-recipient",
+          "result": "OK",
+          "note": ""
+        },
+        {
+          "rule": "R4-amount",
+          "result": "OK",
+          "note": "100.0 <= 100.0"
+        },
+        {
+          "rule": "R5-cumulative",
+          "result": "OK",
+          "note": "100.0 <= 300.0"
+        },
+        {
+          "rule": "R6-permission",
+          "result": "OK",
+          "note": "2026-10-15T14:38:56.971422+00:00"
+        },
+        {
+          "rule": "R7-idempotency",
+          "result": "OK",
+          "note": ""
+        },
+        {
+          "rule": "R8-action",
+          "result": "REQUIRE_APPROVAL",
+          "code": "ACTION_NEEDS_HUMAN_APPROVAL"
+        }
+      ],
+      "instruction": null
+    }
+  ],
+  "guard_blocks": [
+    "I2: execution blocked: policy verdict 'DENY' — the instruction is refused (reason codes: AMOUNT_ABOVE_TX_CAP, AMOUNT_ABOVE_PERIOD_CAP)",
+    "I3: execution blocked: policy verdict 'REQUIRE_APPROVAL' — a human approval is required before this instruction may be prepared (reason codes: ACTION_NEEDS_HUMAN_APPROVAL)"
+  ],
+  "receipt_verification": {
+    "status": "no transaction hash provided yet (pending human execution)"
+  },
+  "verdict_check": {
+    "expected": {
+      "I1": "ALLOW",
+      "I2": "DENY",
+      "I3": "REQUIRE_APPROVAL"
+    },
+    "unexpected": []
+  }
+}
