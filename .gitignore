@@ -1,0 +1,24 @@
+# ---- Python ----
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+.mypy_cache/
+
+# ---- Secrets ----
+.env
+*.key
+*.pem
+secrets/
+
+# ---- Données locales / artefacts lourds ----
+# Le corpus est versionné (petit, c'est une preuve) ; les dumps bruts d'API ne le sont pas.
+orvyren_core/donnees_brutes/
+orvyren_core/corpus/tmp/
+evidence/tmp/
+
+# ---- Divers ----
+.DS_Store
+Thumbs.db
+*.log

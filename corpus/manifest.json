@@ -1,0 +1,79 @@
+{
+ "collected_at": "2026-10-14T12:38:02+00:00",
+ "windows": {
+  "main": [
+   "2023-03-09T00:00:00+00:00",
+   "2023-03-15T00:00:00+00:00"
+  ],
+  "control": [
+   "2023-02-15T00:00:00+00:00",
+   "2023-02-18T00:00:00+00:00"
+  ]
+ },
+ "observations": 1375,
+ "sources": [
+  {
+   "source": "DeFiLlama",
+   "endpoint": "coins.llama.fi/prices/historical/{ts}/{coin}",
+   "window": "main",
+   "records": 145,
+   "file": "corpus/raw/defillama/usdc_prices_main.json",
+   "from_cache": true,
+   "limits": "Agrégateur : prix médian multi-venues, retard et couverture à vérifier ; quota public non garanti (voir doc API)."
+  },
+  {
+   "source": "DeFiLlama",
+   "endpoint": "coins.llama.fi/prices/historical/{ts}/{coin}",
+   "window": "control",
+   "records": 73,
+   "file": "corpus/raw/defillama/usdc_prices_control.json",
+   "from_cache": true,
+   "limits": "Agrégateur : prix médian multi-venues, retard et couverture à vérifier ; quota public non garanti (voir doc API)."
+  },
+  {
+   "source": "Bitstamp",
+   "endpoint": "www.bitstamp.net/api/v2/ohlc/usdcusd/",
+   "window": "main",
+   "records": 1000,
+   "file": "corpus/raw/bitstamp/usdcusd_ohlc.json",
+   "from_cache": true,
+   "limits": "Une seule place de marché : profondeur et spreads locaux ; la dislocation observée peut être propre à cette venue."
+  },
+  {
+   "source": "Binance",
+   "endpoint": "api.binance.com/api/v3/klines",
+   "window": "main",
+   "records": 83,
+   "file": "corpus/raw/binance/usdcusdt_klines.json",
+   "from_cache": true,
+   "limits": "Marché USDC/USDT : mesure une paire contre un autre stablecoin, donc une dislocation relative, pas absolue."
+  },
+  {
+   "source": "DeFiLlama",
+   "endpoint": "https://stablecoins.llama.fi/stablecoincharts/all?stablecoin=2",
+   "window": "crise ±15 j",
+   "records": 37,
+   "file": "corpus/raw/supply/usdc_circulating_aggregate.json",
+   "from_cache": false,
+   "limits": "Série quotidienne, granularité grossière ; couvre l'on-chain observable uniquement."
+  },
+  {
+   "source": "DeFiLlama",
+   "endpoint": "https://stablecoins.llama.fi/stablecoincharts/Ethereum?stablecoin=2",
+   "window": "crise ±15 j",
+   "records": 37,
+   "file": "corpus/raw/supply/usdc_circulating_ethereum.json",
+   "from_cache": false,
+   "limits": "Série quotidienne, granularité grossière ; couvre l'on-chain observable uniquement."
+  },
+  {
+   "source": "Circle",
+   "endpoint": "https://www.circle.com/pressroom/3-3-billion-of-usdc-reserve-risk-removed-dollar-de-peg-closes",
+   "window": "12/03/2023",
+   "records": 1,
+   "file": "corpus/raw/circle/circle_statement_reference.json",
+   "from_cache": false,
+   "limits": "Une déclaration d'émetteur ne tranche pas seule les hypothèses de risque ; à corroborer."
+  }
+ ]
+}
