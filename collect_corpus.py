@@ -17,6 +17,12 @@ Sorties (dans corpus/) :
   usdc_observations.csv observations unifiées (timestamp_utc, venue, type, valeur)
   README.md             note de provenance et limites
 
+Contrat de fenêtre : chaque série est re-vérifiée contre ses bornes déclarées
+avant écriture (`validate_archived_windows`) ; une ligne hors fenêtre fait
+échouer la collecte (exit 2) au lieu d'entrer silencieusement dans l'archive.
+Ce garde-fou existe parce qu'un cache d'avant le filtre de fenêtre a déjà été
+réutilisé et a expédié 855 lignes Bitstamp hors fenêtre (constat du 14/10/2026).
+
 Usage :
   python collect_corpus.py                # collecte complète (≈ 4 min, réseau requis)
   python collect_corpus.py --offline      # rejoue uniquement le corpus archivé
@@ -110,6 +116,44 @@ def hours(start, end):
         out.append(int(t.timestamp()))
         t += dt.timedelta(hours=1)
     return out
+
+
+def parse_iso(value):
+    """Parse the ISO-8601 strings this module writes (``Z`` suffix accepted)."""
+    text = str(value).strip()
+    if text.endswith(("Z", "z")):
+        text = text[:-1] + "+00:00"
+    return dt.datetime.fromisoformat(text)
+
+
+def validate_archived_windows(prices, bitstamp, binance, supply):
+    """Refuse a collection whose rows fall outside their declared windows.
+
+    Every series is re-checked against its declared bounds *after* collection,
+    before anything is written: a cache that predates the window filter (the
+    855-row Bitstamp incident of 2026-10-14) must fail loudly here instead of
+    slipping into the archive. Returns the list of violations (empty = OK).
+    """
+    problems = []
+
+    def check(label, rows, start, end, field="timestamp_utc"):
+        for row in rows:
+            when = parse_iso(row[field])
+            if not (start <= when <= end):
+                problems.append(
+                    "%s: %s outside [%s, %s]"
+                    % (label, row[field], start.isoformat(), end.isoformat()))
+                return
+
+    for label, window in (("main", (MAIN_START, MAIN_END)), ("control", (CTRL_START, CTRL_END))):
+        check("defillama %s" % label, prices.get(label, []), *window)
+    check("bitstamp main", bitstamp, MAIN_START, MAIN_END)
+    check("binance main", binance, MAIN_START, MAIN_END)
+    supply_start = MAIN_START - dt.timedelta(days=15)
+    supply_end = MAIN_END + dt.timedelta(days=15)
+    for label, rows in supply.items():
+        check("supply %s" % label, rows, supply_start, supply_end, field="date_utc")
+    return problems
 
 
 def collect_defillama_prices(manifest, sleep=1.1):
@@ -281,7 +325,10 @@ def write_csv(prices, bitstamp, binance, supply):
     path = os.path.join(CORPUS, "usdc_observations.csv")
     n = 0
     with open(path, "w", newline="", encoding="utf-8") as fh:
-        w = csv.writer(fh)
+        # lineterminator explicite : le défaut du module csv est '\r\n', ce qui
+        # rendrait le fichier dépendant du style d'écriture et casserait la
+        # comparaison directe sha256sum <-> empreinte enregistrée (LF partout).
+        w = csv.writer(fh, lineterminator="\n")
         w.writerow(["timestamp_utc", "venue", "metric", "value", "extra", "retrieved_at"])
         for label, rows in prices.items():
             for r in rows:
@@ -366,6 +413,12 @@ def main():
     bitstamp = collect_bitstamp(manifest)
     binance = collect_binance(manifest)
     supply = collect_supply(manifest)
+    problems = validate_archived_windows(prices, bitstamp, binance, supply)
+    if problems:
+        print("CONTRAT DE FENÊTRE VIOLÉ — écriture du corpus refusée :")
+        for problem in problems[:10]:
+            print("  " + problem)
+        sys.exit(2)
     n_obs = write_csv(prices, bitstamp, binance, supply)
     write_readme(manifest, n_obs)
     with open(manifest_path, "w", encoding="utf-8") as fh:

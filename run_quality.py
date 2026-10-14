@@ -72,14 +72,15 @@ SOURCE_CATALOGUE = {
 }
 
 #: Hours shown as data-gate examples in the report (window bounds, the depeg
-#: low prints, and one hour after the window where a single venue remains).
+#: low prints, the first Binance hour, and one hour PAST the archive where no
+#: venue has an observation at all — the gate must refuse it).
 GATE_EXAMPLE_HOURS = (
     "2023-03-09T00:00:00+00:00",   # first hour of the main window
     "2023-03-11T07:00:00+00:00",   # lowest Bitstamp close of the window
     "2023-03-11T08:00:00+00:00",   # lowest DeFiLlama price of the window
     "2023-03-11T15:00:00+00:00",   # first hour with a Binance USDC/USDT close
     "2023-03-15T00:00:00+00:00",   # closing bound of the main window
-    "2023-03-16T00:00:00+00:00",   # outside the window: Bitstamp alone
+    "2023-03-16T00:00:00+00:00",   # past the archive: nothing archived, gate refuses
 )
 
 

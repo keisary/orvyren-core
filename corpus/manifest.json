@@ -1,5 +1,5 @@
 {
- "collected_at": "2026-10-14T12:38:02+00:00",
+ "collected_at": "2026-10-14T15:47:10+00:00",
  "windows": {
   "main": [
    "2023-03-09T00:00:00+00:00",
@@ -10,7 +10,7 @@
    "2023-02-18T00:00:00+00:00"
   ]
  },
- "observations": 1375,
+ "observations": 520,
  "sources": [
   {
    "source": "DeFiLlama",
@@ -34,7 +34,7 @@
    "source": "Bitstamp",
    "endpoint": "www.bitstamp.net/api/v2/ohlc/usdcusd/",
    "window": "main",
-   "records": 1000,
+   "records": 145,
    "file": "corpus/raw/bitstamp/usdcusd_ohlc.json",
    "from_cache": true,
    "limits": "Une seule place de marché : profondeur et spreads locaux ; la dislocation observée peut être propre à cette venue."
@@ -54,7 +54,7 @@
    "window": "crise ±15 j",
    "records": 37,
    "file": "corpus/raw/supply/usdc_circulating_aggregate.json",
-   "from_cache": false,
+   "from_cache": true,
    "limits": "Série quotidienne, granularité grossière ; couvre l'on-chain observable uniquement."
   },
   {
@@ -63,7 +63,7 @@
    "window": "crise ±15 j",
    "records": 37,
    "file": "corpus/raw/supply/usdc_circulating_ethereum.json",
-   "from_cache": false,
+   "from_cache": true,
    "limits": "Série quotidienne, granularité grossière ; couvre l'on-chain observable uniquement."
   },
   {
