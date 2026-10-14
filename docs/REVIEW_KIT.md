@@ -165,3 +165,32 @@ sha256sum -c MANIFEST.sha256     # Linux/macOS/Git-Bash
 ```
 
 Si un hash ne correspond pas, vous ne travaillez pas sur le snapshot annoncé — redemandez le paquet.
+
+---
+
+## 10. Mise à jour post-snapshot — revue du 14/10/2026 (soir)
+
+> À lire avant de citer les chiffres du §5 : plusieurs ont changé, et pour de bonnes raisons. Rien de ce qui suit n'a modifié une conclusion — c'est vérifiable.
+
+**Corpus re-collecté (fenêtres déclarées enfin respectées).** L'archive Bitstamp contenait 1000 lignes horaires allant jusqu'au 19/04/2023 : un cache d'avant le filtre de fenêtre, réutilisé par `cached_or_fetch`, avait expédié 855 lignes hors fenêtre dans le CSV. Par ailleurs, le sha256 du corpus enregistré dans les preuves était celui d'une copie CRLF (machine de collecte Windows) — invérifiable ailleurs. Corrigé :
+
+- `collect_corpus.py` valide désormais chaque série contre ses bornes déclarées **avant écriture** (exit 2 si violation) ;
+- le CSV est écrit en LF partout (`lineterminator="\n"` + `.gitattributes` pour les checkouts) ;
+- les empreintes sont calculées sur les octets normalisés LF → `sha256sum corpus/usdc_observations.csv` dans le dépôt égale le sha enregistré dans `evidence/decision_usdc-2023-03.json`.
+
+Nouveau compte : **520 observations** (contre 1 375), toutes dans les fenêtres D1/D2. La fenêtre de décision reste à 387 observations ; baseline byte-identique (`fa68d11f…`), H1/H2/H3 inchangés. Le désancrage est évidemment toujours là (Bitstamp 0,86267 · DeFiLlama 0,87667 · Binance 0,91280).
+
+**Preuves regénérées** (`run_pipeline.py`). Byte-stable d'un run à l'autre : `decision_*.json`, `baseline_report.json`. Ne varient que par leur `generated_at` : quality report, démo exécution (verdicts sur horloge gelée), dossiers. Le dossier se reconstruit à l'identique : `python run_audit.py --generated-at <valeur affichée dans le dossier>`.
+
+**Autres corrections de fond** (branche `Unoriginal`) : chemins **relatifs** dans le dossier d'audit (plus de `D:\…` gravé dans une pièce hachée) ; option `--generated-at` exposée par `run_audit.py` ; « au moins deux venues » compté par heure (l'ancienne intersection aurait exigé *toutes* les venues dès 3 séries) ; banc de tests dédié `tests/test_integrity_reproducibility.py`.
+
+**§5, ligne « 1 échec connu »** : résolu — la valeur correcte est bien **34** heures simultanées (deux observations Bitstamp tombent *exactement* sur 0,99 : hors critère « > 1 % », géré en espace valeur par `deviation_exceeds`). La suite compte désormais **132 tests, tous verts** (2 sautés, opt-in RPC).
+
+**Vérifications rapides (5 minutes)** :
+
+```bash
+sha256sum corpus/usdc_observations.csv     # == inputs_summary.corpus.sha256 de evidence/decision_usdc-2023-03.json
+python -m unittest discover -s tests       # 132 tests
+python -m unittest tests.test_integrity_reproducibility -v   # les garde-fous d'intégrité
+python run_pipeline.py                     # reconstruction complète des preuves
+```
