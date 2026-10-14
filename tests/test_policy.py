@@ -14,7 +14,7 @@ from datetime import datetime, timedelta, timezone
 
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "src"))
 
-from policy import (ALLOWED_ASSET, ALLOWED_CHAIN_ID, Intent, default_config, evaluate)  # noqa: E402
+from orvyren.policy import (ALLOWED_ASSET, ALLOWED_CHAIN_ID, Intent, default_config, evaluate)  # noqa: E402
 
 RESERVE = "0x1111111111111111111111111111111111111111"
 TREASURY = "0x2222222222222222222222222222222222222222"
@@ -98,7 +98,7 @@ class TestPolicyBench(unittest.TestCase):
         self.assertDenied(d, "ACTION_UNKNOWN")
 
     def test_11_permission_absente(self):
-        from policy import PolicyConfig
+        from orvyren.policy import PolicyConfig
         cfg = PolicyConfig(allowed_recipients=frozenset({RESERVE.lower()}), permission_expires_at=None)
         d = evaluate(intent(), cfg, now=NOW)
         self.assertDenied(d, "PERMISSION_MISSING")
