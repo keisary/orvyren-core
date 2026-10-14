@@ -117,7 +117,11 @@ class DossierBuildTests(unittest.TestCase):
         self.assertTrue(os.path.exists(result["html_path"]))
         md = _read_text(result["md_path"])
         html = _read_text(result["html_path"])
-        self.assertIn(f"Missing input: {missing_path}", md)
+        # The builder renders portable repo-agnostic paths with forward slashes
+        # (platform-stable artefacts); the expectation must be normalised the
+        # same way on Windows.
+        expected = missing_path.replace(os.sep, "/")
+        self.assertIn(f"Missing input: {expected}", md)
         self.assertIn("Missing input", html)
         self.assertIn("(not provided in source JSON)", md)
         self.assertRegex(result["sha256"], r"^[0-9a-f]{64}$")
