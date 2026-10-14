@@ -6,7 +6,7 @@
 | --- | --- |
 | Case | usdc-2023-03 |
 | Window | 2023-03-09T00:00:00+00:00 → 2023-03-15T00:00:00+00:00 |
-| Generated (UTC) | 2026-10-14T14:40:30Z |
+| Generated (UTC) | 2026-10-14T14:42:04Z |
 | Engine | ORVYREN-Core 0.1 |
 
 ## Decision
@@ -20,8 +20,8 @@
 - Pre-registered decision rule (frozen before evaluation): H2 SUPPORTED and available_to_move > 0 -> ACTION_RECOMMENDED (bounded 100 USDC test transfer, D8); H1 SUPPORTED and H2 REFUTED -> NO_ACTION (local perturbation, no exposure reduction); missing required series -> INCONCLUSIVE with missing_inputs.
 - Rule 1 fires: H2 is SUPPORTED and available_to_move = min(100.0, 500.0 - 350.0) = 100.0000 USDC > 0, so the bounded demonstration action of FREEZE_V1 D8 is recommended: transfer of 100.0000 USDC (test) from wallet 'treasury' to wallet 'reserve'.
 - H1 local liquidity perturbation: REFUTED. The deviation did not stay local: > 1.0% persisted more than 12 h on 2 independent venues (persistent episodes: bitstamp 42.0 h, binance 45.0 h), while the aggregator fell to 0.876675 (12.3325%), beyond the 0.5% tolerance.
-- H2 broad stress on asset or issuer: SUPPORTED. 36 simultaneous hourly observation(s) more than 1.0% below peg on 2 independent venues (binance, bitstamp) from 2023-03-11T14:00:00+00:00 to 2023-03-13T11:00:00+00:00; deepest: bitstamp 0.86267 at 2023-03-11T07:00:00+00:00 (13.7330%); binance 0.91280 at 2023-03-11T15:00:00+00:00 (8.7200%); circulating supply moved -7.1722% in 24 h (2023-03-11T00:00:00+00:00 -> 2023-03-12T00:00:00+00:00), threshold 1.0%.
-- H3 data or market artifact: REFUTED. 2 independent sources (binance, bitstamp) were concordant over 36 simultaneous hour(s); no structural inconsistency and no unexplained divergence was found in the corpus.
+- H2 broad stress on asset or issuer: SUPPORTED. 34 simultaneous hourly observation(s) more than 1.0% below peg on 2 independent venues (binance, bitstamp) from 2023-03-11T14:00:00+00:00 to 2023-03-13T08:00:00+00:00; deepest: bitstamp 0.86267 at 2023-03-11T07:00:00+00:00 (13.7330%); binance 0.91280 at 2023-03-11T15:00:00+00:00 (8.7200%); circulating supply moved -7.1722% in 24 h (2023-03-11T00:00:00+00:00 -> 2023-03-12T00:00:00+00:00), threshold 1.0%.
+- H3 data or market artifact: REFUTED. 2 independent sources (binance, bitstamp) were concordant over 34 simultaneous hour(s); no structural inconsistency and no unexplained divergence was found in the corpus.
 
 ### Conditions
 
@@ -40,15 +40,15 @@
 - {"timestamp_utc": "2023-03-11T08:00:00+00:00", "value": 0.876675, "venue": "defillama"}
 - {"timestamp_utc": "2023-03-12T22:00:00+00:00", "value": 0.98945, "venue": "bitstamp"}
 - {"timestamp_utc": "2023-03-13T11:00:00+00:00", "value": 0.987, "venue": "binance"}
-- … +70 more entries (complete list in the source decision JSON, hashed in Evidence & integrity)
+- … +67 more entries (complete list in the source decision JSON, hashed in Evidence & integrity)
 
 ## Hypothesis verdicts
 
 | Hypothesis | Verdict | Evidence refs |
 | --- | --- | --- |
 | H1 | REFUTED | 8 — {"timestamp_utc": "2023-03-11T04:00:00+00:00", "value": 0.98622, "venue": "bitstamp"}; {"timestamp_utc": "2023-03-11T07:00:00+00:00", "value": 0.86267, "venue": "bitstamp"}; {"timestamp_utc": "2023-03-11T08:00:00+00:00", "value": 0.876675, "venue": "defillama"}; {"timestamp_utc": "2023-03-11T14:00:00+00:00", "value": 0.9129, "venue": "binance"}; … +4 more (full list in the hashed decision JSON) |
-| H2 | SUPPORTED | 76 — {"timestamp_utc": "2023-03-11T00:00:00+00:00", "value": 42097257578.0, "venue": "defillama_supply_aggregate"}; {"timestamp_utc": "2023-03-11T07:00:00+00:00", "value": 0.86267, "venue": "bitstamp"}; {"timestamp_utc": "2023-03-11T14:00:00+00:00", "value": 0.9129, "venue": "binance"}; {"timestamp_utc": "2023-03-11T14:00:00+00:00", "value": 0.915, "venue": "bitstamp"}; … +72 more (full list in the hashed decision JSON) |
-| H3 | REFUTED | 4 — {"timestamp_utc": "2023-03-11T14:00:00+00:00", "value": 0.9129, "venue": "binance"}; {"timestamp_utc": "2023-03-11T14:00:00+00:00", "value": 0.915, "venue": "bitstamp"}; {"timestamp_utc": "2023-03-13T11:00:00+00:00", "value": 0.987, "venue": "binance"}; {"timestamp_utc": "2023-03-13T11:00:00+00:00", "value": 0.99, "venue": "bitstamp"} |
+| H2 | SUPPORTED | 72 — {"timestamp_utc": "2023-03-11T00:00:00+00:00", "value": 42097257578.0, "venue": "defillama_supply_aggregate"}; {"timestamp_utc": "2023-03-11T07:00:00+00:00", "value": 0.86267, "venue": "bitstamp"}; {"timestamp_utc": "2023-03-11T14:00:00+00:00", "value": 0.9129, "venue": "binance"}; {"timestamp_utc": "2023-03-11T14:00:00+00:00", "value": 0.915, "venue": "bitstamp"}; … +68 more (full list in the hashed decision JSON) |
+| H3 | REFUTED | 4 — {"timestamp_utc": "2023-03-11T14:00:00+00:00", "value": 0.9129, "venue": "binance"}; {"timestamp_utc": "2023-03-11T14:00:00+00:00", "value": 0.915, "venue": "bitstamp"}; {"timestamp_utc": "2023-03-13T08:00:00+00:00", "value": 0.9879, "venue": "binance"}; {"timestamp_utc": "2023-03-13T08:00:00+00:00", "value": 0.98843, "venue": "bitstamp"} |
 
 ## Baseline A0 — main window vs control
 
@@ -599,14 +599,14 @@ Control signals (0):
 
 | Input | Path | SHA-256 |
 | --- | --- | --- |
-| decision | D:\orvyren_core\evidence\decision_usdc-2023-03.json | `e9e3b40b1820ae44efb709a7a3d99cc940f667943cbfc5c7539804ae785f8ae6` |
+| decision | D:\orvyren_core\evidence\decision_usdc-2023-03.json | `346dd47c21a2ddcac0a13ed0a6ac382aac750ffe85f03915fa6003de29bbab47` |
 | baseline_report | D:\orvyren_core\evidence\baseline_report.json | `fa68d11f36232719f5400b5aab1d1cfab19b7808aaeb3e01297bd7bf4f868ae8` |
 | policy_execution_demo | D:\orvyren_core\evidence\policy_execution_demo.json | `8fccbd734c876e603308aaba87083469647d43cced49dbe33954ff31c2f81da8` |
 | quality_report | D:\orvyren_core\evidence\quality_report.json | `1650811eff55f51e9e68ffb3bc81839014e0d4e1bc15d6502035c00b3067fc5f` |
-| dossier (self, md) | D:\orvyren_core\evidence\dossier_usdc-2023-03.md | `85cd60755213558c0525e575b44dc534e80177706060e62316bed28d4b97f896` |
+| dossier (self, md) | D:\orvyren_core\evidence\dossier_usdc-2023-03.md | `a4194678afd1438fa5f92816af8c5b4e85a7626d12b2e7cf838c99b15e86763d` |
 
 Self-hash rule: the `dossier (self, md)` row is the SHA-256 of this Markdown file computed with its own 64-hex-character self-hash field zeroed (64 `0` characters). It is reproducible with any SHA-256 tool: replace that field with zeros and hash the file. With identical inputs and build time this dossier is byte-identical.
 
 ---
 
-produced by ORVYREN-Core v0.1 — deterministic engine, no human edit · ORVYREN-Core v0.1 · generated 2026-10-14T14:40:30Z (UTC)
+produced by ORVYREN-Core v0.1 — deterministic engine, no human edit · ORVYREN-Core v0.1 · generated 2026-10-14T14:42:04Z (UTC)

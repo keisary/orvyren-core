@@ -22,3 +22,6 @@ evidence/tmp/
 .DS_Store
 Thumbs.db
 *.log
+
+# ---- Artefacts de distribution ----
+dist/

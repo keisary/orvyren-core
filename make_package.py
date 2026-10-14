@@ -62,6 +62,7 @@ def main():
 
     files = working_files()
     manifest = manifest_entries(files)
+    working = [f for f in files if not f.startswith(".git/")]
     info = [
         "ORVYREN-Core — review package",
         f"built_at_utc: {dt.datetime.now(dt.timezone.utc).isoformat(timespec='seconds')}",
@@ -70,7 +71,8 @@ def main():
         "start_here: docs/REVIEW_KIT.md",
         "run_tests: python -m unittest discover -s tests",
         "run_pipeline: python run_pipeline.py",
-        f"files: {len(files)} working files (+ .git history)",
+        f"files: {len(working)} working files, hashed in MANIFEST.sha256 "
+        f"(+ .git history: {len(files) - len(working)} git files)",
         "verify: sha256sum -c MANIFEST.sha256",
         "excludes: __pycache__, *.pyc, dist/, caches. Corpus AND evidence are included on purpose (they are proofs).",
     ]
@@ -83,7 +85,7 @@ def main():
 
     print(f"package : {zip_path}")
     print(f"size    : {os.path.getsize(zip_path) / 1e6:.2f} MB")
-    print(f"files   : {len(files)} (+ MANIFEST.sha256, + PACKAGE_INFO.txt)")
+    print(f"files   : {len(working)} working (+ .git history, + MANIFEST.sha256, + PACKAGE_INFO.txt)")
     print(f"sha256  : {sha256_file(zip_path)}")
 
 
