@@ -1,8 +1,8 @@
 {
-  "generated_at": "2026-10-14T14:43:24+00:00",
+  "generated_at": "2026-10-14T15:47:12+00:00",
   "case": "usdc-2023-03",
   "inputs": {
-    "corpus_observations": 1375,
+    "corpus_observations": 520,
     "corpus_rejected": 0,
     "data_quality_coverage": {
       "hours_in_window": 145,
@@ -61,11 +61,97 @@
     ]
   },
   "artifacts": {
-    "decision_usdc-2023-03.json": "346dd47c21a2ddcac0a13ed0a6ac382aac750ffe85f03915fa6003de29bbab47",
+    "decision_usdc-2023-03.json": "b65c0634be924b18954258dedb93e7f8965ae2728fb129f1dd56c39c01b76bbd",
     "baseline_report.json": "fa68d11f36232719f5400b5aab1d1cfab19b7808aaeb3e01297bd7bf4f868ae8",
-    "quality_report.json": "281ca37eb938fa3de3ed85c91e25d1ca9f8927d11ece8cb4295dff9387b90e29",
-    "policy_execution_demo.json": "f3ec1ae4c4afc967bb121e7b51756754202042436f94be001bf554c641c9c69d",
-    "dossier_usdc-2023-03.md": "41a87f3d4e75b1b7fd7f4b24386b9d278a2b3ab5dfb1b432589da7f7a701d448",
-    "dossier_usdc-2023-03.html": "dd639f06951d92d2ec48e16ba8a49c5e21034a2f68c1c311684e38e8967ec00c"
-  }
+    "quality_report.json": "5478728ceb60ca0b066d65c674c398f848abce01cb57ed7630c1db842a30bed4",
+    "policy_execution_demo.json": "3712a68321bb7017d786eb94cd94630afde9f77eb93293037ae3adae4a953fe1",
+    "dossier_usdc-2023-03.md": "f043bad856691130bea6f862eb0a37b46433d3a82946c2838b21a928936e8aad",
+    "dossier_usdc-2023-03.html": "3787ab6f182436cf895b6994fd817f1f57d08f45cddd5418d6e1ff699b7035cf"
+  },
+  "stages": [
+    {
+      "stage": "quality",
+      "script": "run_quality.py",
+      "status": "OK",
+      "seconds": 0.35,
+      "stdout_tail": [
+        "  per venue  : binance 83/145 (57.2%) | bitstamp 145/145 (100.0%) | defillama 145/145 (100.0%) | defillama_supply_aggregate 7/145 (4.8%) | defillama_supply_ethereum 7/145 (4.8%)",
+        "  gate-ready : 145 hours with >= 2 independent venues (83 with 3)",
+        "  gate 2023-03-09T00:00:00+00:00 : OK (missing binance)",
+        "  gate 2023-03-11T07:00:00+00:00 : OK (missing binance)",
+        "  gate 2023-03-11T08:00:00+00:00 : OK (missing binance)",
+        "  gate 2023-03-11T15:00:00+00:00 : OK",
+        "  gate 2023-03-15T00:00:00+00:00 : OK",
+        "  gate 2023-03-16T00:00:00+00:00 : INSUFFICIENT (missing defillama, binance, bitstamp)",
+        "graph        : evidence/graph.sqlite - 4 sources, 520 observations, 4 claims, 4 relations, 1 hypothesis",
+        "provenance   : 4/4 claims verified (all refs resolve)",
+        "snapshot     : orvyren-graph-v1 hash 6c02b63403aad46942c46060b9fa643f9e7683a7138164eeac7c712ab50f7294",
+        "report       : evidence/quality_report.json"
+      ],
+      "stderr_tail": []
+    },
+    {
+      "stage": "decision",
+      "script": "run_decision.py",
+      "status": "OK",
+      "seconds": 0.06,
+      "stdout_tail": [
+        "Corpus:           corpus/usdc_observations.csv (387 observations in window, sha256 c31088b3de42...)",
+        "Hypothesis verdicts:",
+        "  H1 local liquidity perturbation: REFUTED",
+        "  H2 broad stress on asset or issuer: SUPPORTED",
+        "  H3 data or market artifact: REFUTED",
+        "Decision:         ACTION_RECOMMENDED - transfer of 100.0 USDC (test) from wallet 'treasury' to wallet 'reserve'",
+        "Exposure envelope: exposure 500.0 USDC, floor 350.0 USDC, available_to_move 100.0 USDC",
+        "Baseline A0:      signals_main=2, signals_control=0, false_signals_control=0",
+        "  - signal 2023-03-11T03:00:00+00:00: aggregator 0.9798257461693491 (2.017425% below peg), episode 2023-03-11T02:00:00+00:00 -> 2023-03-12T23:00:00+00:00 (46 obs) -> reduce exposure by 100.0 USDC",
+        "  - signal 2023-03-13T06:00:00+00:00: aggregator 0.983199 (1.6801% below peg), episode 2023-03-13T05:00:00+00:00 -> 2023-03-13T09:00:00+00:00 (5 obs) -> reduce exposure by 100.0 USDC",
+        "Evidence:         evidence/decision_usdc-2023-03.json",
+        "Evidence:         evidence/baseline_report.json"
+      ],
+      "stderr_tail": []
+    },
+    {
+      "stage": "policy",
+      "script": "run_execution_demo.py",
+      "status": "OK",
+      "seconds": 0.07,
+      "stdout_tail": [
+        "policy: max_per_tx=100.0 max_cumulative=300.0 ttl=24h dry_run=True rpc=https://sepolia.base.org",
+        "I1  ALLOW            transfer       100.0 USDC -> 0x111111…111111  deny_codes: -",
+        "      instruction (unsigned): to 0x036cbd53842c5426634e7929541eC2318f3dCF7e",
+        "      calldata: 0xa9059cbb00000000000000000000000011111111111111111111111111111111111111110000000000000000000000000000000000000000000000000000000005f5e100",
+        "I2  DENY             transfer       500.0 USDC -> 0x111111…111111  deny_codes: AMOUNT_ABOVE_TX_CAP, AMOUNT_ABOVE_PERIOD_CAP",
+        "I3  REQUIRE_APPROVAL change_policy  100.0 USDC -> 0x111111…111111  deny_codes: ACTION_NEEDS_HUMAN_APPROVAL",
+        "receipt verification: no transaction hash provided yet (pending human execution)",
+        "guard blocks: 2 instruction(s) refused by assert_allowed",
+        "guard blocked intents: I2, I3",
+        "secret env vars detected (names only, never read): none",
+        "verdicts match expectation: True",
+        "evidence written: /home/unoriginaldude14/CALLY PARK/Ai/ecole/fintechathon/orvyren-core/evidence/policy_execution_demo.json"
+      ],
+      "stderr_tail": []
+    },
+    {
+      "stage": "audit",
+      "script": "run_audit.py",
+      "status": "OK",
+      "seconds": 0.04,
+      "stdout_tail": [
+        "  decision input: /home/unoriginaldude14/CALLY PARK/Ai/ecole/fintechathon/orvyren-core/evidence/decision_usdc-2023-03.json",
+        "  markdown      : /home/unoriginaldude14/CALLY PARK/Ai/ecole/fintechathon/orvyren-core/evidence/dossier_usdc-2023-03.md",
+        "  html          : /home/unoriginaldude14/CALLY PARK/Ai/ecole/fintechathon/orvyren-core/evidence/dossier_usdc-2023-03.html",
+        "  sha256 (md)   : 73399190489fac60b061a3441be1f62a5685f867788f4dfa3e92fd1f239e8ac7",
+        "  sha256 (html) : 7a609a14e1e6461472b262ae7f3692f93b5acd5458032062f86b455e7c4c3f89",
+        "  inputs hashed : 4 of 4 declared",
+        "    - decision: evidence/decision_usdc-2023-03.json [ok] sha256=b65c0634be924b18954258dedb93e7f8965ae2728fb129f1dd56c39c01b76bbd",
+        "    - baseline_report: evidence/baseline_report.json [ok] sha256=fa68d11f36232719f5400b5aab1d1cfab19b7808aaeb3e01297bd7bf4f868ae8",
+        "    - policy_execution_demo: evidence/policy_execution_demo.json [ok] sha256=3712a68321bb7017d786eb94cd94630afde9f77eb93293037ae3adae4a953fe1",
+        "    - quality_report: evidence/quality_report.json [ok] sha256=5478728ceb60ca0b066d65c674c398f848abce01cb57ed7630c1db842a30bed4",
+        "  note          : sha256 (md/html) is the reproducible self-hash, computed over the",
+        "                  rendered file with its own self-hash field zeroed to 64 '0's."
+      ],
+      "stderr_tail": []
+    }
+  ]
 }
