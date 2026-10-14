@@ -1,190 +1,227 @@
 # AXES D'AMÉLIORATION FULGURANTE — ORVYREN
+## Document d'analyse et de recherche — v3 (consolidée, avec socle MIMIR/DFKG et registre d'hypothèses)
 
-**Version 1 — 14 octobre 2026.** Constat honnête, état de l'art sourcé, fonctionnement optimal visé, et ce qui se construit avant la soumission.
-*Trois rapports de recherche approfondie (R1 orchestration/VOI, R2 permissions on-chain, R3 évaluation) viennent renforcer les axes A, C et E — cette version sera consolidée à leur arrivée.*
+**Date** : 14 octobre 2026 · **Destinataire** : équipe ORVYREN + analyse externe (GPT Astra)
+**Pièces liées** : `R1_orchestration_VOI.md` (20 sources vérifiées) · `R2_permissions_onchain.md` (458 lignes, contrats vérifiés on-chain) · `R3_evaluation_benchmark.md` (58 URL) · `figures/orvyren_cycle_complet.png` · socle de référence : `D:\midas_v2\MIMIR\docs\MIMIR_Technical_Design.md` (V3 gelée) + `MIMIR_Critical_Review_v3.md`
+
+**Comment utiliser ce document** : la §0 donne le constat, la §1 le socle MIMIR/DFKG à exploiter (définitions, types de relation), la §2 les acteurs et l'observation du monde, la §3 les axes d'amélioration sourcés, la §4 le fonctionnement cible, la **§5 le registre d'hypothèses (HYP-01…HYP-15) — c'est le cœur du document à analyser** — et la §6 les questions ouvertes posées à la recherche.
 
 ---
 
-## 0. Le constat, sans détour
+## 0. Constat, sans détour
 
-Ce qui existe aujourd'hui est un **pipeline déterministe sur un seul cas**, pas le système décrit dans la conception. Écart exact, station par station (voir `figures/orvyren_cycle_complet.png`) :
+Le prototype actuel est un **pipeline déterministe sur un seul cas** (décrochage USDC mars 2023) : collecte multi-sources, classification de 3 hypothèses pré-enregistrées, baseline A0, politique déterministe hors LLM, instruction on-chain non signée + vérification de reçu, dossier d'audit. **116 tests verts**, preuves réelles, corpus de 1 375 observations.
 
-| # | Station du cycle | État réel |
+Ce qui **n'existe pas encore** — et se joue précisément là : pas d'agent (pas de boucle planifier → outil → évaluer), **pas de registre de branches**, pas de calcul de valeur de l'information, pas de calibration, exposition en valeurs de démonstration. Vue complète : `figures/orvyren_cycle_complet.png` (1 station verte = faite et testée · 5 orange = partielles · 3 rouges = à construire).
+
+---
+
+## 1. Le socle : MIMIR / DFKG — ce qu'on réutilise, ce qu'on adapte, ce qu'on étend
+
+ORVYREN ne doit pas réinventer sa couche de connaissance : **MIMIR a déjà défini, gelé (V3) et spécifié un substrat complet — le Dynamic Financial Knowledge Graph (DFKG)**. La stratégie retenue : **le graphe d'abord** — ORVYREN instancie une tranche T0 du DFKG, puis l'étend. Voici exactement ce que MIMIR fournit.
+
+### 1.1 Le modèle d'objets (MIMIR §10.1) — à reprendre tel quel
+
+- **Couche monde** : `Entity` (**acteurs, institutions, actifs, marchés, variables économiques**), `Event`, `Relation`.
+- **Couche connaissance** : `Observation`, `Claim`, `Evidence`, `Hypothesis`, `Prediction`, `Outcome`.
+
+**Pourquoi c'est structurant pour ORVYREN** : nos objets actuels (observation, claim, hypothèse, décision) sont un sous-ensemble non nommé de ce modèle. En adoptant les définitions MIMIR, on hérite d'un vocabulaire vérifié, d'une discipline de preuve, et de la compatibilité avec le système macro-financier existant.
+
+### 1.2 Les identifiants canoniques (MIMIR §10.2)
+
+`VAR-` (variable économique) · `SER-` (série source) · `EVT-` (événement) · `OBS-` (observation) · `CLM-` (claim) · `REL-` (relation causale) · `SCN-` (scénario) · `FCT-` (prévision) · `THS-` (thèse de trade) · `OUT-` (résultat). Les identifiants externes (ids de séries, dates de vintage) sont des **champs de preuve, jamais des clés**.
+
+### 1.3 Les six horloges (MIMIR §10.5) — le cœur de l'anti-fuite temporelle
+
+Chaque objet porte **six temps** : `event`, `publication`, `observation`, `effective`, `validity`, `revision`. **C'est ce que notre corpus ne fait pas encore complètement** : nous avons `ts_event` et `retrieved_at`, il manque les temps de publication/effectivité/validité/révision — indispensables pour prouver qu'une décision n'utilise que ce qui était *public* à l'instant simulé.
+
+### 1.4 La chaîne de provenance (MIMIR §10.5) — à adopter intégralement
+
+`Source → Observation → Extraction → Claim → Relation → Hypothesis → Prediction → Outcome`, **chaque flèche étant une ligne de lien explicite** — « pour qu'un verdict puisse être remonté du P&L jusqu'à la source ». Notre `verify_chain` (claims → observations → sources) est un début ; MIMIR ajoute les maillons `Extraction`, `Prediction`, `Outcome` — ce sont eux qui manquent pour relier une décision à son résultat.
+
+### 1.5 Le *Relation record* — les types de relation (MIMIR §11.2)
+
+**C'est le point que tu demandes d'exploiter en priorité.** Chaque relation causale est un enregistrement typé à 10 champs :
+
+| Champ | Signification | Exemple |
 |---|---|---|
-| 1 | Surveiller l'exposition | **Partiel** — une baseline A0 sur une fenêtre figée ; pas de surveillance continue, pas de multi-actifs |
-| 2 | Détecter un épisode | **Fait et testé** — H1/H2/H3 pré-enregistrées, critères gelés, INCONCLUSIVE prouvé par test |
-| 3 | Ouvrir des branches concurrentes | **Manquant** — promis par la conception §7, aucune implémentation |
-| 4 | Calculer la valeur de l'information | **Manquant** — le système cherche un fait discriminant *sans calculer s'il vaut son coût* |
-| 5 | Exécuter les recherches (outils) | **Manquant** — pas d'agent : pas de boucle planifier → appeler un outil → évaluer, pas de budget |
-| 6 | Verdict par branche | **Partiel** — trois verdicts statiques ; pas de mise à jour dynamique, pas de fusion |
-| 7 | Décider (exposition, scénarios) | **Partiel** — le moteur est réel mais l'exposition (500/350 USDC) est une **valeur de démonstration** ; aucun portefeuille modélisé |
-| 8 | Passer les verrous | **Partiel** — politique déterministe + vérification de reçu : solides et testés ; manque la **permission on-chain réelle** |
-| 9 | Archiver et calibrer | **Partiel** — dossier d'audit réel (hashes) ; **aucune calibration** (prévisions gelées vs résultats) |
+| `relation_id` | identifiant | `REL-01` |
+| `cause` / `effect` | références d'objets | `EVT:FOMC_DECISION.surprise → VAR:DGS2` |
+| `mechanism` | mécanisme en une étiquette | `short-rate-expectations` |
+| `conditions` | prédicats d'état/régime sous lesquels la relation est affirmée | « régime haute volatilité » |
+| `regime_scope`, `horizon_scope` | portée déclarée | `h ≤ 5 j` |
+| `epistemic_status` | **`CAUSAL-DOCUMENTED` / `CAUSAL-HYPOTHESIS` / `MODELLED`** | — |
+| `sign_prior` | signe attendu (+/−/ambigu) | `+` si surprise hawkish |
+| `provenance` | référence littérature ou mécanisme documenté | — |
+| `lifecycle` | **`DISCOVERED → EVALUATING → ACTIVE → WEAKENING → SUSPENDED → REJECTED`** (+ `REACTIVATION CANDIDATE`) | — |
 
-**En une phrase** : les briques « verrous » et « preuve » sont vraies ; le **cœur intellectuel** — branches, valeur de l'information, agent de recherche, calibration — n'existe pas encore. C'est exactement là que se joue la différenciation.
+**Exemples réels de la carte curatée MIMIR (T0, ensemble confirmatoire complet)** : `REL-01` surprise de politique → taux 2 ans (repricing des anticipations, documenté, h ≤ 5 j) · `REL-02` → taux 10 ans (chemin anticipé + prime de terme, h ≤ 20 j) · `REL-03` → change USD (différentiel de taux/carry, h ≤ 20 j) · `REL-04` → indices actions (canal du taux d'actualisation, h ≤ 20 j) · `REL-05` → pétrole (canal demande vs canal dollar, **hypothèse**, ambigu, h ≤ 60 j) · `REL-07` état de risque × surprise → actions (**amplification dépendante de l'état**, h ≤ 5 j) · `REL-08` état d'inflation × surprise → taux (asymétrie de la fonction de réaction) · `REL-09` pétrole → anticipations d'inflation → taux (transmission de second ordre, ambigu) · `REL-10` actions → sentiment de risque → FX.
 
----
+**Règles MIMIR à reprendre telles quelles** : une relation `CAUSAL-DOCUMENTED` entre dans le chemin confirmatoire avec sa provenance stockée comme claim ; une relation `CAUSAL-HYPOTHESIS` est évaluée dans le même run mais **rapportée distinctement** ; une relation dont l'effet estimé contredit son signe documenté au-delà de la bande pré-enregistrée est **signalée, jamais silencieusement conservée**, et passe en `EVALUATING`.
 
-## 1. Méthode
+**Ce que ça change concrètement pour ORVYREN** : nos trois hypothèses (H1 perturbation locale / H2 stress / H3 artefact) deviennent des **nœuds de la couche connaissance reliés par des `Relation` typées** — par exemple : `OBS:prix-bitstamp-07h → CLM:divergence-ville → HYP:perturbation-locale` (relation `SUPPORTS`), et `OBS:offre-24h → CLM:contraction → HYP:stress-reel` (relation `SUPPORTS`, avec `sign_prior` et portée temporelle).
 
-Recherche en ligne (français/anglais), sources primaires privilégiées (specs, papiers, régulateurs, dépôts officiels), publications 2025-2026. Chaque axe est jugé sur : ce que ça change réellement, le coût, le risque, et **ce qu'on pourra affirmer sans mentir devant un jury**. Les sources sont citées avec leur date.
+### 1.6 Labels épistémiques et cycles de vie (MIMIR §0.3)
 
----
+**Labels** : `FACT` · `REPORTED` · `STATISTICAL` · `CAUSAL-DOCUMENTED` · `CAUSAL-HYPOTHESIS` · `MODEL-INFERRED` · `REJECTED`. **Règle** : « une hypothèse ne devient jamais silencieusement une base de conception établie ; toute affirmation portant un label le conserve dans chaque document qui la cite ». **Statuts** : `DECIDED` · `DECIDED DIRECTION` · `CANDIDATE` · `OPEN` · `REJECTED` · `DEFERRED`.
 
-## 2. Les axes, classés par levier
+**C'est l'équivalent mature de notre distinction FAIT SOURCÉ / MESURE / HYPOTHÈSE / INCONNU** — à adopter pour rendre ORVYREN lisible par quiconque connaît MIMIR.
 
-### AXE A — Transformer « chercher une preuve » en décision optimale (valeur de l'information)
+### 1.7 Ce que MIMIR fait et qu'on doit rattraper (leçons structurelles)
 
-**Ce que c'est** : le système ne se contente pas de chercher un fait qui départage les hypothèses — il **calcule** la valeur espérée de chaque recherche (EVPI/EVSI : *expected value of perfect / sample information*), la compare à son coût (requêtes, latence, argent), et **ne lance une recherche que si elle peut changer la décision**. Il en déduit mécaniquement quand s'arrêter, quand s'abstenir, et quand escalader à l'humain.
+1. **Pré-enregistrement gelé et haché** (MIMIR §5.5) : le paquet de pré-enregistrement est figé au jalon M0, haché, référencé par chaque run d'audit. Notre « règle de décision gelée » est l'embryon — MIMIR en fait un objet versionné.
+2. **Matrice de falsification + ordre des tests (du moins cher au plus cher)** (§5.2-5.3) et **politique de multiplicité par familles de tests** (§5.4) — nous n'avons rien de tel.
+3. **Portes d'échec canoniques et plan de puissance statistique** (§5.6-5.7) — le pendant exact de ce que R3 recommande (puissance ≈ 93 fenêtres → ne rien revendiquer).
+4. **Propagation bornée** (§11.4) : « jamais comme un parcours de graphe non contraint » — structure + mécanismes actifs + conditions d'état + délais + probabilité + rétroaction, avec itération bornée et décroissance. À reprendre pour toute propagation d'effets dans ORVYREN.
+5. **Journal d'audit natif + attribution d'erreur + révision** (§13.3-13.5) : chaque erreur est attribuée (donnée ? modèle ? décision ?) et chaque révision est un objet. Notre dossier doit s'aligner.
+6. **États de sûreté et opération dégradée** (§13.7) : le système sait dire *dans quel état* il est. À reprendre.
 
-**Pourquoi c'est fulgurant** : c'est le passage d'une heuristique (« va chercher des données ») à une **règle de décision démontrable** — et c'est exactement ce que la littérature 2026 dit que les agents doivent faire. Le papier *« Position: agentic AI orchestration should be Bayes-consistent »* (arXiv 2605.00742) énonce la règle : *un appel d'agent supplémentaire n'est justifié que si sa valeur d'information espérée dépasse son coût*. La version longue (HAL, hal-05480691) demande d'exprimer « routage, arrêt, abstention, escalade et allocation de budget » comme des décisions d'utilité postérieure ou de valeur de l'information. D'autres travaux 2026 vont dans le même sens : *Value of Information: A Framework for Human–Agent Communication* (ACL 2026) et *Expected Value of Information Meets Bandit Learning* (ACM, DOI 10.1145/3696410.3714773).
+### 1.8 Ce qu'on adapte (écarts assumés)
 
-**Ce que ça change concrètement** : chaque branche porte une probabilité ; chaque recherche a un coût et une valeur espérée ; le budget est alloué par priorité décroissante ; le système s'arrête quand aucune recherche restante ne peut changer la décision. Les chiffres restent produits par le moteur déterministe — le LLM propose, le solveur dispose.
-
-**Coût / risque** : moyen (algorithmes simples à implémenter : EVSI par échantillonnage sur un petit espace d'hypothèses) ; risque = probabilités subjectives non calibrées → à encadrer (voir axe G).
-
-**Verdict : à construire — c'est LE saut conceptuel du projet.**
-
-### AXE B — Le registre de branches (l'arbre épistémique)
-
-**Ce que c'est** : les hypothèses deviennent des objets vivants — « chaque branche contient une hypothèse, les observations qui la soutiennent, les observations défavorables, les inconnues, les critères de réfutation, un état, une probabilité et une histoire de recherche » (conception V0.2 §7.1), avec un cycle de vie (`CREATED → UNDER_TEST → SUPPORTED/REFUTED → ARCHIVED`, `§7.2`) et un **planificateur qui construit des tâches à partir d'une lacune explicitement identifiée** (§7.3).
-
-**Pourquoi c'est fulgurant** : c'est ce qui empêche les conclusions prématurées — et la conception prévoit déjà l'ablation qui le prouve (A1 sans branches vs **A2 avec branches, budget égal**). Un jury peut juger une démonstration où l'on **voit** une branche mourir faute de preuve et une autre survivre.
-
-**Ce que ça change** : nouvelle table `branch` (état, probabilité, historique), liens claim↔branche, et le signal d'entrée du calculateur VOI (axe A). Les branches réfutées ne sont jamais supprimées — elles sont l'historique.
-
-**Coût / risque** : faible-moyen (le graphe de preuve existe déjà) ; risque = complexité si on dépasse 3-5 branches — la conception fixe la limite volontairement (§16.2).
-
-**Verdict : à construire — c'est la promesse non tenue la plus visible.**
-
-### AXE C — La permission on-chain réelle (le thème même du concours)
-
-**Ce que c'est** : aujourd'hui l'agent produit une instruction non signée qu'un humain exécute. Demain : le propriétaire du wallet **accorde une permission bornée** (montant, période, actif, destinataire) que la chaîne **applique elle-même**. Le standard existe et est vivant : **ERC-7715** (*Request Permissions from Wallets*, EIP-7715) introduit `wallet_grantPermissions` — « délégations délimitées et bornées dans le temps pour les session keys, les agent wallets et les abonnements on-chain » ; il est déployé via le **Delegation Toolkit de MetaMask** (annoncé par MetaMask comme « Advanced Permissions ») et actif **sur Polygon depuis avril 2026** (Relay, 17/04/2026). Les implémentations doivent réutiliser des modules audités (allowance modules de **Safe**, validateurs de **Kernel**, Coinbase smart wallet) plutôt que réinventer la permission (Eco, 2026).
-
-**Pourquoi c'est fulgurant** : le projet devient littéralement un **Agent Wallet** — la contrainte n'est plus seulement dans notre code (contournable en théorie), elle est **appliquée par la chaîne** (impossible à contourner par l'agent). C'est la réponse la plus forte à la question « pourquoi on-chain, et pas une base SQL ? » — et ça transforme la station 8 (verrous) de « partiel » à « complet ».
-
-**Ce que ça change** : ajouter une couche de délégation (grant, révocation, limites par période) et une démonstration où **la chaîne elle-même refuse** un dépassement, distincte du refus par notre politique (deux verrous indépendants = argument de sécurité imbattable).
-
-**Coût / risque** : moyen (intégration d'un module audité sur testnet) ; risques = disponibilité réellement chaîne par chaîne (à vérifier), complexité de démo à 6 jours → **à câbler après la soumission si besoin**, avec la démonstration testnet minimale maintenant.
-
-**Verdict : intégrer la version minimale démontrable ; la version complète dès que la deadline le permet.**
-
-### AXE D — L'audit qui se **reconstruit** (et non qui se raconte)
-
-**Ce que c'est** : passer du dossier d'une page à un **journal reconstructible** : chaque étape de l'agent (modèle appelé, outil invoqué, argument, résultat, coût) est un span horodaté, chaîné par hash, exportable dans un format standard.
-
-**Pourquoi c'est fulgurant** : le standard d'observabilité des agents est **en train de se stabiliser et ce n'est pas encore stable** — OpenTelemetry a **déprécié tous les attributs `gen_ai.*` le 12 juin 2026** (release v1.42.0) et les a déplacés vers un dépôt dédié qui, au 12 octobre 2026, **n'a toujours aucune version taguée** ; la conséquence pratique documentée : *« aucun standard achetable n'existe encore ; le journal d'audit durable est celui que l'on héberge soi-même »*, d'autant que la règle américaine **17a-4** exige déjà de pouvoir **reconstruire l'enregistrement avec attribution** (ibl.ai, 12/10/2026). Autre confirmation : les conventions OTel considèrent un run d'agent comme un **arbre de spans** (`invoke_agent`, `execute_tool`, `gen_ai.agent.name`, `gen_ai.tool.name`) et les métriques `gen_ai.invoke_agent.tool_calls` / `inference_calls` détectent les boucles d'agent (Dash0, 2026).
-
-**Ce que ça change** : un format maison stable aujourd'hui, aligné sur `gen_ai.*` **quand** le standard se stabilise ; un export `traces.jsonl` + un vérificateur indépendant (`verify_chain` existe déjà pour les claims — on l'étend aux étapes d'agent).
-
-**Coût / risque** : faible-moyen (structure à définir, vérificateur à écrire) ; risque = suivre un standard mouvant → décision : format interne stable + adaptateur.
-
-**Verdict : à construire — c'est le meilleur argument « conformité/sécurité » (30 % de la note).**
-
-### AXE E — L'évaluation qui rend les affirmations crédibles
-
-**Ce que c'est** : un protocole qui mesure la **qualité des décisions**, pas la qualité rédactionnelle : regret face à une référence, calibration (Brier, courbes de fiabilité, ECE), ablations à budget égal, et un **benchmark multi-cas** construit sur des épisodes historiques publics (USDC mars 2023 — déjà fait, UST mai 2022, FTX nov. 2022, stETH juin 2022, pannes d'oracles…).
-
-**Pourquoi c'est fulgurant** : l'évaluation des agents financiers est en train de devenir un champ régulé. Le **UK Treasury Committee (rapport du 20 janvier 2026)** a demandé aux régulateurs des **stress tests spécifiques aux IA** — et la **Bank of England et la FCA ont confirmé en avril 2026** travailler sur les comportements corrélés (« herding ») d'agents. Côté benchmarks, *Finance Agent v1.1* (Vals AI) mesure des tâches d'analyste junior, et *FinanceComplexQA* (arXiv 2607.19238) évalue du raisonnement documentaire — **aucun ne mesure une décision bornée avec exécution vérifiable**, notre créneau.
-
-**Ce que ça change** : un harnais `run_benchmark.py` (cas pré-enregistrés, résultats comparés à la baseline A0), un rapport d'ablation A1/A2, et une **taxonomie de défaillance** écrite (les 4 catégories de test que les régulateurs attendent).
-
-**Coût / risque** : moyen ; risque = petit échantillon (ne pas prétendre à une performance générale — la conception V0.2 l'exige déjà : « si l'échantillon est insuffisant, le verdict doit rester non établi »).
-
-**Verdict : à construire — c'est ce qui rend les 40 % « accomplissement de la tâche » vérifiables.**
-
-### AXE F — Le moteur de risque réel (fin des valeurs de démonstration)
-
-**Ce que c'est** : remplacer l'exposition 500/350 par un **portefeuille modélisé** : positions, décotes (haircuts), horizons de liquidité, corrélations, et une **fonction d'utilité explicite** (que cherche-t-on à protéger : un plancher de trésorerie, une limite CVaR, une maturité de passif ?). Les scénarios deviennent des chocs paramétrés, pas des illustrations.
-
-**Pourquoi c'est fulgurant** : c'est le pont entre « agent IA » et « finance » : un jury de fintech jugera la **solidité financière** du raisonnement, pas seulement la plomberie. Et c'est ce qui rend la décision *discutable* au sens noble : on peut contester une hypothèse de modèle.
-
-**Coût / risque** : moyen (modèle d'exposition + scénarios) ; risque = sur-promettre une précision de risque qu'un prototype ne peut pas garantir → assumer des hypothèses simples mais explicites.
-
-**Verdict : à construire — remplace des placeholders par un modèle auditable.**
-
-### AXE G — Calibration et apprentissage gouverné
-
-**Ce que c'est** : chaque décision archive une **prévision gelée** (probabilité, horizon) ; quand le résultat est observable, le système calcule son score (Brier, décomposition fiabilité / résolution), tient un registre, et **n'ajuste ses seuils que par une procédure gouvernée** — jamais en pleine décision.
-
-**Pourquoi c'est fulgurant** : c'est la réponse à la question la plus dure d'un jury (« comment savez-vous que vous avez raison ? ») — et la conception le dit déjà : « un score de Brier peut être utilisé […] mais un petit nombre de cas ne permet pas de conclure » (§12.3). La littérature 2026 sur la calibration des LLM et les garanties sans distribution (conformal prediction) donne des outils pour borner honnêtement.
-
-**Coût / risque** : faible-moyen ; risque = confusion entre « calibration des probabilités » et « performance des décisions » → à écrire noir sur blanc.
-
-**Verdict : à construire — c'est la différence entre un prototype et un système qui apprend.**
-
-### AXE H — Les acteurs : séparation des devoirs
-
-**Ce que c'est** : plus d'un acteur dans la boucle — un **analyste** (propose), un **critique adversarial** (cherche à réfuter, y compris erreurs d'unité, obsolescence, explications alternatives — conception §8), un **responsable risque** (limites), un **conformité** (politique), un **signataire** (exécution). Chacun avec des permissions distinctes et des traces distinctes.
-
-**Pourquoi c'est fulgurant** : c'est le langage des institutions financières (segregation of duties) — et ça donne au thème F sa profondeur « agentique » : plusieurs agents qui **se contrôlent mutuellement**, dont aucun ne cumule proposition, validation et exécution.
-
-**Coût / risque** : faible (ce sont des rôles dans la boucle, pas des microservices) ; risque = théâtre multi-agents sans valeur → chaque rôle doit avoir un **test qui prouve qu'il est nécessaire** (ablation).
-
-**Verdict : à construire, avec preuve d'utilité par ablation.**
-
-### AXE I — De « un cas » à « un système qui tourne »
-
-**Ce que c'est** : surveillance continue (boucle temporelle), plusieurs actifs et plusieurs sources, reprise après arrêt, journal d'épisodes. Le mode actuel est « une commande, un cas ».
-
-**Pourquoi c'est fulgurant** : c'est ce qui transforme une démonstration en **produit**.
-
-**Coût / risque** : moyen ; risque = fuite de périmètre avant la deadline → version minimale maintenant (un second cas), système complet après.
-
-**Verdict : après la soumission (conception prête).**
-
-### AXE J — Élargir la preuve : on-chain profond, réserves, attestations
-
-**Ce que c'est** : au-delà des prix, ingérer la **liquidité réelle** (profondeur des pools, flux de redemption), les **preuves de réserves** (oracles type Chainlink PoR), et des documents datés (communiqués) avec extraction tracée.
-
-**Pourquoi c'est fulgurant** : la différence entre « le prix a bougé » et « la capacité de sortie a changé » — c'est-à-dire entre un signal et un diagnostic.
-
-**Coût / risque** : moyen (chaque source = un connecteur + un test de qualité) ; risque = sources indisponibles → la porte de données les déclare manquantes (elle existe déjà).
-
-**Verdict : une source de plus avant la soumission (on-chain), le reste ensuite.**
-
----
-
-## 3. Le fonctionnement optimal et complet (cible)
-
-Le système complet, en régime : **surveillance** (boucle temporelle sur un portefeuille modélisé) → **épisode** → **branches concurrentes** porteuses de probabilités → **calculateur VOI** qui dit quoi chercher et à quel coût → **agent de recherche** à outils bornés (lecture seule), budget encadré, critiques adversariaux → **verdicts** mis à jour, fusion ou abandon de branches → **décision** sous contrainte d'exposition (utilité explicite, scénarios) → **double verrou** (politique déterministe, puis permission on-chain bornée) → **exécution** (humain/signataire) → **vérification du reçu** → **journal reconstructible** + **dossier** → **calibration** périodique qui ajuste les seuils par procédure gouvernée. À tout moment, l'absence de preuve suffisante produit **INCONCLUSIVE** avec la liste chiffrée de ce qui manquait et de son coût.
-
-**Invariants non négociables** (ce qui distingue ORVYREN d'un chatbot) : 1) aucun chiffre déterminant ne vient d'un LLM ; 2) aucune action sans passage par les verrous ; 3) aucune conclusion sans provenance ; 4) aucune suppression — les branches mortes et les refus restent ; 5) l'arrêt est une décision, pas un échec.
-
----
-
-## 4. Priorisation — ce qu'on construit avant le 20 octobre
-
-| Priorité | Axe | Pourquoi maintenant |
+| Point MIMIR | Adaptation ORVYREN | Raison |
 |---|---|---|
-| **P0** | B (branches) + A (VOI minimal) | Le cœur manquant, réalisable en bibliothèque standard ; c'est l'innovation (30 %) |
-| **P0** | F (moteur de risque réel, version simple mais explicite) | Fin des placeholders — argument financier devant le jury |
-| **P0** | D (journal reconstructible) | 30 % de la note ; peu coûteux, très visible |
-| **P1** | G (calibration, registre de prévisions gelées) | Réponse à « comment savez-vous ? » |
-| **P1** | E (protection : benchmark 2e cas + rapport d'ablation A1/A2) | Rend les 40 % vérifiables |
-| **P1** | C (permission on-chain réelle sur testnet) | Thème du concours ; la chaîne comme second verrou |
-| **P2** | H (rôles séparés, avec ablation), I (surveillance continue), J (sources élargies) | Après la soumission — conception déjà écrite |
+| T0 sans base graphe (tables relationnelles Parquet/DuckDB, ADR-002) | idem : SQLite/tables + liens explicites | cohérent avec la décision MIMIR, pas de dépendance |
+| Carte causale macro (FOMC, taux) | **notre cas** : stress de stabilité (stablecoins/USDC), acteurs bancaires, trésorerie | le DFKG est instancié sur un autre sous-domaine, la structure est identique |
+| Système de **trading** multi-actifs | ORVYREN = brique **décision + politique + exécution bornée** (et, en cible, recommandations de trading) | ORVYREN est un consommateur/procuration du DFKG, pas un concurrent |
+
+### 1.9 Extension expérimentale : DFKG × Deep Learning / ML (à défricher)
+
+**Étiquetage obligatoire : tout ce qui suit est `CAUSAL-HYPOTHESIS` / `MODEL-INFERRED` — très expérimental.**
+
+MIMIR exclut volontairement la découverte automatique de relations du T0 (§11.2 : « automatic discovery is out of T0 »). C'est précisément l'espace où du ML peut se brancher sur le DFKG, à condition de ne jamais court-circuiter la discipline épistémique :
+
+1. **Extraction et résolution** — NER/entity linking vers les `Entity` (banques, régulateurs, actifs), extraction d'événements depuis les communiqués (date de publication, pas de fuite temporelle), déduplication d'événements (MIMIR §10.4 laisse ce chemin au tier FULL).
+2. **Découverte de relations assistée** — prédiction de liens sur le graphe (relations manquantes entre `Entity`/`Event`/`VAR`), plongements temporels de graphe de connaissance (TKG embeddings), extraction de relations par LLM sous contrainte de schéma strict (avec provenance littérature obligatoire avant tout passage en `CAUSAL-DOCUMENTED`).
+3. **Estimation d'effets** — MIMIR utilise des projections locales (ADR-010) ; alternative expérimentale : attendre une qualité supérieure d'un modèle relationnel/apprenant la transmission. À comparer **à budget de données égal**, avec la même discipline de porte d'échec.
+4. **Propagation apprise** — remplacer la propagation bornée manuelle par un réseau de passage de messages sur le graphe, en gardant la contrainte « pas de parcours non contraint » et la traçabilité des relations utilisées (§11.4).
+5. **Régimes** — classification probabiliste de régime (MIMIR §11.7 admet `UNKNOWN`) par modèle séquentiel, avec calibration obligatoire.
+6. **Détection de contradictions** — apparier des claims qui se contredisent (embeddings + NLI) pour alimenter le critique adversarial.
+7. **Confiance d'extraction** — score de qualité de chaque extraction qui devient un attribut d'observation, jamais un fait.
+
+**Règle d'or** (non négociable) : le ML **propose**, le pipeline déterministe **dispose** ; toute sortie de modèle est étiquetée et n'entre jamais dans un calcul financier comme un chiffre établi.
 
 ---
 
-## 5. Ce qu'on pourra affirmer au jury (sans mentir)
+## 2. Acteurs et observation du monde
 
-1. « Notre agent ne cherche une information que si sa valeur espérée dépasse son coût — c'est une règle bayésienne publiée, pas une intuition » (arXiv 2605.00742 ; HAL hal-05480691).
-2. « La contrainte n'est pas seulement dans notre code : elle est appliquée par la chaîne via des permissions bornées standard » (EIP-7715 ; Relay 04/2026).
-3. « Notre agent ne détient aucune clé et aucune action n'est possible hors de l'enveloppe autorisée » (politique déterministe + 116 tests, dont les 7 attaques pré-déclarées).
-4. « Nous pouvons reconstruire chaque décision : sources horodatées, hypothèses, verdicts, refus, hashes » (dossier d'audit reproductible).
-5. « Nous ne revendiquons aucune performance tant qu'un échantillon suffisant ne l'établit pas » — position alignée sur les attentes réglementaires de stress tests IA (UK Treasury Committee, 20/01/2026).
+**Les acteurs à modéliser explicitement** (couche `Entity` du DFKG) — pas seulement « le marché » :
 
----
-
-## Annexe — Sources citées
-
-| Sujet | Source | Date |
+| Catégorie | Acteurs | Ce qu'Orvyren observe d'eux |
 |---|---|---|
-| Orchestration bayésienne des agents | arXiv 2605.00742 (position paper) ; HAL hal-05480691 | 2026 |
-| Valeur de l'information humain–agent | ACL 2026, aclanthology 2026.acl-long.1987 | 2026 |
-| EVOI et apprentissage par bandit | ACM 10.1145/3696410.3714773 | 2026 |
-| Permissions de wallet | EIP-7715 (ERC-7715) ; MetaMask « Advanced Permissions » ; Relay (Polygon, avril 2026) | 2024-2026 |
-| Observabilité des agents | OpenTelemetry blog genai-observability ; dépréciation `gen_ai.*` (v1.42.0, 12/06/2026) ; Dash0 (2026) ; ibl.ai (12/10/2026) | 2025-2026 |
-| Stress tests IA financiers | UK Treasury Committee (20/01/2026) ; BoE/FCA (avril 2026) ; Aveni (10/06/2026) | 2026 |
-| Benchmarks agents financiers | Vals AI Finance Agent v1.1 ; FinanceComplexQA (arXiv 2607.19238) | 2026 |
+| **Bancaires** | banques commerciales, banques centrales (régulateur monétaire), trésoriers de banque | décisions de politique, communiqués, flux de dépôts/réserves, expositions interbancaires |
+| **Marchés** | teneurs de marché, exchanges, fonds, market makers de stablecoins | profondeur, écarts de prix par venue, stress de liquidité, flux de redemption |
+| **Émetteurs / infrastructures** | émetteurs de stablecoins, custodians, réseaux (chaînes), oracles | déclarations datées, preuves de réserves, incidents on-chain |
+| **Réglementaires / surveillance** | FSB, BCE, Fed, régulateurs nationaux | textes, alertes, changements de règles (contrainte réelle du système) |
+| **Entreprises (client final)** | trésoriers d'entreprises, PME, importateurs/exportateurs | expositions réelles, contraintes de trésorerie (notre utilisateur actuel) |
+
+**Observation globale du monde** — le DFKG ne doit pas être un graphe de prix : il doit porter l'**état du monde** (MIMIR §11.6, *world state record*) : régime monétaire, conditions de liquidité, tensions d'acteurs, événements en cours, incertitude déclarée (avec `UNKNOWN` autorisé). Pour ORVYREN, cela veut dire observer : le prix **et** la capacité de sortie, les acteurs **et** leurs contraintes, les événements **et** leur fenêtre de validité.
+
+**Dimension trading** — ORVYREN n'est pas un robot de trading, mais ses décisions doivent s'intégrer au monde du trading : impact du portefeuille, coûts, horizon d'exécution, et — en cible — produire des **thèses de trade** (`THS-`) avec thèse, invalidation, taille, et P&L suivi en **paper trading** (MIMIR §12.7-12.8 : exécution papier, coûts, P&L — jamais de fonds réels dans le prototype).
+
+---
+
+## 3. Les axes d'amélioration (consolidés, sourcés)
+
+| Axe | Contenu | Fondement sourcé | Priorité |
+|---|---|---|---|
+| **A — Orchestration bayésienne (valeur de l'information)** | ne chercher que ce qui peut changer la décision ; arrêt calculé `VoI(q) − c` | arXiv:2605.00742 (§4.1) ; ACL 2026 pp. 42879–42896 (meilleur que seuils manuels dans 18/20 conditions, +1,36 pt) ; arXiv:2601.01522 (postérieure mono-LLM inadéquate) | **P0** |
+| **B — Registre de branches** | hypothèses vivantes (preuves pour/contre, critères de réfutation, probabilité, historique) ; ablation A1/A2 | conception V0.2 §7 ; MIMIR `Hypothesis` + catégories de cycle de vie | **P0** |
+| **C — Permission on-chain réelle** | double verrou : politique hors chaîne + **mandat borné appliqué par la chaîne** (ERC-7715 `erc20-token-periodic`, 300 USDC/période de 24 h, octroi humain unique) | EIP-7715 ; MetaMask Delegation Toolkit ; **contrats vérifiés par nos soins sur Base Sepolia le 14/10/2026** (DelegationManager déployé, Enforcer déployé ; Safe Allowance **absent** → écarté) ; repli Coinbase Spend Permissions | **P1** |
+| **D — Audit reconstructible + abstention de plein droit** | journal d'étapes chaîné par hash ; le LLM canonise, le pipeline calcule ; abstention = sortie de première classe | arXiv:2606.00671 (« confiant et faux indiscernable de confiant et juste ») ; arXiv:2603.20449 (solveur en pré-condition) ; OTel : `gen_ai.*` déprécié le 12/06/2026, dépôt dédié **sans release** au 12/10/2026 → héberger son propre journal (17a-4) | **P0** |
+| **E — Évaluation qui rend crédible** | regret (faux positif/négatif séparés) + Brier/décomposition + ECE + conformal + **placebo B0** (200 tirages) + ablations ; puissances : ≈ 93 fenêtres/groupe → **ne rien revendiquer** | R3 (protocole complet) ; UK Treasury Committee HC 684 (20/01/2026) ; BoE/FCA (avril 2026) ; FSB (10/06/2026) | **P0/P1** |
+| **F — Moteur de risque réel** | fin des valeurs 500/350 : portefeuille modélisé, décotes, horizons, fonction d'utilité explicite | MIMIR §12.5 (impact portefeuille) ; §4.1 (fonction d'objectif) | **P0** |
+| **G — Calibration gouvernée** | prévisions gelées, Brier/ECE, ajustement des seuils par procédure | arXiv:2602.06948 (22 % réel vs 77 % déclaré) ; MIMIR §13.3 (attribution d'erreur) | **P1** |
+| **H — Acteurs séparés** | analyste / critique / risque / conformité / signataire — chacun justifié par ablation | conception §8 ; MIMIR §13.5 (audit natif) | P2 |
+| **I — Système qui tourne** | surveillance continue, multi-actifs, reprise, journal d'épisodes | MIMIR §13.6 (drift) ; urgence : endpoints DeFiLlama `/pools` `/chart` ferment le **13/11/2026** | P2 |
+| **J — Preuve élargie** | liquidité on-chain profonde, redemption, preuves de réserves | MIMIR §7.3 (familles de données) ; §7.8 (règles d'évaluation) | P2 |
+| **K — Banc d'attaques 7 → 12** | + frontière de période (effet 2×), révocation en cours d'exécution, oracle, accumulation, calldata mal décimé ; borne de Wilson publiée | R2 (limite on-chain) ; R3 (recommandation) | **P1** |
+
+---
+
+## 4. Le fonctionnement optimal et complet (cible)
+
+**DFKG d'abord** : une couche de connaissance (objets MIMIR, six horloges, chaîne de provenance, relations typées) alimentée par des connecteurs multi-acteurs, avec un état du monde explicite et une incertitude déclarée. **Puis la boucle** : surveillance → épisode → branches concurrentes probabilisées → calculateur de valeur de l'information → agent de recherche à outils bornés (lecture seule) + critique adversarial → verdicts mis à jour → décision sous contrainte d'utilité (impact portefeuille, coûts, horizon) → **double verrou** (politique déterministe, puis mandat on-chain) → exécution humaine/signataire → vérification du reçu → **journal reconstructible** → calibration périodique gouvernée. L'abstention (`INCONCLUSIVE`) est une sortie normale, chiffrée (ce qui manquait, à quel coût).
+
+**Invariants** : (1) aucun chiffre déterminant ne vient d'un LLM ; (2) aucune action sans les deux verrous ; (3) aucune conclusion sans provenance ; (4) rien n'est supprimé (branches mortes, refus) ; (5) tout label épistémique se conserve dans chaque document qui cite l'affirmation ; (6) l'arrêt et l'abstention sont des décisions.
+
+---
+
+## 5. REGISTRE D'HYPOTHÈSES (le cœur du document)
+
+Format : énoncé · statut · label · critère de soutien · critère de réfutation · données requises · coût. Chaque hypothèse est écrite pour être **attaquable** — c'est le but.
+
+| ID | Énoncé (en une phrase) | Statut | Label |
+|---|---|---|---|
+| HYP-01 | Un graphe de connaissance typé (DFKG : objets MIMIR, six horloges, chaîne de provenance, relations typées) réduit les conclusions prématurées par rapport à un pipeline plat, à budget égal | OPEN | CAUSAL-HYPOTHESIS |
+| HYP-02 | Une politique d'arrêt par valeur de l'information (`VoI(q) − c ≥ 0`) égale ou dépasse les seuils réglés à la main sur nos propres fenêtres | OPEN | STATISTICAL |
+| HYP-03 | Le registre de branches (3-5 hypothèses explicites, avec réfutation enregistrée) améliore la qualité de décision mesurée par le regret, et bat un placebo apparié | OPEN | CAUSAL-HYPOTHESIS |
+| HYP-04 | Le label épistémique change la décision : une conclusion reposant uniquement sur des relations `CAUSAL-HYPOTHESIS` est significativement plus souvent classée INCONCLUSIVE/REPORTED | OPEN | MODEL-INFERRED |
+| HYP-05 | Le double verrou (politique + mandat on-chain) empêche 100 % des actions hors enveloppe sur un banc de 12 attaques, mais introduit un effet de frontière de période mesurable (dépense 2× possible en limite de période) | OPEN | STATISTICAL |
+| HYP-06 | La calibration des probabilités est meilleure quand elles sont élicitées avant exécution en cadrage « recherche de bug » que par confiance déclarée | OPEN | STATISTICAL |
+| HYP-07 | Une extension ML du DFKG (plongements de graphe / prédiction de liens) retrouve des relations manquantes de la carte curatée, mesurée en précision@k sur des relations tenues à l'écart | OPEN | MODEL-INFERRED |
+| HYP-08 | L'observation multi-acteurs (banques, infrastructures, régulateurs) améliore la précision du diagnostic d'épisode par rapport aux seules données de marché (détection plus précoce ou moins de faux signaux) | OPEN | CAUSAL-HYPOTHESIS |
+| HYP-09 | La décision bornée (réduire l'exposition de 100) a un regret inférieur à la baseline A0 sur les épisodes historiques, **nette des coûts**, sans supériorité statistique revendiquée | OPEN | STATISTICAL |
+| HYP-10 | Un tiers indépendant peut recalculer la décision à partir des seules sources archivées (reproductibilité), y compris la remontée `Outcome → Source` | OPEN | FACT (testable) |
+| HYP-11 | La séparation des rôles (propose / réfute / valide / exécute) réduit le taux de décisions fausses sur le banc adversarial par rapport à un agent unique | OPEN | CAUSAL-HYPOTHESIS |
+| HYP-12 | L'abstention (INCONCLUSIVE) produit un regret inférieur à une action forcée quand la preuve manque (fenêtres à données trouées) | OPEN | STATISTICAL |
+| HYP-13 | Les acteurs bancaires/financiers produisent des comportements corrélés détectables (herding) qui constituent un signal exploitable avant le mouvement de prix | OPEN | CAUSAL-HYPOTHESIS |
+| HYP-14 | Une carte de relations apprise par ML (au lieu de curatée) améliore le pouvoir prédictif mais **dégrade la traçabilité** — mesurer le compromis | OPEN | MODEL-INFERRED |
+| HYP-15 | La propagation bornée (délais, décroissance, itération limitée) surpasse une propagation libre du graphe, y compris avec un graphe enrichi par ML | OPEN | MODEL-INFERRED |
+
+### Détail des hypothèses clés
+
+**HYP-01 — La valeur du graphe.**
+*Soutien* : meilleure traçabilité et moins de conclusions prématurées sur fenêtres pré-enregistrées (mesure : taux de décisions infirmées après coup, à budget égal).
+*Réfutation* : performances identiques au pipeline plat sur ≥ 3 fenêtres, ou coût de structure non justifié.
+*Données* : notre corpus (USDC mars 2023 + fenêtre témoin) + 2 épisodes supplémentaires (UST mai 2022, stETH juin 2022 — datasets publics à vérifier).
+*Coût* : élevé (structure de graphe + requêtes as-of). *C'est l'hypothèse la plus stratégique : elle décide si ORVYREN adopte le DFKG ou une version « plate ».*
+
+**HYP-02 — L'arrêt par valeur de l'information.**
+*Soutien* : `VoI(q) − c ≥ 0` avant chaque recherche ; sur nos fenêtres, égaler ou battre un seuil manuel réglé — condition de réplication du résultat ACL (18/20).
+*Réfutation* : la politique VOI consomme plus de budget pour une qualité égale, ou l'incertitude des probabilités subjectives rend le calcul inexploitable.
+*Données* : les nôtres + protocole R3. *Coût* : moyen (peut être une bibliothèque standard).
+
+**HYP-05 — Le double verrou et sa limite.**
+*Soutien* : 12/12 attaques refusées, dont ≥ 1 refus par la chaîne elle-même (transaction revertée visible sur BaseScan) ; borne de Wilson publiée.
+*Réfutation* : une attaque passe, **ou** l'effet de frontière de période (dépense 2× en limite) est exploitable en pratique.
+*Données* : Base Sepolia + ERC-7715 (contrats déjà vérifiés déployés). *Coût* : moyen ; dépend d'un octroi humain (extension MetaMask ≥ 13.23.0) ou du repli Coinbase.
+
+**HYP-08 — L'observation du monde comme avantage.**
+*Soutien* : sur les épisodes, des variables d'acteurs (flux, communiqués datés, liquidité on-chain) améliorent la précision ou l'avance du diagnostic vs prix seuls.
+*Réfutation* : aucune amélioration hors échantillon, ou l'amélioration disparaît quand on tient compte du coût des données.
+*Données* : communiqués datés (Circle, Fed, FSB), données on-chain (profondeur des pools), séries de flux. *Coût* : élevé.
+
+**HYP-13 — Herding bancaire.**
+*Soutien* : détection d'une corrélation de comportement (horodatages, tailles, séquences) précédant un mouvement — à définir avec précision, car c'est un sujet réglementaire actif (BoE/FCA, avril 2026).
+*Réfutation* : le signal n'est qu'un artefact d'agrégation ou disparaît sous contrôle de volatilité.
+*Coût* : élevé, très expérimental — à traiter comme recherche exploratoire, pas comme argument de vente.
+
+---
+
+## 6. Questions ouvertes posées à la recherche (pour GPT Astra)
+
+1. **DFKG × ML** : quelles méthodes 2025-2026 sont réellement déployables sur un graphe financier temporel *sans* dégrader la traçabilité (TKG embeddings, R-GCN, TGN, GNN explicables) ? Quelles garanties de provenance existe-t-il pour des relations apprises ?
+2. **Types de relation** : la liste MIMIR (`CAUSAL-DOCUMENTED` / `CAUSAL-HYPOTHESIS` / `MODELLED` + lifecycle + portée) est-elle suffisante pour le domaine bancaire/stabilité, ou faut-il d'autres catégories (par ex. `REGULATORY-CONSTRAINT`, `LIQUIDITY-MECHANISM`) ?
+3. **Acteurs bancaires** : quelles données publiques et datées permettent d'observer des acteurs bancaires (dépôts, réserves, expositions) sans accès privilégié ?
+4. **Trading** : comment mesurer proprement le regret d'une décision de réduction d'exposition quand la vérité terrain est « ce qui aurait été le mieux ex post » — et quelles précautions anti-optimisme du benchmark ?
+5. **VOI** : comment estimer une valeur d'information robuste quand les probabilités sont subjectives et les coûts hétérogènes (latence, argent, réputation) ?
+6. **Multi-acteurs** : comment tester HYP-13 (herding) sans se raconter d'histoires (contrôles, placebo, pré-enregistrement) ?
+7. **Abstention** : quelle est la littérature 2025-2026 sur l'abstention comme décision de premier ordre dans les systèmes financiers ?
+
+---
+
+## 7. Priorisation avant le 20 octobre 2026 (15 h 59 UTC)
+
+**P0** — branches + VOI minimal (HYP-02, HYP-03) · moteur de risque réel + fonction de perte gelée et hachée (HYP-09) · journal reconstructible + abstention (HYP-10) · placebo B0 et regret (R3).
+**P1** — mandat on-chain + démonstration « DENY par la chaîne » (HYP-05) · banc d'attaques étendu (12) · registre de prévisions gelées (HYP-06).
+**P2** — extension ML du DFKG (HYP-07, HYP-14, HYP-15) · acteurs bancaires et herding (HYP-08, HYP-13) · rôles séparés (HYP-11) · système continu.
+
+**Ce qu'on affirme au jury (sans mentir)** : nos recherches sont conduites comme une réplication ouverte (sources publiées, critères de réfutation pré-enregistrés, placebo obligatoire) ; nous ne revendiquons aucune supériorité statistique — nous démontrons la **faisabilité de la mesure** et la **traçabilité de bout en bout**.
+
+---
+
+## Annexe — Sources clés
+
+arXiv:2605.00742 (orchestration bayésienne, 01/05/2026) · hal-05480691 (27/01/2026) · ACL 2026 pp. 42879–42896 (arrêt par valeur de l'information) · arXiv:2601.01522 (04/01/2026) · arXiv:2606.00671 (LLM canoniseur, abstention) · arXiv:2603.20449 (solveur en pré-condition) · arXiv:2607.04096 (contrats typés) · arXiv:2602.06948 (sur-confiance, 06/02/2026) · EIP-7715 + MetaMask Advanced Permissions + Relay (04/2026) + contrats vérifiés Base Sepolia (nous, 14/10/2026) · OpenTelemetry v1.42.0 (12/06/2026) + ibl.ai (17a-4, 12/10/2026) · UK Treasury Committee HC 684 (20/01/2026) + BoE/FCA (avril 2026) + FSB (10/06/2026) · Vals AI Finance Agent v1.1 · arXiv:2607.19238 (FinanceComplexQA) · MIMIR : `MIMIR_Technical_Design.md` §0.3, §5, §10, §11.2, §11.4, §11.6, §12.5, §12.7, §13 (V3 gelée).
+
+*139 sources uniques au total dans les trois rapports de recherche `research/R1_*.md`, `R2_*.md`, `R3_*.md`.*
