@@ -18,6 +18,7 @@ demonstration dossier from a fixture stored outside the repository.
 """
 
 import argparse
+import datetime
 import os
 import sys
 
@@ -69,7 +70,25 @@ def main(argv=None):
     parser.add_argument("--serve", action="store_true", help="start the dossier HTTP server after building")
     parser.add_argument("--host", default="127.0.0.1", help="server bind host (default: %(default)s)")
     parser.add_argument("--port", type=int, default=8000, help="server bind port (default: %(default)s)")
+    parser.add_argument(
+        "--generated-at",
+        default=None,
+        metavar="ISO8601",
+        help="freeze the dossier's 'Generated (UTC)' field (e.g. 2026-10-14T14:42:45Z) "
+        "to rebuild a byte-identical dossier from identical inputs",
+    )
     args = parser.parse_args(argv)
+
+    generated_at = None
+    if args.generated_at:
+        try:
+            frozen = datetime.datetime.fromisoformat(
+                args.generated_at.strip().replace("Z", "+00:00"))
+        except ValueError:
+            parser.error("--generated-at expects an ISO-8601 timestamp, got: %s" % args.generated_at)
+        if frozen.tzinfo is None:
+            frozen = frozen.replace(tzinfo=datetime.timezone.utc)
+        generated_at = frozen.astimezone(datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
 
     decision_path = _resolve(args.decision)
     out_dir = _resolve(args.out_dir)
@@ -85,10 +104,12 @@ def main(argv=None):
         label, raw = item.split("=", 1)
         extras[label.strip()] = _resolve(raw.strip())
 
-    result = dossier.build(decision_path, out_dir, extra_paths=extras)
+    result = dossier.build(decision_path, out_dir, extra_paths=extras, generated_at=generated_at)
 
     print(f"ORVYREN-Core v{dossier.ENGINE_VERSION} - audit dossier built")
     print(f"  case          : {result['case']}")
+    if generated_at:
+        print(f"  generated_at  : {generated_at} (frozen - reproducible rebuild)")
     if os.path.exists(decision_path):
         print(f"  decision input: {decision_path}")
     else:

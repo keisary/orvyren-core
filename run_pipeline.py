@@ -46,12 +46,17 @@ STAGES = [
 
 
 def sha256_file(path):
+    """SHA-256 of a file over LF-normalised bytes, or None when absent.
+
+    Line-ending normalisation keeps recorded digests identical on every
+    platform (Windows checkouts rewrite text files with CRLF).
+    """
     if not os.path.exists(path):
         return None
-    digest = hashlib.sha256()
     with open(path, "rb") as fh:
-        for chunk in iter(lambda: fh.read(65536), b""):
-            digest.update(chunk)
+        raw = fh.read()
+    digest = hashlib.sha256()
+    digest.update(raw.replace(b"\r\n", b"\n"))
     return digest.hexdigest()
 
 

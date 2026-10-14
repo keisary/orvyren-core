@@ -29,6 +29,7 @@ from orvyren.execution.guard import (  # noqa: E402
     execution_allowed,
 )
 from orvyren.execution.intents import (  # noqa: E402
+    DEMO_CLOCK,
     EXPECTED_VERDICTS,
     build_demo_intents,
 )
@@ -84,15 +85,21 @@ def verify_on_chain(config, intent, tx_hash):
                 "status": "read-only verification unavailable: {}".format(exc)}
 
 
-def build_report(config, now, tx_hash=None):
-    """Build the evidence report dict (also used directly by the test bench)."""
-    policy = build_policy_config(config, now)
+def build_report(config, now, tx_hash=None, clock=DEMO_CLOCK):
+    """Build the evidence report dict (also used directly by the test bench).
+
+    ``now`` is recorded as the run time (``generated_at``). Verdict content is
+    computed at the fixed ``DEMO_CLOCK`` (see ``intents.py``) so the rule notes
+    and permission window are reproducible across runs; pass ``clock=now`` to
+    evaluate against the wall clock instead.
+    """
+    policy = build_policy_config(config, clock)
     cases = []
     guard_blocks = []
     allowed_intent = None
 
-    for intent in build_demo_intents(now=now, reserve=config.reserve_address):
-        decision = evaluate(intent, policy, now=now)
+    for intent in build_demo_intents(now=clock, reserve=config.reserve_address):
+        decision = evaluate(intent, policy, now=clock)
         instruction = None
         if execution_allowed(decision):
             instruction = build_instruction(intent)

@@ -174,13 +174,20 @@ def load_observations(csv_path):
 
 
 def corpus_sha256(csv_path):
-    """SHA-256 of the corpus file, for the audit trail (provenance of inputs)."""
+    """SHA-256 of the corpus file, for the audit trail (provenance of inputs).
+
+    The digest is computed over the LF-normalised bytes (CRLF collapsed to LF)
+    so that the same logical corpus hashes identically on every platform: a
+    Windows checkout with ``core.autocrlf`` writes CRLF to disk, and a raw
+    bytes digest would then disagree with the repository copy. A reviewer on
+    any platform can therefore reproduce the recorded digest with
+    ``sha256sum`` after LF-normalising the file (which ``.gitattributes``
+    already enforces for text files in this repository).
+    """
     resolved = resolve_corpus_path(csv_path)
-    digest = hashlib.sha256()
     with open(resolved, "rb") as handle:
-        for chunk in iter(lambda: handle.read(65536), b""):
-            digest.update(chunk)
-    return digest.hexdigest()
+        raw = handle.read()
+    return hashlib.sha256(raw.replace(b"\r\n", b"\n")).hexdigest()
 
 
 def parse_window_bound(value):
@@ -511,19 +518,27 @@ def _supply_changes(supply_series):
     return changes
 
 
-def _simultaneous_alert_hours(venue_series):
-    """Hours where at least two independent venues are simultaneously > 1% below peg."""
+def _simultaneous_alert_hours(venue_series, min_venues=2):
+    """Hours where at least ``min_venues`` venues are simultaneously > 1% below peg.
+
+    Alerts are counted per hour instead of intersecting the alert sets: with
+    more than two venues present, an intersection would silently require
+    *every* venue to alert, while the pre-registered criterion is "at least
+    two independent venues". With exactly two venues both behaviours agree.
+    """
     alert_sets = {
         venue: {o.ts for o in _alert_observations(series)}
         for venue, series in venue_series.items()
         if series
     }
-    if len(alert_sets) < 2:
+    if len(alert_sets) < min_venues:
         return [], alert_sets
-    shared = None
+    per_hour = {}
     for hours in alert_sets.values():
-        shared = set(hours) if shared is None else shared.intersection(hours)
-    return sorted(shared or []), alert_sets
+        for hour in hours:
+            per_hour[hour] = per_hour.get(hour, 0) + 1
+    shared = sorted(hour for hour, count in per_hour.items() if count >= min_venues)
+    return shared, alert_sets
 
 
 def _classify_h2(venue_series, supply_series, supply_cross_series):
