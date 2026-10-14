@@ -1,0 +1,194 @@
+{
+ "ftx_timeline": [
+  {
+   "url": "https://www.investopedia.com/what-went-wrong-with-ftx-6828447",
+   "title": "FTX Crypto Exchange Collapse: Causes, Consequences, and Lessons",
+   "desc": "## Timeline of FTX’s Rapid Collapse\n### FTX Collapse Timeline—2022 to 2026\n**2022**\n\n- **Nov. 2**: CoinDesk reports that the balance sheet for FTX’s sister trading firm, Alameda Research, is comprised mostly of FTX’s native exchange token, FTT.\n- **Nov. 6**: Rival exchange Binance sells all FTT tokens. Customers begin withdrawing funds from FTX en masse.\n\n## The Bottom Line\n1. X. “ [@cz_binance, 10:47 a.m. Nov. 6, 2022](https://x.com/cz_binance/status/1589283421704290306).”\n2. CoinDesk. “ [Divisions in Sam Bankman-Fried’s Crypto Empire Blur on His Trading Titan Alameda’s Balance Sheet](https://www.coindesk.com/business/2022/11/02/divisions-in-sam-bankman-frieds-crypto-empire-blur-on-his-trad"
+  },
+  {
+   "url": "https://www.ebsco.com/research-starters/law/ftx-bankruptcy/",
+   "title": "FTX bankruptcy | Law | Research Starters - EBSCO",
+   "desc": "# FTX bankruptcy\nFTX bankruptcy refers to the fall of the FTX cryptocurrency exchange, founded by Sam Bankman-Fried, which began in November 2022. This revelation led to a significant drop in FTT's value and triggered a search for new investments, which ultimately failed as a deal with competitor Binance fell through. On November 11, 2022, both FTX and Alameda Research filed for bankruptcy, and Bankman-Fried resigned as CEO.\n\n3 of 4\n\n4 of 4\n\n## Full article\nThe _FTX bankruptcy_ refers to the collapse of the FTX [cryptocurrency](https://www.ebsco.com/research-starters/computer-science/cryptocurrency) exchange, owned by Sam Bankman-Fried, beginning in November 2022. On November 2, 2022, CoinDe"
+  },
+  {
+   "url": "https://en.wikipedia.org/wiki/Bankruptcy_of_FTX",
+   "title": "Bankruptcy of FTX - Wikipedia",
+   "desc": "# Bankruptcy of FTX\n2022 cryptocurrency exchange collapse\n\nThe **bankruptcy of [FTX](https://en.wikipedia.org/wiki/FTX)**, a [Bahamas](https://en.wikipedia.org/wiki/The_Bahamas)-based [cryptocurrency exchange](https://en.wikipedia.org/wiki/Cryptocurrency_exchange), began in November 2022. The collapse of FTX, caused by a [spike in customer withdrawals](https://en.wikipedia.org/wiki/Bank_run) that exposed an $8 billion hole in FTX's accounts,[[1]](https://en.wikipedia.org/wiki/Bankruptcy_of_FTX#cite_note-1) served as the impetus for its bankruptcy.\n\nOn 2 November 2022, _[CoinDesk](https://en.wikipedia.org/wiki/CoinDesk)_ published an article stating that [Alameda Research](https://en.wikipedi"
+  },
+  {
+   "url": "https://tokentax.co/blog/ftx-collapse",
+   "title": "The FTX Collapse: A Complete Guide - TokenTax",
+   "desc": "# The FTX Collapse: A Complete Guide\n- FTX operated as one of the cryptocurrency industry's dominant trading platforms before its sudden bankruptcy filing in November 2022.\n\n### Why trust our crypto tax experts\nFTX, once the world's third-largest cryptocurrency exchange with $32 billion in valuation, collapsed in November 2022 due to systematic misappropriation of customer funds.\n\nWhen Binance announced plans to liquidate over half a billion (USD) in FTT tokens on November 6, 2022, it triggered $5 billion in withdrawal requests within 72 hours, exposing FTX's $8 billion shortfall.\n\n**When did FTX collapse (2022 timeline)**\n\nNovember 2, 2022: CoinDesk investigation exposes Alameda Research's "
+  },
+  {
+   "url": "https://www.reuters.com/markets/currencies/rise-fall-crypto-exchange-ftx-2022-11-10/",
+   "title": "Rise and fall of crypto exchange FTX - Reuters",
+   "desc": "Nov 17 (Reuters) - Crypto exchange FTX filed for Chapter 11 bankruptcy protection in the United States on Friday following its [spectacular collapse](https://www.reuters.com/technology/ftxs-bankman-fried-begged-rescue-even-he-revealed-huge-holes-firms-books-2022-11-16/) that has sent shivers through the industry.\n\n2022:\n\nNov. 2 - Crypto news website CoinDesk reported a leaked balance sheet that showed Alameda Research, Bankman-Fried's crypto trading firm, was heavily dependent on FTX's native token, FTT.\n\nNov. 6 - Binance CEO Changpeng Zhao said his firm would liquidate its holdings of FTT due to unspecified \" [recent revelations](https://www.reuters.com/technology/ftxs-founder-dismisses-bal"
+  },
+  {
+   "url": "https://www.steptoe.com/en/news-publications/blockchain-blog/ftx-an-explainer-on-what-happened-and-whats-next.html",
+   "title": "FTX: An Explainer on What Happened and What's Next? - Steptoe",
+   "desc": "The Collapse. On November 6, 2022, CZ announced on Twitter that Binance planned to liquidate its remaining FTT, citing “post-exit risk ..."
+  }
+ ],
+ "brier_decomposition": [
+  {
+   "url": "https://metricgate.com/blogs/brier-score-explained/",
+   "title": "The Brier Score for Probability Forecasts | MetricGate",
+   "desc": "# The Brier Score for Probability Forecasts\n## Brier Score vs Accuracy\nlabel matched. A forecaster that says 0.51 and one that says 0.99 are treated identically when both are correct, even though one is far more useful. The Brier score keeps the full resolution of the probability, which is why probabilistic models should be graded with it.\n\n## The Murphy Decomposition\nThe most illuminating property of the Brier score is that it splits cleanly into three interpretable pieces. base rate. Murphy's identity is:\n\nBS=1N∑knk(pˉk−oˉk)2⏟reliability−1N∑knk(oˉk−oˉ)2⏟resolution+oˉ(1−oˉ)⏟uncertaintyBS = \\underbrace{\\frac{1}{N}\\sum_k n_k (\\bar{p}_k - \\bar{o}_k)^2}_{\\text{reliability}} - \\underbrace{\\frac{"
+  },
+  {
+   "url": "https://en.wikipedia.org/wiki/Brier_score",
+   "title": "Brier score - Wikipedia",
+   "desc": "From Wikipedia, the free encyclopedia\n\nThe **Brier score** is a [strictly proper scoring rule](https://en.wikipedia.org/wiki/Scoring_rule#StrictlyProperScoringRules) that measures the accuracy of [probabilistic predictions](https://en.wikipedia.org/wiki/Probabilistic_classification).\n\nIt was proposed by [Glenn W. Brier](https://en.wikipedia.org/wiki/Glenn_W._Brier) in 1950. [[1]](https://en.wikipedia.org/wiki/Brier_score#cite_note-Brier-1)\n\nMore precisely, across all items i∈1... N{\\displaystyle i\\in {1... N}}![{\\displaystyle i\\in {1...N}}](https://wikimedia.org/api/rest_v1/media/math/render/svg/9571a912a77646bcef8170a7640ad11e2d640b95) in a set of _N_ predictions, the Brier score measures t"
+  },
+  {
+   "url": "https://ore.exeter.ac.uk/articles/journal_contribution/Simplifying_and_generalising_Murphy_s_Brier_score_decomposition/29748851/1/files/56771708.pdf",
+   "title": "[PDF] Simplifying and generalising Murphy's Brier score decomposition",
+   "desc": "The decomposition of the Brier score into Reliability, Resolution and Uncertainty has of the familiar Brier score decomposition is presented. The Reliability and Resolution The result suggests A new decomposition of the continuous ranked probability score\n\n(1)\n\nKey Words: forecast verification; reliability; resolution; uncertainty; recalibration; decomposition; scoring rules\n\nReceived . . .\n\nto their verifying observations y1;:::;yN. is yt= 1 if an event occured at time t, and yt= 0 otherwise. The empirical average Brier score (also simply referred to as the “Brier score”) is given by the squared difference between forecasts and\n\n\\cdot\\ p_{1},\\ldots,p_{N}\n\ny_{1},\\ldots,y_{N}\n\np_{t}\n\ny_{t}=1\n"
+  },
+  {
+   "url": "https://stats.stackexchange.com/questions/631333/unpack-the-notation-used-in-wikipedias-decomposition-of-the-brier-score",
+   "title": "regression - Unpack the notation used in Wikipedia's decomposition of the ...",
+   "desc": "The reliability (REL) component is the difference in performance (measured via Brier score) between the forecast and a re-calibrated version of ...How does the Brier Score break down to (Reliability - Cross ValidatedAs Brier Score = MSE, does MSE in a regression have a calibration ...More results from stats.stackexchange.com"
+  },
+  {
+   "url": "https://medium.com/@eligoz/some-notes-on-probabilistic-classifiers-iii-brier-score-decomposition-eee5f847d87f",
+   "title": "Some Notes on Probabilistic Classifiers III: Brier Score ... - Medium",
+   "desc": "# Some Notes on Probabilistic Classifiers III: Brier Score Decomposition\nFollow\n\n15 min read\n\n·\n\nOct 5, 2024\n\n53\n\nShare\n\nHowever as we have already mentioned, just as good discriminative ability doesn’t imply calibration, good calibration does not necessarily imply discriminative ability.\n\nEach _yᵢ_ can be regarded as a realization of a Bernoulli random variable\n\nThe Brier score can be decomposed into 5 additive components: Calibration(CAL), Uncertainty(UNC), Resolution (RES), Within-bin-variance(WBV), Within-bin-covariance (WBCV)  \n  \nLet’s provide more intuition behind each one of the terms . Of course, as we have already noted before, good calibration does not necessarily imply useful pre"
+  },
+  {
+   "url": "https://rmets.onlinelibrary.wiley.com/doi/10.1002/qj.4478",
+   "title": "A conditional decomposition of proper scores: quantifying the sources of ...",
+   "desc": "The decomposition of scores into uncertainty, resolution, and reliability has been studied in most detail using the Brier score (Brier, 1950; ..."
+  }
+ ],
+ "agentbench_paper": [
+  {
+   "url": "https://arxiv.org/html/2308.03688v3",
+   "title": "AgentBench: Evaluating LLMs as Agents - arXiv",
+   "desc": "# AgentBench: Evaluating LLMs as Agents\n### 1 Introduction\nThis has spurred the development of various LLM-based applications for autonomous goal completion (like AutoGPT ( [Richards, 2023](https://arxiv.org/html/2308.03688v3#bib.bib65)), BabyAGI ( [Nakajima, 2023](https://arxiv.org/html/2308.03688v3#bib.bib54)), AgentGPT ( [age, 2023](https://arxiv.org/html/2308.03688v3#bib.bib1))) as well as LLM agents situated in social and game contexts ( [Park et al., 2023](https://arxiv.org/html/2308.03688v3#bib.bib61); [Wang et al., 2023b](https://arxiv.org/html/2308.03688v3#bib.bib88); [Zhu et al., 2023](https://arxiv.org/html/2308.03688v3#bib.bib104)), sparking substantial public interest and discus"
+  },
+  {
+   "url": "https://github.com/THUDM/AgentBench",
+   "title": "GitHub - THUDM/AgentBench: A Comprehensive Benchmark to ...",
+   "desc": "# AgentBench: Evaluating LLMs as Agents\n**AgentBench** is the first benchmark designed to evaluate **LLM-as-Agent** across a diverse spectrum of different\n\n## Next Steps\n```\nlonginyu/agentbench-ltp\nlonginyu/agentbench-webshop\nlonginyu/agentbench-mind2web\nlonginyu/agentbench-card_game\nlonginyu/agentbench-alfworld\n```\n\n## Citation\n```\n@article{liu2023agentbench,\n  title   = {AgentBench: Evaluating LLMs as Agents},\n  author  = {Xiao Liu and Hao Yu and Hanchen Zhang and Yifan Xu and Xuanyu Lei and Hanyu Lai and Yu Gu and Hangliang Ding and Kaiwen Men and Kejuan Yang and Shudan Zhang and Xiang Deng and Aohan Zeng and Zhengxiao Du and Chenhui Zhang and Sheng Shen and Tianjun Zhang and Yu Su and Hu"
+  },
+  {
+   "url": "https://ui.adsabs.harvard.edu/abs/2023arXiv230803688L/abstract",
+   "title": "AgentBench: Evaluating LLMs as Agents - ADS",
+   "desc": "... AgentBench, a multi-dimensional benchmark that consists of 8 distinct environments to assess LLM-as-Agent's reasoning and decision-making abilities. Our ..."
+  },
+  {
+   "url": "https://www.researchgate.net/publication/372962217_AgentBench_Evaluating_LLMs_as_Agents",
+   "title": "(PDF) AgentBench: Evaluating LLMs as Agents - ResearchGate",
+   "desc": "# AgentBench: Evaluating LLMs as Agents\nDOI: [10.48550/arXiv.2308.03688](https://doi.org/10.48550/arXiv.2308.03688)"
+  },
+  {
+   "url": "https://www.giskard.ai/glossary/agentbench-agent-benchmark",
+   "title": "AgentBench | Multi-Environment Agent Evaluation - Giskard AI",
+   "desc": "# AgentBench Agent Benchmark\n## Benchmark agents in production with Giskard\n**Further reading:** [arXiv: AgentBench paper](https://arxiv.org/abs/2308.03688)."
+  },
+  {
+   "url": "https://huggingface.co/papers/2308.03688",
+   "title": "Paper page - AgentBench: Evaluating LLMs as Agents - Hugging Face",
+   "desc": "# AgentBench: Evaluating LLMs as Agents\n## Abstract\n[View arXiv page](https://arxiv.org/abs/2308.03688) [View PDF](https://arxiv.org/pdf/2308.03688) [GitHub  3.73kauto](https://github.com/thudm/agentbench) [Add to collection](https://huggingface.co/login?next=%2Fpapers%2F2308.03688)"
+  }
+ ],
+ "regret_theory": [
+  {
+   "url": "https://www.jstor.org/stable/170353",
+   "title": "Regret in Decision Making under Uncertainty - Jstor",
+   "desc": "Bell Future research will examine the role of regret in situations in which the joint probability distribution of alternative consequences is unspeci- fied and ..."
+  },
+  {
+   "url": "https://econpapers.repec.org/RePEc:inm:oropre:v:30:y:1982:i:5:p:961-981",
+   "title": "Regret in Decision Making under Uncertainty - EconPapers",
+   "desc": "This paper explores the possibility that expected utility theory appears to fail because the single outcome descriptor—money—is not sufficient."
+  },
+  {
+   "url": "https://pubsonline.informs.org/doi/10.1287/opre.30.5.961",
+   "title": "Regret in Decision Making under Uncertainty | Operations Research",
+   "desc": "This paper explores the possibility that expected utility theory appears to fail because the single outcome descriptor—money—is not sufficient. After making a ..."
+  },
+  {
+   "url": "https://dl.acm.org/doi/10.1287/opre.30.5.961",
+   "title": "Regret in Decision Making under Uncertainty - ACM Digital Library",
+   "desc": "Evidence exists that people do not always make decisions involving uncertain monetary rewards as if they were maximizing expected utility of final assets."
+  },
+  {
+   "url": "https://www.scirp.org/reference/referencespapers?referenceid=1394361",
+   "title": "Bell, D.E. (1982) Regret in Decision Making under Uncertainty ...",
+   "desc": "ABSTRACT: Previous research has shown that personal qualities and shopping situations affect choice of consumer impulse buying behavior during sales promotion."
+  },
+  {
+   "url": "https://philpapers.org/rec/BELRID",
+   "title": "David Bell, Regret in decision making under uncertainty - PhilPapers",
+   "desc": "Bell, David (1982). Regret in decision making under uncertainty. Operations Research 30 (5):961–81. Papers currently archived: 144,397. Regret Theory and ..."
+  }
+ ],
+ "conformal_tutorial": [
+  {
+   "url": "https://arxiv.org/abs/2107.07511",
+   "title": "A Gentle Introduction to Conformal Prediction and Distribution-Free ...",
+   "desc": "# Title:A Gentle Introduction to Conformal Prediction and Distribution-Free Uncertainty Quantification\nAuthors: [Anastasios N. Angelopoulos](https://arxiv.org/search/cs?searchtype=author&query=Angelopoulos,+A+N), [Stephen Bates](https://arxiv.org/search/cs?searchtype=author&query=Bates,+S)\n\nAngelopoulos and 1 other authors\n\nConformal prediction is a user-friendly paradigm for creating statistically rigorous uncertainty sets/intervals for the predictions of such models. Critically, the sets are valid in a distribution-free sense: they possess explicit, non-asymptotic guarantees even without distributional assumptions or model assumptions. One can use conformal prediction with any pre-trained "
+  },
+  {
+   "url": "https://github.com/aangelopoulos/conformal-prediction",
+   "title": "Lightweight, useful implementation of conformal prediction on real data.",
+   "desc": "This repository is meant to accompany our paper, the Gentle Introduction to Conformal Prediction and Distribution-Free Uncertainty Quantification."
+  },
+  {
+   "url": "https://www.semanticscholar.org/paper/A-Gentle-Introduction-to-Conformal-Prediction-and-Angelopoulos-Bates/c3ea8eb80bc8ca0b21efa273b9e4a9fd059c65be",
+   "title": "A Gentle Introduction to Conformal Prediction and Distribution-Free ...",
+   "desc": "This hands-on introduction is aimed to provide the reader a working understanding of conformal prediction and related distribution-free uncertainty ..."
+  },
+  {
+   "url": "https://bactra.org/notebooks/conformal-prediction.html",
+   "title": "Conformal Prediction",
+   "desc": "## Conformal Prediction\n- Anastasios N. Angelopoulos, Stephen Bates, \"A Gentle Introduction to Conformal Prediction and Distribution-Free Uncertainty Quantification\",\n[arxiv:2107.07511](http://arxiv.org/abs/2107.07511) =? \"Conformal Prediction: A Gentle Introduction\", [Foundations and Trends in Machine Learning **16** (2023): 494--591](https://doi.org/10.1561/2200000101)"
+  },
+  {
+   "url": "https://dl.acm.org/doi/10.1561/2200000101",
+   "title": "Conformal Prediction: : A Gentle Introduction - ACM Digital Library",
+   "desc": "## Abstract\nCritically, the sets are valid in a distribution-free sense: they possess explicit, non-asymptotic guarantees even without distributional assumptions or model assumptions.\n\nThis hands-on introduction is aimed to provide the reader a working understanding of conformal prediction and related distribution-free uncertainty quantification techniques with one self-contained document."
+  },
+  {
+   "url": "https://conformalpredictionintro.github.io/assets/files/cptuto.pdf",
+   "title": "[PDF] Distribution-Free Uncertainty Quantification A short introduction ...",
+   "desc": "Conformal prediction: A gentle introduction. Foundations and Trends® in ... Conformal inference for online prediction with arbitrary distribution shifts."
+  }
+ ],
+ "crisis_dataset": [
+  {
+   "url": "https://www.federalreserve.gov/econres/notes/feds-notes/stablecoins-in-2025-developments-and-financial-stability-implications-20260408.html",
+   "title": "Stablecoins in 2025: Developments and Financial Stability ...",
+   "desc": "by F Carapella · 2026 · Cited by 7 — During 2025, stablecoins have grown by about 50 percent in terms of market capitalization, with transaction volume and use in DeFi protocols ..."
+  },
+  {
+   "url": "https://www.imf.org/en/publications/wp/issues/2025/07/11/decrypting-crypto-how-to-estimate-international-stablecoin-flows-568260",
+   "title": "Decrypting Crypto: How to Estimate ...",
+   "desc": "This paper presents a novel methodology—leveraging a combination of AI and machine learning to estimate the geographic distribution of ..."
+  },
+  {
+   "url": "https://papers.ssrn.com/sol3/papers.cfm?abstract_id=6182238",
+   "title": "Predicting and Classifying Stablecoin De-Pegs Through ...",
+   "desc": "This study investigates whether de-peg events can be predicted and/or classified using trade volume and Google Trends search data."
+  },
+  {
+   "url": "https://www.spark.money/tools/stablecoin-depegging-history",
+   "title": "Stablecoin Depegging History: Every Major Depeg Analyzed",
+   "desc": "Timeline and analysis of major stablecoin depegging events: UST collapse, USDC SVB crisis, USDT wobbles, DAI Black Thursday, and lessons learned."
+  },
+  {
+   "url": "https://www.spglobal.com/en/research-insights/special-reports/stablecoins-a-deep-dive-into-valuation-and-depegging",
+   "title": "Stablecoins: A Deep Dive into Valuation and Depegging",
+   "desc": "# Stablecoins: A Deep Dive into Valuation and Depegging\nFor the five stablecoins studied, depeg events where the value falls below $1 appear to be more frequent and to last longer than those where their value increases to above $1.\n\n#### What Are Stablecoins?\n##### Stablecoin Depegging Event: The Weekend of March 10–13, 2023\n**Figure 1**\n\nFor historical perspective, we then looked at the market capitalization over a 12-month period.\n\n**Figure 2**\n\nJune 2022\n\nJune 2023\n\n**Figure 3**\n\n**Figure 4**\n\n#### How Often, by How Much and for How Long Do Stablecoins Depeg?\n– We look at depeg events above and below $1 in similar ways."
+  },
+  {
+   "url": "https://www.trmlabs.com/reports-and-whitepapers/2025-crypto-adoption-and-stablecoin-usage-report",
+   "title": "2025 Crypto Adoption and Stablecoin Usage Report",
+   "desc": "TRM analysis shows that stablecoins accounted for 30% of crypto transaction volume between January and July 2025. stablecoins have reached ..."
+  }
+ ]
+}
