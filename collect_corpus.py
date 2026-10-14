@@ -204,7 +204,7 @@ def collect_binance(manifest):
     manifest.append({
         "source": "Binance", "endpoint": "api.binance.com/api/v3/klines", "window": "main",
         "records": len(rows), "file": "corpus/raw/binance/usdcusdt_klines.json", "from_cache": reused,
-        "limits": "Marché USDC/USDT : mesure une paire contre un autre stablecoin, donc une dislocation relative, pas absolue.",
+        "limits": "Marché USDC/USDT : dislocation relative à un autre stablecoin, pas absolue. Paire ouverte par Binance le 11/03/2023 14:00 UTC (fin de l'auto-conversion USDC→BUSD) : aucune observation Binance avant le pic de crise.",
     })
     return rows
 
