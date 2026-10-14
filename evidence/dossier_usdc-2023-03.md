@@ -6,7 +6,7 @@
 | --- | --- |
 | Case | usdc-2023-03 |
 | Window | 2023-03-09T00:00:00+00:00 → 2023-03-15T00:00:00+00:00 |
-| Generated (UTC) | 2026-10-14T14:42:04Z |
+| Generated (UTC) | 2026-10-14T14:42:45Z |
 | Engine | ORVYREN-Core 0.1 |
 
 ## Decision
@@ -121,7 +121,7 @@ Control signals (0):
           "rule": "R5-cumulative"
         },
         {
-          "note": "2026-10-15T14:38:56.971422+00:00",
+          "note": "2026-10-15T14:42:44.918808+00:00",
           "result": "OK",
           "rule": "R6-permission"
         },
@@ -175,7 +175,7 @@ Control signals (0):
           "rule": "R5-cumulative"
         },
         {
-          "note": "2026-10-15T14:38:56.971422+00:00",
+          "note": "2026-10-15T14:42:44.918808+00:00",
           "result": "OK",
           "rule": "R6-permission"
         },
@@ -223,7 +223,7 @@ Control signals (0):
           "rule": "R5-cumulative"
         },
         {
-          "note": "2026-10-15T14:38:56.971422+00:00",
+          "note": "2026-10-15T14:42:44.918808+00:00",
           "result": "OK",
           "rule": "R6-permission"
         },
@@ -254,7 +254,7 @@ Control signals (0):
     "timeout_seconds": 30,
     "treasury_address": "0x2222222222222222222222222222222222222222"
   },
-  "generated_at": "2026-10-14T14:38:56+00:00",
+  "generated_at": "2026-10-14T14:42:44+00:00",
   "guard_blocks": [
     "I2: execution blocked: policy verdict 'DENY' — the instruction is refused (reason codes: AMOUNT_ABOVE_TX_CAP, AMOUNT_ABOVE_PERIOD_CAP)",
     "I3: execution blocked: policy verdict 'REQUIRE_APPROVAL' — a human approval is required before this instruction may be prepared (reason codes: ACTION_NEEDS_HUMAN_APPROVAL)"
@@ -467,7 +467,7 @@ Control signals (0):
       ]
     }
   ],
-  "generated_at": "2026-10-14T14:38:55.101374+00:00",
+  "generated_at": "2026-10-14T14:42:43.677973+00:00",
   "graph": {
     "claims_inserted": 4,
     "counts": {
@@ -601,12 +601,12 @@ Control signals (0):
 | --- | --- | --- |
 | decision | D:\orvyren_core\evidence\decision_usdc-2023-03.json | `346dd47c21a2ddcac0a13ed0a6ac382aac750ffe85f03915fa6003de29bbab47` |
 | baseline_report | D:\orvyren_core\evidence\baseline_report.json | `fa68d11f36232719f5400b5aab1d1cfab19b7808aaeb3e01297bd7bf4f868ae8` |
-| policy_execution_demo | D:\orvyren_core\evidence\policy_execution_demo.json | `8fccbd734c876e603308aaba87083469647d43cced49dbe33954ff31c2f81da8` |
-| quality_report | D:\orvyren_core\evidence\quality_report.json | `1650811eff55f51e9e68ffb3bc81839014e0d4e1bc15d6502035c00b3067fc5f` |
-| dossier (self, md) | D:\orvyren_core\evidence\dossier_usdc-2023-03.md | `a4194678afd1438fa5f92816af8c5b4e85a7626d12b2e7cf838c99b15e86763d` |
+| policy_execution_demo | D:\orvyren_core\evidence\policy_execution_demo.json | `f3ec1ae4c4afc967bb121e7b51756754202042436f94be001bf554c641c9c69d` |
+| quality_report | D:\orvyren_core\evidence\quality_report.json | `281ca37eb938fa3de3ed85c91e25d1ca9f8927d11ece8cb4295dff9387b90e29` |
+| dossier (self, md) | D:\orvyren_core\evidence\dossier_usdc-2023-03.md | `9d065f6fee581768d9af2cab7dd9ca4fe1ac9749220a887e5a4c6add46a81916` |
 
 Self-hash rule: the `dossier (self, md)` row is the SHA-256 of this Markdown file computed with its own 64-hex-character self-hash field zeroed (64 `0` characters). It is reproducible with any SHA-256 tool: replace that field with zeros and hash the file. With identical inputs and build time this dossier is byte-identical.
 
 ---
 
-produced by ORVYREN-Core v0.1 — deterministic engine, no human edit · ORVYREN-Core v0.1 · generated 2026-10-14T14:42:04Z (UTC)
+produced by ORVYREN-Core v0.1 — deterministic engine, no human edit · ORVYREN-Core v0.1 · generated 2026-10-14T14:42:45Z (UTC)
