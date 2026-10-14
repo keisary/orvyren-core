@@ -14,18 +14,34 @@ The design question this repository answers: *when three sources disagree about 
 Python 3.11, standard library only. From the repository root:
 
 ```bash
-python -m unittest discover -s tests      # 116 tests (2 skipped: live-RPC, opt-in)
+python -m unittest discover -s tests      # 147 tests (2 skipped: live-RPC, opt-in)
 python run_pipeline.py                    # full pipeline end-to-end + evidence summary
 python run_audit.py --serve               # one-page decision dossier on http://127.0.0.1:8000
 ```
 
 Replay is offline by design: the corpus is archived under `corpus/`, and every stage reads the archive. Network is needed only to re-collect the corpus (`python collect_corpus.py --force`) or to verify a real on-chain receipt.
 
+### Reproducibility (what is byte-stable, what is not)
+
+- `evidence/decision_usdc-2023-03.json` and `evidence/baseline_report.json`
+  replay **byte-identically** on the same corpus (no wall-clock inside them);
+- `quality_report.json`, `policy_execution_demo.json` and the dossiers differ
+  between runs by their `generated_at` run marker **only** — the demo verdicts
+  themselves run on a frozen demo clock (`intents.DEMO_CLOCK`) and never change;
+- the dossier rebuilds **byte-identically** from identical inputs with
+  `python run_audit.py --generated-at <the value printed in the dossier>`; its
+  self-hash is recomputable with any SHA-256 tool (replace the self-hash field
+  with 64 zeros and hash the file);
+- recorded digests are computed over **LF-normalised text** and `.gitattributes`
+  keeps text checkouts LF on every platform, so
+  `sha256sum corpus/usdc_observations.csv` matches the digest recorded in the
+  decision JSON — on Windows and on Linux alike.
+
 ## What is implemented today (executed, not described)
 
 | Piece | State | Proof |
 |---|---|---|
-| **Corpus collector** — multi-source, timestamped, with a declared-limits manifest | Implemented, ran | `collect_corpus.py` → `corpus/` (1 375 observations, 5 series, raw payloads + `manifest.json`) |
+| **Corpus collector** — multi-source, timestamped, with a declared-limits manifest and a post-collection window contract | Implemented, ran | `collect_corpus.py` → `corpus/` (520 observations — window-bounded archive, 5 series, raw payloads + `manifest.json`) |
 | **Data quality + provenance graph** — normalization, coverage, `data_gate`, append-only SQLite store with 12 triggers refusing UPDATE/DELETE | Implemented, tested | `run_quality.py` → `evidence/quality_report.json`, `evidence/graph.sqlite` (provenance: 4/4 claims OK) |
 | **Decision engine** — pre-registered hypotheses H1/H2/H3 with falsification criteria, a frozen decision rule, and an INCONCLUSIVE path | Implemented, tested | `run_decision.py` → `evidence/decision_usdc-2023-03.json` (H1 REFUTED, H2 SUPPORTED, H3 REFUTED → ACTION_RECOMMENDED) |
 | **Baseline A0** — the simple rule the project must beat, measured on crisis **and** control windows | Implemented, tested | `evidence/baseline_report.json` (2 signals in crisis, 0 in control → 0 false signals) |
@@ -84,4 +100,4 @@ Multi-chain, dedicated graph database, parallel multi-agent cluster, on-chain at
 
 ## Required submission pieces (competition)
 
-Technical documentation (EN) · presentation deck (≤ 10 min) · **demo video (≤ 5 min)** · source code with README, deployment instructions and tests · security self-assessment (permission tiers × known risks) · execution evidence (real on-chain transaction hash + receipt, plus a documented refusal).
+Technical documentation (EN) · presentation deck (≤ 10 min) · **demo video (≤ 5 min)** · source code with README, deployment instructions and tests · security self-assessment (permission tiers × known risks — see `docs/SECURITY_SELF_ASSESSMENT.md`) · execution evidence (real on-chain transaction hash + receipt, plus a documented refusal).

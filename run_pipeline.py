@@ -46,12 +46,17 @@ STAGES = [
 
 
 def sha256_file(path):
+    """SHA-256 of a file over LF-normalised bytes, or None when absent.
+
+    Line-ending normalisation keeps recorded digests identical on every
+    platform (Windows checkouts rewrite text files with CRLF).
+    """
     if not os.path.exists(path):
         return None
-    digest = hashlib.sha256()
     with open(path, "rb") as fh:
-        for chunk in iter(lambda: fh.read(65536), b""):
-            digest.update(chunk)
+        raw = fh.read()
+    digest = hashlib.sha256()
+    digest.update(raw.replace(b"\r\n", b"\n"))
     return digest.hexdigest()
 
 
@@ -196,7 +201,7 @@ def main():
     stages_run = []
     if not args.summary:
         wanted = [s for s in STAGES if args.stage is None or s[0] == args.stage]
-        for name, script, extra in wanted:
+        for index, (name, script, extra) in enumerate(wanted):
             print(f"--- stage: {name} ({script}) ---")
             result = run_stage(name, script, extra)
             stages_run.append(result)
@@ -206,6 +211,20 @@ def main():
                 print(f"    | {line}")
             for line in result.get("stderr_tail", [])[-3:]:
                 print(f"    ! {line}")
+            if result["status"] != "OK":
+                # A failed stage poisons the artefacts built from its output:
+                # dependent stages are skipped, never run on stale inputs
+                # (Astra review F05: policy/audit used to run after a
+                # quality+decision failure).
+                for skipped_name, skipped_script, _ in wanted[index + 1:]:
+                    stages_run.append({
+                        "stage": skipped_name,
+                        "script": skipped_script,
+                        "status": "SKIPPED (upstream failure)",
+                    })
+                    print(f"--- stage: {skipped_name} ({skipped_script}) ---")
+                    print("    SKIPPED (upstream failure)")
+                break
 
     summary = summarise()
     if stages_run:

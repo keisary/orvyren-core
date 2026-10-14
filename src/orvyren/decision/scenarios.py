@@ -174,13 +174,20 @@ def load_observations(csv_path):
 
 
 def corpus_sha256(csv_path):
-    """SHA-256 of the corpus file, for the audit trail (provenance of inputs)."""
+    """SHA-256 of the corpus file, for the audit trail (provenance of inputs).
+
+    The digest is computed over the LF-normalised bytes (CRLF collapsed to LF)
+    so that the same logical corpus hashes identically on every platform: a
+    Windows checkout with ``core.autocrlf`` writes CRLF to disk, and a raw
+    bytes digest would then disagree with the repository copy. A reviewer on
+    any platform can therefore reproduce the recorded digest with
+    ``sha256sum`` after LF-normalising the file (which ``.gitattributes``
+    already enforces for text files in this repository).
+    """
     resolved = resolve_corpus_path(csv_path)
-    digest = hashlib.sha256()
     with open(resolved, "rb") as handle:
-        for chunk in iter(lambda: handle.read(65536), b""):
-            digest.update(chunk)
-    return digest.hexdigest()
+        raw = handle.read()
+    return hashlib.sha256(raw.replace(b"\r\n", b"\n")).hexdigest()
 
 
 def parse_window_bound(value):
@@ -355,6 +362,11 @@ def _classify_h1(venue_series, aggregator_series):
     for venue in INDEPENDENT_VENUES:
         if not venue_series.get(venue):
             missing.append(f"{venue} hourly price series (independent venue)")
+    if not aggregator_series:
+        missing.append(
+            f"{AGGREGATOR_VENUE} hourly price series (aggregator) required for the "
+            "H1 aggregate-tolerance criterion"
+        )
 
     # --- support side ------------------------------------------------------
     venue_profile = {}
@@ -511,19 +523,27 @@ def _supply_changes(supply_series):
     return changes
 
 
-def _simultaneous_alert_hours(venue_series):
-    """Hours where at least two independent venues are simultaneously > 1% below peg."""
+def _simultaneous_alert_hours(venue_series, min_venues=2):
+    """Hours where at least ``min_venues`` venues are simultaneously > 1% below peg.
+
+    Alerts are counted per hour instead of intersecting the alert sets: with
+    more than two venues present, an intersection would silently require
+    *every* venue to alert, while the pre-registered criterion is "at least
+    two independent venues". With exactly two venues both behaviours agree.
+    """
     alert_sets = {
         venue: {o.ts for o in _alert_observations(series)}
         for venue, series in venue_series.items()
         if series
     }
-    if len(alert_sets) < 2:
+    if len(alert_sets) < min_venues:
         return [], alert_sets
-    shared = None
+    per_hour = {}
     for hours in alert_sets.values():
-        shared = set(hours) if shared is None else shared.intersection(hours)
-    return sorted(shared or []), alert_sets
+        for hour in hours:
+            per_hour[hour] = per_hour.get(hour, 0) + 1
+    shared = sorted(hour for hour, count in per_hour.items() if count >= min_venues)
+    return shared, alert_sets
 
 
 def _classify_h2(venue_series, supply_series, supply_cross_series):
@@ -553,6 +573,11 @@ def _classify_h2(venue_series, supply_series, supply_cross_series):
                     break
 
     changes = _supply_changes(supply_series)
+    if supply_series and not changes:
+        missing.append(
+            "a computable 24 h circulating supply change (needs at least two consecutive "
+            "daily observations inside the window)"
+        )
     biggest_drop = min(changes, key=lambda c: c["change_pct"]) if changes else None
     drop_above_threshold = biggest_drop is not None and biggest_drop["change_pct"] < -SUPPLY_DROP_PCT
     if biggest_drop is not None:
@@ -564,7 +589,7 @@ def _classify_h2(venue_series, supply_series, supply_cross_series):
     cross_biggest_drop = min(cross_changes, key=lambda c: c["change_pct"]) if cross_changes else None
 
     concurrent_alerts = len([v for v in present_venues if alert_sets.get(v)]) >= 2
-    support_evaluable = len(present_venues) >= 2 and bool(supply_series)
+    support_evaluable = len(present_venues) >= 2 and bool(changes)
     support_met = bool(support_evaluable and len(simultaneous_hours) >= 1 and drop_above_threshold)
     support_computed = {
         "simultaneous_alert_hours": len(simultaneous_hours),
@@ -595,7 +620,7 @@ def _classify_h2(venue_series, supply_series, supply_cross_series):
     }
 
     venues_with_alerts = [v for v in present_venues if alert_sets.get(v)]
-    refutation_evaluable = len(present_venues) >= 2 and bool(supply_series)
+    refutation_evaluable = len(present_venues) >= 2 and bool(changes)
     refutation_met = bool(
         refutation_evaluable and len(venues_with_alerts) <= 1 and not drop_above_threshold
     )
@@ -653,6 +678,11 @@ def _classify_h3(in_window_observations, venue_series, aggregator_series):
     for venue in INDEPENDENT_VENUES:
         if not venue_series.get(venue):
             missing.append(f"{venue} hourly price series (independent venue)")
+    if not aggregator_series:
+        missing.append(
+            f"{AGGREGATOR_VENUE} hourly price series (aggregator) required for the "
+            "H3 divergence check"
+        )
 
     flags = integrity_flags(in_window_observations)
     for flag in flags:
@@ -699,7 +729,7 @@ def _classify_h3(in_window_observations, venue_series, aggregator_series):
 
     simultaneous_hours, alert_sets = _simultaneous_alert_hours(venue_series)
     concordant_venues = sorted(v for v in present_venues if alert_sets.get(v) and len(simultaneous_hours) >= 1)
-    for hour in (simultaneous_hours[0], simultaneous_hours[-1]) if simultaneous_hours else []:
+    for hour in simultaneous_hours[:1] + simultaneous_hours[-1:]:
         for venue in concordant_venues:
             for observation in venue_series[venue]:
                 if observation.ts == hour and observation.ref() not in evidence:
@@ -745,7 +775,7 @@ def _classify_h3(in_window_observations, venue_series, aggregator_series):
             },
             "evidence_refs": [
                 ref
-                for hour in (simultaneous_hours[0], simultaneous_hours[-1]) if simultaneous_hours
+                for hour in simultaneous_hours[:1] + simultaneous_hours[-1:]
                 for ref in [
                     next(
                         (o.ref() for o in venue_series[venue] if o.ts == hour),

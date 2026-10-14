@@ -11,8 +11,8 @@
   "inputs_summary": {
     "corpus": {
       "path": "corpus/usdc_observations.csv",
-      "sha256": "36f9dde7e44c2b301efff369c5cf0bfa78a8b5eb0452c3b22c12970d76b80dff",
-      "observations_in_file": 1375,
+      "sha256": "c31088b3de428a35cad0833e323352d3fedecb251e4ccd07f168d884b4c8ea7e",
+      "observations_in_file": 520,
       "observations_in_window": 387
     },
     "sources": [

@@ -29,7 +29,9 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 CORPUS_CSV = os.path.join(ROOT, "corpus", "usdc_observations.csv")
 
 #: Row count contract of the archived corpus (corpus/manifest.json).
-EXPECTED_ROWS = 1375
+#: 520 after the 2026-10-14 window-bounded re-collection; was 1375, of which
+#: 855 Bitstamp rows from a stale pre-filter cache sat beyond 2023-03-15.
+EXPECTED_ROWS = 520
 
 MAIN_START = datetime(2023, 3, 9, 0, 0, tzinfo=timezone.utc)
 MAIN_END = datetime(2023, 3, 15, 0, 0, tzinfo=timezone.utc)
@@ -235,8 +237,10 @@ class TestRealCorpusCoverage(unittest.TestCase):
         measured = sorted(venue for venue in checks.INDEPENDENT_PRICE_VENUES
                           if alone_hour in measured_hours(self.rows, venue,
                                                           alone_hour, alone_hour))
-        self.assertEqual(measured, ["bitstamp"],
-                         "measured venues at %s: %s" % (alone_hour, measured))
+        self.assertEqual(measured, [],
+                         "measured venues at %s: %s (the archive is window-bounded "
+                         "since the 2026-10-14 re-collection: nothing exists past "
+                         "the main window)" % (alone_hour, measured))
         expected = [venue for venue in checks.INDEPENDENT_PRICE_VENUES
                     if venue not in measured]
         alone = checks.data_gate(self.observations, alone_hour)

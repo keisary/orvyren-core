@@ -140,7 +140,10 @@ class TestCorpus(unittest.TestCase):
 
     def test_corpus_loads_all_rows(self):
         observations = load_observations(CORPUS_ABS)
-        self.assertEqual(1375, len(observations))
+        # 520 rows = window-bounded archive (main 9-15/03 + control 15-18/02),
+        # after the 2026-10-14 re-collection that removed 855 Bitstamp rows
+        # which a stale pre-filter cache had let slip past 2023-03-15 (was 1375).
+        self.assertEqual(520, len(observations))
         venues = {o.venue for o in observations}
         self.assertTrue(SUPPLY_VENUES.issubset(venues))
         self.assertTrue({"defillama", "bitstamp", "binance"}.issubset(venues))

@@ -9,8 +9,11 @@ tree (including .git, so reviewers keep history), plus inside the archive:
   - PACKAGE_INFO.txt       : what this snapshot is, when it was built,
                              what it excludes, and the archive's own hash.
 
-Excluded from the archive: __pycache__, *.pyc, dist/, .venv, OS noise.
-The archive itself is written to dist/ and its sha256 is printed.
+Excluded from the archive: __pycache__, *.pyc, dist/, .venv, OS noise, and a
+deny-list of secret-bearing names (.env, id_*, *.pem, *.key, secrets/) -- a
+`.gitignore` does not constrain a zip built by walking a working tree (Astra
+review F08). The finished zip is re-scanned and a forbidden name inside aborts
+the build. The archive itself is written to dist/ and its sha256 is printed.
 """
 
 import datetime as dt
@@ -22,6 +25,30 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 DIST = os.path.join(HERE, "dist")
 SKIP_DIRS = {"__pycache__", "dist", ".venv", "venv", ".mypy_cache", ".pytest_cache"}
 SKIP_SUFFIXES = (".pyc", ".pyo", ".zip", ".log")
+
+#: Deny-list for shared packages: this artefact gets zipped and passed around,
+#: and .gitignore does not constrain a zip built from the working tree (F08).
+FORBIDDEN_BASENAMES = {
+    ".env",
+    "id_ed25519", "id_ed25519.pub", "id_rsa", "id_rsa.pub", "id_ecdsa",
+    "google_client_secret.json", "google_token.json",
+}
+FORBIDDEN_PREFIXES = (".env.",)              # .env.local, .env.bak... (.env.example stays allowed)
+FORBIDDEN_SUFFIXES = (".pem", ".key", ".keystore")
+FORBIDDEN_DIRS = {"secrets", ".secrets"}
+
+
+def is_forbidden(rel):
+    """True when the relative path names a file that must not be packaged."""
+    parts = rel.replace("\\", "/").split("/")
+    if any(part in FORBIDDEN_DIRS for part in parts[:-1]):
+        return True
+    name = parts[-1]
+    if name in FORBIDDEN_BASENAMES:
+        return True
+    if name.startswith(FORBIDDEN_PREFIXES) and name != ".env.example":
+        return True
+    return name.endswith(FORBIDDEN_SUFFIXES)
 
 
 def sha256_file(path):
@@ -41,7 +68,10 @@ def working_files():
             if name.endswith(SKIP_SUFFIXES):
                 continue
             full = os.path.join(root, name)
-            out.append(os.path.relpath(full, HERE).replace("\\", "/"))
+            rel = os.path.relpath(full, HERE).replace("\\", "/")
+            if is_forbidden(rel):
+                continue
+            out.append(rel)
     return sorted(out)
 
 
@@ -74,7 +104,8 @@ def main():
         f"files: {len(working)} working files, hashed in MANIFEST.sha256 "
         f"(+ .git history: {len(files) - len(working)} git files)",
         "verify: sha256sum -c MANIFEST.sha256",
-        "excludes: __pycache__, *.pyc, dist/, caches. Corpus AND evidence are included on purpose (they are proofs).",
+        "excludes: __pycache__, *.pyc, dist/, caches, and a secret deny-list "
+        "(.env, id_*, *.pem, *.key, secrets/). Corpus AND evidence are included on purpose (they are proofs).",
     ]
 
     with zipfile.ZipFile(zip_path, "w", zipfile.ZIP_DEFLATED) as zf:
@@ -82,6 +113,16 @@ def main():
             zf.write(os.path.join(HERE, rel), rel)
         zf.writestr("MANIFEST.sha256", "\n".join(manifest) + "\n")
         zf.writestr("PACKAGE_INFO.txt", "\n".join(info) + "\n")
+
+    # Defense in depth: re-scan the finished archive; a forbidden name inside
+    # it means the exclusion logic above missed a path -- abort, do not ship.
+    with zipfile.ZipFile(zip_path) as zf:
+        forbidden = [name for name in zf.namelist() if is_forbidden(name)]
+    if forbidden:
+        os.remove(zip_path)
+        raise SystemExit(
+            "refusing to ship: forbidden file(s) inside the package: "
+            + ", ".join(sorted(forbidden)))
 
     print(f"package : {zip_path}")
     print(f"size    : {os.path.getsize(zip_path) / 1e6:.2f} MB")

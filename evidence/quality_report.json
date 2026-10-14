@@ -1,27 +1,27 @@
 {
-  "generated_at": "2026-10-14T14:42:43.677973+00:00",
+  "generated_at": "2026-10-14T15:47:11.620648+00:00",
   "corpus": {
     "csv": "corpus/usdc_observations.csv",
-    "rows": 1375,
-    "kept": 1375,
+    "rows": 520,
+    "kept": 520,
     "rejected": 0,
     "flagged": 0
   },
   "normalization": {
-    "total": 1375,
-    "kept": 1375,
+    "total": 520,
+    "kept": 520,
     "rejected": [],
     "flagged": [],
     "counts_by_venue": {
       "binance": 83,
-      "bitstamp": 1000,
+      "bitstamp": 145,
       "defillama": 218,
       "defillama_supply_aggregate": 37,
       "defillama_supply_ethereum": 37
     },
     "counts_by_metric": {
       "circulating_usd": 74,
-      "close_usd": 1000,
+      "close_usd": 145,
       "close_usdcusdt": 83,
       "price_usd": 218
     }
@@ -162,11 +162,10 @@
       "status": "INSUFFICIENT",
       "missing": [
         "defillama",
-        "binance"
-      ],
-      "venues_present": [
+        "binance",
         "bitstamp"
-      ]
+      ],
+      "venues_present": []
     }
   ],
   "graph": {
@@ -177,12 +176,12 @@
       "defillama",
       "defillama_supply"
     ],
-    "observations_inserted": 1375,
+    "observations_inserted": 520,
     "claims_inserted": 4,
     "relations_inserted": 4,
     "counts": {
       "sources": 4,
-      "observations": 1375,
+      "observations": 520,
       "claims": 4,
       "relations": 4,
       "hypotheses": 1,
@@ -191,10 +190,10 @@
     "snapshot": {
       "graph_version": "orvyren-graph-v1",
       "schema_version": 1,
-      "hash": "9d943443b12a5f62ff4c26f3dfcfe18e23f77eca352b9a9bf595cb0f445a5e1f",
+      "hash": "6c02b63403aad46942c46060b9fa643f9e7683a7138164eeac7c712ab50f7294",
       "counts": {
         "sources": 4,
-        "observations": 1375,
+        "observations": 520,
         "claims": 4,
         "relations": 4,
         "hypotheses": 1,
@@ -202,7 +201,7 @@
       },
       "rows_total": {
         "sources": 4,
-        "observations": 1375,
+        "observations": 520,
         "claims": 4,
         "relations": 4,
         "hypotheses": 1,
@@ -252,17 +251,17 @@
       "refs": [
         "547c6426c72953ad"
       ],
-      "created_at": "2026-10-14T12:38:02+00:00",
-      "fingerprint": "8a1e73050d8b5c07"
+      "created_at": "2026-10-14T15:47:10+00:00",
+      "fingerprint": "d6cb095fc695a249"
     },
     {
       "id": "claim-bitstamp-low-main",
       "text": "Bitstamp USDC/USD close reached its lowest hourly value of the main window on 2023-03-11T07:00:00+00:00: 0.86267 (close_usd).",
       "refs": [
-        "172f397f9be83c0a"
+        "e9d188069b6b8f1a"
       ],
-      "created_at": "2026-10-14T12:38:02+00:00",
-      "fingerprint": "a0aad003b83c47a4"
+      "created_at": "2026-10-14T15:47:10+00:00",
+      "fingerprint": "1f7d1ecbf0a555f1"
     },
     {
       "id": "claim-binance-low-main",
@@ -270,8 +269,8 @@
       "refs": [
         "09db96e264842925"
       ],
-      "created_at": "2026-10-14T12:38:02+00:00",
-      "fingerprint": "23ea91cd31c2150c"
+      "created_at": "2026-10-14T15:47:10+00:00",
+      "fingerprint": "e4b34b4b2db224e7"
     },
     {
       "id": "claim-supply-contraction",
@@ -280,8 +279,8 @@
         "c11e9e87d05d0f49",
         "27e8d337fdfe28ad"
       ],
-      "created_at": "2026-10-14T12:38:02+00:00",
-      "fingerprint": "252f404a63834b10"
+      "created_at": "2026-10-14T15:47:10+00:00",
+      "fingerprint": "3333b33545a9da63"
     }
   ],
   "hypotheses": [

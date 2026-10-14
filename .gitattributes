@@ -1,0 +1,13 @@
+# Byte-stability of the archived evidence across platforms.
+# Text files are checked out with LF everywhere, so the raw bytes of the
+# repository copy match the digests recorded in evidence/ on every machine
+# (see orvyren.decision.scenarios.corpus_sha256 and
+# orvyren.audit.dossier.sha256_file, which additionally LF-normalise on read).
+* text=auto eol=lf
+
+# Real binaries: never touched.
+*.png binary
+*.sqlite binary
+*.zip binary
+*.pdf binary
+*.docx binary

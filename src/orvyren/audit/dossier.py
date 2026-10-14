@@ -88,11 +88,49 @@ pre{background:var(--soft);border:1px solid var(--line);padding:8px;overflow:aut
 # Input handling
 # --------------------------------------------------------------------------- #
 
-def sha256_file(path):
-    """Return the hex SHA-256 of a file's raw bytes, or None if unreadable."""
+# dossier.py -> audit -> orvyren -> src -> <repository root>
+_REPO_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
+
+
+def _display_path(path):
+    """Repo-relative POSIX path when the file lives inside the repository.
+
+    Keeps dossiers portable: an absolute path (e.g. ``D:\\orvyren_core\\...``
+    or a reviewer's home directory) must never leak into a hashed artefact,
+    because it changes with the machine that built it. Paths outside the
+    repository are reported unchanged so external fixtures stay identifiable.
+    """
+    text = str(path)
     try:
-        with open(path, "rb") as handle:
-            raw = handle.read()
+        relative = os.path.relpath(text, _REPO_ROOT).replace(os.sep, "/")
+        if relative != ".." and not relative.startswith("../"):
+            return relative
+    except (OSError, ValueError):
+        pass
+    return text.replace(os.sep, "/")
+
+
+def _normalized_bytes(path):
+    """File bytes with CRLF collapsed to LF.
+
+    Text digests must not depend on the platform's line endings: the recorded
+    SHA-256 has to match the repository copy whether it was read on Windows
+    (CRLF on disk) or on Linux/macOS (LF). ``.gitattributes`` enforces LF
+    checkouts for text files; this function is the belt to that bra.
+    """
+    with open(path, "rb") as handle:
+        raw = handle.read()
+    return raw.replace(b"\r\n", b"\n")
+
+
+def sha256_file(path):
+    """Return the hex SHA-256 of a file, or None if unreadable.
+
+    Text inputs are hashed over LF-normalised bytes (see ``_normalized_bytes``)
+    so digests are platform-stable.
+    """
+    try:
+        raw = _normalized_bytes(path)
     except OSError:
         return None
     return hashlib.sha256(raw).hexdigest()
@@ -107,15 +145,14 @@ def _read_input(label, path):
     """Read one input file. Never raises: problems are reported in the record."""
     record = {
         "label": label,
-        "path": str(path),
+        "path": _display_path(path),
         "sha256": None,
         "status": "missing",
         "error": None,
         "data": None,
     }
     try:
-        with open(path, "rb") as handle:
-            raw = handle.read()
+        raw = _normalized_bytes(path)
     except FileNotFoundError:
         return record
     except OSError as exc:
@@ -765,8 +802,8 @@ def build(decision_path, out_dir, extra_paths=None, generated_at=None):
         "decision_rec": decision_record,
         "extras": extras,
         "baseline": next((r for r in extras if r["label"] == "baseline_report"), None),
-        "md_path_display": md_path,
-        "html_path_display": html_path,
+        "md_path_display": _display_path(md_path),
+        "html_path_display": _display_path(html_path),
     }
 
     md_template = render_markdown(ctx)

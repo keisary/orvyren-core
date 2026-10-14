@@ -6,7 +6,7 @@
 | --- | --- |
 | Case | usdc-2023-03 |
 | Window | 2023-03-09T00:00:00+00:00 → 2023-03-15T00:00:00+00:00 |
-| Generated (UTC) | 2026-10-14T14:42:45Z |
+| Generated (UTC) | 2026-10-14T15:47:12Z |
 | Engine | ORVYREN-Core 0.1 |
 
 ## Decision
@@ -71,7 +71,7 @@ Control signals (0):
 
 | Key | Value |
 | --- | --- |
-| corpus | {"observations_in_file": 1375, "observations_in_window": 387, "path": "corpus/usdc_observations.csv", "sha256": "36f9dde7e44c2b301efff369c5cf0bfa78a8b5eb0452c3b22c12970d76b80dff"} |
+| corpus | {"observations_in_file": 520, "observations_in_window": 387, "path": "corpus/usdc_observations.csv", "sha256": "c31088b3de428a35cad0833e323352d3fedecb251e4ccd07f168d884b4c8ea7e"} |
 | exposure_parameters | {"action_usdc": 100.0, "available_to_move_usdc": 100.0, "exposure_usdc": 500.0, "floor_usdc": 350.0, "note": "demonstration parameters only: no real wallet, no real balance, no market impact modelled"} |
 | peg_reference_usd | 1.0 |
 | pre_registered_thresholds | {"aggregate_tolerance_pct": 0.5, "deviation_alert_pct": 1.0, "persistence_hours_limit": 12.0, "recovery_hours_limit": 12.0, "recovery_tolerance_pct": 0.1, "supply_drop_pct": 1.0, "supply_window_hours": 24.0} |
@@ -121,7 +121,7 @@ Control signals (0):
           "rule": "R5-cumulative"
         },
         {
-          "note": "2026-10-15T14:42:44.918808+00:00",
+          "note": "2026-10-15T12:00:00+00:00",
           "result": "OK",
           "rule": "R6-permission"
         },
@@ -175,7 +175,7 @@ Control signals (0):
           "rule": "R5-cumulative"
         },
         {
-          "note": "2026-10-15T14:42:44.918808+00:00",
+          "note": "2026-10-15T12:00:00+00:00",
           "result": "OK",
           "rule": "R6-permission"
         },
@@ -223,7 +223,7 @@ Control signals (0):
           "rule": "R5-cumulative"
         },
         {
-          "note": "2026-10-15T14:42:44.918808+00:00",
+          "note": "2026-10-15T12:00:00+00:00",
           "result": "OK",
           "rule": "R6-permission"
         },
@@ -254,7 +254,7 @@ Control signals (0):
     "timeout_seconds": 30,
     "treasury_address": "0x2222222222222222222222222222222222222222"
   },
-  "generated_at": "2026-10-14T14:42:44+00:00",
+  "generated_at": "2026-10-14T15:47:12+00:00",
   "guard_blocks": [
     "I2: execution blocked: policy verdict 'DENY' — the instruction is refused (reason codes: AMOUNT_ABOVE_TX_CAP, AMOUNT_ABOVE_PERIOD_CAP)",
     "I3: execution blocked: policy verdict 'REQUIRE_APPROVAL' — a human approval is required before this instruction may be prepared (reason codes: ACTION_NEEDS_HUMAN_APPROVAL)"
@@ -280,8 +280,8 @@ Control signals (0):
 {
   "claims": [
     {
-      "created_at": "2026-10-14T12:38:02+00:00",
-      "fingerprint": "8a1e73050d8b5c07",
+      "created_at": "2026-10-14T15:47:10+00:00",
+      "fingerprint": "d6cb095fc695a249",
       "id": "claim-defillama-low-main",
       "refs": [
         "547c6426c72953ad"
@@ -289,17 +289,17 @@ Control signals (0):
       "text": "DeFiLlama aggregated USDC price reached its lowest hourly value of the main window on 2023-03-11T08:00:00+00:00: 0.87667 (price_usd)."
     },
     {
-      "created_at": "2026-10-14T12:38:02+00:00",
-      "fingerprint": "a0aad003b83c47a4",
+      "created_at": "2026-10-14T15:47:10+00:00",
+      "fingerprint": "1f7d1ecbf0a555f1",
       "id": "claim-bitstamp-low-main",
       "refs": [
-        "172f397f9be83c0a"
+        "e9d188069b6b8f1a"
       ],
       "text": "Bitstamp USDC/USD close reached its lowest hourly value of the main window on 2023-03-11T07:00:00+00:00: 0.86267 (close_usd)."
     },
     {
-      "created_at": "2026-10-14T12:38:02+00:00",
-      "fingerprint": "23ea91cd31c2150c",
+      "created_at": "2026-10-14T15:47:10+00:00",
+      "fingerprint": "e4b34b4b2db224e7",
       "id": "claim-binance-low-main",
       "refs": [
         "09db96e264842925"
@@ -307,8 +307,8 @@ Control signals (0):
       "text": "Binance USDC/USDT close reached its lowest hourly value of the main window on 2023-03-11T15:00:00+00:00: 0.91280 (close_usdcusdt)."
     },
     {
-      "created_at": "2026-10-14T12:38:02+00:00",
-      "fingerprint": "252f404a63834b10",
+      "created_at": "2026-10-14T15:47:10+00:00",
+      "fingerprint": "3333b33545a9da63",
       "id": "claim-supply-contraction",
       "refs": [
         "c11e9e87d05d0f49",
@@ -320,9 +320,9 @@ Control signals (0):
   "corpus": {
     "csv": "corpus/usdc_observations.csv",
     "flagged": 0,
-    "kept": 1375,
+    "kept": 520,
     "rejected": 0,
-    "rows": 1375
+    "rows": 520
   },
   "coverage": {
     "first_two_venue_hour": "2023-03-09T00:00:00+00:00",
@@ -459,44 +459,43 @@ Control signals (0):
       "hour": "2023-03-16T00:00:00+00:00",
       "missing": [
         "defillama",
-        "binance"
+        "binance",
+        "bitstamp"
       ],
       "status": "INSUFFICIENT",
-      "venues_present": [
-        "bitstamp"
-      ]
+      "venues_present": []
     }
   ],
-  "generated_at": "2026-10-14T14:42:43.677973+00:00",
+  "generated_at": "2026-10-14T15:47:11.620648+00:00",
   "graph": {
     "claims_inserted": 4,
     "counts": {
       "claims": 4,
       "decision_nodes": 0,
       "hypotheses": 1,
-      "observations": 1375,
+      "observations": 520,
       "relations": 4,
       "sources": 4
     },
     "database": "evidence/graph.sqlite",
-    "observations_inserted": 1375,
+    "observations_inserted": 520,
     "relations_inserted": 4,
     "snapshot": {
       "counts": {
         "claims": 4,
         "decision_nodes": 0,
         "hypotheses": 1,
-        "observations": 1375,
+        "observations": 520,
         "relations": 4,
         "sources": 4
       },
       "graph_version": "orvyren-graph-v1",
-      "hash": "9d943443b12a5f62ff4c26f3dfcfe18e23f77eca352b9a9bf595cb0f445a5e1f",
+      "hash": "6c02b63403aad46942c46060b9fa643f9e7683a7138164eeac7c712ab50f7294",
       "rows_total": {
         "claims": 4,
         "decision_nodes": 0,
         "hypotheses": 1,
-        "observations": 1375,
+        "observations": 520,
         "relations": 4,
         "sources": 4
       },
@@ -533,21 +532,21 @@ Control signals (0):
   "normalization": {
     "counts_by_metric": {
       "circulating_usd": 74,
-      "close_usd": 1000,
+      "close_usd": 145,
       "close_usdcusdt": 83,
       "price_usd": 218
     },
     "counts_by_venue": {
       "binance": 83,
-      "bitstamp": 1000,
+      "bitstamp": 145,
       "defillama": 218,
       "defillama_supply_aggregate": 37,
       "defillama_supply_ethereum": 37
     },
     "flagged": [],
-    "kept": 1375,
+    "kept": 520,
     "rejected": [],
-    "total": 1375
+    "total": 520
   },
   "provenance": {
     "claims_checked": 4,
@@ -599,14 +598,14 @@ Control signals (0):
 
 | Input | Path | SHA-256 |
 | --- | --- | --- |
-| decision | D:\orvyren_core\evidence\decision_usdc-2023-03.json | `346dd47c21a2ddcac0a13ed0a6ac382aac750ffe85f03915fa6003de29bbab47` |
-| baseline_report | D:\orvyren_core\evidence\baseline_report.json | `fa68d11f36232719f5400b5aab1d1cfab19b7808aaeb3e01297bd7bf4f868ae8` |
-| policy_execution_demo | D:\orvyren_core\evidence\policy_execution_demo.json | `f3ec1ae4c4afc967bb121e7b51756754202042436f94be001bf554c641c9c69d` |
-| quality_report | D:\orvyren_core\evidence\quality_report.json | `281ca37eb938fa3de3ed85c91e25d1ca9f8927d11ece8cb4295dff9387b90e29` |
-| dossier (self, md) | D:\orvyren_core\evidence\dossier_usdc-2023-03.md | `9d065f6fee581768d9af2cab7dd9ca4fe1ac9749220a887e5a4c6add46a81916` |
+| decision | evidence/decision_usdc-2023-03.json | `b65c0634be924b18954258dedb93e7f8965ae2728fb129f1dd56c39c01b76bbd` |
+| baseline_report | evidence/baseline_report.json | `fa68d11f36232719f5400b5aab1d1cfab19b7808aaeb3e01297bd7bf4f868ae8` |
+| policy_execution_demo | evidence/policy_execution_demo.json | `3712a68321bb7017d786eb94cd94630afde9f77eb93293037ae3adae4a953fe1` |
+| quality_report | evidence/quality_report.json | `5478728ceb60ca0b066d65c674c398f848abce01cb57ed7630c1db842a30bed4` |
+| dossier (self, md) | evidence/dossier_usdc-2023-03.md | `73399190489fac60b061a3441be1f62a5685f867788f4dfa3e92fd1f239e8ac7` |
 
 Self-hash rule: the `dossier (self, md)` row is the SHA-256 of this Markdown file computed with its own 64-hex-character self-hash field zeroed (64 `0` characters). It is reproducible with any SHA-256 tool: replace that field with zeros and hash the file. With identical inputs and build time this dossier is byte-identical.
 
 ---
 
-produced by ORVYREN-Core v0.1 — deterministic engine, no human edit · ORVYREN-Core v0.1 · generated 2026-10-14T14:42:45Z (UTC)
+produced by ORVYREN-Core v0.1 — deterministic engine, no human edit · ORVYREN-Core v0.1 · generated 2026-10-14T15:47:12Z (UTC)

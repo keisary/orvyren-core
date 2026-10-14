@@ -6,6 +6,13 @@ What this module answers, with measurements instead of assumptions:
   each venue actually covers;
 * how many hours carry a price from at least two *independent* venues
   (DeFiLlama, Binance, Bitstamp) — the count a decision may rely on;
+
+NOTE on wording: here "independent" means each of the three price producers
+is counted separately from the others. The decision layer
+(``decision/scenarios.py``) reserves "independent venues" for the two
+exchanges and treats DeFiLlama as an aggregator (FREEZE_V1 D3) — the two
+counts answer different questions ("was there multi-source data?" vs "did
+two exchanges corroborate?") and must not be conflated when reading reports.
 * :func:`data_gate` — for one hour, may a decision be taken on this data?
 
 Window convention: both bounds are counted as hour slots, because the
