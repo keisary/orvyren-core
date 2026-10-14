@@ -16,7 +16,9 @@ Design (FREEZE_V1.md D9/D10):
     values are never read into memory nor emitted anywhere.
 """
 
+import math
 import os
+import re
 from dataclasses import dataclass
 from urllib.parse import urlsplit
 
@@ -93,9 +95,13 @@ def mask_rpc_url(url):
     segments = [segment for segment in (parsed.path or "").split("/") if segment]
     if not segments:
         return "{}://{}".format(parsed.scheme, netloc)
-    if len(segments) == 1:
-        return "{}://{}/{}".format(parsed.scheme, netloc, MASK)  # single path token IS the credential
-    return "{}://{}/{}/{}".format(parsed.scheme, netloc, segments[0], MASK)
+    # Deny-by-default on path segments: only version-like tokens (v2, v3, ...)
+    # are kept visible, every other segment is masked. The previous behaviour
+    # ("keep the first segment") leaked credentials placed at the front of the
+    # path: https://rpc.example/CANARY_SECRET/v1 printed CANARY_SECRET (F08).
+    shown = [segment if re.fullmatch(r"v\d+", segment) else MASK
+             for segment in segments]
+    return "{}://{}/{}".format(parsed.scheme, netloc, "/".join(shown))
 
 
 def present_secret_env_names(env=None):
@@ -122,9 +128,12 @@ def _number(env, name, default, cast):
     try:
         if cast is int:
             return int(str(raw).strip(), 10)
-        return cast(str(raw).strip())
+        value = cast(str(raw).strip())
     except (TypeError, ValueError) as exc:
         raise ConfigurationError("invalid {} {!r}: expected a number".format(name, raw)) from exc
+    if not math.isfinite(value):
+        raise ConfigurationError("invalid {} {!r}: expected a finite number".format(name, raw))
+    return value
 
 
 @dataclass(frozen=True, repr=False)

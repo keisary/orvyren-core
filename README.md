@@ -14,7 +14,7 @@ The design question this repository answers: *when three sources disagree about 
 Python 3.11, standard library only. From the repository root:
 
 ```bash
-python -m unittest discover -s tests      # 132 tests (2 skipped: live-RPC, opt-in)
+python -m unittest discover -s tests      # 147 tests (2 skipped: live-RPC, opt-in)
 python run_pipeline.py                    # full pipeline end-to-end + evidence summary
 python run_audit.py --serve               # one-page decision dossier on http://127.0.0.1:8000
 ```

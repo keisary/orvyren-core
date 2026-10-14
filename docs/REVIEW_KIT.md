@@ -194,3 +194,17 @@ python -m unittest discover -s tests       # 132 tests
 python -m unittest tests.test_integrity_reproducibility -v   # les garde-fous d'intégrité
 python run_pipeline.py                     # reconstruction complète des preuves
 ```
+
+---
+
+## 11. Corrections P0 — revue Astra du 14/10 (nuit du 15/10)
+
+La revue globale d'Astra (`docs/sujet-F/astra-1-amelioration-globale.md` — 18 findings, hors dépôt) a trouvé quatre défauts P0 repro
+duits puis corrigés sur la branche `Unoriginal`, chacun avec test de garde (`tests/test_hardening_review.py`, +15 tests → **147 verts**) :
+
+- **F03 — séries manquantes** : le moteur produit désormais l'abstention `INCONCLUSIVE` documentée (action null, données requises listées) au lieu de planter (IndexError sur listes d'heures vides, TypeError sur valeurs absentes) ; la **règle 4 passe avant toutes les autres** — jamais d'action sur preuve incomplète.
+- **F05 — pipeline** : une étape en échec arrête les étapes dépendantes (`SKIPPED (upstream failure)`) ; plus d'artefacts construits sur des entrées périmées.
+- **F07 — politique** : montants NaN/infinis/bool refusés (`AMOUNT_NOT_FINITE`), cumul invalide refusé, plafonds NaN rejetés par la configuration.
+- **F08 — fuites** : `make_package.py` exclut `.env`/clés et re-scanne le ZIP avant de l'écrire ; le masque RPC masque chaque segment de chemin non-version (un identifiant en tête d'URL ne fuit plus).
+
+Décision et baseline nominales : **byte-identiques** (aucune preuve régénérée). Restent côté équipe (règle/design, pas de correctif unilatéral) : F04 (veto H3 bloquant), F06 (session persistante), F12 (préenregistrement constaté), F16 (provenance des calculs déterminants) — voir le plan jour par jour d'Astra §5.

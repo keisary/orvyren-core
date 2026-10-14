@@ -201,7 +201,7 @@ def main():
     stages_run = []
     if not args.summary:
         wanted = [s for s in STAGES if args.stage is None or s[0] == args.stage]
-        for name, script, extra in wanted:
+        for index, (name, script, extra) in enumerate(wanted):
             print(f"--- stage: {name} ({script}) ---")
             result = run_stage(name, script, extra)
             stages_run.append(result)
@@ -211,6 +211,20 @@ def main():
                 print(f"    | {line}")
             for line in result.get("stderr_tail", [])[-3:]:
                 print(f"    ! {line}")
+            if result["status"] != "OK":
+                # A failed stage poisons the artefacts built from its output:
+                # dependent stages are skipped, never run on stale inputs
+                # (Astra review F05: policy/audit used to run after a
+                # quality+decision failure).
+                for skipped_name, skipped_script, _ in wanted[index + 1:]:
+                    stages_run.append({
+                        "stage": skipped_name,
+                        "script": skipped_script,
+                        "status": "SKIPPED (upstream failure)",
+                    })
+                    print(f"--- stage: {skipped_name} ({skipped_script}) ---")
+                    print("    SKIPPED (upstream failure)")
+                break
 
     summary = summarise()
     if stages_run:

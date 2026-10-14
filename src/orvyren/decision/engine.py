@@ -15,10 +15,10 @@ text below is quoted verbatim in every output's rationale):
             does not justify reducing exposure on the asset itself.
   3. Otherwise, when the hypotheses are decidable (no missing series)
          -> NO_ACTION: no registered criterion justifies an exposure reduction.
-  4. Any required series missing (a verdict is INCONCLUSIVE with
-     missing_inputs)
-         -> INCONCLUSIVE, missing_inputs listed, action = null. The engine
-            never guesses and never produces an action on incomplete evidence.
+  4. Any required series missing from any verdict (missing_inputs non-empty)
+         -> INCONCLUSIVE, missing_inputs listed, action = null. This rule
+            takes precedence over rules 1-3: the engine never guesses and
+            never produces an action on incomplete evidence.
 
 "available_to_move > 0" is the demonstration exposure envelope of
 ``exposure.py``: the treasury can only move USDC above its reserve floor, and
@@ -67,6 +67,8 @@ RULE_TEXT = (
 
 
 def _fmt(value, digits=4):
+    if value is None:
+        return "n/a"
     return f"{value:.{digits}f}"
 
 
@@ -134,13 +136,21 @@ def _hypothesis_line(verdict):
             f" (persistent episodes: {spans})" if spans else " (no episode longer than 12 h)"
         )
         if outcome == REFUTED:
+            if support["aggregator_min_value"] is not None:
+                aggregator_text = (
+                    f"while the aggregator fell to {support['aggregator_min_value']} "
+                    f"({_fmt(support['aggregator_min_deviation_pct'], 4)}%), beyond the "
+                    f"{AGGREGATE_TOLERANCE_PCT}% tolerance"
+                )
+            else:
+                aggregator_text = (
+                    "while the aggregator series is missing from this window "
+                    "(tolerance criterion not evaluable)"
+                )
             text = (
                 f"H1 {label}: {outcome}. The deviation did not stay local: > {DEVIATION_ALERT_PCT}% "
                 f"persisted more than {_fmt(PERSISTENCE_HOURS_LIMIT, 0)} h on "
-                f"{computed['persistent_venue_count']} independent venues{details}, while the aggregator "
-                f"fell to {support['aggregator_min_value']} "
-                f"({_fmt(support['aggregator_min_deviation_pct'], 4)}%), beyond the "
-                f"{AGGREGATE_TOLERANCE_PCT}% tolerance"
+                f"{computed['persistent_venue_count']} independent venues{details}, {aggregator_text}"
             )
         elif outcome == SUPPORTED:
             text = f"H1 {label}: {outcome}. A single venue deviated while the aggregate stayed pegged"
@@ -194,15 +204,24 @@ def _build_decision(verdicts, envelope, available, plan):
     h1, h2, h3 = verdicts["H1"], verdicts["H2"], verdicts["H3"]
     rationale = [RULE_TEXT]
 
+    # Rule 4 applies before every other rule: the engine never produces an
+    # action on incomplete evidence (module docstring). Required series
+    # missing from any of the three verdicts are collected and listed.
     missing_inputs = []
-    if h2["verdict"] == INCONCLUSIVE or h2["missing_inputs"]:
-        for verdict in (h1, h2, h3):
-            for item in verdict["missing_inputs"]:
-                if item not in missing_inputs:
-                    missing_inputs.append(item)
+    for verdict in (h1, h2, h3):
+        for item in verdict["missing_inputs"]:
+            if item not in missing_inputs:
+                missing_inputs.append(item)
 
     action = None
-    if h2["verdict"] == SUPPORTED and available > 0:
+    if missing_inputs:
+        verdict_name = INCONCLUSIVE
+        rationale.append(
+            "Rule 4 fires: at least one required series is missing, so the engine returns "
+            "INCONCLUSIVE rather than guessing. No action is produced. Missing: "
+            + "; ".join(missing_inputs) + "."
+        )
+    elif h2["verdict"] == SUPPORTED and available > 0:
         verdict_name = ACTION_RECOMMENDED
         action = {
             "type": "transfer",
@@ -240,8 +259,8 @@ def _build_decision(verdicts, envelope, available, plan):
     else:
         verdict_name = INCONCLUSIVE
         rationale.append(
-            "Rule 4 fires: a required series is missing, so H2 cannot be fully evaluated and the engine "
-            "returns INCONCLUSIVE rather than guessing. No action is produced."
+            "Rule 4 (fallback): H2 is INCONCLUSIVE and no registered criterion resolves this "
+            "window; no action is produced."
         )
 
     rationale.extend(_hypothesis_line(verdict) for verdict in (h1, h2, h3))

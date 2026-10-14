@@ -10,7 +10,7 @@ Règles implémentées (proposition D9 de FREEZE_V1.md) :
   R1  chaîne autorisée (Base Sepolia, 84532)
   R2  actif autorisé (jeton de test allowlisté)
   R3  destinataire autorisé (allowlist)
-  R4  montant > 0 et <= plafond par transaction
+  R4  montant fini > 0 et <= plafond par transaction
   R5  plafond cumulé sur la fenêtre de permission
   R6  permission non expirée
   R7  idempotence : un intent déjà vu est refusé (pas de double envoi)
@@ -18,6 +18,8 @@ Règles implémentées (proposition D9 de FREEZE_V1.md) :
 
 Exécution des tests : python -m unittest discover -s tests -v
 """
+
+import math
 
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta, timezone
@@ -70,6 +72,17 @@ def _norm(addr: str) -> str:
     return (addr or "").strip().lower()
 
 
+def _finite_number(value) -> bool:
+    """True for a real, finite number (bool excluded).
+
+    NaN and infinities must never reach the cap comparisons: in floating
+    point, ``float('nan') > 100`` and ``float('nan') <= 100`` are both False,
+    so a NaN amount would silently pass R4 (review finding F07).
+    """
+    return isinstance(value, (int, float)) and not isinstance(value, bool) \
+        and math.isfinite(value)
+
+
 def evaluate(intent: Intent, config: PolicyConfig, now: datetime | None = None,
              seen_intent_ids: Iterable[str] = (), cumulative_spent: float = 0.0) -> PolicyDecision:
     """Rend le verdict déterministe pour un intent donné."""
@@ -106,8 +119,10 @@ def evaluate(intent: Intent, config: PolicyConfig, now: datetime | None = None,
     else:
         ok("R3-recipient")
 
-    # R4 — montant par transaction
-    if intent.amount <= 0:
+    # R4 — montant par transaction (fini d'abord : NaN/infini = refus net)
+    if not _finite_number(intent.amount):
+        fail("R4-amount", "AMOUNT_NOT_FINITE")
+    elif intent.amount <= 0:
         fail("R4-amount", "AMOUNT_INVALID")
     elif intent.amount > config.max_per_tx:
         fail("R4-amount", "AMOUNT_ABOVE_TX_CAP")
@@ -115,7 +130,12 @@ def evaluate(intent: Intent, config: PolicyConfig, now: datetime | None = None,
         ok("R4-amount", f"{intent.amount} <= {config.max_per_tx}")
 
     # R5 — plafond cumulé
-    if cumulative_spent + max(intent.amount, 0) > config.max_cumulative:
+    if not _finite_number(cumulative_spent) or cumulative_spent < 0:
+        fail("R5-cumulative", "CUMULATIVE_INVALID")
+    elif not _finite_number(intent.amount):
+        evaluated.append({"rule": "R5-cumulative", "result": "SKIPPED",
+                          "note": "amount is not finite (see R4-amount)"})
+    elif cumulative_spent + max(intent.amount, 0) > config.max_cumulative:
         fail("R5-cumulative", "AMOUNT_ABOVE_PERIOD_CAP")
     else:
         ok("R5-cumulative", f"{cumulative_spent + max(intent.amount, 0)} <= {config.max_cumulative}")
