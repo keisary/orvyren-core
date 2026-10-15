@@ -58,9 +58,11 @@ Chaque fichier porte ses sources (URL + dates) et ses « non trouvé ». La cons
 
 ## 3. Corrections assumées (à porter au dossier)
 
-1. « 100 % d'utilisation » sur rsETH → **faux tel que dit** ; le mécanisme réel : gel administratif + saturation du plafond d'émission de collatéral. (W2-B)
-2. « Bitstamp 0,8627 » → non reproduit au pas horaire (mesure : 0,80526) ; le 0,8767 agrégat, lui, est reproduit à l'identique. (W2-B)
-3. Le chiffre « 1 375 observations » et d'autres compteurs d'étapes antérieures sont périmés face aux mesures de la vague 2. (W2-A/B)
+1. « 100 % d'utilisation » sur rsETH → **faux tel que dit** ; le mécanisme réel : gel administratif + saturation du plafond d'émission de collatéral. (W2-B, confirmé W3-A)
+2. « Bitstamp 0,8627 » → **résolu (W3-B)** : c'est la clôture horaire de la bougie 07:00Z (bas 0,80526 de la même bougie) ; le 0,8767 agrégat, lui, est reproduit à l'identique.
+3. **Minimum dense de l'oracle USDC : 0,8833** (11/03 07:53:23Z, bloc 16 803 515, vérifié sur 2 RPC) — la valeur 0,90687 de W2-B était un point de grille exact mais **pas** le minimum (correction W3-B).
+4. « 1 375 observations » et d'autres compteurs d'étapes antérieures sont périmés face aux mesures des vagues 2-3. (W2-A/B, W3)
+5. **Décote stETH — chiffres finaux (W3-A, série 253 points)** : premier franchissement des 200 bps le **13/05/2022** (213,7 bps ; 66,9 bps la veille) ; pire point **6,93 % (1 stETH) / 6,98 % (1 000 stETH) le 14/06/2022 10:00Z**. (La fourchette « 15-21/05 » de W2-B, mesurée sur un échantillonnage plus clairsemé, est remplacée.)
 
 ## 4. Ce que ça change pour le projet
 
@@ -71,9 +73,10 @@ Chaque fichier porte ses sources (URL + dates) et ses « non trouvé ». La cons
 
 ## 5. Prochaines étapes
 
-- **En cours** : W3-A (couche données + reconstructions rsETH/stETH), W3-B (épisode USDC complet), W3-C (compléments : xUSD/USD0++, concentration, Compound/Morpho, calibration).
-- **Ensuite** : W3-D = kit de démo testnet prêt à exécuter (scripts + journal + README ; clé/faucet côté équipe) ; puis synthèse de construction + mise à jour du cadre.
-- **Décisions à trancher (avec l'équipe)** : les 12 points de W2-D §(f), le choix définitif des jeux DEV/EVAL, et le point de départ de la courbe de calibration des seuils.
+- **Fait (16/10)** : W3-A/B/C clos — couche données `src/orvyren/data/` (RPC archive avec repli drpc→blastapi, Aave, Curve, Chainlink) + **3 épisodes reconstruits et probants** (`evidence/episode_rseth_2026-04.json`, `episode_steth_2022-06.json`, `episode_usdc_2023-03.json`) ; compléments comblés : **séries xUSD (457 h) et USD0++ (635 h) trouvées**, concentration via Blockscout validée, Compound/Morpho testés, plan de calibration livré. Suite de tests : **221 verts, 2 sautés**. Commits `153b93b`, `3ac6ed3`.
+- **Pause volontaire** : W3-D (kit de démo testnet) **non lancé** — la construction du produit est la prochaine phase, à déclencher par l'équipe.
+- **Décisions à trancher (avec l'équipe)** : les 12 points de W2-D §(f), le choix définitif des jeux DEV/EVAL, le point de départ de la courbe de calibration, et les édits du cadre (§04/05/06) ci-dessous.
+- **Restes assumés** : profondeur d'exécution des stablecoins au pire de mars 2023 (non mesurée) ; archive Comet/Morpho à confirmer ; calibration à exécuter (10-20 h de collecte estimées).
 
 ## 6. Édits proposés au cadre (à appliquer à son retour)
 
