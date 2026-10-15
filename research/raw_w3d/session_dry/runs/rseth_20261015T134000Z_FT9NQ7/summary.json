@@ -1,0 +1,130 @@
+{
+  "run": "C",
+  "mode": "dry-run",
+  "cases": [
+    {
+      "case": "C1",
+      "label": "transfer 500 USDC via le module (au-delà de l'allowance maxRefill)",
+      "expect": "revert (dépassement d'allowance) ; tx incluse status 0x0, gaz perdu",
+      "sent": false,
+      "offline_checks": [
+        {
+          "description": "montant 500 000 000 > maxRefill 300000000",
+          "ok": true
+        },
+        {
+          "description": "aller-retour calldata (exec → transfer) cohérent",
+          "ok": true
+        }
+      ],
+      "decoded": {
+        "target": "0x036cbd53842c5426634e7929541ec2318f3dcf7e",
+        "role_key": "0x4147454e54000000000000000000000000000000000000000000000000000000",
+        "inner_to": "0x1111111111111111111111111111111111111111",
+        "inner_value": 500000000,
+        "operation": 0
+      }
+    },
+    {
+      "case": "C2",
+      "label": "transfer 1 USDC vers un destinataire non listé via le module",
+      "expect": "revert (condition de destinataire) ; aucun log Transfer",
+      "sent": false,
+      "offline_checks": [
+        {
+          "description": "destinataire hors allowlist",
+          "ok": true
+        },
+        {
+          "description": "aller-retour calldata (exec → transfer) cohérent",
+          "ok": true
+        }
+      ],
+      "decoded": {
+        "target": "0x036cbd53842c5426634e7929541ec2318f3dcf7e",
+        "role_key": "0x4147454e54000000000000000000000000000000000000000000000000000000",
+        "inner_to": "0x9999999999999999999999999999999999999999",
+        "inner_value": 1000000,
+        "operation": 0
+      }
+    },
+    {
+      "case": "C3a",
+      "label": "l'agent tente allowTarget (auto-élargissement de sa propre cible)",
+      "expect": "revert onlyOwner (aucun droit d'administration — attaque #7)",
+      "sent": false,
+      "offline_checks": [
+        {
+          "description": "sélecteur allowTarget vérifié 0x7b0da5b2",
+          "ok": true
+        },
+        {
+          "description": "calldata allowTarget complet (sélecteur + 3 mots)",
+          "ok": true
+        }
+      ]
+    },
+    {
+      "case": "C3b",
+      "label": "l'agent tente Safe.enableModule (le module a les pleins pouvoirs de la Safe)",
+      "expect": "revert GS* (seul owner = la Safe elle-même)",
+      "sent": false,
+      "offline_checks": [
+        {
+          "description": "sélecteur enableModule(address) calculé localement",
+          "ok": true
+        },
+        {
+          "description": "calldata enableModule complet",
+          "ok": true
+        }
+      ]
+    },
+    {
+      "case": "C4",
+      "label": "boucle 100 + 100 + 100 + 100 (cumul on-chain)",
+      "expect": "les 3 premières passent ; la 4ᵉ revert (dépassement cumulé, attaque #8)",
+      "sent": false,
+      "offline_checks": [
+        {
+          "description": "100+100+100 = 300 000 000 ≤ maxRefill",
+          "ok": true
+        },
+        {
+          "description": "100+100+100+100 = 400 000 000 > maxRefill",
+          "ok": true
+        },
+        {
+          "description": "aller-retour calldata (exec → transfer) cohérent",
+          "ok": true
+        }
+      ],
+      "decoded": {
+        "target": "0x036cbd53842c5426634e7929541ec2318f3dcf7e",
+        "role_key": "0x4147454e54000000000000000000000000000000000000000000000000000000",
+        "inner_to": "0x1111111111111111111111111111111111111111",
+        "inner_value": 100000000,
+        "operation": 0
+      }
+    }
+  ],
+  "boundary": {
+    "case": "C5",
+    "label": "frontière de période : 2 dépenses de 100 USDC encadrant la frontière",
+    "first": {
+      "verdict": "ALLOW",
+      "reasons": [],
+      "cumulative_before": 150.0
+    },
+    "second": {
+      "verdict": "DENY",
+      "reasons": [
+        "AMOUNT_ABOVE_PERIOD_CAP"
+      ],
+      "cumulative_before": 250.0
+    },
+    "expect": "les deux passent on-chain (limite assumée, rafale maxRefill+refill) mais le compteur glissant hors chaîne refuse la seconde",
+    "ok": true
+  },
+  "status": "DRY_RUN_OK"
+}

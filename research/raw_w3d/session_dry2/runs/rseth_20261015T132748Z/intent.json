@@ -1,0 +1,25 @@
+{
+  "schema_version": "intent/v1",
+  "intent_id": "01M4ZVYQZ4DXSJ8GBDR32N9BVE",
+  "chain_id": 84532,
+  "account": "0x2222222222222222222222222222222222222222",
+  "action": "transfer",
+  "asset": "0x036cbd53842c5426634e7929541ec2318f3dcf7e",
+  "amount": "50.0",
+  "amount_base_units": "50000000",
+  "recipient": "0x1111111111111111111111111111111111111111",
+  "function": "transfer(address,uint256)",
+  "params": {
+    "to": "0x1111111111111111111111111111111111111111",
+    "value": "50000000"
+  },
+  "expiry": "2026-10-15T13:42:48Z",
+  "created_at": "2026-10-15T13:27:48Z",
+  "justification": "RUN A — transfert 50 USDC dans l'enveloppe (ALLOW)",
+  "policy_version": "v1.0",
+  "source": {
+    "decision_id": "01M4ZVYQZ4DXSJ8GBDR32N9BVD",
+    "case": "rseth"
+  },
+  "idempotency_key": "0xdd0f521ba1e70433369ed13174fa147e2964cfafe0904a7984f60b1626b19320"
+}

@@ -1,0 +1,40 @@
+{
+  "run": "E",
+  "criteria": [
+    {
+      "id": "E.1",
+      "description": "chaîne de hash recalculée OK (aucune écriture détectée)",
+      "status": "met",
+      "detail": []
+    },
+    {
+      "id": "E.2",
+      "description": "écart journal ↔ chaîne = 0",
+      "status": "pending",
+      "detail": []
+    },
+    {
+      "id": "E.3",
+      "description": "le rapport liste refus et échecs (première classe)",
+      "status": "met",
+      "detail": {
+        "deny": 6,
+        "require_approval": 1
+      }
+    },
+    {
+      "id": "E.4",
+      "description": "compteurs exportés (manifest.json)",
+      "status": "met",
+      "detail": {
+        "allow_policy_entries": 3,
+        "deny_entries": 6,
+        "require_approval_entries": 1,
+        "submits": 1,
+        "receipts": 0,
+        "signatures": 1,
+        "chain_confronted": 0
+      }
+    }
+  ]
+}

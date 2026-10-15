@@ -1,0 +1,23 @@
+{
+  "keys": {
+    "0xdd0f521ba1e70433369ed13174fa147e2964cfafe0904a7984f60b1626b19320": {
+      "intent_id": "01M4ZVYQZ4DXSJ8GBDR32N9BVE",
+      "idempotency_key": "0xdd0f521ba1e70433369ed13174fa147e2964cfafe0904a7984f60b1626b19320",
+      "status": "RESERVED",
+      "note": "run A — préflight passé, signature imminente",
+      "ts_utc": "2026-10-15T13:27:49Z"
+    }
+  },
+  "intent_ids": [
+    "01M4ZVYQZ4DXSJ8GBDR32N9BVE"
+  ],
+  "entries": [
+    {
+      "intent_id": "01M4ZVYQZ4DXSJ8GBDR32N9BVE",
+      "idempotency_key": "0xdd0f521ba1e70433369ed13174fa147e2964cfafe0904a7984f60b1626b19320",
+      "status": "RESERVED",
+      "note": "run A — préflight passé, signature imminente",
+      "ts_utc": "2026-10-15T13:27:49Z"
+    }
+  ]
+}

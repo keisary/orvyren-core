@@ -1,0 +1,56 @@
+{
+  "schema": "orvyren-audit-packet/v1",
+  "case": "usdc-2023-03",
+  "run_id": "01M4ZWN1JW9E9GWQ5CXMAAE6AT",
+  "assembled_at": "2026-10-15T13:40:24Z",
+  "mode": "DRY_RUN",
+  "chain_id": 84532,
+  "streams": {
+    "exec": {
+      "path": "audit.jsonl",
+      "records": 37,
+      "head_hash": "6a399501149dc32258b5e59780756683574a4c9fdb06bd98b5c8d58a3b7e962c",
+      "present": true,
+      "chain_ok": true
+    },
+    "agent": {
+      "present": false,
+      "reason": "run de démonstration sans LLM (démo d'exécution)"
+    },
+    "graph": {
+      "present": false,
+      "reason": "aucun export de graphe attaché à ce run"
+    }
+  },
+  "policy": {
+    "version": "v1.0"
+  },
+  "engine_version": "orvyren-demo-kit W3-D",
+  "verifier": {
+    "full_t10": "not built",
+    "shipped": "verify/verify_hashes.py"
+  },
+  "missing_pieces": [],
+  "files": [
+    "dossier_usdc-2023-03.md",
+    "dossier_usdc-2023-03.html",
+    "decision_usdc-2023-03.json",
+    "baseline_report.json",
+    "quality_report.json",
+    "policy_execution_demo.json",
+    "audit.jsonl",
+    "policy/policy.effective.json",
+    "policy/policy.demo.json",
+    "policy/intent_registry.json",
+    "policy/signatures.jsonl",
+    "manifest.json",
+    "report.md",
+    "README_AUDIT.md",
+    "verify/verify_hashes.py",
+    "verify/VERIFY_NOT_BUILT.txt",
+    "manifest.json",
+    "anchor/README_ANCHOR.txt",
+    "HASHES.txt"
+  ],
+  "note": "Le sha256 du zip est publié à côté du zip (<nom>.zip.sha256) : il ne peut pas être inscrit dans le paquet sans créer une récursion."
+}

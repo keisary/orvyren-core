@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ORVYREN-Core Decision Dossier — case usdc-2023-03</title>
+<style>
+:root{--ink:#16181d;--muted:#5b6470;--line:#d8dde3;--soft:#f5f7f9;--ok:#0a7d3a;--warn:#9a6b00;--neutral:#5b6470;--alert:#b3261e}
+*{box-sizing:border-box}
+body{margin:0;padding:28px 20px 40px;background:#fff;color:var(--ink);font:15px/1.5 "Segoe UI",system-ui,-apple-system,Arial,sans-serif}
+main{max-width:960px;margin:0 auto}
+h1{font-size:21px;margin:0 0 4px}
+h2{font-size:14px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin:24px 0 8px;border-bottom:1px solid var(--line);padding-bottom:4px}
+h3{font-size:14px;margin:14px 0 4px}
+p{margin:4px 0}
+.produced{color:var(--muted);font-size:12.5px;margin:0 0 10px}
+table{width:100%;border-collapse:collapse;font-size:14px;margin:6px 0}
+th,td{border:1px solid var(--line);padding:6px 8px;text-align:left;vertical-align:top}
+th{background:var(--soft);font-weight:600}
+code,.mono{font-family:Consolas,Menlo,monospace;font-size:12.5px;word-break:break-all}
+.badge{display:inline-block;padding:3px 10px;border-radius:3px;font-weight:600;font-size:14px}
+.badge.ok{background:#e6f4ea;color:var(--ok);border:1px solid #bfe3c9}
+.badge.warn{background:#fdf3dd;color:var(--warn);border:1px solid #f0dcae}
+.badge.neutral{background:#eef1f4;color:var(--neutral);border:1px solid var(--line)}
+.missing{border-left:4px solid var(--alert);background:#fdf0ef;padding:8px 12px;margin:10px 0}
+.note{color:var(--muted);font-size:12.5px}
+ul{margin:4px 0 4px 20px;padding:0}
+pre{background:var(--soft);border:1px solid var(--line);padding:8px;overflow:auto;font-size:12.5px;margin:6px 0}
+.foot{margin-top:28px;padding-top:10px;border-top:1px solid var(--line);color:var(--muted);font-size:12.5px}
+</style>
+</head>
+<body>
+<main>
+<header>
+<h1>ORVYREN-Core Decision Dossier</h1>
+<p class="produced">produced by ORVYREN-Core v0.1 — deterministic engine, no human edit</p>
+</header>
+<table class="kv">
+<thead><tr><th>Field</th><th>Value</th></tr></thead>
+<tbody>
+<tr><td>Case</td><td>usdc-2023-03</td></tr>
+<tr><td>Window</td><td>2023-03-09T00:00:00+00:00 → 2023-03-15T00:00:00+00:00</td></tr>
+<tr><td>Generated (UTC)</td><td>2026-10-14T15:47:12Z</td></tr>
+<tr><td>Engine</td><td>ORVYREN-Core 0.1</td></tr>
+</tbody>
+</table>
+<section>
+<h2>Decision</h2>
+<ul>
+<li><strong>Verdict:</strong> <span class="badge ok">ACTION_RECOMMENDED</span></li>
+<li><strong>Amount:</strong> 100.0 USDC (test)</li>
+<li><strong>Action:</strong> transfer — from treasury to reserve</li>
+</ul>
+<h3>Rationale</h3>
+<ul>
+<li>Pre-registered decision rule (frozen before evaluation): H2 SUPPORTED and available_to_move &gt; 0 -&gt; ACTION_RECOMMENDED (bounded 100 USDC test transfer, D8); H1 SUPPORTED and H2 REFUTED -&gt; NO_ACTION (local perturbation, no exposure reduction); missing required series -&gt; INCONCLUSIVE with missing_inputs.</li>
+<li>Rule 1 fires: H2 is SUPPORTED and available_to_move = min(100.0, 500.0 - 350.0) = 100.0000 USDC &gt; 0, so the bounded demonstration action of FREEZE_V1 D8 is recommended: transfer of 100.0000 USDC (test) from wallet &#x27;treasury&#x27; to wallet &#x27;reserve&#x27;.</li>
+<li>H1 local liquidity perturbation: REFUTED. The deviation did not stay local: &gt; 1.0% persisted more than 12 h on 2 independent venues (persistent episodes: bitstamp 42.0 h, binance 45.0 h), while the aggregator fell to 0.876675 (12.3325%), beyond the 0.5% tolerance.</li>
+<li>H2 broad stress on asset or issuer: SUPPORTED. 34 simultaneous hourly observation(s) more than 1.0% below peg on 2 independent venues (binance, bitstamp) from 2023-03-11T14:00:00+00:00 to 2023-03-13T08:00:00+00:00; deepest: bitstamp 0.86267 at 2023-03-11T07:00:00+00:00 (13.7330%); binance 0.91280 at 2023-03-11T15:00:00+00:00 (8.7200%); circulating supply moved -7.1722% in 24 h (2023-03-11T00:00:00+00:00 -&gt; 2023-03-12T00:00:00+00:00), threshold 1.0%.</li>
+<li>H3 data or market artifact: REFUTED. 2 independent sources (binance, bitstamp) were concordant over 34 simultaneous hour(s); no structural inconsistency and no unexplained divergence was found in the corpus.</li>
+</ul>
+<h3>Conditions</h3>
+<ul>
+<li>Any execution must first be authorized by the deterministic policy service (src/orvyren/policy, FREEZE_V1 D9): Base Sepolia chain 84532, allowlisted test-USDC asset, allowlisted reserve recipient, &lt;= 100 USDC per transaction, &lt;= 300 USDC cumulative, 24 h permission, idempotent intent_id.</li>
+<li>Test assets only; no mainnet funds (FREEZE_V1 D5/D8).</li>
+<li>The decision is scoped to the frozen corpus revision (sha256 recorded in inputs_summary) and to the recorded window; new observations outside it invalidate the case.</li>
+<li>Contract-level verification of the asset was not possible from this corpus (no contract field); it remains an open check before any mainnet-grade claim.</li>
+</ul>
+<h3>Provenance</h3>
+<ul>
+<li>{&quot;timestamp_utc&quot;: &quot;2023-03-11T07:00:00+00:00&quot;, &quot;value&quot;: 0.86267, &quot;venue&quot;: &quot;bitstamp&quot;}</li>
+<li>{&quot;timestamp_utc&quot;: &quot;2023-03-11T04:00:00+00:00&quot;, &quot;value&quot;: 0.98622, &quot;venue&quot;: &quot;bitstamp&quot;}</li>
+<li>{&quot;timestamp_utc&quot;: &quot;2023-03-13T14:00:00+00:00&quot;, &quot;value&quot;: 0.99921, &quot;venue&quot;: &quot;bitstamp&quot;}</li>
+<li>{&quot;timestamp_utc&quot;: &quot;2023-03-11T15:00:00+00:00&quot;, &quot;value&quot;: 0.9128, &quot;venue&quot;: &quot;binance&quot;}</li>
+<li>{&quot;timestamp_utc&quot;: &quot;2023-03-11T14:00:00+00:00&quot;, &quot;value&quot;: 0.9129, &quot;venue&quot;: &quot;binance&quot;}</li>
+<li>{&quot;timestamp_utc&quot;: &quot;2023-03-11T08:00:00+00:00&quot;, &quot;value&quot;: 0.876675, &quot;venue&quot;: &quot;defillama&quot;}</li>
+<li>{&quot;timestamp_utc&quot;: &quot;2023-03-12T22:00:00+00:00&quot;, &quot;value&quot;: 0.98945, &quot;venue&quot;: &quot;bitstamp&quot;}</li>
+<li>{&quot;timestamp_utc&quot;: &quot;2023-03-13T11:00:00+00:00&quot;, &quot;value&quot;: 0.987, &quot;venue&quot;: &quot;binance&quot;}</li>
+<li class="note">… +67 more entries (complete list in the source decision JSON, hashed in Evidence &amp; integrity)</li>
+</ul>
+</section>
+<section>
+<h2>Hypothesis verdicts</h2>
+<table>
+<thead><tr><th>Hypothesis</th><th>Verdict</th><th>Evidence refs</th></tr></thead>
+<tbody>
+<tr><td>H1</td><td>REFUTED</td><td>8 — {&quot;timestamp_utc&quot;: &quot;2023-03-11T04:00:00+00:00&quot;, &quot;value&quot;: 0.98622, &quot;venue&quot;: &quot;bitstamp&quot;}; {&quot;timestamp_utc&quot;: &quot;2023-03-11T07:00:00+00:00&quot;, &quot;value&quot;: 0.86267, &quot;venue&quot;: &quot;bitstamp&quot;}; {&quot;timestamp_utc&quot;: &quot;2023-03-11T08:00:00+00:00&quot;, &quot;value&quot;: 0.876675, &quot;venue&quot;: &quot;defillama&quot;}; {&quot;timestamp_utc&quot;: &quot;2023-03-11T14:00:00+00:00&quot;, &quot;value&quot;: 0.9129, &quot;venue&quot;: &quot;binance&quot;}; … +4 more (full list in the hashed decision JSON)</td></tr>
+<tr><td>H2</td><td>SUPPORTED</td><td>72 — {&quot;timestamp_utc&quot;: &quot;2023-03-11T00:00:00+00:00&quot;, &quot;value&quot;: 42097257578.0, &quot;venue&quot;: &quot;defillama_supply_aggregate&quot;}; {&quot;timestamp_utc&quot;: &quot;2023-03-11T07:00:00+00:00&quot;, &quot;value&quot;: 0.86267, &quot;venue&quot;: &quot;bitstamp&quot;}; {&quot;timestamp_utc&quot;: &quot;2023-03-11T14:00:00+00:00&quot;, &quot;value&quot;: 0.9129, &quot;venue&quot;: &quot;binance&quot;}; {&quot;timestamp_utc&quot;: &quot;2023-03-11T14:00:00+00:00&quot;, &quot;value&quot;: 0.915, &quot;venue&quot;: &quot;bitstamp&quot;}; … +68 more (full list in the hashed decision JSON)</td></tr>
+<tr><td>H3</td><td>REFUTED</td><td>4 — {&quot;timestamp_utc&quot;: &quot;2023-03-11T14:00:00+00:00&quot;, &quot;value&quot;: 0.9129, &quot;venue&quot;: &quot;binance&quot;}; {&quot;timestamp_utc&quot;: &quot;2023-03-11T14:00:00+00:00&quot;, &quot;value&quot;: 0.915, &quot;venue&quot;: &quot;bitstamp&quot;}; {&quot;timestamp_utc&quot;: &quot;2023-03-13T08:00:00+00:00&quot;, &quot;value&quot;: 0.9879, &quot;venue&quot;: &quot;binance&quot;}; {&quot;timestamp_utc&quot;: &quot;2023-03-13T08:00:00+00:00&quot;, &quot;value&quot;: 0.98843, &quot;venue&quot;: &quot;bitstamp&quot;}</td></tr>
+</tbody>
+</table>
+</section>
+<section>
+<h2>Baseline A0 — main window vs control</h2>
+<p><strong>Rule:</strong> If the aggregator price (venue=defillama) is below 0.99 for 2 consecutive hourly observations, reduce the exposure by 100 USDC; otherwise NO-ACTION (FREEZE_V1.md D6). One signal per episode of consecutive observations below 0.99, fired on the second observation; episodes are broken by 1 h gaps.</p>
+<table>
+<thead><tr><th>Metric</th><th>Main window</th><th>Control</th></tr></thead>
+<tbody>
+<tr><td>Signals</td><td>2</td><td>0</td></tr>
+<tr><td>False signals</td><td>—</td><td>0</td></tr>
+</tbody>
+</table>
+<h3>Main window signals (2)</h3>
+<ul>
+<li>{&quot;action&quot;: {&quot;amount_usdc&quot;: 100.0, &quot;type&quot;: &quot;reduce_exposure&quot;}, &quot;consecutive_observations&quot;: 2, &quot;episode&quot;: {&quot;end_utc&quot;: &quot;2023-03-12T23:00:00+00:00&quot;, &quot;min_value&quot;: 0.876675, &quot;min_value_utc&quot;: &quot;2023-03-11T08:00:00+00:00&quot;, &quot;observations&quot;: 46, &quot;start_utc&quot;: &quot;2023-03-11T02:00:00+00:00&quot;}, &quot;evidence_refs&quot;: [{&quot;timestamp_utc&quot;: &quot;2023-03-11T02:00:00+00:00&quot;, &quot;value&quot;: 0.9840669405733308, &quot;venue&quot;: &quot;defillama&quot;}, {&quot;timestamp_utc&quot;: &quot;2023-03-11T03:00:00+00:00&quot;, &quot;value&quot;: 0.9798257461693491, &quot;venue&quot;: &quot;defillama&quot;}], &quot;trigger_deviation_pct&quot;: 2.017425, &quot;trigger_value&quot;: 0.9798257461693491, &quot;triggered_at_utc&quot;: &quot;2023-03-11T03:00:00+00:00&quot;, &quot;venue&quot;: &quot;defillama&quot;}</li>
+<li>{&quot;action&quot;: {&quot;amount_usdc&quot;: 100.0, &quot;type&quot;: &quot;reduce_exposure&quot;}, &quot;consecutive_observations&quot;: 2, &quot;episode&quot;: {&quot;end_utc&quot;: &quot;2023-03-13T09:00:00+00:00&quot;, &quot;min_value&quot;: 0.980323694466695, &quot;min_value_utc&quot;: &quot;2023-03-13T08:00:00+00:00&quot;, &quot;observations&quot;: 5, &quot;start_utc&quot;: &quot;2023-03-13T05:00:00+00:00&quot;}, &quot;evidence_refs&quot;: [{&quot;timestamp_utc&quot;: &quot;2023-03-13T05:00:00+00:00&quot;, &quot;value&quot;: 0.9860398348829958, &quot;venue&quot;: &quot;defillama&quot;}, {&quot;timestamp_utc&quot;: &quot;2023-03-13T06:00:00+00:00&quot;, &quot;value&quot;: 0.983199, &quot;venue&quot;: &quot;defillama&quot;}], &quot;trigger_deviation_pct&quot;: 1.6801, &quot;trigger_value&quot;: 0.983199, &quot;triggered_at_utc&quot;: &quot;2023-03-13T06:00:00+00:00&quot;, &quot;venue&quot;: &quot;defillama&quot;}</li>
+</ul>
+<h3>Control signals (0)</h3>
+<p class="note">none listed</p>
+</section>
+<section>
+<h2>Inputs summary</h2>
+<table>
+<thead><tr><th>Key</th><th>Value</th></tr></thead>
+<tbody>
+<tr><td>corpus</td><td>{&quot;observations_in_file&quot;: 520, &quot;observations_in_window&quot;: 387, &quot;path&quot;: &quot;corpus/usdc_observations.csv&quot;, &quot;sha256&quot;: &quot;c31088b3de428a35cad0833e323352d3fedecb251e4ccd07f168d884b4c8ea7e&quot;}</td></tr>
+<tr><td>exposure_parameters</td><td>{&quot;action_usdc&quot;: 100.0, &quot;available_to_move_usdc&quot;: 100.0, &quot;exposure_usdc&quot;: 500.0, &quot;floor_usdc&quot;: 350.0, &quot;note&quot;: &quot;demonstration parameters only: no real wallet, no real balance, no market impact modelled&quot;}</td></tr>
+<tr><td>peg_reference_usd</td><td>1.0</td></tr>
+<tr><td>pre_registered_thresholds</td><td>{&quot;aggregate_tolerance_pct&quot;: 0.5, &quot;deviation_alert_pct&quot;: 1.0, &quot;persistence_hours_limit&quot;: 12.0, &quot;recovery_hours_limit&quot;: 12.0, &quot;recovery_tolerance_pct&quot;: 0.1, &quot;supply_drop_pct&quot;: 1.0, &quot;supply_window_hours&quot;: 24.0}</td></tr>
+<tr><td>sources</td><td>{&quot;first_timestamp_utc&quot;: &quot;2023-03-11T14:00:00+00:00&quot;, &quot;last_timestamp_utc&quot;: &quot;2023-03-15T00:00:00+00:00&quot;, &quot;max_value&quot;: 0.9961, &quot;metric&quot;: &quot;close_usdcusdt&quot;, &quot;min_value&quot;: 0.9128, &quot;observations&quot;: 83, &quot;venue&quot;: &quot;binance&quot;}; {&quot;first_timestamp_utc&quot;: &quot;2023-03-09T00:00:00+00:00&quot;, &quot;last_timestamp_utc&quot;: &quot;2023-03-15T00:00:00+00:00&quot;, &quot;max_value&quot;: 1.00002, &quot;metric&quot;: &quot;close_usd&quot;, &quot;min_value&quot;: 0.86267, &quot;observations&quot;: 145, &quot;venue&quot;: &quot;bitstamp&quot;}; {&quot;first_timestamp_utc&quot;: &quot;2023-03-09T00:00:00+00:00&quot;, &quot;last_timestamp_utc&quot;: &quot;2023-03-15T00:00:00+00:00&quot;, &quot;max_value&quot;: 1.0031789557372346, &quot;metric&quot;: &quot;price_usd&quot;, &quot;min_value&quot;: 0.876675, &quot;observations&quot;: 145, &quot;venue&quot;: &quot;defillama&quot;}; {&quot;first_timestamp_utc&quot;: &quot;2023-03-09T00:00:00+00:00&quot;, &quot;last_timestamp_utc&quot;: &quot;2023-03-15T00:00:00+00:00&quot;, &quot;max_value&quot;: 43195640252.0, &quot;metric&quot;: &quot;circulating_usd&quot;, &quot;min_value&quot;: 38001901940.0, &quot;observations&quot;: 7, &quot;venue&quot;: &quot;defillama_supply_aggregate&quot;}; {&quot;first_timestamp_utc&quot;: &quot;2023-03-09T00:00:00+00:00&quot;, &quot;last_timestamp_utc&quot;: &quot;2023-03-15T00:00:00+00:00&quot;, &quot;max_value&quot;: 37059405596.0, &quot;metric&quot;: &quot;circulating_usd&quot;, &quot;min_value&quot;: 32477824617.0, &quot;observations&quot;: 7, &quot;venue&quot;: &quot;defillama_supply_ethereum&quot;}</td></tr>
+</tbody>
+</table>
+</section>
+<section>
+<h2>Policy execution demo</h2>
+<pre>{
+  &quot;agent_holds_key&quot;: false,
+  &quot;cases&quot;: [
+    {
+      &quot;action_type&quot;: &quot;transfer&quot;,
+      &quot;amount_usdc&quot;: 100.0,
+      &quot;deny_codes&quot;: [],
+      &quot;instruction&quot;: {
+        &quot;calldata&quot;: &quot;0xa9059cbb00000000000000000000000011111111111111111111111111111111111111110000000000000000000000000000000000000000000000000000000005f5e100&quot;,
+        &quot;note&quot;: &quot;human executes this transfer; the agent never holds the key&quot;,
+        &quot;to&quot;: &quot;0x036cbd53842c5426634e7929541eC2318f3dCF7e&quot;
+      },
+      &quot;intent_id&quot;: &quot;I1&quot;,
+      &quot;recipient&quot;: &quot;0x1111111111111111111111111111111111111111&quot;,
+      &quot;rules_evaluated&quot;: [
+        {
+          &quot;note&quot;: &quot;84532&quot;,
+          &quot;result&quot;: &quot;OK&quot;,
+          &quot;rule&quot;: &quot;R1-chain&quot;
+        },
+        {
+          &quot;note&quot;: &quot;&quot;,
+          &quot;result&quot;: &quot;OK&quot;,
+          &quot;rule&quot;: &quot;R2-asset&quot;
+        },
+        {
+          &quot;note&quot;: &quot;&quot;,
+          &quot;result&quot;: &quot;OK&quot;,
+          &quot;rule&quot;: &quot;R3-recipient&quot;
+        },
+        {
+          &quot;note&quot;: &quot;100.0 &lt;= 100.0&quot;,
+          &quot;result&quot;: &quot;OK&quot;,
+          &quot;rule&quot;: &quot;R4-amount&quot;
+        },
+        {
+          &quot;note&quot;: &quot;100.0 &lt;= 300.0&quot;,
+          &quot;result&quot;: &quot;OK&quot;,
+          &quot;rule&quot;: &quot;R5-cumulative&quot;
+        },
+        {
+          &quot;note&quot;: &quot;2026-10-15T12:00:00+00:00&quot;,
+          &quot;result&quot;: &quot;OK&quot;,
+          &quot;rule&quot;: &quot;R6-permission&quot;
+        },
+        {
+          &quot;note&quot;: &quot;&quot;,
+          &quot;result&quot;: &quot;OK&quot;,
+          &quot;rule&quot;: &quot;R7-idempotency&quot;
+        },
+        {
+          &quot;note&quot;: &quot;transfer&quot;,
+          &quot;result&quot;: &quot;OK&quot;,
+          &quot;rule&quot;: &quot;R8-action&quot;
+        }
+      ],
+      &quot;verdict&quot;: &quot;ALLOW&quot;
+    },
+    {
+      &quot;action_type&quot;: &quot;transfer&quot;,
+      &quot;amount_usdc&quot;: 500.0,
+      &quot;deny_codes&quot;: [
+        &quot;AMOUNT_ABOVE_TX_CAP&quot;,
+        &quot;AMOUNT_ABOVE_PERIOD_CAP&quot;
+      ],
+      &quot;instruction&quot;: null,
+      &quot;intent_id&quot;: &quot;I2&quot;,
+      &quot;recipient&quot;: &quot;0x1111111111111111111111111111111111111111&quot;,
+      &quot;rules_evaluated&quot;: [
+        {
+          &quot;note&quot;: &quot;84532&quot;,
+          &quot;result&quot;: &quot;OK&quot;,
+          &quot;rule&quot;: &quot;R1-chain&quot;
+        },
+        {
+          &quot;note&quot;: &quot;&quot;,
+          &quot;result&quot;: &quot;OK&quot;,
+          &quot;rule&quot;: &quot;R2-asset&quot;
+        },
+        {
+          &quot;note&quot;: &quot;&quot;,
+          &quot;result&quot;: &quot;OK&quot;,
+          &quot;rule&quot;: &quot;R3-recipient&quot;
+        },
+        {
+          &quot;code&quot;: &quot;AMOUNT_ABOVE_TX_CAP&quot;,
+          &quot;result&quot;: &quot;FAIL&quot;,
+          &quot;rule&quot;: &quot;R4-amount&quot;
+        },
+        {
+          &quot;code&quot;: &quot;AMOUNT_ABOVE_PERIOD_CAP&quot;,
+          &quot;result&quot;: &quot;FAIL&quot;,
+          &quot;rule&quot;: &quot;R5-cumulative&quot;
+        },
+        {
+          &quot;note&quot;: &quot;2026-10-15T12:00:00+00:00&quot;,
+          &quot;result&quot;: &quot;OK&quot;,
+          &quot;rule&quot;: &quot;R6-permission&quot;
+        },
+        {
+          &quot;note&quot;: &quot;&quot;,
+          &quot;result&quot;: &quot;OK&quot;,
+          &quot;rule&quot;: &quot;R7-idempotency&quot;
+        }
+      ],
+      &quot;verdict&quot;: &quot;DENY&quot;
+    },
+    {
+      &quot;action_type&quot;: &quot;change_policy&quot;,
+      &quot;amount_usdc&quot;: 100.0,
+      &quot;deny_codes&quot;: [
+        &quot;ACTION_NEEDS_HUMAN_APPROVAL&quot;
+      ],
+      &quot;instruction&quot;: null,
+      &quot;intent_id&quot;: &quot;I3&quot;,
+      &quot;recipient&quot;: &quot;0x1111111111111111111111111111111111111111&quot;,
+      &quot;rules_evaluated&quot;: [
+        {
+          &quot;note&quot;: &quot;84532&quot;,
+          &quot;result&quot;: &quot;OK&quot;,
+          &quot;rule&quot;: &quot;R1-chain&quot;
+        },
+        {
+          &quot;note&quot;: &quot;&quot;,
+          &quot;result&quot;: &quot;OK&quot;,
+          &quot;rule&quot;: &quot;R2-asset&quot;
+        },
+        {
+          &quot;note&quot;: &quot;&quot;,
+          &quot;result&quot;: &quot;OK&quot;,
+          &quot;rule&quot;: &quot;R3-recipient&quot;
+        },
+        {
+          &quot;note&quot;: &quot;100.0 &lt;= 100.0&quot;,
+          &quot;result&quot;: &quot;OK&quot;,
+          &quot;rule&quot;: &quot;R4-amount&quot;
+        },
+        {
+          &quot;note&quot;: &quot;100.0 &lt;= 300.0&quot;,
+          &quot;result&quot;: &quot;OK&quot;,
+          &quot;rule&quot;: &quot;R5-cumulative&quot;
+        },
+        {
+          &quot;note&quot;: &quot;2026-10-15T12:00:00+00:00&quot;,
+          &quot;result&quot;: &quot;OK&quot;,
+          &quot;rule&quot;: &quot;R6-permission&quot;
+        },
+        {
+          &quot;note&quot;: &quot;&quot;,
+          &quot;result&quot;: &quot;OK&quot;,
+          &quot;rule&quot;: &quot;R7-idempotency&quot;
+        },
+        {
+          &quot;code&quot;: &quot;ACTION_NEEDS_HUMAN_APPROVAL&quot;,
+          &quot;result&quot;: &quot;REQUIRE_APPROVAL&quot;,
+          &quot;rule&quot;: &quot;R8-action&quot;
+        }
+      ],
+      &quot;verdict&quot;: &quot;REQUIRE_APPROVAL&quot;
+    }
+  ],
+  &quot;chain&quot;: &quot;Base Sepolia (84532)&quot;,
+  &quot;execution_config&quot;: {
+    &quot;agent_holds_key&quot;: false,
+    &quot;dry_run&quot;: true,
+    &quot;max_cumulative&quot;: 300.0,
+    &quot;max_per_tx&quot;: 100.0,
+    &quot;permission_ttl_hours&quot;: 24,
+    &quot;reserve_address&quot;: &quot;0x1111111111111111111111111111111111111111&quot;,
+    &quot;rpc_url_masked&quot;: &quot;https://sepolia.base.org&quot;,
+    &quot;secret_env_vars_present&quot;: [],
+    &quot;timeout_seconds&quot;: 30,
+    &quot;treasury_address&quot;: &quot;0x2222222222222222222222222222222222222222&quot;
+  },
+  &quot;generated_at&quot;: &quot;2026-10-14T15:47:12+00:00&quot;,
+  &quot;guard_blocks&quot;: [
+    &quot;I2: execution blocked: policy verdict &#x27;DENY&#x27; — the instruction is refused (reason codes: AMOUNT_ABOVE_TX_CAP, AMOUNT_ABOVE_PERIOD_CAP)&quot;,
+    &quot;I3: execution blocked: policy verdict &#x27;REQUIRE_APPROVAL&#x27; — a human approval is required before this instruction may be prepared (reason codes: ACTION_NEEDS_HUMAN_APPROVAL)&quot;
+  ],
+  &quot;mode&quot;: &quot;unsigned instruction + human execution + on-chain receipt verification&quot;,
+  &quot;receipt_verification&quot;: {
+    &quot;status&quot;: &quot;no transaction hash provided yet (pending human execution)&quot;
+  },
+  &quot;verdict_check&quot;: {
+    &quot;expected&quot;: {
+      &quot;I1&quot;: &quot;ALLOW&quot;,
+      &quot;I2&quot;: &quot;DENY&quot;,
+      &quot;I3&quot;: &quot;REQUIRE_APPROVAL&quot;
+    },
+    &quot;unexpected&quot;: []
+  }
+}</pre>
+</section>
+<section>
+<h2>Quality report</h2>
+<pre>{
+  &quot;claims&quot;: [
+    {
+      &quot;created_at&quot;: &quot;2026-10-14T15:47:10+00:00&quot;,
+      &quot;fingerprint&quot;: &quot;d6cb095fc695a249&quot;,
+      &quot;id&quot;: &quot;claim-defillama-low-main&quot;,
+      &quot;refs&quot;: [
+        &quot;547c6426c72953ad&quot;
+      ],
+      &quot;text&quot;: &quot;DeFiLlama aggregated USDC price reached its lowest hourly value of the main window on 2023-03-11T08:00:00+00:00: 0.87667 (price_usd).&quot;
+    },
+    {
+      &quot;created_at&quot;: &quot;2026-10-14T15:47:10+00:00&quot;,
+      &quot;fingerprint&quot;: &quot;1f7d1ecbf0a555f1&quot;,
+      &quot;id&quot;: &quot;claim-bitstamp-low-main&quot;,
+      &quot;refs&quot;: [
+        &quot;e9d188069b6b8f1a&quot;
+      ],
+      &quot;text&quot;: &quot;Bitstamp USDC/USD close reached its lowest hourly value of the main window on 2023-03-11T07:00:00+00:00: 0.86267 (close_usd).&quot;
+    },
+    {
+      &quot;created_at&quot;: &quot;2026-10-14T15:47:10+00:00&quot;,
+      &quot;fingerprint&quot;: &quot;e4b34b4b2db224e7&quot;,
+      &quot;id&quot;: &quot;claim-binance-low-main&quot;,
+      &quot;refs&quot;: [
+        &quot;09db96e264842925&quot;
+      ],
+      &quot;text&quot;: &quot;Binance USDC/USDT close reached its lowest hourly value of the main window on 2023-03-11T15:00:00+00:00: 0.91280 (close_usdcusdt).&quot;
+    },
+    {
+      &quot;created_at&quot;: &quot;2026-10-14T15:47:10+00:00&quot;,
+      &quot;fingerprint&quot;: &quot;3333b33545a9da63&quot;,
+      &quot;id&quot;: &quot;claim-supply-contraction&quot;,
+      &quot;refs&quot;: [
+        &quot;c11e9e87d05d0f49&quot;,
+        &quot;27e8d337fdfe28ad&quot;
+      ],
+      &quot;text&quot;: &quot;USDC circulating supply (DeFiLlama aggregate) fell from 43176044700 USD on 2023-03-10 to 42097257578 USD on 2023-03-11 (-1078787122 USD, -2.50%), a supply contraction.&quot;
+    }
+  ],
+  &quot;corpus&quot;: {
+    &quot;csv&quot;: &quot;corpus/usdc_observations.csv&quot;,
+    &quot;flagged&quot;: 0,
+    &quot;kept&quot;: 520,
+    &quot;rejected&quot;: 0,
+    &quot;rows&quot;: 520
+  },
+  &quot;coverage&quot;: {
+    &quot;first_two_venue_hour&quot;: &quot;2023-03-09T00:00:00+00:00&quot;,
+    &quot;hours_by_independent_venue_count&quot;: {
+      &quot;2&quot;: 62,
+      &quot;3&quot;: 83
+    },
+    &quot;hours_with_three_independent_venues&quot;: 83,
+    &quot;hours_with_two_plus_independent_venues&quot;: 145,
+    &quot;independent_price_venues&quot;: [
+      &quot;defillama&quot;,
+      &quot;binance&quot;,
+      &quot;bitstamp&quot;
+    ],
+    &quot;last_two_venue_hour&quot;: &quot;2023-03-15T00:00:00+00:00&quot;,
+    &quot;per_venue&quot;: {
+      &quot;binance&quot;: {
+        &quot;coverage_ratio&quot;: 0.5724,
+        &quot;first_hour&quot;: &quot;2023-03-11T14:00:00+00:00&quot;,
+        &quot;hours_covered&quot;: 83,
+        &quot;hours_in_window&quot;: 145,
+        &quot;last_hour&quot;: &quot;2023-03-15T00:00:00+00:00&quot;,
+        &quot;metrics&quot;: [
+          &quot;close_usdcusdt&quot;
+        ],
+        &quot;observations&quot;: 83
+      },
+      &quot;bitstamp&quot;: {
+        &quot;coverage_ratio&quot;: 1.0,
+        &quot;first_hour&quot;: &quot;2023-03-09T00:00:00+00:00&quot;,
+        &quot;hours_covered&quot;: 145,
+        &quot;hours_in_window&quot;: 145,
+        &quot;last_hour&quot;: &quot;2023-03-15T00:00:00+00:00&quot;,
+        &quot;metrics&quot;: [
+          &quot;close_usd&quot;
+        ],
+        &quot;observations&quot;: 145
+      },
+      &quot;defillama&quot;: {
+        &quot;coverage_ratio&quot;: 1.0,
+        &quot;first_hour&quot;: &quot;2023-03-09T00:00:00+00:00&quot;,
+        &quot;hours_covered&quot;: 145,
+        &quot;hours_in_window&quot;: 145,
+        &quot;last_hour&quot;: &quot;2023-03-15T00:00:00+00:00&quot;,
+        &quot;metrics&quot;: [
+          &quot;price_usd&quot;
+        ],
+        &quot;observations&quot;: 145
+      },
+      &quot;defillama_supply_aggregate&quot;: {
+        &quot;coverage_ratio&quot;: 0.0483,
+        &quot;first_hour&quot;: &quot;2023-03-09T00:00:00+00:00&quot;,
+        &quot;hours_covered&quot;: 7,
+        &quot;hours_in_window&quot;: 145,
+        &quot;last_hour&quot;: &quot;2023-03-15T00:00:00+00:00&quot;,
+        &quot;metrics&quot;: [
+          &quot;circulating_usd&quot;
+        ],
+        &quot;observations&quot;: 7
+      },
+      &quot;defillama_supply_ethereum&quot;: {
+        &quot;coverage_ratio&quot;: 0.0483,
+        &quot;first_hour&quot;: &quot;2023-03-09T00:00:00+00:00&quot;,
+        &quot;hours_covered&quot;: 7,
+        &quot;hours_in_window&quot;: 145,
+        &quot;last_hour&quot;: &quot;2023-03-15T00:00:00+00:00&quot;,
+        &quot;metrics&quot;: [
+          &quot;circulating_usd&quot;
+        ],
+        &quot;observations&quot;: 7
+      }
+    },
+    &quot;window&quot;: {
+      &quot;end&quot;: &quot;2023-03-15T00:00:00+00:00&quot;,
+      &quot;hours&quot;: 145,
+      &quot;start&quot;: &quot;2023-03-09T00:00:00+00:00&quot;
+    }
+  },
+  &quot;data_gate_examples&quot;: [
+    {
+      &quot;hour&quot;: &quot;2023-03-09T00:00:00+00:00&quot;,
+      &quot;missing&quot;: [
+        &quot;binance&quot;
+      ],
+      &quot;status&quot;: &quot;OK&quot;,
+      &quot;venues_present&quot;: [
+        &quot;bitstamp&quot;,
+        &quot;defillama&quot;
+      ]
+    },
+    {
+      &quot;hour&quot;: &quot;2023-03-11T07:00:00+00:00&quot;,
+      &quot;missing&quot;: [
+        &quot;binance&quot;
+      ],
+      &quot;status&quot;: &quot;OK&quot;,
+      &quot;venues_present&quot;: [
+        &quot;bitstamp&quot;,
+        &quot;defillama&quot;
+      ]
+    },
+    {
+      &quot;hour&quot;: &quot;2023-03-11T08:00:00+00:00&quot;,
+      &quot;missing&quot;: [
+        &quot;binance&quot;
+      ],
+      &quot;status&quot;: &quot;OK&quot;,
+      &quot;venues_present&quot;: [
+        &quot;bitstamp&quot;,
+        &quot;defillama&quot;
+      ]
+    },
+    {
+      &quot;hour&quot;: &quot;2023-03-11T15:00:00+00:00&quot;,
+      &quot;missing&quot;: [],
+      &quot;status&quot;: &quot;OK&quot;,
+      &quot;venues_present&quot;: [
+        &quot;binance&quot;,
+        &quot;bitstamp&quot;,
+        &quot;defillama&quot;
+      ]
+    },
+    {
+      &quot;hour&quot;: &quot;2023-03-15T00:00:00+00:00&quot;,
+      &quot;missing&quot;: [],
+      &quot;status&quot;: &quot;OK&quot;,
+      &quot;venues_present&quot;: [
+        &quot;binance&quot;,
+        &quot;bitstamp&quot;,
+        &quot;defillama&quot;
+      ]
+    },
+    {
+      &quot;hour&quot;: &quot;2023-03-16T00:00:00+00:00&quot;,
+      &quot;missing&quot;: [
+        &quot;defillama&quot;,
+        &quot;binance&quot;,
+        &quot;bitstamp&quot;
+      ],
+      &quot;status&quot;: &quot;INSUFFICIENT&quot;,
+      &quot;venues_present&quot;: []
+    }
+  ],
+  &quot;generated_at&quot;: &quot;2026-10-14T15:47:11.620648+00:00&quot;,
+  &quot;graph&quot;: {
+    &quot;claims_inserted&quot;: 4,
+    &quot;counts&quot;: {
+      &quot;claims&quot;: 4,
+      &quot;decision_nodes&quot;: 0,
+      &quot;hypotheses&quot;: 1,
+      &quot;observations&quot;: 520,
+      &quot;relations&quot;: 4,
+      &quot;sources&quot;: 4
+    },
+    &quot;database&quot;: &quot;evidence/graph.sqlite&quot;,
+    &quot;observations_inserted&quot;: 520,
+    &quot;relations_inserted&quot;: 4,
+    &quot;snapshot&quot;: {
+      &quot;counts&quot;: {
+        &quot;claims&quot;: 4,
+        &quot;decision_nodes&quot;: 0,
+        &quot;hypotheses&quot;: 1,
+        &quot;observations&quot;: 520,
+        &quot;relations&quot;: 4,
+        &quot;sources&quot;: 4
+      },
+      &quot;graph_version&quot;: &quot;orvyren-graph-v1&quot;,
+      &quot;hash&quot;: &quot;6c02b63403aad46942c46060b9fa643f9e7683a7138164eeac7c712ab50f7294&quot;,
+      &quot;rows_total&quot;: {
+        &quot;claims&quot;: 4,
+        &quot;decision_nodes&quot;: 0,
+        &quot;hypotheses&quot;: 1,
+        &quot;observations&quot;: 520,
+        &quot;relations&quot;: 4,
+        &quot;sources&quot;: 4
+      },
+      &quot;schema_version&quot;: 1
+    },
+    &quot;sources&quot;: [
+      &quot;binance&quot;,
+      &quot;bitstamp&quot;,
+      &quot;defillama&quot;,
+      &quot;defillama_supply&quot;
+    ]
+  },
+  &quot;hypotheses&quot;: [
+    {
+      &quot;claims&quot;: [
+        &quot;claim-binance-low-main&quot;,
+        &quot;claim-bitstamp-low-main&quot;,
+        &quot;claim-defillama-low-main&quot;,
+        &quot;claim-supply-contraction&quot;
+      ],
+      &quot;criteria_refute&quot;: [
+        &quot;no independent venue prints a price below the 0.995 USD band&quot;,
+        &quot;the supply level is flat or rising across 2023-03-10 and 2023-03-11&quot;
+      ],
+      &quot;criteria_support&quot;: [
+        &quot;at least two independent venues print a price below 0.95 USD within the main window&quot;,
+        &quot;the aggregate circulating supply contracts day over day&quot;
+      ],
+      &quot;id&quot;: &quot;H1-usdc-disclosure-disorder&quot;,
+      &quot;state&quot;: &quot;UNDER_TEST&quot;,
+      &quot;statement&quot;: &quot;USDC experienced a genuine market dislocation in March 2023, visible in independent venue prices and in a contraction of circulating supply.&quot;
+    }
+  ],
+  &quot;normalization&quot;: {
+    &quot;counts_by_metric&quot;: {
+      &quot;circulating_usd&quot;: 74,
+      &quot;close_usd&quot;: 145,
+      &quot;close_usdcusdt&quot;: 83,
+      &quot;price_usd&quot;: 218
+    },
+    &quot;counts_by_venue&quot;: {
+      &quot;binance&quot;: 83,
+      &quot;bitstamp&quot;: 145,
+      &quot;defillama&quot;: 218,
+      &quot;defillama_supply_aggregate&quot;: 37,
+      &quot;defillama_supply_ethereum&quot;: 37
+    },
+    &quot;flagged&quot;: [],
+    &quot;kept&quot;: 520,
+    &quot;rejected&quot;: [],
+    &quot;total&quot;: 520
+  },
+  &quot;provenance&quot;: {
+    &quot;claims_checked&quot;: 4,
+    &quot;claims_failed&quot;: 0,
+    &quot;ok&quot;: true,
+    &quot;results&quot;: [
+      {
+        &quot;checked&quot;: 1,
+        &quot;claim_id&quot;: &quot;claim-binance-low-main&quot;,
+        &quot;error&quot;: null,
+        &quot;missing&quot;: [],
+        &quot;ok&quot;: true
+      },
+      {
+        &quot;checked&quot;: 1,
+        &quot;claim_id&quot;: &quot;claim-bitstamp-low-main&quot;,
+        &quot;error&quot;: null,
+        &quot;missing&quot;: [],
+        &quot;ok&quot;: true
+      },
+      {
+        &quot;checked&quot;: 1,
+        &quot;claim_id&quot;: &quot;claim-defillama-low-main&quot;,
+        &quot;error&quot;: null,
+        &quot;missing&quot;: [],
+        &quot;ok&quot;: true
+      },
+      {
+        &quot;checked&quot;: 2,
+        &quot;claim_id&quot;: &quot;claim-supply-contraction&quot;,
+        &quot;error&quot;: null,
+        &quot;missing&quot;: [],
+        &quot;ok&quot;: true
+      }
+    ]
+  }
+}</pre>
+</section>
+<section>
+<h2>Limits &amp; uncertainties</h2>
+<ul>
+<li>Exposure parameters are demonstration values, not a real portfolio: 500.0 USDC exposure, 350.0 USDC floor, 100.0 USDC action.</li>
+<li>Corpus coverage is uneven: binance 83 observation(s); bitstamp 145 observation(s); defillama 145 observation(s); defillama_supply_aggregate 7 observation(s); defillama_supply_ethereum 7 observation(s); the control window has no exchange observations.</li>
+<li>The aggregator is a multi-venue median with possible lag; the supply series is daily and covers observable on-chain supply only.</li>
+<li>H2 identifies stress consistent with an asset/issuer event; price and supply data alone do not attribute it between the asset and its issuer.</li>
+<li>This engine produces a decision candidate only and never executes; the baseline A0 comparison lives in evidence/baseline_report.json.</li>
+</ul>
+</section>
+<section>
+<h2>Evidence &amp; integrity</h2>
+<table>
+<thead><tr><th>Input</th><th>Path</th><th>SHA-256</th></tr></thead>
+<tbody>
+<tr><td>decision</td><td><code>evidence/decision_usdc-2023-03.json</code></td><td><code>b65c0634be924b18954258dedb93e7f8965ae2728fb129f1dd56c39c01b76bbd</code></td></tr>
+<tr><td>baseline_report</td><td><code>evidence/baseline_report.json</code></td><td><code>fa68d11f36232719f5400b5aab1d1cfab19b7808aaeb3e01297bd7bf4f868ae8</code></td></tr>
+<tr><td>policy_execution_demo</td><td><code>evidence/policy_execution_demo.json</code></td><td><code>3712a68321bb7017d786eb94cd94630afde9f77eb93293037ae3adae4a953fe1</code></td></tr>
+<tr><td>quality_report</td><td><code>evidence/quality_report.json</code></td><td><code>5478728ceb60ca0b066d65c674c398f848abce01cb57ed7630c1db842a30bed4</code></td></tr>
+<tr><td>dossier (self, html)</td><td><code>evidence/dossier_usdc-2023-03.html</code></td><td><code>7a609a14e1e6461472b262ae7f3692f93b5acd5458032062f86b455e7c4c3f89</code></td></tr>
+</tbody>
+</table>
+<p class="note">Self-hash rule: the <code>dossier (self, html)</code> row is the SHA-256 of this HTML file computed with its own 64-hex-character self-hash field zeroed (64 <code>0</code> characters). It is reproducible with any SHA-256 tool: replace that field with zeros and hash the file. With identical inputs and build time this dossier is byte-identical.</p>
+</section>
+<footer class="foot">produced by ORVYREN-Core v0.1 — deterministic engine, no human edit · ORVYREN-Core v0.1 · generated 2026-10-14T15:47:12Z (UTC)</footer>
+</main>
+</body>
+</html>

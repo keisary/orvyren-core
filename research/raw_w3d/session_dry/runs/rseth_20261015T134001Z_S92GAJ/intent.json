@@ -1,0 +1,22 @@
+{
+  "schema_version": "intent/v1",
+  "intent_id": "01M4ZWN2ZB5C812V8TKZEAEGDE",
+  "chain_id": 84532,
+  "account": "0x2222222222222222222222222222222222222222",
+  "action": "transfer",
+  "asset": "0x036cbd53842c5426634e7929541ec2318f3dcf7e",
+  "amount": "100.0",
+  "amount_base_units": "100000000",
+  "recipient": "0x1111111111111111111111111111111111111111",
+  "function": "transfer(address,uint256)",
+  "params": {
+    "to": "0x1111111111111111111111111111111111111111",
+    "value": "100000000"
+  },
+  "expiry": "2026-10-15T13:55:01Z",
+  "created_at": "2026-10-15T13:40:01Z",
+  "justification": "RUN D — intent ALLOW préparé, non envoyé (kill switch)",
+  "policy_version": "v1.0",
+  "source": {},
+  "idempotency_key": "0xe2760ac1dcffd05a9f412b888c6789900cef3348da73a9555af6b11590dd0c22"
+}

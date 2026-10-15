@@ -1,0 +1,119 @@
+{
+  "schema": "orvyren-envelope/v1",
+  "note": "Enveloppe de référence du test de dérive (B4 §d.3). Capturer les faits le jour du montage (scripts/demo/preflight.py --capture-envelope), puis coller ici : code_sha256_expected, code_size_expected, version, advisory_clear, adresses, et les `probes` (getters du module). Toute divergence ⇒ SAFE MODE (refus de tout autonome).",
+  "captured_at": null,
+  "chain_id": 84532,
+  "role_key": "0x4147454e54000000000000000000000000000000000000000000000000000000",
+  "module": {
+    "address": "0xF2964CE6161ce0e75964Fe7927cE114cb0B283D5",
+    "address_note": "ADRESSE OFFICIELLE du code (W2C §g.0) — NE PAS réutiliser telle quelle : déployer une instance PROPRE pour la Safe de démo, puis remplacer cette adresse.",
+    "code_size_expected": 24409,
+    "code_sha256_expected": null,
+    "version": null,
+    "advisory_clear": null
+  },
+  "avatar": {
+    "address": null,
+    "label": "Safe de démonstration 2/3"
+  },
+  "agent": {
+    "address": null,
+    "label": "EOA jetable membre du rôle AGENT (clé d'environnement, détruite après la démo)"
+  },
+  "assets": {
+    "usdc_circle": "0x036CbD53842c5426634e7929541eC2318f3dCF7e",
+    "usdc_aave": "0xba50Cd2A20f6DA35D788639E581bca8d0B5d4D5f",
+    "weth_predeploy": "0x4200000000000000000000000000000000000006"
+  },
+  "role": {
+    "targets": [
+      {
+        "address": "0x036CbD53842c5426634e7929541eC2318f3dCF7e",
+        "clearance": "Function",
+        "note": "USDC Circle uniquement — aucune cible en Clearance.Target (portée large)"
+      }
+    ],
+    "functions": [
+      {
+        "target": "0x036CbD53842c5426634e7929541eC2318f3dCF7e",
+        "signature": "transfer(address,uint256)",
+        "selector": "0xa9059cbb",
+        "clearance": "Function",
+        "operation": "CALL"
+      }
+    ],
+    "conditions": {
+      "param0": {
+        "kind": "or_equal",
+        "values": [],
+        "note": "Or(EqualTo(B), EqualTo(C)) — coller les adresses des destinataires allowlistés"
+      },
+      "param1": {
+        "kind": "within_allowance",
+        "allowance_key": "usdc_daily"
+      }
+    },
+    "allowances": {
+      "usdc_daily": {
+        "refill_base_units": 300000000,
+        "max_refill_base_units": 300000000,
+        "period_seconds": 86400
+      }
+    },
+    "call_quota": {
+      "key": "calls_daily",
+      "max_per_period": 10,
+      "period_seconds": 86400
+    }
+  },
+  "revocation_scheduled_at": null,
+  "gas": {
+    "gas_price_baseline_wei": 6000000,
+    "note": "mesuré 2026-10-15 sur Base Sepolia (0,006 gwei) ; borne du contrôle P10 = 10 × cette valeur"
+  },
+  "probes": [],
+  "probe_format": {
+    "id": "members.agent",
+    "check": "D3",
+    "to": "<adresse du module Roles>",
+    "data": "0x<calldata du getter de rôle/membre>",
+    "decode": {
+      "type": "bool | uint256 | address | bytes32"
+    },
+    "expect": true,
+    "note": "getter à confirmer sur le contrat déployé le jour J (B4 §d.3, annexe 4)"
+  },
+  "probe_examples": [
+    {
+      "id": "members.agent",
+      "check": "D3",
+      "to": "<module>",
+      "data": "0x<getter rôle AGENT → membre agent>",
+      "decode": {"type": "bool"},
+      "expect": true
+    },
+    {
+      "id": "allowance.usdc_daily.refill",
+      "check": "D1",
+      "to": "<module>",
+      "data": "0x<getter allowances(AGENT, usdc_daily)>",
+      "decode": {"type": "uint256"},
+      "expect": 300000000
+    }
+  ],
+  "known_addresses_2026_10_15": {
+    "usdc_circle_base_sepolia": "0x036CbD53842c5426634e7929541eC2318f3dCF7e",
+    "usdc_aave_base_sepolia": "0xba50Cd2A20f6DA35D788639E581bca8d0B5d4D5f",
+    "weth_predeploy": "0x4200000000000000000000000000000000000006",
+    "safe_l2_singleton_1_4_1": "0x29fcB43b46531BcA003ddC8FCB67FFE91900C762",
+    "safe_proxy_factory_1_4_1": "0x4e1DCf7AD4e460CfD30791CCC4F9c8a4f820ec67",
+    "multisend_call_only_1_4_1": "0x40A2aCCbd92BCA938b02010E17A5b8929b49130D",
+    "module_roles_officiel": "0xF2964CE6161ce0e75964Fe7927cE114cb0B283D5",
+    "swap_router02": "0x94cC0AaC535CCDB3C01d6787D6413C739ae12bc4",
+    "uniswap_v3_factory": "0x4752ba5DBc23f44D87826276BF6Fd6b1C372aD24",
+    "quoter_v2": "0xC5290058841028F1614F3A6F0F5816cAd0df5E27",
+    "aave_v3_pool": "0x8bAB6d1b75f19e9eD9fCe8b9BD338844fF79aE27",
+    "eas": "0x4200000000000000000000000000000000000021"
+  },
+  "protocol": "À RE-VÉRIFIER le jour J par eth_getCode (B5 §e.7) : tout écart = arrêt de la démo. Un testnet peut être réinitialisé sans préavis — la mesure prime sur la mémoire."
+}

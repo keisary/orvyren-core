@@ -1,0 +1,136 @@
+{
+  "schema": "orvyren-envelope/v1",
+  "captured_at": "2026-10-15T13:34:53Z",
+  "chain_id": 84532,
+  "block_number": 48151499,
+  "gas": {
+    "gas_price_baseline_wei": 6000000,
+    "captured_at_utc": "2026-10-15T13:34:53Z"
+  },
+  "contracts": {
+    "module_roles_officiel": {
+      "address": "0xf2964ce6161ce0e75964fe7927ce114cb0b283d5",
+      "code_size_bytes": 24409,
+      "code_sha256": "89c5dc3313b5669f669232de7033734b4ee10339297cdf523bee5eb1b093cd05"
+    },
+    "usdc_circle_base_sepolia": {
+      "address": "0x036cbd53842c5426634e7929541ec2318f3dcf7e",
+      "code_size_bytes": 1798,
+      "code_sha256": "e878b99fc0c17354c86c7edeb999c70c18cfd925abb0958496f027cbad996d28"
+    },
+    "usdc_aave_base_sepolia": {
+      "address": "0xba50cd2a20f6da35d788639e581bca8d0b5d4d5f",
+      "code_size_bytes": 3981,
+      "code_sha256": "8f420989c42d99c936774330737b86eec0dccbb44b60343493a8266632d93518"
+    },
+    "weth_predeploy": {
+      "address": "0x4200000000000000000000000000000000000006",
+      "code_size_bytes": 2041,
+      "code_sha256": "0b4867c60e2c1404e78a40ff738ebcf733152e803fed63dae9fadcf3d58e86cc"
+    },
+    "safe_l2_singleton_1_4_1": {
+      "address": "0x29fcb43b46531bca003ddc8fcb67ffe91900c762",
+      "code_size_bytes": 24421,
+      "code_sha256": "c44b4d05d68c38405960653358247a004d6cf74c9ee508c250b7999f1aa8d524"
+    },
+    "safe_proxy_factory_1_4_1": {
+      "address": "0x4e1dcf7ad4e460cfd30791ccc4f9c8a4f820ec67",
+      "code_size_bytes": 3054,
+      "code_sha256": "a01f78c95e8982e0dfc891d0e26ded7547d0d1d1a2d73ad5e43e157340aa24ff"
+    },
+    "multisend_call_only_1_4_1": {
+      "address": "0x40a2accbd92bca938b02010e17a5b8929b49130d",
+      "code_size_bytes": 410,
+      "code_sha256": "9be28ce198f1732867140d9a7425494c3a48e9785839c1104b275d2458ceefac"
+    },
+    "swap_router02": {
+      "address": "0x94cc0aac535ccdb3c01d6787d6413c739ae12bc4",
+      "code_size_bytes": 24497,
+      "code_sha256": "5f9b9142814fcf305577856d54ee6f5d4816eaf1f72159e535bfd9473c995c7c"
+    },
+    "uniswap_v3_factory": {
+      "address": "0x4752ba5dbc23f44d87826276bf6fd6b1c372ad24",
+      "code_size_bytes": 24535,
+      "code_sha256": "2e3c9aa72d26cfbcdc2358f85decb5bbd56331b90175f5da562c687f1a93a164"
+    },
+    "quoter_v2": {
+      "address": "0xc5290058841028f1614f3a6f0f5816cad0df5e27",
+      "code_size_bytes": 8273,
+      "code_sha256": "211b6433d647b3de01199619ce6ff15652990454331e1e835a50f272807cc7f2"
+    },
+    "aave_v3_pool": {
+      "address": "0x8bab6d1b75f19e9ed9fce8b9bd338844ff79ae27",
+      "code_size_bytes": 1853,
+      "code_sha256": "7f6e6738c22d16e74829a7c13ec40f05610c45b18c9823578fea98e24d5606fd"
+    },
+    "eas": {
+      "address": "0x4200000000000000000000000000000000000021",
+      "code_size_bytes": 2059,
+      "code_sha256": "30ccc4ce49c00fae11d7118fc244f29a13788fb32cd4022ee69acc2f15c0e2f5"
+    },
+    "orvyren_safe_address": {
+      "address": "0x2222222222222222222222222222222222222222",
+      "code_size_bytes": 0,
+      "code_sha256": ""
+    },
+    "orvyren_agent_address": {
+      "address": "0x3333333333333333333333333333333333333333",
+      "code_size_bytes": 0,
+      "code_sha256": ""
+    },
+    "orvyren_module_address": {
+      "address": "0xf2964ce6161ce0e75964fe7927ce114cb0b283d5",
+      "code_size_bytes": 24409,
+      "code_sha256": "89c5dc3313b5669f669232de7033734b4ee10339297cdf523bee5eb1b093cd05"
+    },
+    "orvyren_usdc_address": {
+      "address": "0x036cbd53842c5426634e7929541ec2318f3dcf7e",
+      "code_size_bytes": 1798,
+      "code_sha256": "e878b99fc0c17354c86c7edeb999c70c18cfd925abb0958496f027cbad996d28"
+    },
+    "orvyren_recipient_b": {
+      "address": "0x1111111111111111111111111111111111111111",
+      "code_size_bytes": 0,
+      "code_sha256": ""
+    },
+    "orvyren_recipient_c": {
+      "address": "0x5555555555555555555555555555555555555555",
+      "code_size_bytes": 0,
+      "code_sha256": ""
+    }
+  },
+  "probes": [],
+  "note": "enveloppe capturée par lecture seule — `role` (cibles/conditions/allowances) et `probes` (calldata des getters) restent à confirmer sur le contrat déployé (B4 §d.3, annexe 4)",
+  "module": {
+    "address": "0xf2964ce6161ce0e75964fe7927ce114cb0b283d5",
+    "code_size_expected": 24409,
+    "code_sha256_expected": "89c5dc3313b5669f669232de7033734b4ee10339297cdf523bee5eb1b093cd05",
+    "version": null,
+    "advisory_clear": null
+  },
+  "avatar": {
+    "address": "0x2222222222222222222222222222222222222222",
+    "label": "Safe de démonstration"
+  },
+  "agent": {
+    "address": "0x3333333333333333333333333333333333333333",
+    "label": "EOA jetable membre du rôle AGENT"
+  },
+  "assets": {
+    "usdc_circle": "0x036cbd53842c5426634e7929541ec2318f3dcf7e",
+    "usdc_aave": "0xba50cd2a20f6da35d788639e581bca8d0b5d4d5f",
+    "weth_predeploy": "0x4200000000000000000000000000000000000006"
+  },
+  "session_env_keys": [
+    "ORVYREN_AGENT_ADDRESS",
+    "ORVYREN_CHAIN_ID",
+    "ORVYREN_MODULE_ADDRESS",
+    "ORVYREN_PRIVATE_KEY",
+    "ORVYREN_RECIPIENT_B",
+    "ORVYREN_RECIPIENT_C",
+    "ORVYREN_RECIPIENT_UNLISTED",
+    "ORVYREN_RPC_URL_BASE_SEPOLIA",
+    "ORVYREN_SAFE_ADDRESS",
+    "ORVYREN_USDC_ADDRESS"
+  ]
+}

@@ -1,0 +1,52 @@
+{
+  "run": "C",
+  "criteria": [
+    {
+      "id": "C.1",
+      "description": "calldatas forcés construits et décodés (C1-C4)",
+      "status": "met",
+      "detail": [
+        "C1",
+        "C2",
+        "C3a",
+        "C3b",
+        "C4"
+      ]
+    },
+    {
+      "id": "C.2",
+      "description": "C1/C2/C4 : revert attendu, sélecteur capturé, gaz enregistré",
+      "status": "pending",
+      "detail": null
+    },
+    {
+      "id": "C.3",
+      "description": "C3 : l'agent n'a aucun droit d'administration (revert des deux appels)",
+      "status": "pending",
+      "detail": null
+    },
+    {
+      "id": "C.4",
+      "description": "C5 : 2 exécutions chaîne + 1 refus hors chaîne démontrés",
+      "status": "met",
+      "detail": {
+        "case": "C5",
+        "label": "frontière de période : 2 dépenses de 100 USDC encadrant la frontière",
+        "first": {
+          "verdict": "ALLOW",
+          "reasons": [],
+          "cumulative_before": 150.0
+        },
+        "second": {
+          "verdict": "DENY",
+          "reasons": [
+            "AMOUNT_ABOVE_PERIOD_CAP"
+          ],
+          "cumulative_before": 250.0
+        },
+        "expect": "les deux passent on-chain (limite assumée, rafale maxRefill+refill) mais le compteur glissant hors chaîne refuse la seconde",
+        "ok": true
+      }
+    }
+  ]
+}
