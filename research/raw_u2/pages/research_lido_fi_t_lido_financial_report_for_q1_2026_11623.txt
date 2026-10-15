@@ -1,0 +1,217 @@
+[Skip to last reply](https://research.lido.fi/t/lido-financial-report-for-q1-2026/11623/2) [Skip to top](https://research.lido.fi/t/lido-financial-report-for-q1-2026/11623/1)
+
+[Skip to main content](https://research.lido.fi/t/lido-financial-report-for-q1-2026/11623#main-container)
+
+This forum is for idea exchange and discussion. Posts reflect personal opinions, not official decisions or legally binding commitments. Learn more about [Lido DAO governance here](https://lido.fi/governance).
+
+# [Lido Financial Report for Q1’2026](https://research.lido.fi/t/lido-financial-report-for-q1-2026/11623)
+
+[Finance](https://research.lido.fi/c/finance/15)
+
+You have selected **0** posts.
+
+[select all](https://research.lido.fi/t/lido-financial-report-for-q1-2026/11623)
+
+[cancel selecting](https://research.lido.fi/t/lido-financial-report-for-q1-2026/11623)
+
+[Jun 4](https://research.lido.fi/t/lido-financial-report-for-q1-2026/11623/1 "Jump to the first post")
+
+1 / 2
+
+
+Jun 3
+
+
+[Jun 23](https://research.lido.fi/t/lido-financial-report-for-q1-2026/11623/2)
+
+## post by Finance on Jun 4
+
+[![](https://avatars.discourse-cdn.com/v4/letter/f/ad7895/48.png)](https://research.lido.fi/u/finance)
+
+[Finance](https://research.lido.fi/u/finance)
+
+[Jun 4](https://research.lido.fi/t/lido-financial-report-for-q1-2026/11623 "Post date")
+
+# [Heading link](https://research.lido.fi/t/lido-financial-report-for-q1-2026/11623\#p-25575-lido-financial-report-for-q12026-1) Lido Financial Report for Q1’2026
+
+_Note: Below is the Q1 2026 financial report for Lido DAO. The report also includes actual figures for April and projected expenses data for May-June, which remain subject to change as further adjustments and clarifications may arise. Projected costs through the end of Q2 are presented to provide visibility into the anticipated expense trajectory and to evidence the conservative spending approach communicated during tokenholder calls. The financial information included in this report was not prepared in accordance with any major GAAP._
+
+### [Heading link](https://research.lido.fi/t/lido-financial-report-for-q1-2026/11623\#p-25575-a-pnl-for-q12026-april-actuals-and-q2-projected-costs-2) a) PnL for Q1’2026, April actuals and Q2 projected costs
+
+[![PnL for Q1’2026, April actuals and Q2 projected costs](https://europe1.discourse-cdn.com/flex013/uploads/lido/optimized/2X/8/85d3ba1af4d572ab705146da70d08b976115e7cb_2_455x500.png)\\
+PnL for Q1’2026, April actuals and Q2 projected costs1418×1558 336 KB](https://europe1.discourse-cdn.com/flex013/uploads/lido/original/2X/8/85d3ba1af4d572ab705146da70d08b976115e7cb.png "PnL for Q1’2026, April actuals and Q2 projected costs")
+
+### [Heading link](https://research.lido.fi/t/lido-financial-report-for-q1-2026/11623\#p-25575-b-treasury-position-as-of-31-march-2026-and-30-apr-2026-3) b) Treasury Position as of 31 March 2026 and 30 Apr 2026
+
+[![Treasury Position as of 31 March 2026 and 30 Apr 2026](https://europe1.discourse-cdn.com/flex013/uploads/lido/optimized/2X/3/3b369d4593f248b68c5a042c59560e7ebaa8adcb_2_690x460.png)\\
+Treasury Position as of 31 March 2026 and 30 Apr 20261714×1144 112 KB](https://europe1.discourse-cdn.com/flex013/uploads/lido/original/2X/3/3b369d4593f248b68c5a042c59560e7ebaa8adcb.png "Treasury Position as of 31 March 2026 and 30 Apr 2026")
+
+## [Heading link](https://research.lido.fi/t/lido-financial-report-for-q1-2026/11623\#p-25575-h-1-general-overview-4) 1\. General Overview
+
+Lido DAO closed the first quarter with positive protocol-level operating performance. Including New Products Revenue and Treasury Management income, **Total Net DAO Revenue in Q1 amounted to $9.42m. This trend continued in April, further strengthening the financial result by contributing an additional $2.79m in Net DAO Revenue.**
+
+**Total Foundations’ Expenses for the first quarter were $6.44m, resulting in a positive Treasury Surplus of $2.98m. This means that, on an operating basis, more revenue was generated than was spent during the quarter.**
+
+However, in April, following the [Kelp incident,](https://research.lido.fi/t/kelp-incident-review-earneth-exposure-response-and-risk-framework-changes/11579) the DAO incurred **additional one-off expenses** of 2,500 stETH (or $5.74m), acting as a contributor within the [DeFi United initiative](https://research.lido.fi/t/lido-dao-contribution-to-coordinated-rseth-relief-effort/11483). Additional expenses related to [First Loss Protection](https://research.lido.fi/t/authorise-loss-coverage-below-the-1-threshold-for-the-kelp-incident/11527) were incurred in May, amounting to 144 ETH ($0.32m).
+
+At the same time, Total DAO Treasury decreased from $157.5m as of 31 December 2025 to $121.0m as of 30 Apr 2026, a decline of approximately $36.5m.
+
+The decline was primarily driven by the lower USD value of stETH-denominated assets, in line with the ETH/USD market change, with a reported $(31.6)m stETH price effect.
+
+During the first four months of 2026, 4.82M LDO were acquired for LDO TRP reserve under the EGG. as well as 0.95M LDO under stETH/LDO trade proposal.
+
+**The main message of the quarter is therefore: Lido generated a surplus at the core protocol level, while the USD value of the DAO Treasury declined due to market-driven asset valuation effects. At the same time, the Foundations spend ⅓ less compared to a four months linear spending view.**
+
+Compared to the February projections in the 2025 report, staking and new bet revenue came in lower than expected due to adverse market effects and stronger competition. Further, cost of revenue and expenses presented in the [2025 report](https://research.lido.fi/t/goose-2025-eggs-2025-final-report/11304) also did not include quarter-end closing adjustments related to Q1 2026.
+
+## [Heading link](https://research.lido.fi/t/lido-financial-report-for-q1-2026/11623\#p-25575-h-2-basis-of-presentation-and-accounting-policies-5) 2\. Basis of Presentation and Accounting Policies
+
+The financial report is prepared on an accrual basis. Rewards and expenses are recognized in the period in which they are economically earned or incurred, rather than when tokens are transferred on-chain.
+
+**Changes in Presentation and Accounting Policy**
+
+Compared with the 2025 financial report, the 2026 reporting format has been enhanced and certain accounting and presentation principles have been updated to provide a clearer view of the Foundation’s operating performance, DAO’s core protocol profitability, and Foundation’s growth-related expenses.
+
+The most significant changes are as follows:
+
+- **TRP expenses are presented separately from Foundation expenses.** TRP expenses are no longer included within Foundation expenses, as the underlying owner of the LDO used for the TRP program is the DAO, while the Foundation performs administrative functions only. This presentation was chosen as it reflects the legal ownership of these expenses.
+
+- **New Products Revenue is presented on a gross basis.** Revenue generated from new products, including Lido Earn, is presented within New Products Revenue, with directly attributable costs presented separately as Cost of New Products Revenue. This approach provides better visibility into the gross contribution of new products before broader product development and growth-related costs.
+
+- **Foundations’ expenses have been divided into Operating Expenses and Growth Expenses.** This classification is intended to enable a clearer assessment of the profitability of the core protocol and the level of inflows into new products and growth initiatives.
+
+- **Deposit referrals are presented as a cost of staking revenue.** Deposit referral incentives previously included within Growth and Liquidity expenses, are now presented as a deduction from Gross Protocol Rewards in arriving at Net DAO Staking Revenue. This presentation better reflects the direct relationship between referral incentives and the generation of staking revenue.
+
+
+#### [Heading link](https://research.lido.fi/t/lido-financial-report-for-q1-2026/11623\#p-25575-usd-conversion-6)**USD Conversion**
+
+For accounting purposes, the USD value of transactions and rewards is calculated using the token price recorded at the end of the day when the transaction occurred. Token balances are valued in USD using the end-of-day closing price on the reporting date.
+
+#### [Heading link](https://research.lido.fi/t/lido-financial-report-for-q1-2026/11623\#p-25575-explanation-of-key-financial-items-7)**Explanation of Key Financial Items**
+
+**Gross Protocol Rewards** represents the protocol’s share of Ethereum staking rewards generated by Lido validators after distribution to stETH holders. These rewards are further allocated to **node operator fees** (including [node operator rebates](https://snapshot.org/#/s:lido-snapshot.eth/proposal/0x3a5d10fcd3fad6d5ccf05f5bd49244046600ad9cbed9a5e07845200b3ae97e09)) and **deposit referral** incentives, representing **Net DAO Staking Revenue.**
+
+Revenue generated from new products, including Lido Earn, is presented within **New Products Revenue**. Such revenue represents rewards earned by the DAO from early-stage products and growth initiatives outside the core Lido staking protocol. Сosts incurred to generate such revenue are presented separately as **Cost of New Products Revenue**. For Lido Earn, this primarily includes incentive costs related to Lido Earn vaults, as well as other infrastructure costs that are directly attributable to the generation of Lido Earn revenue.
+
+**Net DAO Revenue** includes additional inflow streams outside the Staking Revenue and New Products revenue. These primarily consist of Treasury Management rewards, generated from Treasury-held assets such as stETH and sUSDS.
+
+**Foundations’ Grant Expense Breakdown**
+
+Starting with the 2026 financial reports, for the sake of better evaluating growth investments, Foundation expenses are classified into two main categories:
+
+- Core Protocol Operating Expenses
+
+- Growth Expenses
+
+
+We believe this classification more accurately reflects the allocation of expenses and enables clearer assessment of the profitability of the core protocol and new products.
+
+**Core Protocol Operating Expenses** represent the funds the DAO provides to develop, maintain, and operate the Core Lido protocol. Includes сompensations to contributors who are involved in developing Core Protocol, General and Administrative costs, Infrastructure Costs (mainly SaaS), Audit and Bug Bounty costs for Core Protocol maintenance.
+
+**Core Protocol Operating Result** is calculated as Net DAO Staking Revenue minus Core Protocol Operating Expenses and reflects the profitability of the Core Protocol.
+
+**Conservative allocation assumption:** for this report, **all General & Administrative** expenses have been classified as Operating Expenses. This treatment is conservative. A more precise allocation would likely assign a portion of G&A expenses to Growth and New Products, because some administrative, legal, finance, operational, and support costs are incurred to support growth initiatives rather than the mature core staking protocol alone. Under the current approach, Core Protocol Operating Expenses are likely overstated, and therefore **Core Protocol Operating Result** is likely understated. This conservative classification has been maintained until a more granular cost allocation methodology is implemented and utilized.
+
+**Growth Expenses** include **direct costs** related to new products (such as compensation for contributors involved in new products and new bets), audit expenses for new products, as well as **indirect growth- and expansion-related costs** \- including sales and marketing expenses, events, sponsorships, liquidity and ecosystem grants.
+
+**Recognition of TRP expenses on an accrual basis** means that the monthly expense is calculated based on (i) the amount of tokens vested during the reporting period and (ii) the 30-day average LDO/USD market price used for valuation. TRP compensation is recognized linearly over the requisite service period regardless of cliff structures. LDO tokens are recognized when expensed. TRP expenses are presented separately from Foundation expenses in accordance with the terms of the TRP program, as the underlying owner of the LDO is the DAO, while the Foundation performs administrative functions only.
+
+Unallocated LDO tokens held by DAO are excluded from the reported Total Treasury Position, this includes LDO purchases as a result of LDO acquisitions. Purchases of LDO are presented as expenses in the PnL view.
+
+## [Heading link](https://research.lido.fi/t/lido-financial-report-for-q1-2026/11623\#p-25575-h-3-protocol-revenue-statement-8) 3\. Protocol Revenue Statement
+
+Lido’s protocol economics are driven primarily by staking rewards generated by the protocol, the portion of those rewards accruing as protocol fees, and the amount retained by the DAO after node operator fees and referral-related costs.
+
+The key revenue takeaway from Q1 is that Lido’s USD-denominated revenue declined materially due to the lower stETH price, while stETH-denominated protocol revenue was comparatively resilient despite a highly volatile overall market.
+
+Gross Staking Rewards recovered in March after a February dip, while Net DAO Staking Revenue slightly declined through the quarter being affected by quarterly Deposit Referral payments. April shows a partial recovery, with net revenue back to **1,197 ETH**, above February and March levels.
+
+[![Revenue in ETH](https://europe1.discourse-cdn.com/flex013/uploads/lido/optimized/2X/2/274ba8329180b05ff7ec08bc6a718529c638ce94_2_690x210.png)\\
+Revenue in ETH1420×434 30.8 KB](https://europe1.discourse-cdn.com/flex013/uploads/lido/original/2X/2/274ba8329180b05ff7ec08bc6a718529c638ce94.png "Revenue in ETH")
+
+## [Heading link](https://research.lido.fi/t/lido-financial-report-for-q1-2026/11623\#p-25575-h-4-foundations-grant-expenses-9) 4\. Foundation’s Grant Expenses
+
+January - April 2026 Foundations’ expenses amounted to **$9.16m** and remained within baseline spending levels. The discretionary funding approved under EGG 2026 was not utilised during this period.
+
+Utilisation of the requested **EGG Baseline** grant amounted to **22%. This represents ⅓ below** the approximately 33% linear **four-month run-rate**.
+
+This reflects a proactive **decision to cut back on spending** following the February market downturn. Moreover the timing of certain planned or discretionary expenses was pushed to a later period. Those may still be incurred later in the year depending on needs and market conditions.
+
+### [Heading link](https://research.lido.fi/t/lido-financial-report-for-q1-2026/11623\#p-25575-foundations-grant-expense-breakdown-actuals-vs-egg-2026-baseline-10) Foundations’ Grant Expense Breakdown - Actuals vs EGG 2026 Baseline
+
+[![Foundations' Grant Expense Breakdown - Actuals vs EGG 2026 Baseline](https://europe1.discourse-cdn.com/flex013/uploads/lido/optimized/2X/8/8b3f2e20d22d7f58833b745b8697393103ba1a8e_2_690x451.png)\\
+Foundations' Grant Expense Breakdown - Actuals vs EGG 2026 Baseline1468×960 54.8 KB](https://europe1.discourse-cdn.com/flex013/uploads/lido/original/2X/8/8b3f2e20d22d7f58833b745b8697393103ba1a8e.png "Foundations' Grant Expense Breakdown - Actuals vs EGG 2026 Baseline")
+
+## [Heading link](https://research.lido.fi/t/lido-financial-report-for-q1-2026/11623\#p-25575-h-5-treasury-position-statement-11) 5\. Treasury Position Statement
+
+Although the USD value of ETH declined during Q1, the DAO continued to accumulate stETH-denominated assets. Across DAO Treasury, Insurance Fund, and BORGs/Committees, stETH balances increased from 41,753.7 stETH at 31 December 2025 to 43,833.9 stETH at 31 March 2026, an increase of approximately 2,080.1 stETH. However, following the grant of 2,500 stETH as part of a DeFi United initiative, the Treasury balance declined to **40,428.3 stETH** as of April 30, representing a 3.1% decrease compared to December 31.
+
+Additional observations:
+
+- _**Temporary increase in BORG stablecoin balances**_
+
+
+Stablecoins held by BORGs increased from $7.0m at 31 December 2025 to $14.2m at 31 March 2026. This increase should be understood as temporary and operational in nature. It was related to stablecoin turnover processes connected with the [Treasury Management Committee’s decision](https://research.lido.fi/t/tmc-6-convert-dao-treasury-stablecoins-into-susds-and-update-config-on-easy-track-and-aragon-finance-accordingly/10868/10) to convert or wrap stablecoins into sUSDS. Stablecoins were temporarily transferred to BORG-controlled operational balances for execution and were subsequently transferred back to the DAO Treasury after completion of the process.
+
+- _**Increase in LP positions and funds for market making**_
+
+
+The increase in the **LP positions / funds for market making, mUSD** line was primarily driven by the reflection of the DAO deposit into the Earn wallet (1,522 earnETH valued at $3.4m as of April 30). Other funds were held by market makers to execute the mandate under the proposal [utilising market opportunities: stETH / LDO trade](https://research.lido.fi/t/utilizing-market-opportunities-steth-ldo-trade/11358).
+
+
+_**Treasury Bridge: Opening to Closing Treasury**_
+
+The Treasury bridge reconciles the positive operating result with the decline in Total Treasury (incl. DAO Treasury, Insurance Fund, and BORGs/Committees) .
+
+During Q1 and April, a positive Total Treasury Surplus of $3.1m was generated.
+
+However, this was more than offset by the negative stETH price effect of $(31.6)m. As a result, Total Treasury declined to $121m at the end of April.
+
+[![Treasury Bridge](https://europe1.discourse-cdn.com/flex013/uploads/lido/optimized/2X/3/321b5cfecae6233549909f49930a6e222f5802d1_2_690x215.png)\\
+Treasury Bridge1416×442 31.3 KB](https://europe1.discourse-cdn.com/flex013/uploads/lido/original/2X/3/321b5cfecae6233549909f49930a6e222f5802d1.png "Treasury Bridge")
+
+The adjustment related to LDO expenses represents costs incurred for the acquisition of LDO, including:
+
+- 4.82M LDO acquired for LDO TRP reserve under the EGG budget at $0.31/LDO, held by the TRP Committee multisig;
+
+- 0.95M LDO acquired under stETH/LDO trade proposal at $0.38/LDO, held on a Growth Committee Safe multisig to be transferred to Lido DAO Treasury.
+
+
+In accordance with the current accounting policy, LDO holdings are not reflected in the Treasury Position report. Their balances as of the reporting dates are provided for reference in the table below.
+
+[![LDO balance](https://europe1.discourse-cdn.com/flex013/uploads/lido/optimized/2X/3/357d33650807e22487b88d5e37daf175e88c7cf7_2_690x90.png)\\
+LDO balance1434×188 8.87 KB](https://europe1.discourse-cdn.com/flex013/uploads/lido/original/2X/3/357d33650807e22487b88d5e37daf175e88c7cf7.png "LDO balance")
+
+_This material is for informational purposes only and is not investment, legal, business, financial, or tax advice. No representation or warranty, express or implied, is made as to its accuracy, completeness, or timeliness. No information in this material should be interpreted as a recommendation or relied upon as a guarantee of any specific outcome. Past performance is not indicative of future results. Any opinions or forward-looking statements reflect the current judgment of the Foundations as of the date of this publication and are subject to change without notice. Parties should conduct their own independent evaluation before making any decisions._
+
+- [Restructuring Core Leadership to Enhance Decentralization, Governance Equality, and LDO Value Accrual](https://research.lido.fi/t/restructuring-core-leadership-to-enhance-decentralization-governance-equality-and-ldo-value-accrual/11702/6)
+
+465
+views
+3
+links
+
+
+read
+5
+min
+
+
+18 days later
+
+
+## post by Nerixmachine12 on Jun 23
+
+Reply
+
+### Related topics
+
+| Topic | Replies | Views | Activity |
+| --- | --- | --- | --- |
+| [GOOSE-2025 & EGGs-2025 Final Report](https://research.lido.fi/t/goose-2025-eggs-2025-final-report/11304)<br>[General](https://research.lido.fi/c/general/1) | [12](https://research.lido.fi/t/goose-2025-eggs-2025-final-report/11304/1) | 1.6k | [Apr 22](https://research.lido.fi/t/goose-2025-eggs-2025-final-report/11304/14) |
+| [Reporting & Discussion](https://research.lido.fi/t/reporting-discussion/11836)<br>[General](https://research.lido.fi/c/general/1) | [1](https://research.lido.fi/t/reporting-discussion/11836/1) | 142 | [Aug 28](https://research.lido.fi/t/reporting-discussion/11836/2) |
+| [2026 Ecosystem Grant gRequest (EGG): Executing GOOSE-3](https://research.lido.fi/t/2026-ecosystem-grant-grequest-egg-executing-goose-3/10951)<br>[Proposals](https://research.lido.fi/c/proposals/9) | [13](https://research.lido.fi/t/2026-ecosystem-grant-grequest-egg-executing-goose-3/10951/1) | 1.9k | [Dec 2025](https://research.lido.fi/t/2026-ecosystem-grant-grequest-egg-executing-goose-3/10951/14) |
+| [\[RCC-3\] \[LIDO-1\] Introduction to the resilience roadmap](https://research.lido.fi/t/rcc-3-lido-1-introduction-to-the-resilience-roadmap/3446)<br>[Finance](https://research.lido.fi/c/finance/15) | [4](https://research.lido.fi/t/rcc-3-lido-1-introduction-to-the-resilience-roadmap/3446/1) | 8.5k | [Mar 2023](https://research.lido.fi/t/rcc-3-lido-1-introduction-to-the-resilience-roadmap/3446/5) |
+| [Pragmatically Institutionalizing Lido DAO](https://research.lido.fi/t/pragmatically-institutionalizing-lido-dao/9945)<br>[Proposals](https://research.lido.fi/c/proposals/9) | [2](https://research.lido.fi/t/pragmatically-institutionalizing-lido-dao/9945/1) | 513 | [Apr 2025](https://research.lido.fi/t/pragmatically-institutionalizing-lido-dao/9945/3) |
+
+Topic list, column headers with buttons are sortable.

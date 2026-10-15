@@ -1,0 +1,442 @@
+{
+ "Lido DAO treasury report financial statements 2025": {
+  "success": true,
+  "data": {
+   "web": [
+    {
+     "url": "https://research.lido.fi/t/lido-financial-report-for-q1-2026/11623",
+     "title": "Lido Financial Report for Q1'2026 - Finance",
+     "description": "Total DAO Treasury decreased from $157.5m as of 31 December 2025 to $121.0m as of 30 Apr 2026, a decline of approximately $36.5m.",
+     "category": null
+    },
+    {
+     "url": "https://research.lido.fi/t/goose-2025-eggs-2025-final-report/11304",
+     "title": "GOOSE-2025 & EGGs-2025 Final Report - General - Lido Governance",
+     "description": "# [Heading link](https://research.lido.fi/t/goose-2025-eggs-2025-final-report/11304#p-24646-executive-summary-2) Executive Summary\nGross Revenue declined 18.2% year over year (-17.4% in ETH terms).\n\n# [Heading link](https://research.lido.fi/t/goose-2025-eggs-2025-final-report/11304#p-24646-h-4-funding-financial-overview-27) 4. Funding & Financial Overview\n### [Heading link](https://research.lido.fi/t/goose-2025-eggs-2025-final-report/11304#p-24646-overview-28) Overview\n| mUSD | 2024Y | 2025Y | Δ | Δ % |\n|-|-|-|-|-|\n| Gross Staking Rewards | 1,034.5 | 846.7 | (187.8) | -18% |\n| Gross Revenue | 103.5 | 84.7 | (18.8) | -18% |\n| _Cost of Revenue (staking rewards to NOs and NOs rebates)_ | (51.9) | (43.1) | 8.7 | -17% |\n| _Cost of Revenue (deposit referrals)_* | (3.1) | (4.1) | (1.0) | 32% |\n| **Net Revenue from staking fees (incl. stVaults)** | **48.5** | **37.4** | **(11.1)** | **-23%** |\n| _Other Revenue_ |  |  |  |  |\n| New Product: Lido Earn | 0.0 | 0.3 | 0.3 | 100% |\n| Treasury Management (stETH APY, sUSDS, (T)MMFs) | 3.9 | 2.7 | (1.2) | -31% |\n| **Total Revenue** | **52.4** | **40.5** | **(11.9)** | **-23%** |\n| **Total Operating Expenses** | **(40.9)** | **(40.7)** | **0.2** | **0%** |\n| _Operating Expenses_ | (28.8) | (33.0) | (4.2) | 15% |\n| _TRP costs_ | (9.7) | (6.4) | 3.2 | -34% |\n| _Lido Ecosystem Grant Organization (LEGO) grants, incl. LDO-denominated_ | (1.5) | (1.1) | 0.4 | -28% |\n| _Other income and expenses_ | (0.9) | (0.1) | 0.8 | -84% |\n| **Growth & liquidity** | **(11.2)** | **(4.8)** | **6.4** | **-57%** |\n| _Liquidity Rewards_ | (11.2) | (4.8) | 6.4 | -57% |\n| Total Foundations’ Expenses excl. TRP costs | (42.4) | (39.1) | 3.3 | -8% |\n| **Total Foundations’ Expenses** | **(52.1)** | **(45.5)** | **6.6** | **-13%** |\n| **Total Treasury Surplus** | **0.3** | **(5.0)** | **(5.3)** |  |",
+     "category": null
+    },
+    {
+     "url": "https://tokenterminal.com/explorer/projects/lido-finance/financial-statement",
+     "title": "Lido Finance financial statement | Token Terminal",
+     "description": "Dive into Lido Finance's financial statement and uncover trends to make better investing and operational decisions.",
+     "category": null
+    },
+    {
+     "url": "https://www.linkedin.com/posts/lidofi_lido-foundations-have-published-the-lido-activity-7442897924382019584-MRe2",
+     "title": "Lido DAO 2025 Annual Report Released - LinkedIn",
+     "description": "Lido Foundations have published the Lido DAO 2025 Annual Report, detailing execution against GOOSE objectives, use of DAO-approved grant ...",
+     "category": null
+    },
+    {
+     "url": "https://x.com/LidoFinance/status/2093054793623146534",
+     "title": "Lido on X: \"RECAP: Lido Tokenholder Update, August 2026 • H1 ...",
+     "description": "Total net DAO revenue was $15.9M, compared with $14.3M in Foundation expenses. Treasury closed H1 at $88.3M, down from $157.5M. As of 25 August ...",
+     "category": null
+    },
+    {
+     "url": "https://research.lido.fi/t/yearly-revenue-reports/4890",
+     "title": "Yearly revenue reports - Lido Governance",
+     "description": "Dune covering Lido's financial statements, Annual Expense 2025 Finance. Financial Report for Q1'2026",
+     "category": null
+    },
+    {
+     "url": "https://defillama.com/protocol/lido",
+     "title": "Lido TVL, Fees & Revenue - DefiLlama",
+     "description": "# Lido(LDO)\n## Key Metrics\nRevenue 7d$708,782\n\nRevenue 24h$100,664\n\nCumulative Revenue$173.44m\n\nHolders Revenue 30d$2.25m\n\n## Income statement for Lido\n|  | Q4 2026* | Q3 2026 | Q2 2026 | Q1 2026 | Q4 2025 | Q3 2025 | Q2 2025 | Q1 2025 | Q4 2024 | Q3 2024 | Q2 2024 | Q1 2024 | Q4 2023 | Q3 2023 | Q2 2023 | Q1 2023 | Q4 2022 | Q3 2022 | Q2 2022 | Q1 2022 | Q4 2021 | Q3 2021 | Q2 2021 |\n|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|\n| Gross Protocol Revenue | $22.33M | $127.9M | $125.23M | $150.09M | $221.43M | $256.07M | $157.29M | $211.53M | $251.37M | $234.3M | $279.37M | $269.04M | $184.27M | $155.24M | $161.24M | $117.01M | $91.94M | $74.52M | $90.56M | $72.17M | $82.56M | $38.14M | $12.63M |\n| Staking Rewards | $22.28M | $126.13M | $117.44M | $139.68M | $204.37M | $237.59M | $138.37M | $175.65M | $213.58M | $194.14M | $227.94M | $208.41M | $139.85M | $117.83M | $114.97M | $80.53M | $63.9M | $72.41M | $90.56M | $72.17M | $82.56M | $38.14M | $12.63M |\n| MEV Rewards | $48.71K | $1.78M | $7.79M | $10.42M | $17.07M | $18.48M | $18.92M | $35.88M | $37.79M | $40.16M | $51.43M | $60.63M | $44.42M | $37.41M | $46.28M | $36.48M | $28.04M | $2.1M | $0 | $0 | $0 | $0 | $0 |\n| Cost of Revenue | $20.96M | $119.96M | $117.54M | $140.79M | $210.5M | $243.59M | $149.58M | $201.09M | $238.91M | $222.61M | $265.41M | $255.59M | $175.06M | $147.48M | $153.18M | $111.16M | $87.34M | $70.79M | $86.03M | $68.56M | $78.44M | $36.23M | $12M |\n| Staking rewards to ETH stakers | $20.05M | $113.51M | $105.7M | $125.71M | $183.93M | $213.83M | $124.53M | $158.08M | $192.22M | $174.73M | $205.14M | $187.56M | $125.87M | $106.05M | $103.47M | $72.48M | $57.51M | $65.17M | $81.51M | $64.95M | $74.31M | $34.33M | $11.37M |\n| MEV rewards to ETH stakers | $43.84K | $1.6M | $7.01M | $9.38M | $15.36M | $16.64M | $17.03M | $32.29M | $34.01M | $36.14M | $46.29M | $54.57M | $39.98M | $33.67M | $41.65M | $32.83M | $25.24M | $1.89M | $0 | $0 | $0 | $0 | $0 |\n| Staking rewards to node operators | $860.77K | $4.78M | $4.53M | $5.31M | $10.33M | $12.18M | $7.05M | $8.9M | $10.77M | $9.72M | $11.41M | $10.42M | $6.99M | $5.89M | $5.75M | $4.03M | $3.2M | $3.62M | $4.53M | $3.61M | $4.13M | $1.91M | $631.7K |\n| MEV rewards to node operators | $1.88K | $67.42K | $300.6K | $396.57K | $874.12K | $947.56K | $964.18K | $1.82M | $1.91M | $2.01M | $2.57M | $3.03M | $2.22M | $1.87M | $2.31M | $1.82M | $1.4M | $105.09K | $0 | $0 | $0 | $0 | $0 |\n| Gross Profit | $1.37M | $7.94M | $7.69M | $9.3M | $10.93M | $12.48M | $7.71M | $10.43M | $12.46M | $11.7M | $13.96M | $13.45M | $9.21M | $7.76M | $8.06M | $5.85M | $4.6M | $3.73M | $4.53M | $3.61M | $4.13M | $1.91M | $631.7K |\n| Staking Rewards | $1.37M | $7.83M | $7.21M | $8.65M | $10.1M | $11.58M | $6.78M | $8.66M | $10.59M | $9.69M | $11.39M | $10.42M | $6.99M | $5.89M | $5.75M | $4.03M | $3.2M | $3.62M | $4.53M | $3.61M | $4.13M | $1.91M | $631.7K |\n| MEV Rewards | $2.99K | $110.37K | $478.08K | $645.36K | $832.65K | $900.91K | $927.66K | $1.77M | $1.87M | $2M | $2.57M | $3.03M | $2.22M | $1.87M | $2.31M | $1.82M | $1.4M | $105.09K | $0 | $0 | $0 | $0 | $0 |\n| Incentives | $0 | $247.27K | $0 | $902.88K | $2.87M | $491.52K | $13.98K | $3.1M | $2.4M | $2.87M | $2.92M | $4.78M | $1.75M | $2.36M | $18.82M | $23.41M | $13.7M | $40.48M | $42.87M | $42.07M | $53.64M | $85.87M | $526.58M |\n| Ethereum Incentives | $0 | $247.27K | $0 | $902.88K | $2.87M | $491.52K | $13.98K | $3.1M | $2.4M | $2.87M | $2.92M | $4.78M | $1.75M | $2.36M | $18.63M | $22.2M | $12.82M | $40.48M | $42.87M | $42.07M | $53.64M | $85.87M | $526.58M |\n| Optimism Incentives | $0 | $0 | $0 | $0 | $0 | $0 | $0 | $0 | $0 | $0 | $0 | $0 | $0 | $0 | $101.3K | $608.9K | $474.46K | $0 | $0 | $0 | $0 | $0 | $0 |\n| Arbitrum Incentives | $0 | $0 | $0 | $0 | $0 | $0 | $0 | $0 | $0 | $0 | $0 | $0 | $0 | $0 | $90.93K | $596.45K | $411.48K | $0 | $0 | $0 | $0 | $0 | $0 |\n| Earnings | $1.37M | $7.69M | $7.69M | $8.4M | $8.06M | $11.99M | $7.7M | $7.33M | $10.06M | $8.83M | $11.04M | $8.67M | $7.46M | $5.4M | -$10.76M | -$17.56M | -$9.11M | -$36.75M | -$38.35M | -$38.46M | -$49.51M | -$83.97M | -$525.95M |\n| Token Holder Net Income | $0 | $5.11M | $1.95M | $0 | $0 | $0 | $0 | $0 | $0 | $0 | $0 | $0 | $0 | $0 | $0 | $0 | $0 | $0 | $0 | $0 | $0 | $0 | $0 |\n| LDO Accumulation Program | $0 | $5.11M | $1.95M | $0 | $0 | $0 | $0 | $0 | $0 | $0 | $0 | $0 | $0 | $0 | $0 | $0 | $0 | $0 | $0 | $0 | $0 | $0 | $0 |",
+     "category": null
+    },
+    {
+     "url": "https://dune.com/steakhouse/lido-safu",
+     "title": "Lido - Financial Reporting | Dune",
+     "description": "LDO is only recognized when expensed. It does not count as a balance on the DAO balance sheet. Item 9. Conservatism and cash accounting",
+     "category": null
+    }
+   ]
+  }
+ },
+ "Optimism Collective treasury 2026 report assets": {
+  "success": true,
+  "data": {
+   "web": [
+    {
+     "url": "https://tfx.treasury.gov/tfm/bulletins/bulletin-no-2026-04",
+     "title": "Bulletin No. 2026-04 | TFX - Treasury Financial Experience",
+     "description": "# Bulletin No. 2026-04\n|  |  |  |\n|-|-|-|\n| Currencies Purchased from Sources Outside the U.S. Government Cumulative ( [**TFM Volume I, Part 2, Chapter 3200**](https://tfx.treasury.gov/tfm/volume1/part2/chapter-3200-foreign-currency-accounting-and-reporting)) for Oct. 1, 2026, through Sept. 30, 2026 | Submit via email to [**fcreports@fiscal.treaury.gov**](mailto:fcreports@fiscal.treaury.gov) | Nov. 13, 2026 |",
+     "category": null
+    },
+    {
+     "url": "https://optimism.io/blog/optimism-governance-sequencer-enterprise-facts",
+     "title": "Governance, Sequencer & Enterprise Facts (2026) - Optimism",
+     "description": "OP Mainnet secures about $1.57B as of Aug 31, 2026. roughly $585M in ETH and derivatives, $443M in stablecoins, and the rest in other assets.",
+     "category": null
+    },
+    {
+     "url": "https://www.citrincooperman.com/In-Focus-Resource-Center/2026-Asset-Management-Survey-Report",
+     "title": "2026 Asset Management Survey Report - Download Now",
+     "description": "Citrin Cooperman's 2026 Asset Management Survey Report gathers the responses and insights from 300 asset management leaders across the United States",
+     "category": null
+    },
+    {
+     "url": "https://www.treasurers.org/hub/research/business-of-treasury",
+     "title": "The Business of Treasury 2026 | Have your say",
+     "description": "In just 5–10 minutes, you can help build a clear, evidence-based picture of the profession in 2026.",
+     "category": null
+    },
+    {
+     "url": "https://x.com/OptimismGov/status/2018274078637871279",
+     "title": "Optimism Governance on X",
+     "description": "The Optimism Collective currently holds ~21.5K ETH in its treasury. ETH is not just a reserve asset; it is a strategic tool for strengthening ...",
+     "category": null
+    },
+    {
+     "url": "https://liquidcollective.io/corporate-treasury-staking/",
+     "title": "Report - The productive treasury - Liquid Collective",
+     "description": "A practical guide for fulfilling today's evolved corporate treasury mandate through the strategic integration of staking and restaking.",
+     "category": null
+    },
+    {
+     "url": "https://home.treasury.gov/news/press-releases/sb0490",
+     "title": "Report to the Secretary of the Treasury from the Treasury Borrowing ...",
+     "description": "financial markets have been highly influenced by oil prices, which are up nearly 60% and nearly 80% since the start of 2026.",
+     "category": null
+    },
+    {
+     "url": "https://www.thinkingaheadinstitute.org/research-papers/global-pension-assets-study-2026/",
+     "title": "Global Pension Assets Study - 2026 - Thinking Ahead Institute",
+     "description": "2026 Global pension assets rise by 9.6%, reaching new high in 2025. These geographies now stand at US$68.3 trillion in pension assets and account for 74% of ...",
+     "category": null
+    }
+   ]
+  }
+ },
+ "ENS DAO endowment report 2025 2026": {
+  "success": true,
+  "data": {
+   "web": [
+    {
+     "url": "https://discuss.ens.domains/c/meta-governance/treasury-management/64",
+     "title": "Latest Treasury Management topics - ENS DAO Governance Forum",
+     "description": "KPK H1 2026 Review for the ENS Endowment. 2, 135, August 17, 2026. ENS Endowment ... Kpk 2025 Review for the ENS Endowment. 0, 223, January 21, 2026. Toward ...",
+     "category": null
+    },
+    {
+     "url": "https://discuss.ens.domains/t/6-46-social-2026-endowment-investment-policy-update/22106",
+     "title": "[6.46] [Social] 2026 Endowment Investment Policy Update",
+     "description": "Three year runway. ~$49.34M (2025 reference) across all ENS DAO wallets including the Endowment. Runway Priorities, Unconditional. Supersedes ...",
+     "category": null
+    },
+    {
+     "url": "https://discuss.ens.domains/t/kpk-2025-review-for-the-ens-endowment/21829",
+     "title": "Kpk 2025 Review for the ENS Endowment - Treasury Management",
+     "description": "# [Heading link](https://discuss.ens.domains/t/kpk-2025-review-for-the-ens-endowment/21829#p-60229-executive-summary-1) Executive Summary\n2025 marked the second full calendar year of operations for the ENS Endowment and a meaningful step-change in operating maturity.\n\nOver the course of the year, Endowment revenues covered approximately 20% of ENS DAO operating expenses, reinforcing the Endowment’s role as a structural contributor to ENS’s long-term sustainability rather than a supplementary yield program.\n\nThis review summarises the Endowment’s current state, performance over 2025, key strategic and risk management developments, and priorities looking ahead to 2026.\n\n# [Heading link](https://discuss.ens.domains/t/kpk-2025-review-for-the-ens-endowment/21829#p-60229-december-2025-update-2) December 2025 Update\n## [Heading link](https://discuss.ens.domains/t/kpk-2025-review-for-the-ens-endowment/21829#p-60229-december-dao-financial-update-4) December DAO Financial Update\n- Asset Allocation\n  - Assets under management (AUM) of $113,86M, with a capital utilisation ratio of 100%.\n  - Endowment Allocation split into ~61% ETH ($69,45M) and ~39% stablecoins ($44,40M), in line with the 60/40 mandate and minimum stablecoin runway requirements.\n  - Yield Generation (“DeFi Results”): $300,04k gross yield generated in December.\n  - Marked-to-market (“MTM”) valuation: decreased by $696,87k, driven by the decline in ETH price.\n- Protocol Distribution\n  - The Endowment’s largest position (protocol exposure) consists of sUSDS (Sky Savings Rate), which accounts for 27.2% of the total funds. On the staked ETH side, staking in Stader (18.1%) and Stakwise v3 (18.0%), continues to be the largest ones.\n\n# [Heading link](https://discuss.ens.domains/t/kpk-2025-review-for-the-ens-endowment/21829#p-60229-h-2025-endowment-lookback-5) 2025 Endowment Lookback\n### [Heading link](https://discuss.ens.domains/t/kpk-2025-review-for-the-ens-endowment/21829#p-60229-endowment-update-6) Endowment Update\n- Yearly DeFi Results: 3.56M\n- Yearly Average APY (gross): 3.45% (or 3.40% weighted)\n- Yearly Average APY (net of fees): 3.39% (or 3.34% weighted)\n\n[![image](https://discuss.ens.domains/uploads/db9688/optimized/2X/1/1e4e9025fe8cc277955cccbb5a224fe14368a689_2_690x315.png)\\\nimage959×438 31.6 KB](https://discuss.ens.domains/uploads/db9688/original/2X/1/1e4e9025fe8cc277955cccbb5a224fe14368a689.png)\n\n- Operational Revenues for the DAO amounted to $18.22M\n- Operational Expenses for the DAO amounted to $17.54M, with a 20.3% of expense now covered by Endowment revenues\n- DAO reserves concluded the year at $113.77M, indicative of an 6.5-year operational runway\n\nFurthermore, as per the [December 2025 report](https://reports.kpk.io/dydx?month=12&year=2025&currency=USD), the distribution of funds by asset-class can be seen in the following graph:\n\n[![image](https://discuss.ens.domains/uploads/db9688/original/2X/b/b1a6a20f7cb9732078c0203e613ca24213471890.png)\\\nimage328×374 10 KB](https://discuss.ens.domains/uploads/db9688/original/2X/b/b1a6a20f7cb9732078c0203e613ca24213471890.png)\n\n[![image](https://discuss.ens.domains/uploads/db9688/original/2X/9/901e09dd594caceb96414e7c871427a6e3ad574a.png)\\\nimage619×484 19.8 KB](https://discuss.ens.domains/uploads/db9688/original/2X/9/901e09dd594caceb96414e7c871427a6e3ad574a.png)\n\nThe Endowment established a maximum limit of 20% for its Ether (ETH) holdings to be allocated to Lido’s staked Ether (stETH). Below is a breakdown of the current ETH allocations.\n\n[![image](https://discuss.ens.domains/uploads/db9688/optimized/2X/4/426363e5bf11cd907edee7aa5ef7d5eeb78585ff_2_690x169.png)\\\nimage1506×369 27.3 KB](https://discuss.ens.domains/uploads/db9688/original/2X/4/426363e5bf11cd907edee7aa5ef7d5eeb78585ff.png)\n\n### [Heading link](https://discuss.ens.domains/t/kpk-2025-review-for-the-ens-endowment/21829#p-60229-community-reporting-accountability-10) Community, Reporting & Accountability\n- Since its inception, the Endowment has become a meaningful additional revenue stream for ENS DAO, contributing directly to the protocol’s long-term financial stability. In 2025, the endowment generated ~20% of ENS’s total revenue after fees, making it the DAO’s third-largest revenue source. This positions the endowment as a materially important contributor to ENS’s long-term sustainability.\n- Over the past year, we worked closely with the Meta-Governance Working Group to review and optimise the endowment’s fee structure. We are pleased to have reached an outcome that reflects delegate priorities and provides clearer long-term cost visibility for the DAO. We view this change as a constructive evolution of the endowment and a practical example of transparent, iterative governance.\n\n### [Heading link](https://discuss.ens.domains/t/kpk-2025-review-for-the-ens-endowment/21829#p-60229-future-roadmap-11) Future Roadmap\n- Introduction and evaluation of additional DeFi protocols, building on recent integrations such as Fluid and Morpho, to further diversify execution venues and improve capital efficiency within defined risk parameters.\n- Ongoing vigilance on market conditions and selective exploration of new investment opportunities (private deals, etc) for the Endowment.\n\nThe transition to an AUM-only fee model aligns with ENS’s conservative Investment Policy Statement, reduces structural complexity for the DAO, and preserves the level of active risk management required to continue outperforming passive benchmarks on a net basis.\n\nAs this annual review concludes, we reiterate our appreciation for the trust ENS DAO has placed in kpk. We aim to continue setting a high standard for DAO service provision and value the collaborative approach demonstrated by the Meta-Governance Working Group throughout this process.\n\n- [Endowment Monthly Reports](https://discuss.ens.domains/t/endowment-monthly-reports/17614/37)",
+     "category": null
+    },
+    {
+     "url": "https://basics.ensdao.org/endowment",
+     "title": "ENS Endowment - ENS DAO Basics",
+     "description": "The Endowment was initiated on March 7, 2023. The DAO voted in favor of funding the first tranche of the Endowment with an initial amount of 16,000 ETH.",
+     "category": null
+    },
+    {
+     "url": "https://discuss.ens.domains/t/kpk-h1-2026-review-for-the-ens-endowment/22358",
+     "title": "KPK H1 2026 Review for the ENS Endowment - Treasury Management",
+     "description": "Endowment assets closed June at $67.7M, down from $101.6M in January, almost entirely the ETH price marking down the DAO's 60% ETH allocation ...",
+     "category": null
+    },
+    {
+     "url": "https://eco.com/support/en/articles/14799687-dao-treasury-management-onchain-governance-spend",
+     "title": "DAO Treasury Management: Onchain Governance & Spend | Support - Eco",
+     "description": "# What Is DAO Treasury Management?\nUniswap allocated 43% to the treasury (vested over four years); ENS allocated 50%; Optimism allocated 25% to the foundation and 5% to the citizens' house.\n\n# DAO Treasury Yield Frameworks\nSky alone holds $2.1B in tokenized RWA positions; ENS deployed into BUIDL in 2025; Optimism's foundation holds substantial BUIDL position.\n\n# Persistent Challenges\nMost DAO treasuries hold 60-90% of value in their own governance token.",
+     "category": null
+    },
+    {
+     "url": "https://crypto.news/ens-dao-approves-foundation-overhaul-five-seat-board/",
+     "title": "ENS DAO approves foundation overhaul with five-seat board",
+     "description": "ENS DAO has approved a foundation overhaul with a five-seat board, 1 million ENS for staff and safeguards for its $65 million endowment.",
+     "category": null
+    },
+    {
+     "url": "https://discuss.ens.domains/t/ens-financial-reporting-by-steakhouse/16601?page=3",
+     "title": "ENS Financial Reporting by Steakhouse - Page 3",
+     "description": "This report is complementary to the monthly ones which are more operation in nature and focus only on the endowment while this report provides a ...",
+     "category": null
+    }
+   ]
+  }
+ },
+ "Sky MakerDAO surplus buffer 2026 treasury": {
+  "success": true,
+  "data": {
+   "web": [
+    {
+     "url": "https://eco.com/support/en/articles/15197990-usds-vs-dai-2026-sky-s-migration-from-makerdao",
+     "title": "USDS vs DAI 2026: Sky's Migration from MakerDAO | Support - Eco",
+     "description": "# How Is the Peg Maintained for USDS and DAI?\nThe surplus buffer sits above $80 million, providing a cushion against bad debt.",
+     "category": null
+    },
+    {
+     "url": "https://insights.skyeco.com/sky-documentation",
+     "title": "Sky Protocol: Capital Allocation & the Sky Savings Rate | Sky Ecosystem ...",
+     "description": "# What is Sky Protocol?\n## Protocol & Products\nIt is backed by a surplus of collateral and pegged to the value of the U.S. dollar.",
+     "category": null
+    },
+    {
+     "url": "https://milkroad.com/news/skys-record-surplus-and-the-line-that-isnt-moving/",
+     "title": "Sky's record surplus, and the line that isn't moving - MilkRoad",
+     "description": "$66M in cumulative 2026 Net Protocol Surplus through five months. Sky has already cleared the full-year 2025 total.",
+     "category": null
+    },
+    {
+     "url": "https://sky.money/",
+     "title": "Sky.money | Put Stablecoins to Work with sUSDS, Vaults & SKY",
+     "description": "Put stablecoins to work on Sky.money: earn yield via the Sky Savings Rate (sUSDS), curated Vaults, and SKY staking. Swap USDC↔USDS 1:1, zero fees.",
+     "category": null
+    },
+    {
+     "url": "https://x.com/SkyEcosystem/status/2087946237861355624",
+     "title": "Sky on X: \"Earlier this year, Sky Governance temporarily reduced ...",
+     "description": "Earlier this year, Sky Governance temporarily reduced SKY buybacks and directed more Net Protocol Surplus toward strengthening reserves.",
+     "category": null
+    },
+    {
+     "url": "https://www.webacy.com/blog/from-dai-to-usds-the-institutional-evolution-of-sky-protocol---why-we-rated-usds-a",
+     "title": "From DAI to USDS: The Institutional Evolution of Sky Protocol - Webacy",
+     "description": "The protocol's financial resilience is backed by robust revenue and a healthy surplus buffer, making it one of the most stable entities in the ...",
+     "category": null
+    },
+    {
+     "url": "https://blockworks.com/news/sky-pivots-beyond-treasuries",
+     "title": "Sky pivots beyond treasuries as yields dip, staking overhaul looms",
+     "description": "The plan would direct 500 million SKY to the treasury and raise daily buybacks to $300,000 in USDS, with rewards transitioning fully to SKY ...",
+     "category": null
+    },
+    {
+     "url": "https://makerdao.com/da/whitepaper/",
+     "title": "The Sky Protocol: Sky's Multi-Collateral Dai (MCD) System",
+     "description": "If Dai proceeds from auctions and Stability Fee payments exceed the Sky Protocol Buffer limit (a number set by Sky Governance), they are sold through a Surplus ...",
+     "category": null
+    }
+   ]
+  }
+ },
+ "Aave DAO treasury report 2025 2026": {
+  "success": true,
+  "data": {
+   "web": [
+    {
+     "url": "https://governance.aave.com/t/aave-dao-funding-insights/24192",
+     "title": "Aave DAO Funding Insights - Finance",
+     "description": "Since the buyback program was launched on April 9, 2025, $42M has been allocated to acquiring 205,000 AAVE over the 10-month period. The Aave ...",
+     "category": null
+    },
+    {
+     "url": "https://governance.aave.com/t/aci-full-transparency-report/24085",
+     "title": "ACI: Full Transparency Report - General - Aave - Governance Forum",
+     "description": "We managed $101M in total incentive deployment in 2025: $21.2M from DAO treasury and $80M from external partners. Both were deployed through ...",
+     "category": null
+    },
+    {
+     "url": "https://www.coindesk.com/tech/2026/04/13/aave-passes-landmark-vote-ending-months-long-fight-over-who-controls-protocol-revenue",
+     "title": "Aave passes landmark vote ending months-long fight over protocol ...",
+     "description": "# Aave passes landmark vote ending months-long fight over protocol revenue control\n## The proposal directs 100% of application and product revenue back to AAVE token holders, resolving a governance dispute that began when swap fees were quietly redirected away from the DAO treasury in late 2025.\nThis report maps the region’s rules, use cases, and RLUSD’s role.\n\nThis report maps the region’s rules, use cases, and RLUSD’s role.\n\nThis report maps the region’s rules, use cases, and RLUSD’s role.",
+     "category": null
+    },
+    {
+     "url": "https://governance.aave.com/t/aave-labs-contributions-report/24155",
+     "title": "Aave Labs Contributions Report - Governance",
+     "description": "This report provides the Aave DAO with an overview of Aave Labs' work since 2017. While it cannot capture every detail, it aims to provide ...",
+     "category": null
+    },
+    {
+     "url": "https://home.treasury.gov/system/files/246/GENIUS-Act-Illicit-Finance-Innovation-Congressional-Report-March-2026.pdf",
+     "title": "[PDF] GENIUS-Act-Illicit-Finance-Innovation ... - Treasury Department",
+     "description": "This report outlines the Department of the Treasury’s (Treasury) findings\n\nIn line with the GENIUS Act’s requirements, on August 18, 2025, Treasury issued a public assets. Treasury solicited public feedback from August to October 2025. Treasury reviewed and considered more than 220 comments from industry associations, Treasury conducted additional research on these and other\n\nAlso, as required by the GENIUS Act, this report discusses the extent to which\n\nover-year increase.\n\nTreasury published its latest National Risk Assessments on Money Laundering, Terrorist Financing, and Proliferation Financing in March 2026.\n\nIC3 estimated that, of this $9 billion total, losses from digital asset investment schemes accounted for $5.8 billion, a 47 percent increase\n\nSeptember 2025, the DPRK stole at least $2.8 billion in digital assets.\n\nrely primarily on fiat currency, leveraging digital assets when possible. In other cases, Iranian actors have facilitated the purchase of millions of dollars in digital assets for illicit oil sales for the Iranian regime.\n\nincreased adoption of digital assets; such actors use digital assets for transfers or purchases, as\n\noperations in numerous jurisdictions.\n\nassets.\n\ndigital assets, they are increasingly abused. In 2024, there were more than 10,900 complaints to IC3 on the use of digital asset kiosks, with reported victim losses of approximately $246.7 million.\n\nattempting to trace illicit digital assets, frustrating law enforcement investigations as well as\n\nAccording to Treasury analysis, since May 2020, more than $37.4 billion withdrawals from over 50 bridges have been denominated in the two largest approximately $1.6 billion in deposits originating from mixing services. deposits (more than $900 million) were into a specific bridge, which faced scrutiny for failing to\n\nDigital Assets, published July 2025, recommended that Treasury consider next steps on this\n\nTreasury will take specific steps in 2026 and beyond to support financial institutions’ use of and related issues, Treasury will implement the recommendations outlined in this report.\n\nTreasury\n\ninefficiencies between systems, and decrease the need for investigatory time and resources.\n\n45,46,47 objectives consistent with this report’s focus on illicit finance.\n\nidentify illicit finance patterns, risks, trends, and typologies.\n\nIn 2025, Treasury directly engaged with The report noted that in the past several years,\n\ncannot reengineer an identity, even if they use AI.\n\nfinancial sector in streamlining compliance. provide to citizens by late 2026.\n\n• Reduce long-term compliance costs and burdens, among others.\n\nRecent breaches of customer PII across the\n\nanalysis of a significant number of identity-related exploitations and illicit identity-related (42 percent of reports filed that year) related to identity, indicating $212 billion in suspicious found that compromised credentials have a disproportionate financial impact as compared to\n\nTreasury in 2025 provided support assurance levels, as well as new guidance on passkeys, digital wallets, and deepfakes.\n\nIn addition, Treasury has been exploring how digital identity can be leveraged by financial\n\nIn response to the RFC, Treasury received extensive feedback on the use of APIs from more than\n\nand increasing exposure to unauthorized access.\n\nsignaled challenges in securing vendor support and developing technical capacity.\n\nTreasury’s ongoing modernization efforts reflect\n\nTreasury will seek to promote the use of APIs in a safe and secure fashion.",
+     "category": null
+    },
+    {
+     "url": "https://x.com/tokenterminal/article/2088252783803670645",
+     "title": "Aave July 2026 Report | Token Terminal (@tokenterminal) on X",
+     "description": "Aave Horizon is a specialized lending market for tokenized real-world assets, launched in August 2025. Stablecoin supply is permissionless, ...",
+     "category": null
+    },
+    {
+     "url": "https://governance.aave.com/t/arfc-buyback-program-budget-adjustment/24229",
+     "title": "[ARFC] Buyback Program - Budget Adjustment - Governance - Aave",
+     "description": "This publication proposes reducing the annual AAVE buyback budget from approximately $50M to $30M ad outlined in the Aave DAO Funding Insights ...",
+     "category": null
+    },
+    {
+     "url": "https://www.onesafe.io/blog/aave-dao-governance-revenue-sharing-proposal",
+     "title": "Aave DAO Governance Engages in Groundbreaking Revenue Sharing ...",
+     "description": "Aave DAO considers a groundbreaking 50/50 revenue-sharing proposal with Sentora, potentially reshaping DeFi dynamics and governance ...",
+     "category": null
+    }
+   ]
+  }
+ },
+ "Octobre 10 2025 crypto crash liquidations 19 billion": {
+  "success": true,
+  "data": {
+   "web": [
+    {
+     "url": "https://www.fticonsulting.com/insights/articles/crypto-crash-october-2025-leverage-met-liquidity",
+     "title": "Crypto Crash Oct 2025: Leverage Meets Liquidity - FTI Consulting",
+     "description": "# The Crypto Crash of October 2025: When Leverage Met Liquidity\nOn October 10, 2025, more than $19 billion of crypto leverage was liquidated in roughly a day, sending crypto prices through levels that are still considered a “tail risk” event.",
+     "category": null
+    },
+    {
+     "url": "https://www.coindesk.com/research/market-spotlight-the-19-billion-liquidation-that-shook-crypto",
+     "title": "Market Spotlight: Inside Crypto's $19 Billion Liquidation Event - CoinDesk",
+     "description": "Copy link [X iconX (Twitter)](https://x.com/intent/tweet?utm_source=twitter&text=The+%2419+Billion+Liquidation+That+Shook+Crypto+https%3A%2F%2Fwww.coindesk.com%2Fresearch%2Fmarket-spotlight-the-19-billion-liquidation-that-shook-crypto+via+%40coindesk&utm_content=editorial&utm_medium=social&utm_term=organic) [LinkedIn](https://www.linkedin.com/shareArticle?utm_source=linkedin&mini=true&summary=A+historic+%2419+billion+in+leveraged+positions+vanished+within+24+hours%2C+exposing+how+macro+shocks%2C+leverage%2C+and+thin+liquidity+combined+to+trigger+crypto%E2%80%99s+largest-ever+liquidation+event.%0A&url=https%3A%2F%2Fwww.coindesk.com%2Fresearch%2Fmarket-spotlight-the-19-billion-liquidation-that-shook-crypto&utm_content=editorial&utm_medium=social&utm_term=organic) [Facebook](https://www.facebook.com/sharer/sharer.php?utm_source=facebook&u=https%3A%2F%2Fwww.coindesk.com%2Fresearch%2Fmarket-spotlight-the-19-billion-liquidation-that-shook-crypto&utm_content=editorial&utm_medium=social&utm_term=organic) [Email](mailto:%20?subject=The%20%2419%20Billion%20Liquidation%20That%20Shook%20Crypto%20%E2%80%94%20CoinDesk&body=The%20%2419%20Billion%20Liquidation%20That%20Shook%20Crypto%0AA%20historic%20%2419%20billion%20in%20leveraged%20positions%20vanished%20within%2024%20hours%2C%20exposing%20how%20macro%20shocks%2C%20leverage%2C%20and%20thin%20liquidity%20combined%20to%20trigger%20crypto%E2%80%99s%20largest-ever%20liquidation%20event.%0A%0A%0ARead%20the%20full%20article%20on%20CoinDesk%3A%0A%0Ahttps%3A%2F%2Fwww.coindesk.com%2Fresearch%2Fmarket-spotlight-the-19-billion-liquidation-that-shook-crypto)\n\n# The $19 Billion Liquidation That Shook Crypto\n## A historic $19 billion in leveraged positions vanished within 24 hours, exposing how macro shocks, leverage, and thin liquidity combined to trigger crypto’s largest-ever liquidation event.\nBy [CoinDesk Research](https://www.coindesk.com/author/coindesk-research)\n\nUpdatedOct 30, 2025, 1:16 p.m. EDTPublished Oct 17, 2025, 7:47 a.m. EDT\n\n![Market Spotlight: The $19 Billion Liquidation That Shook Crypto - Image Header](https://www.coindesk.com/_next/image?url=https%3A%2F%2Fcdn.sanity.io%2Fimages%2Fs3y3vcno%2Fproduction%2F2bd5d1e87c57fc44a005693c6bfd881a088183f6-1200x675.png%3Fw%3D1920%26h%3D1080%26auto%3Dformat&w=1200&q=75)\n\n#### What to know:\n- Over $19 billion in leveraged crypto positions were liquidated within 24 hours; the largest single-day event on record.\n- Bitcoin (BTC) fell to $106,560, while Ether (ETH) and Solana (SOL) dropped to $3,551 and $174, respectively.\n- Perpetual futures open interest contracted 43% to $123 billion, led by a 57% drop on Hyperliquid.\n- Stablecoin USDe depegged to $0.65 on Binance, triggering secondary liquidations across LSDs, alt-L1s, and derivatives.\n- SNX outperformed on event-driven momentum, while PUMP and DRIFT fell 13% and 12%, respectively.\n- Liquidity remains thin and fragmented, with capital still cautious and rotational flows yet to establish new market leadership.\n\n# **What Actually Happened**\nAccording to Coinglass data, more than $19 billion in leveraged positions were wiped out within 24 hours.",
+     "category": null
+    },
+    {
+     "url": "https://www.instagram.com/reel/DeWZ-C4oY26/",
+     "title": "One year ago today, 1.6 million crypto traders lost it all in one ... - Instagram",
+     "description": "4 days ago · October 10, 2025. The biggest liquidation in crypto history. $19 billion gone in 24 hours. Bitcoin fell 14%, XRP dropped 37% in an hour, Solana ...",
+     "category": null
+    },
+    {
+     "url": "https://finance.yahoo.com/markets/crypto/articles/crypto-19-billion-crash-one-230000486.html",
+     "title": "A year after crypto's $19 billion crash, one warning sign still hasn't gone ...",
+     "description": "# A year after crypto’s $19 billion crash, one warning sign still hasn’t gone away\n- [BTC-USD \\\n-2.93%](https://finance.yahoo.com/quote/BTC-USD/)\n\nOn Oct. 10, 2025, more than $19 billion in leveraged bets were [liquidated](https://www.bloomberg.com/news/articles/2025-10-10/crypto-sees-more-than-3-billion-in-liquidations-in-past-hour) in a single day.",
+     "category": null
+    },
+    {
+     "url": "https://www.coingecko.com/learn/october-10-crypto-crash-explained",
+     "title": "What Is October 10th? Crypto's 10/10 Mass Market Liquidation Event",
+     "description": "# What Is October 10th? Crypto's 10/10 Mass Market Liquidation Event\n## What Happened on October 10th\nOver 1.6 million trading accounts ( [perp traders)](https://www.coingecko.com/learn/what-are-crypto-perpetuals-perp-dexs) were liquidated, with total forced closures reaching over $19 billion according to data from [Coinglass](https://www.coinglass.com/pro/futures/liquidation-events).\n\n## Drying Up the Trenches: October 10th's Hidden Casualties\nBeyond the headline $19 billion liquidation figure lies October 10th's hidden consequence: the event wiped out crypto's most seasoned and advanced traders, creating a secondary liquidity crisis that particularly devastated Solana's memecoin-focused ecosystem as well as professional market makers.\n\n### Why This Matters More Than The Crash Itself\nThe immediate $19 billion liquidation was dramatic, but the permanent destruction of the sophisticated trader class explains why crypto hasn't recovered:\n\nOctober 10th's real legacy isn't the $19 billion liquidated in one day — it's the permanent loss of the human infrastructure that made crypto markets function.\n\n## Conclusion\nOctober 10, 2025, stands as crypto's most devastating liquidation event — $19 billion forcibly wiped out, 1.6 million traders liquidated, and a market structure exposed as dangerously fragile.",
+     "category": null
+    },
+    {
+     "url": "https://www.facebook.com/Trademinatiyt/posts/-october-10-2025-cryptos-historic-crash-wiped-out-19-billion-in-positions-liquid/1632937768846019/",
+     "title": "Crypto's historic crash wiped out $19 BILLION in positions, liquidated 1.6 ...",
+     "description": "5 days ago · October 10, 2025: Crypto's historic crash wiped out $19 BILLION in positions, liquidated 1.6 million accounts, and sent Bitcoin plunging ...",
+     "category": null
+    },
+    {
+     "url": "https://www.reuters.com/world/asia-pacific/after-record-crypto-crash-rush-hedge-against-another-freefall-2025-10-13/",
+     "title": "After record crypto crash, a rush to hedge against another freefall",
+     "description": "Market participants said the crypto sector on Friday saw more than $19 billion in liquidations across leveraged positions as panic selling and low liquidity triggered sharp swings.",
+     "category": null
+    },
+    {
+     "url": "https://www.youtube.com/watch?v=odq4tLVSjQs",
+     "title": "19B Crypto Crash: Who Is Behind This? - YouTube",
+     "description": "# 19B Crypto Crash: Who Is Behind This?\nThe crypto market just faced its biggest crash in history—over $19B wiped out, 1.6M traders liquidated, and Bitcoin dropped $20K in hours.\n\n## 19B Crypto Crash: Who Is Behind This?\nThe crypto market just faced its biggest crash in history—over $19B wiped out, 1.6M traders liquidated, and Bitcoin dropped $20K in hours.\n\n```\n\n🛒 Get The Hottest Crypto Deals 👉 [https://www.coinbureau.com/deals/](https://www.youtube.com/redirect?event=video_description&redir_token=QUZZTVljR3p0dU5MaU5QRG42YS1SZ0N4UU90dnxBSTVJdTVzWXprdnNRUmdNV3FNcXJMTWp0U28yRzBhMklFVjQxZzJuMjBQQ3I5TlA5SnloVEdrNXhteWI5MDI2WGNRZHZuRGFieGRHZHFwTG9pWnZCNXVRNzc0UzFCck12M0hS&q=https%3A%2F%2Fwww.coinbureau.com%2Fdeals%2F&v=odq4tLVSjQs)\n♣️ Join The Coin Bureau Club 👉 [https://hub.coinbureau.com/](https://www.youtube.com/redirect?event=video_description&redir_token=QUZZTVljRmI4V1ktLWs5N3V4SnVxNDkzck9sTHxBSTVJdTV1NVJpeWRDVVdfLU1HMnh5c2M0aVJsdXZZUDZDRzdQTzd0SWxYUzNLRlFGY0FfVDFvTm9aaThiR2dwd3VEUV84OWNKRzRPV2dZSjNDcFhQaHQ0Qm1vcl9FNTZacng3&q=https%3A%2F%2Fhub.coinbureau.com%2F&v=odq4tLVSjQs)\n💥 Coin Bureau Discord 👉 [https://go.coinbureau.com/cb-discord](https://www.youtube.com/redirect?event=video_description&redir_token=QUZZTVljRklUMThVYllDM1h6Z0VqYWVmQWJmY3xBSTVJdTV1dENUNk5CUzFkUWltYmw1NmZ6Xzk2N0VuQTBqOUI0YVpRMGxQd3hadnptM3JCWHRVRS1nazdROFdTSy0yb2tnaF9pdHBiQ0R3VnMycDlEWUNfVlZCT1pHdklpNTVI&q=https%3A%2F%2Fgo.coinbureau.com%2Fcb-discord&v=odq4tLVSjQs)\n📲 Insider Info in our Socials 👉 [https://www.coinbureau.com/socials/](https://www.youtube.com/redirect?event=video_description&redir_token=QUZZTVljRmppV1FRUHNxQWtLVXRfZEo3ZDJxSXxBSTVJdTVzc0E2QTl1Nk5najNuOUFMVk5qTW5yblV6V2Z6eVNKU0s2UWtpVnBxUW55VWhMdWphQ09OUXpLdnYwTFFWbUZzNld4RlFQdzRlc0hiVjBaN1FjZUdXQ1BBTjZSSG1I&q=https%3A%2F%2Fwww.coinbureau.com%2Fsocials%2F&v=odq4tLVSjQs)\n👕 Best Crypto Merch 👉 [https://store.coinbureau.com](https://www.youtube.com/redirect?event=video_description&redir_token=QUZZTVljRnNPMVdaVndZNG1BLTFwLUd6LUJVX3xBSTVJdTVzVXVtYzllWmhKaUN3Z0kwWGg4V0F1M3pFOXFQM2g4U2dIWDFScFpUa3o2SWp1SDBQYjBQY0N0dWVWWFd0dFZwSmZWYTlOWTFXOXVqRGJGcVZFVzZrQ2RYdVlGWUxP&q=https%3A%2F%2Fstore.coinbureau.com%2F&v=odq4tLVSjQs)\n🔥 TOP Crypto TIPS In our Newsletter 👉 [https://www.coinbureau.com/newsletters/](https://www.youtube.com/redirect?event=video_description&redir_token=QUZZTVljSENGVkZBYkVKLWkySmJuSnA3T1Z6WHxBSTVJdTVzTlJNYjJNakllTDIxUTJCTnp3Mzg3XzBHTkR1S2p1eXg5NTdyckZLV252ejRhbDBSS0g2bWZhbWtxT1NyeHdVcnJfT01YR1lqYTNUX2pQaGlLS2YxME43T2FyaXUz&q=https%3A%2F%2Fwww.coinbureau.com%2Fnewsletters%2F&v=odq4tLVSjQs)\n⭐ More Coin Bureau Channel 👉 [/ @bureaupodcast](https://www.youtube.com/channel/UCR93yACeNzxMSk6Y1cHM2pw)\n📈 Coin Bureau Trading Channel 👉 [/ @trading.bureau](https://www.youtube.com/channel/UCTULWwXF7dj19_ovr7rbgog)\n```\n\n```\n\n~ TIMESTAMPS ~\n\n[0:00](https://www.youtube.com/watch?v=odq4tLVSjQs) Intro\n[01:40](https://www.youtube.com/watch?v=odq4tLVSjQs&t=100s) What Triggered It: Geopolitics & Trump’s Tariff Bomb\n[03:47](https://www.youtube.com/watch?v=odq4tLVSjQs&t=227s&pp=0gcJCWMAwfN6Pr3D) The Liquidation Cascade: Why It Was So Severe\n[06:28](https://www.youtube.com/watch?v=odq4tLVSjQs&t=388s) Insider Trading or Coincidence? The $200M Whale\n[07:28](https://www.youtube.com/watch?v=odq4tLVSjQs&t=448s) What’s Next for Crypto\n[08:41](https://www.youtube.com/watch?v=odq4tLVSjQs&t=521s) Altcoin Season Over? New Narratives Take the Lead\n[09:33](https://www.youtube.com/watch?v=odq4tLVSjQs&t=573s&pp=0gcJCWMAwfN6Pr3D) Trump’s Trade War Timeline: What Comes Next\n[11:16](https://www.youtube.com/watch?v=odq4tLVSjQs&t=676s) The Bull Market Isn’t Over, But Everything’s Changed\n```",
+     "category": null
+    }
+   ]
+  }
+ },
+ "Bybit hack 1.4 billion February 2025": {
+  "success": true,
+  "data": {
+   "web": [
+    {
+     "url": "https://www.csis.org/analysis/bybit-heist-and-future-us-crypto-regulation",
+     "title": "The ByBit Heist and the Future of U.S. Crypto Regulation - CSIS",
+     "description": "On February 21, 2025, a group of hackers from North Korea pulled off the largest cryptocurrency heist in history after stealing $1.5 billion ...",
+     "category": null
+    },
+    {
+     "url": "https://papers.ssrn.com/sol3/papers.cfm?abstract_id=5367106",
+     "title": "<span>The $1.4 Billion Bybit Hack: Cybersecurity Failures and the ...",
+     "description": "The 2025 Bybit hack, resulting in approximately $1.4 billion in losses, is the largest cryptocurrency heist to date, highlighting the ...",
+     "category": null
+    },
+    {
+     "url": "https://www.fbi.gov/investigate/cyber/alerts/2025/north-korea-responsible-for-1-5-billion-bybit-hack",
+     "title": "North Korea Responsible for $1.5 Billion Bybit Hack - FBI.gov",
+     "description": "February 26, 2025. North Korea Responsible for $1.5 Billion Bybit Hack. Alert Number: I-022625-PSA. Questions regarding this PSA should be directed to your ...",
+     "category": null
+    },
+    {
+     "url": "https://www.wilsoncenter.org/article/bybit-heist-what-happened-what-now",
+     "title": "The Bybit Heist: What Happened & What Now? - Wilson Center",
+     "description": "On February 21, 2025 North Korean hackers executed the largest cryptocurrency heist to date, stealing approximately $1.5 billion worth of ...",
+     "category": null
+    },
+    {
+     "url": "https://www.paulhastings.com/insights/crypto-policy-tracker/the-bybit-hack-of-2025-potential-implications",
+     "title": "The Bybit Hack of 2025 — Potential Implications - Paul Hastings LLP",
+     "description": "On February 21, 2025, Dubai-based Bybit, one of the world's leading cryptocurrency exchanges, suffered a massive security breach, ...",
+     "category": null
+    },
+    {
+     "url": "https://www.cloudskope.com/breaches/bybit-hack-2025",
+     "title": "Bybit Hack 2025: How $1.5 Billion Was Stolen | Cloudskope",
+     "description": "# Bybit Exchange Hack 2025: North Korea Steals $1.5 Billion in the Largest Crypto Theft in History\n## Frequently Asked Questions\n### What was the Bybit hack of 2025?\nOn February 21, 2025, North Korean state-affiliated threat actors stole approximately $1.5 billion in Ethereum from cryptocurrency exchange Bybit through a sophisticated attack against the exchange's cold wallet infrastructure.",
+     "category": null
+    },
+    {
+     "url": "https://www.youtube.com/watch?v=WBYyoIK8H9E",
+     "title": "Bybit Hacked For Record-Setting $1.5 Billion - YouTube",
+     "description": "Major media outlets globally reported on February 21, 2025 that a $1.5 billion (USD) hack of Bybit was a record-setting cyberattack.",
+     "category": null
+    },
+    {
+     "url": "https://cyberflorida.org/north-korea-responsible-for-1-5-billion-bybit-hack/",
+     "title": "North Korea Responsible for $1.5 Billion Bybit Hack - Cyber Florida",
+     "description": "On February 21, 2025, Bybit, a major cryptocurrency exchange, experienced a security breach that resulted in the loss of $1.5 billion worth of ...",
+     "category": null
+    }
+   ]
+  }
+ },
+ "Kelp DAO rsETH bridge hack April 2026": {
+  "success": true,
+  "data": {
+   "web": [
+    {
+     "url": "https://www.chainalysis.com/blog/kelpdao-bridge-exploit-april-2026/",
+     "title": "Inside the KelpDAO Bridge Exploit - Chainalysis",
+     "description": "# Inside the KelpDAO Bridge Exploit: How ~$292 Million in rsETH Was Released Against a Non-Existent Burn\nApril 23, 2026|Chainalysis Team\n\n![](https://www.chainalysis.com/wp-content/uploads/2026/04/2026-04-kelpdao-hack-1500x583.jpg)\n\n## Summary\n- On April 18, 2026, attackers linked to North Korea’s Lazarus Group stole ~$292 million (116,500 rsETH) from KelpDAO’s LayerZero bridge. Crucially, this was not a smart contract hack, but a sophisticated attack on off-chain infrastructure.\n\n## What happened\nOn April 18, an attacker drained approximately $290 million worth of rsETH from KelpDAO’s LayerZero bridging adapter by forging a cross-chain message. The target of the attack was not KelpDAO’s own contracts nor the LayerZero contracts themselves. It was rather the off-chain infrastructure that LayerZero Labs operated to watch the source chain on KelpDAO’s behalf.\n\nThe attackers broke the internal side and knocked out the external side at roughly the same time:\n\nThe system executed a correct transaction on top of a falsified view of reality.\n\n[![](https://www.chainalysis.com/wp-content/uploads/2026/04/kelpdao-graph-1500x757.png)](https://www.chainalysis.com/wp-content/uploads/2026/04/kelpdao-graph.png) As depicted in the above Reactor graph, the attacker moved funds through a large handful of addresses to one consolidation address before the Arbitrum Security Council froze funds.\n\n## Why this attack worked\nIn this incident, rsETH was released on Ethereum against a burn that never occurred.\n\n# The Broken Invariant\n## What this means for DeFi security\n[Bridge Exploit](https://www.chainalysis.com/blog/tag/bridge-exploit/) [Crypto crime](https://www.chainalysis.com/blog/tag/crypto-crime/) [hack](https://www.chainalysis.com/blog/tag/hack/) [KelpDAO](https://www.chainalysis.com/blog/tag/kelpdao/) [Lazarus Group](https://www.chainalysis.com/blog/tag/lazarus-group/) [North Korea](https://www.chainalysis.com/blog/tag/north-korea/) [rsETH](https://www.chainalysis.com/blog/tag/rseth/) [Stolen funds](https://www.chainalysis.com/blog/tag/stolen-funds/)",
+     "category": null
+    },
+    {
+     "url": "https://www.galaxy.com/insights/research/kelpdao-layerzero-exploit-defi",
+     "title": "KelpDAO/LayerZero Exploit Drains $290m, Freezes DeFi Markets",
+     "description": "# KelpDAO/LayerZero Exploit Drains $290m, Freezes DeFi Markets\n## Executive Summary\nOn Saturday, KelpDAO's liquid restaking token, rsETH, suffered a ~$290 million hack, the largest DeFi exploit of 2026. An attacker, preliminarily identified as North Korea's Lazarus Group, exploited the single-verifier configuration that KelpDAO chose for its LayerZero omnichain fungible token (OFT) bridge to unlock 116,500 rsETH from the Ethereum mainnet escrow.\n\nThe fallout is severe: 112,204 rsETH (roughly 15% of post-exploit supply) became unbacked on the bridge adapter, and only 40,373 rsETH remains in the Ethereum-side adapter as confirmed backing for the 152,577 rsETH outstanding on L2s.\n\n## What Happened\n### The Attack Vector\nThe adapter works on a lock-and-mint model where rsETH bridged out of Ethereum is locked in a mainnet escrow, and incoming cross-chain messages unlock it on return.\n\n### DeFi Contagion\nAdditionally, following the exploit, analysts deduced that rsETH was targeted because it had the largest exploitable value on the bridged setups, suggesting the attacker spent considerable effort ahead of time to determine the most valuable hack.\n\n## Resolution Paths\nOn the backing side, 112,204 rsETH is unbacked at the Ethereum bridge adapter.",
+     "category": null
+    },
+    {
+     "url": "https://www.merklescience.com/blog/hack-track-how-attackers-stole-292m-from-kelp-dao",
+     "title": "Hack Track: How Attackers Stole $292M From Kelp DAO - Merkle Science",
+     "description": "A breakdown of the Kelp DAO hack, including compromised DVN nodes, a phantom cross-chain message, and the $292M rsETH bridge exploit.",
+     "category": null
+    },
+    {
+     "url": "https://www.halborn.com/blog/post/explained-the-kelp-dao-hack-april-2026",
+     "title": "Explained: The Kelp DAO Hack (April 2026) - Halborn",
+     "description": "# Explained: The Kelp DAO Hack (April 2026)\nIn April 2026, Kelp DAO, a liquid restaking protocol, was the victim of the largest DeFi hack of 2026 to date.\n\n## Inside the Attack\nThe verifier inspected it and authorized the release of 116,500 rsETH to attacker-controlled accounts from the Kelp cross-chain bridge.",
+     "category": null
+    },
+    {
+     "url": "https://www.openzeppelin.com/news/lessons-from-kelpdao-hack",
+     "title": "$292 Million Lost, Zero Bugs Found: Lessons From the rsETH Bridge ...",
+     "description": "When news broke on April 18, 2026 that an attack involving KelpDAO, LayerZero, and Aave had resulted in [$292 million](https://www.coindesk.com/tech/2026/04/19/2026-s-biggest-crypto-exploit-kelp-dao-hit-for-usd292-million-with-wrapped-ether-stranded-across-20-chains) in losses, making it the largest DeFi exploit of 2026, the first instinct of most security researchers was to look for the bug in the code, but _there wasn’t one_.\n\n## What Happened (The Short Version)\nKelpDAO’s rsETH bridge relied on [LayerZero’s](https://layerzero.network/) messaging infrastructure to move assets across chains.\n\nKelpDAO's rsETH bridge ran on that common default configuration.\n\nWith the sole verifier now operating through infrastructure they controlled, the attackers injected a synthetic cross-chain message (one with no corresponding source transaction on Unichain at all) falsely claiming that 116,500 rsETH had been locked on the source chain.\n\nKelpDAO detected it and blocked further activity within the hour.\n\n## The Takeaway\n$292 million was lost in an attack involving KelpDAO, LayerZero, and Aave, even though no smart contract bug has been publicly identified.\n\n## FAQs\nThe rsETH bridge exploit on April 18, 2026 resulted in **$292 million in losses**, making it the largest DeFi exploit of 2026. Attackers drained 116,500 rsETH from the bridge escrow by forging a cross-chain message.\n\nThe rsETH bridge then released the funds.\n\nLayerZero's own documentation warned against this setup, and after the rsETH bridge exploit, LayerZero announced it would block all 1-of-1 configurations entirely.",
+     "category": null
+    },
+    {
+     "url": "https://x.com/i/trending/2045587057482088746?lang=en",
+     "title": "KelpDAO $292M Hack Triggers $13B DeFi TVL Drop - X",
+     "description": "Attackers, possibly North Korea's Lazarus Group, exploited KelpDAO's LayerZero bridge by poisoning RPC node data, allowing them to forge ...",
+     "category": null
+    },
+    {
+     "url": "https://www.reddit.com/r/ethereum/comments/1soo7xp/daily_general_discussion_april_18_2026/",
+     "title": "Daily General Discussion April 18, 2026 : r/ethereum - Reddit",
+     "description": "Another day another bridge hack, most probably. Someone just got ahold of a lot of rsETH (Kelp liquid staking token) through hacking the ...",
+     "category": null
+    },
+    {
+     "url": "https://finance.yahoo.com/markets/crypto/articles/hackers-target-defi-protocol-kelp-205525995.html",
+     "title": "Hackers target DeFi protocol Kelp DAO in massive $300m exploit",
+     "description": "# Hackers target DeFi protocol Kelp DAO in massive $300m exploit\nApril 18, 20263 min read\n\nAnother day, another DeFi hack.\n\nThat's what appears to be the case after blockchain security experts on Saturday flagged nearly $300 million leaving Ethereum-based Kelp DAO.\n\nFirst alerted by blockchain sleuth ZachXBT via his Telegram channel, a total of $293.7 million was drained from the protocol's rsETH adapter — a tool allowing users to deposit liquid staking tokens and get rsETH in return.\n\nKelp DAO wrote on X that it had \"identified suspicious cross-chain activity involving rsETH\" and that it had paused rsETH contracts while it investigated the situation with security experts.\n\n\"Aave's contracts have not been exploited and this is an exploit related to rsETH,\" the project's official account wrote.\n\nSecurity firm Cyvers confirmed the hack to _DL News_, and said the funds had been swapped back to Ethereum and Arbitrum.\n\n## What happened\nKelp DAO is a liquid restaking protocol built on Ethereum. Suspicious money movements from its rsETH adaptor were flagged at around 2.50pm in New York.\n\nUsers receive Kelp DAO's rsETH token when they deposit other liquid staking tokens, such as stETH or cbETH, into the adaptor.\n\nThey can then use rsETH across other DeFi protocols, like Aave, while continuing to earn staking rewards.\n\nStani Kulechov, Aave's founder & CEO, wrote on X that \"the asset does not have any borrowing power\" and that Aave v3 and v4 have no exposure to rsETH.\n\n[twitter](https://twitter.com/x/status/2045595382986559987)\n\n## DeFi community reeling\nSaturday's attack comes as hackers seemingly step up their attacks on DeFi protocols.\n\nCybercriminals [hit](https://www.dlnews.com/articles/regulation/drift-user-sues-circle-for-inaction-in-biggest-hack-of-2026/) Solana-based Drift Protocol on April 1, making away with $295 million.\n\nIn a smaller crime this week, criminals [targeted](https://www.dlnews.com/articles/defi/a-hacker-created-dollar12bn-of-counterfeit-crypto-they-only-sold-it-for-dollar237000/) popular bridge Hyperbridge, exploiting the protocol to mint $1.2 billion in counterfeit crypto.",
+     "category": null
+    }
+   ]
+  }
+ }
+}

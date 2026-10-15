@@ -1,0 +1,497 @@
+{
+ "Chaos Labs Aave risk advisor departure 2026": {
+  "success": true,
+  "data": {
+   "web": [
+    {
+     "url": "https://www.coindesk.com/tech/2026/04/06/aave-loses-key-risk-manager-chaos-labs-amid-contributor-exodus-and-disputes",
+     "title": "Aave loses key risk manager Chaos Labs amid contributor ...",
+     "description": "# Aave loses key risk manager, Chaos Labs, amid contributor exodus and disputes\n## A key sticking point is Aave’s V4 upgrade, which introduces a new architecture and significantly expands the scope of risk management.\n- Chaos Labs exits Aave, citing “fundamental misalignment” on risk strategy, rising complexity from V4, and unsustainable economics despite a $5M budget proposal.\n- The departure follows exits of ACI and BGD Labs, raising concerns about continuity, risk management and operational stability as Aave enters its next phase.\n\nChaos Labs, one of Aave’s key risk managers, is leaving the DeFi lending giant's ecosystem, marking the latest in a string of high-profile contributor exits that have reshaped the protocol’s core operating team in recent months.\n\nThe departure follows earlier exits from major contributors [like ACI (Aave Chan Initiative)](https://www.coindesk.com/web3/2026/03/03/aave-governance-rift-deepens-as-major-governance-group-exits-usd26-billion-defi-protocol) and [BGD Labs](https://governance.aave.com/t/bgd-leaving-aave/24122), signaling growing internal friction over the protocol’s direction.\n\nFor Aave, the departure leaves open questions around how risk will be managed through its next phase of growth.",
+     "category": null
+    },
+    {
+     "url": "https://governance.aave.com/t/chaos-labs-is-leaving-aave/24386",
+     "title": "Chaos Labs Is Leaving Aave - General",
+     "description": "# [Chaos Labs Is Leaving Aave](https://governance.aave.com/t/chaos-labs-is-leaving-aave/24386)\n## post by omergoldberg on Apr 6\nHowever, we are leaving because the engagement no longer reflects how we believe risk should be managed.",
+     "category": null
+    },
+    {
+     "url": "https://finance.yahoo.com/markets/crypto/articles/chaos-labs-announces-departure-aave-175626573.html",
+     "title": "Chaos Labs Announces Departure from Aave Labs",
+     "description": "Aave risk manager Chaos Labs just announced its departure, raising renewed questions for the embattled lending market.",
+     "category": null
+    },
+    {
+     "url": "https://www.tradingview.com/news/cointelegraph:e28e9b292094b:0-chaos-labs-taps-out-as-aave-s-risk-provider-decision-not-made-in-haste/",
+     "title": "Chaos Labs taps out as Aave's risk provider, decision 'not ...",
+     "description": "Chaos Labs has parted ways with the Aave ecosystem after serving as the crypto lending protocol's main risk service provider for three years ...",
+     "category": null
+    },
+    {
+     "url": "https://thedefiant.io/news/defi/chaos-labs-terminates-aave-engagement-citing-risk-misalignment",
+     "title": "Chaos Labs Terminates Aave Engagement Citing Risk ...",
+     "description": "# Chaos Labs Terminates Aave Engagement Citing Risk Misalignment and Inadequate Funding\nThe risk management provider exits after three years, marking the third departure of a core contributor in two months.\n\nThe risk management provider exits after three years, marking the third departure of a core contributor in two months.",
+     "category": null
+    },
+    {
+     "url": "https://bitcoinfoundation.org/news/crypto-companies-news/aave-drops-chaos-quits/",
+     "title": "AAVE Price Drops 6% as Chaos Labs Warns of Bigger ...",
+     "description": "**Risk manager Chaos Labs is stepping away from Aave after three years, saying the protocol’s risk setup no longer fits the job.**\n\nChaos Labs, an automated risk management platform, is walking away from Aave, the largest [DeFi](https://bitcoinfoundation.org/glossary/defi/) lending platform by allocated capital, after three years, saying the protocol’s risk setup no longer fits how it thinks the job should be done.\n\nAmid the latest departure, AAVE fell more than 6% to around $91.8, according to CoinGecko [data](https://www.coingecko.com/en/coins/aave).",
+     "category": null
+    },
+    {
+     "url": "https://chaoslabs.xyz/posts/institutional-rwa-powering-risk-infrastructure-for-horizon",
+     "title": "Institutional RWA: Powering Risk Infrastructure for Horizon",
+     "description": "Chaos Labs is collaborating with Aave Labs to build the risk infrastructure for Horizon, an institutional DeFi platform that unlocks ...",
+     "category": null
+    },
+    {
+     "url": "https://www.binance.com/en/square/post/309842443429633",
+     "title": "Aave Drops Chaos Labs as Risk Provider, Citing ...",
+     "description": "Chaos Labs exits after a three-year engagement as Aave's main risk service provider, citing a budget dispute and diverging views on risk ...",
+     "category": null
+    }
+   ]
+  }
+ },
+ "Gauntlet Aera treasury autonomous management protocol": {
+  "success": true,
+  "data": {
+   "web": [
+    {
+     "url": "https://x.com/aerafinance",
+     "title": "Aera (@aerafinance) / X",
+     "description": "Autonomous onchain treasury management protocol, built by the team at @gauntlet_xyz.",
+     "category": null
+    },
+    {
+     "url": "https://www.aera.finance/",
+     "title": "Aera Finance - Future-proof your onchain treasury",
+     "description": "## Robust onchain treasury capabilties\n### Fully Automated\nGuardians handle all onchain execution once you’ve allocated into your vault.\n\n## Driven by best-in-class DeFi research\nAera hired the economic research experts at Gauntlet, and smart-contract engineers at Auditless, to design and build DeFi's most capable, cutting-edge decentralized treasury management protocol.\n\n## The Aera vision\n### Decentralize (2025)\nFully decentralized treasury management, with a network of vault guardians who compete and earn rewards for proposing the best strategy",
+     "category": null
+    },
+    {
+     "url": "https://www.gauntlet.xyz/resources/gauntlet-xai-foundation-to-collaborate-governance-redesign-implement-treasury-management-refresh-through-aera",
+     "title": "Gauntlet and Xai Foundation to Collaborate on Governance ...",
+     "description": "As a Guardian on Aera, a robust, customizable and non-custodial treasury management protocol, we can implement a comprehensive strategy for Xai ...",
+     "category": null
+    },
+    {
+     "url": "https://seamlessprotocol.medium.com/aera-protocol-and-seamless-protocol-launch-automated-protocol-owned-liquidity-strategy-on-aerodrome-5bb086aa6376",
+     "title": "Aera Protocol and Seamless Protocol Launch Automated ... - Medium",
+     "description": "Aera Protocol is a treasury management protocol built for onchain treasuries, and incubated by the Gauntlet . It specializes in automated and ...",
+     "category": null
+    },
+    {
+     "url": "https://finance.yahoo.com/news/aera-launches-treasury-optimizing-vaults-193000767.html",
+     "title": "Aera Launches Treasury Optimizing Vaults for DAOs Powered by Polygon",
+     "description": "Aera is the world's first autonomous, data-driven treasury management protocol. It enables DAOs to increase capital efficiency, save on ...",
+     "category": null
+    },
+    {
+     "url": "https://www.prnewswire.com/news-releases/aera-protocol-opens-to-general-availability-with-8-million-token-sale-led-by-bain-capital-crypto-301967722.html",
+     "title": "Aera Protocol Opens to General Availability with $8 Million Token ...",
+     "description": "The new protocol gives DAOs sophisticated, yet responsible treasury management capabilities, without requiring costly trade-offs in ...",
+     "category": null
+    },
+    {
+     "url": "https://www.comp.xyz/t/temperature-check-aera-for-compound/4091",
+     "title": "Temperature Check: Aera for Compound - Ideas",
+     "description": "The Gauntlet team recently launched Aera, an autonomous treasury management protocol. This post is a temperature check to assess the ...",
+     "category": null
+    },
+    {
+     "url": "https://www.coindesk.com/business/2022/10/12/crypto-data-science-shop-gauntlet-launches-treasury-management-system-for-daos",
+     "title": "Crypto Data Science Shop Gauntlet Launches Treasury Management ...",
+     "description": "The Aera protocol aims to make DAOs play a more agile and risk-aware role when it comes to investing in the fast-moving world of decentralized ...",
+     "category": null
+    }
+   ]
+  }
+ },
+ "Block Analitica risk curator Morpho": {
+  "success": true,
+  "data": {
+   "web": [
+    {
+     "url": "https://arxiv.org/html/2512.11976v1",
+     "title": "Institutionalizing risk curation in decentralized credit - arXiv",
+     "description": "Morpho's vault layer allows curator-specific parameterization, but collateral posted to Morpho ... Block Analitica). These links are ...",
+     "category": null
+    },
+    {
+     "url": "https://medium.com/b-protocol/b-protocol-partners-with-block-analitica-launching-a-transparent-and-automated-risk-management-b519d83e553b",
+     "title": "B.Protocol Partners with Block Analitica: Launching a Transparent ...",
+     "description": "With MetaMorpho, users have the ability to delegate risk management to a MetaMorpho vault curated by risk experts. This approach allows Morpho ...",
+     "category": null
+    },
+    {
+     "url": "https://forum.morpho.org/t/block-analitica-b-protocol-flagship-eth-and-usdc-metamorpho-vaults-whitelisting/372",
+     "title": "Block Analitica & B.Protocol: Flagship ETH and USDC MetaMorpho Vaults ...",
+     "description": "# [Block Analitica & B.Protocol: Flagship ETH and USDC MetaMorpho Vaults Whitelisting](https://forum.morpho.org/t/block-analitica-b-protocol-flagship-eth-and-usdc-metamorpho-vaults-whitelisting/372)\n## [Heading link](https://forum.morpho.org/t/block-analitica-b-protocol-flagship-eth-and-usdc-metamorpho-vaults-whitelisting/372#p-742-introduction-1) Introduction\nBlock Analitica and B.Protocol, two leading DeFi risk teams, are partnering as risk curators, leveraging their experience and expertise in risk management to curate transparent and automated lending vaults for users.\n\n## [Heading link](https://forum.morpho.org/t/block-analitica-b-protocol-flagship-eth-and-usdc-metamorpho-vaults-whitelisting/372#p-742-block-analitica-and-bprotocol-partnership-2) Block Analitica and B.Protocol Partnership\nThe unique architecture of Morpho Blue enables our two teams to join forces as risk curators on MetaMorpho.",
+     "category": null
+    },
+    {
+     "url": "https://blockanalitica.com/",
+     "title": "Block Analitica: Risk Intelligence for DeFi",
+     "description": "We provide risk advisory services to help maintain the stability and integrity of protocols and businesses. We cover a broad range of focus areas.",
+     "category": null
+    },
+    {
+     "url": "https://x.com/BlockAnalitica",
+     "title": "Block Analitica (@BlockAnalitica) / X",
+     "description": "This preliminary study shows the risk dimensions that should be considered to develop a parameter set on Midnight, @Morpho's fixed-rate primitive. @ ...",
+     "category": null
+    },
+    {
+     "url": "https://forum.moonwell.fi/t/introducing-moonwell-metamorpho-vaults-next-gen-defi-lending/960",
+     "title": "Introducing Moonwell MetaMorpho Vaults: Next-Gen DeFi Lending",
+     "description": "Since November 2023, Block Analitica and B.Protocol have collaborated as Morpho risk curators, enabling the Flagship ETH, USDC, and USDT ...",
+     "category": null
+    },
+    {
+     "url": "https://www.alchemy.com/dapps/block-analitica",
+     "title": "Block Analitica - DeFi apps - Alchemy",
+     "description": "Users access its work through custom risk dashboards and curated lending vaults on Sky, Spark, and Morpho. Its dashboards and curation cover around $17B in ...",
+     "category": null
+    },
+    {
+     "url": "https://metlabs.io/en/glossary/risk-curator/",
+     "title": "Risk curator: definition - Metlabs",
+     "description": "4 days ago · Active curators on Morpho include Gauntlet, Steakhouse Financial, Block Analitica and Re7 Labs. The MetaMorpho vault system launched in 2024.",
+     "category": null
+    }
+   ]
+  }
+ },
+ "Credora credit ratings crypto 2025": {
+  "success": true,
+  "data": {
+   "web": [
+    {
+     "url": "https://www.agioratings.io/insights/crypto-credit-ratings-how-institutions-measure-counterparty-and-asset-risk",
+     "title": "Crypto Credit Ratings: How Institutions Measure Counterparty and Asset ...",
+     "description": "DeFi borrower credit scoring is what Credora (now Credora by RedStone) does. They rate individual borrowers for on-chain lending markets.",
+     "category": null
+    },
+    {
+     "url": "https://www.credora.network/",
+     "title": "Credora: DeFi risk ratings for vaults and lending markets",
+     "description": "Credora rates DeFi vaults, lending markets, and assets on one A+ to D scale, built on 100000 Monte Carlo simulations per market.",
+     "category": null
+    },
+    {
+     "url": "https://www.fitchratings.com/research/corporate-finance/us-banks-with-significant-cryptocurrency-exposure-face-growing-risks-08-12-2025",
+     "title": "Digital Asset Regulation Raises Opportunities and Risks for U.S. ...",
+     "description": "U.S. banks can now pursue cryptocurrency custody, stablecoin issuance, and blockchain-based services without prior approval federal framework ...",
+     "category": null
+    },
+    {
+     "url": "https://www.coindesk.com/business/2025/09/04/crypto-oracle-firm-redstone-acquires-defi-credit-specialist-credora",
+     "title": "Crypto Oracle Firm RedStone Acquires DeFi Credit ... - CoinDesk",
+     "description": "RedStone, a provider of oracle data feeds for blockchains, is buying Credora, an on-chain credit rating platform backed by Coinbase Ventures ...",
+     "category": null
+    },
+    {
+     "url": "https://www.spglobal.com/ratings/en/regulatory/article/220630-exploring-crypto-and-defi-risks-in-credit-ratings-s101563051",
+     "title": "Exploring Crypto And DeFi Risks In Credit Ratings - S&P Global",
+     "description": "The crypto ecosystem is evolving rapidly and throwing up novel risks. These risks can weigh heavily on our ratings on entities exposed to ...",
+     "category": null
+    },
+    {
+     "url": "https://yellow.com/learn/crypto-credit-ratings-explained-how-risk-scoring-is-coming-on-chain",
+     "title": "Crypto Credit Ratings Explained: How Risk Scoring Is Coming On-Chain",
+     "description": "In February 2025, Credora launched its Consensus Ratings ...",
+     "category": null
+    },
+    {
+     "url": "https://finance.yahoo.com/news/redstone-acquire-credora-debuts-first-132230884.html",
+     "title": "RedStone to Acquire Credora, Debuts First Oracle-Powered DeFi Risk ...",
+     "description": "Credora's ratings methodology is built for crypto markets, assessing collateral composition, liquidity, volatility, governance parameters ...",
+     "category": null
+    },
+    {
+     "url": "https://www.moodys.com/web/en/us/insights/credit-risk/digital-economy.html",
+     "title": "Digital economy - Moody's",
+     "description": "Research May 14, 2025 Moody's Ratings Integrated quantum strategy is credit positive for Europe's digital economy Research",
+     "category": null
+    }
+   ]
+  }
+ },
+ "Coinshift treasury management DAO pricing": {
+  "success": true,
+  "data": {
+   "web": [
+    {
+     "url": "https://www.coinshift.xyz/",
+     "title": "Coinshift",
+     "description": "Trillions in credit markets. Your share starts here. The world's top credit managers. One token. Liquid. Composable. Onchain.",
+     "category": null
+    },
+    {
+     "url": "https://open.spotify.com/show/7opjdiENXzgX8GFZd5IU39",
+     "title": "Treasury AMA - by Coinshift | Podcast on Spotify",
+     "description": "In this episode, you will find the Coinshift team & Shreyas discussing best practices in DAO Treasury Management. Shreyas is (Co-founder, Llama). Llama is ...",
+     "category": null
+    },
+    {
+     "url": "https://eco.com/support/en/articles/14799687-dao-treasury-management-onchain-governance-spend",
+     "title": "DAO Treasury Management: Onchain Governance & Spend | Support - Eco",
+     "description": "Most DAOs hold 60-90% of treasury value in their native governance token because the initial token allocation dominates. Active treasury ...",
+     "category": null
+    },
+    {
+     "url": "https://www.coindesk.com/video/coinshift-partners-with-deepak-chopra-linked-dao-for-treasury-management",
+     "title": "Coinshift Partners With Deepak Chopra-Linked DAO for Treasury ...",
+     "description": "Coinshift Partners With Deepak Chopra-Linked DAO for Treasury Management ... Latest crypto prices · Trending · Bitcoin (BTC) · Ethereum (ETH) ...",
+     "category": null
+    },
+    {
+     "url": "https://www.coindesk.com/business/2022/08/02/deepak-chopra-involved-dao-project-taps-coinshift-for-treasury-management",
+     "title": "Deepak Chopra-Involved DAO Project Taps Coinshift for Treasury ...",
+     "description": "The crowdfunding service aims to bring DAO tooling to non-crypto savvy agents of change.",
+     "category": null
+    },
+    {
+     "url": "https://www.linkedin.com/posts/around-the-coin_tarun-gupta-founder-and-ceo-of-coinshift-activity-7321267550934208512-kbPL",
+     "title": "Tarun Gupta on Coinshift: Treasury Management for DAOs - LinkedIn",
+     "description": "ATC Features, Tarun Gupta is the Founder and CEO of Coinshift, a leading treasury management platform for DAOs and web3 organizations.",
+     "category": null
+    },
+    {
+     "url": "https://www.caplight.com/company/coinshift",
+     "title": "Coinshift | Valuation, Funding Rounds & Stock Price - Caplight",
+     "description": "Coinshift is a fintech company that provides an onchain treasury management and infrastructure platform for DAOs and crypto businesses to manage cash ...",
+     "category": null
+    },
+    {
+     "url": "https://www.prnewswire.com/news-releases/coinshift-partners-with-earthfund-to-manage-treasuries-of-daos-dedicated-to-changing-the-world-301597697.html",
+     "title": "Coinshift Partners with EarthFund to Manage Treasuries of DAOs ...",
+     "description": "Coinshift's intuitive V2 platform is designed to provide DAOs with simple, transparent and secure treasury monitoring and management services, ...",
+     "category": null
+    }
+   ]
+  }
+ },
+ "Enzyme Finance vault management fees": {
+  "success": true,
+  "data": {
+   "web": [
+    {
+     "url": "https://enzyme.finance/enzyme-vaults",
+     "title": "The industry standard - Enzyme Finance",
+     "description": "Blue offers Vault owners a wide range of options to collect fees ... Streamline Enzyme Vault management by applying deposit parameters for enhanced control over ...",
+     "category": null
+    },
+    {
+     "url": "https://enzyme.finance/",
+     "title": "Enzyme Finance",
+     "description": "Enzyme empowers businesses and institutions with a comprehensive suite of products to create and manage next-generation financial products and strategies.",
+     "category": null
+    },
+    {
+     "url": "https://www.enzyme.finance/blog-posts/vault-as-a-service-as-a-guiding-principle",
+     "title": "Vault-as-a-Service as a guiding principle - Enzyme Finance",
+     "description": "Rooted in our origins as a trailblazer in digital asset management, Enzyme Vaults are the foundation of our approach to tokenized strategy ...",
+     "category": null
+    },
+    {
+     "url": "https://defillama.com/protocol/enzyme-finance",
+     "title": "Enzyme Finance TVL, Fees & Revenue - DefiLlama",
+     "description": "# ![Logo of Enzyme Finance](https://icons.llamao.fi/icons/protocols/enzyme-finance?w=48&h=48)Enzyme Finance(MLN)[Open Enzyme Finance website](https://enzyme.finance/) Add to watchlist\n## Income Statement for Enzyme Finance\n|  | Q3 2026* | Q2 2026 | Q1 2026 |\n|-|-|-|-|\n| Management Fees | $26.06K | $36.51K | $6.83K |\n| Management Fees | $26.06K | $36.51K | $6.83K |",
+     "category": null
+    },
+    {
+     "url": "https://enzyme.finance/products/blue",
+     "title": "End-to-end platform for decentralized strategies management.",
+     "description": "Enzyme Blue equips industry leaders to embrace decentralized finance at scale, offering a comprehensive environment for streamlined execution, compliance, and ...",
+     "category": null
+    },
+    {
+     "url": "https://docs.enzyme.finance/onyx-user-documentation/enzyme-vault/fees",
+     "title": "Fees | User Documentation",
+     "description": "Enzyme Vaults support a flexible fee framework, allowing managers to define types, recipients, and assets for fee collection.",
+     "category": null
+    },
+    {
+     "url": "https://tokenterminal.com/explorer/projects/enzyme-finance/about",
+     "title": "Enzyme Finance about | Token Terminal",
+     "description": "Enzyme Finance is an onchain asset management system that enables vault managers to create investment vaults. Vaults pay a fee for building on top of Enzyme ...",
+     "category": null
+    },
+    {
+     "url": "https://qinv.io/blog/qinv-vs-enzyme-finance-comparison",
+     "title": "QINV vs Enzyme Finance: AI-managed vs user-managed on ...",
+     "description": "On Enzyme, every vault's holdings, trades, and fee payments are visible on Etherscan. ... Some Enzyme fund managers charge 0% management fees; ...",
+     "category": null
+    }
+   ]
+  }
+ },
+ "DeFi Saver automation features stop loss": {
+  "success": true,
+  "data": {
+   "web": [
+    {
+     "url": "https://defisaver.com/",
+     "title": "DeFi Saver",
+     "description": "# A better tool for DeFi\n## Automate your position for the best results\n### Automation can manage your leverage and protect your position from liquidation based on your input, non-custodially and trustlessly.\nStop Loss\n\nTrailing Stop\n\nStop Loss\n\nTrailing Stop",
+     "category": null
+    },
+    {
+     "url": "https://defisaver.com/features/automation",
+     "title": "DeFi Position Automation: 24/7 Liquidation Protection",
+     "description": "Take Profit / Stop Loss. Closes your position once the price of your collateral or debt asset reaches your configured take profit or stop loss price.",
+     "category": null
+    },
+    {
+     "url": "https://help.defisaver.com/features/automation",
+     "title": "Automation - DeFi Saver Knowledge Base",
+     "description": "Automated Leverage Management, Stop Loss & Take Profit, Trailing stop, Boost/Repay on Target Price, and various Savings Protection options).",
+     "category": null
+    },
+    {
+     "url": "https://milkroad.com/reviews/defi-saver/",
+     "title": "DeFi Saver Review 2026: Pros, Cons, & Features - Milk Road",
+     "description": "# DeFi Saver Review 2026: Pros, Cons, & Features\n## Our take on DeFi Saver\n### THE BOTTOM LINE:\nIt offers automation, leverage management, and advanced tools like stop-loss and trailing stops, while keeping your funds fully in your control.\n\n### ![Pros](https://milkroad.com/_next/image/?url=%2Fimages%2Fmascots%2Fmm-greed.png&w=128&q=75&dpl=dpl_B6GnUi9aHegPqHrZ3BXL8o4Sdi1k)Pros\n- Automate strategies like stop-loss and leverage\n\n## Our DeFi Saver Expert Review\n### Automation: Your safety net\nDeFi Saver’s Automation feature takes the stress out of managing loans and collateral by handling the tricky stuff for you.\n\n- **Stop Loss & Take Profit:** Set a target price to close your position, locking in profits or cutting losses without constant monitoring.\n- **Trailing Stop:** Use percentage-based triggers that adjust dynamically with the market, offering more flexibility.\n\nIt’s basically a set-it-and-forget-it tool that keeps your positions secure and running smoothly, so you can focus on your overall strategy.\n\n## DeFi Saver Frequently Asked Questions\n### What can I use DeFi Saver for?\nYou can automate strategies, swap tokens, manage leverage, and create custom transactions—all in one place.",
+     "category": null
+    },
+    {
+     "url": "https://www.youtube.com/watch?v=GfYFYsfB4Dg",
+     "title": "DeFi Saver Tutorial: How to Automate Your DeFi Positions - YouTube",
+     "description": "This tutorial covers automated leverage management, stop-loss protection, and take-profit automation ... features/automation.",
+     "category": null
+    },
+    {
+     "url": "https://blog.defisaver.com/makerdao-stop-loss-take-profit/",
+     "title": "automated Stop Loss and Take Profit strategies for MakerDAO",
+     "description": "Today, DeFi Saver team is taking liquidation protection one step further with stop loss options for MakerDAO Vaults.",
+     "category": null
+    },
+    {
+     "url": "https://x.com/DeFiSaver?lang=en",
+     "title": "DeFi Saver (@DeFiSaver) / X",
+     "description": "You can also enable these automations: - Liquidation Protection - Automated Leverage Management - Stop Loss/Take Profit",
+     "category": null
+    },
+    {
+     "url": "https://www.binance.com/en/square/post/15294645921522",
+     "title": "Why DeFi Saver Is the Ultimate Solution for Streamlined Leverage ...",
+     "description": "To reduce losses or ensure gains, users can set target prices at which their investments will be automatically terminated.",
+     "category": null
+    }
+   ]
+  }
+ },
+ "Safe Zodiac modules DAO treasury automation": {
+  "success": true,
+  "data": {
+   "web": [
+    {
+     "url": "https://www.zodiac.eco/",
+     "title": "Zodiac — Operate your Safe with confidence",
+     "description": "# Operate yourSafeTreasuryProtocolAgentsSafeSafe with confidence\n## Looking for docs or SDKs?\n```\n# Install the Zodiac SDK\nnpm install @zodiac/sdk\n\n# Or use the API directly\ncurl https://api.zodiac.eco/v1/...\n```",
+     "category": null
+    },
+    {
+     "url": "https://www.cube.exchange/what-is/treasury-management-dao",
+     "title": "What is DAO Treasury Management? - Cube Exchange",
+     "description": "That is why many DAO treasuries are built around programmable accounts such as Safe, often extended with modular controls. In the Zodiac model, ...",
+     "category": null
+    },
+    {
+     "url": "https://eco.com/support/en/articles/15254042-safe-wallet-deep-dive-2026-multisig-and-smart-accounts",
+     "title": "Safe Wallet Deep Dive 2026: Multisig and Smart Accounts | Support - Eco",
+     "description": "Safe is the default smart-contract treasury wallet for DAOs and onchain businesses. Protocols use Safes as multi-signer admin keys with ...",
+     "category": null
+    },
+    {
+     "url": "https://github.com/gnosisguild/zodiac",
+     "title": "GitHub - gnosisguild/zodiac: A library for composable tooling for onchain ...",
+     "description": "# Zodiac: The expansion pack for DAOs\n## Overview\n### Mastercopies\n```\nimport { Contract } from \"ethers\";\nimport {\n  getZodiacModuleAbi, // helper to get a specific ABI by name and version\n  getZodiacModuleAddress, // helper to get a specific mastercopy address by name and version\n  sanityCheckZodiacModuleAddress, // throw when an address is unknown or known faulty\n  KnownContracts, // enum of known Zodiac contract names\n  CanonicalAddresses, // canonical mastercopy addresses, by name@version\n  SupportedNetworks, // chain name -> chainId\n} from \"@gnosis-guild/zodiac\";\n\n// To interact with a specific version of a Zodiac module:\nconst delayModule = new Contract(\n  getZodiacModuleAddress(KnownContracts.DELAY, \"1.1.1\"),\n  getZodiacModuleAbi(KnownContracts.DELAY, \"1.1.1\"),\n  provider\n);\n```",
+     "category": "github"
+    },
+    {
+     "url": "https://www.youtube.com/watch?v=vpnHR0rsMl0",
+     "title": "How to use GnosisSafe Modules for secure on-chain Automation",
+     "description": "This talk will introduce how GnosisSafe Modules work and how they can be used to build complex automation systems that combine the security ...",
+     "category": null
+    },
+    {
+     "url": "https://docs.safe.global/advanced/smart-account-modules",
+     "title": "Safe Modules - Safe Docs",
+     "description": "# Safe Modules\n## Overview [Permalink for this section](https://docs.safe.global/advanced/smart-account-modules#overview)\n- **Automation**: Enable recurring transactions, DeFi interactions, or scheduled payments without manual approvals.",
+     "category": null
+    },
+    {
+     "url": "https://docs.tally.xyz/set-up-and-technical-documentation/using-governor-with-gnosis-safe/zodiac-governor-module-for-subdaos-and-grants-programs/",
+     "title": "Zodiac Governor Module for sub-organizations and grants ...",
+     "description": "With the Zodiac Governor module, a DAO can become a privileged member of the Safe, allowing it to manage signers and execute transactions.",
+     "category": null
+    },
+    {
+     "url": "https://chainscorelabs.com/comparisons/dao-governance-on-chain-vs-off-chain/subdao-creation-frameworks/gnosis-safe-vs-zodiac-for-treasury-and-module-management",
+     "title": "Gnosis Safe vs Zodiac for Treasury and Module Management",
+     "description": "Technical comparison of Gnosis Safe and Zodiac for DAO treasuries. Analyze security, composability, and module patterns for protocol architects.",
+     "category": null
+    }
+   ]
+  }
+ },
+ "OpenZeppelin Defender Sentinel sunset deprecated": {
+  "success": true,
+  "data": {
+   "web": [
+    {
+     "url": "https://github.com/OpenZeppelin/defender-sdk",
+     "title": "OpenZeppelin/defender-sdk - GitHub",
+     "description": "OpenZeppelin Defender will sunset on July 1, 2026. As a result, this SDK will be deprecated and will no longer receive updates after that date.",
+     "category": "github"
+    },
+    {
+     "url": "https://www.openzeppelin.com/news/introducing-sentinels",
+     "title": "Introducing Defender Sentinels - Smart Contract Monitoring ...",
+     "description": "Today we are announcing the release of a new app, called Sentinels, to help prevent ongoing attacks and exploits in the DeFi space.",
+     "category": null
+    },
+    {
+     "url": "https://keeperhub.com/compare/defender",
+     "title": "OpenZeppelin Defender Alternative & Migration - KeeperHub",
+     "description": "Yes. OpenZeppelin Defender shut down on July 1, 2026. Teams using Defender for automation, monitoring, and relayers need to migrate to an alternative.",
+     "category": null
+    },
+    {
+     "url": "https://www.youtube.com/watch?v=RleUrzgO5Bk",
+     "title": "It's Time to STOP Using OpenZeppelin Defender (V1) - YouTube",
+     "description": "Are you still using OpenZeppelin Defender V1? It's time to upgrade to V2 before it's too late! In this comprehensive tutorial, ...",
+     "category": null
+    },
+    {
+     "url": "https://www.openzeppelin.com/news/doubling-down-on-open-source-and-phasing-out-defender",
+     "title": "Doubling Down on Open Source Tools and Phasing Out Defender",
+     "description": "**Because we believe these open source tools will outpace any hosted SaaS alternative, we're now officially announcing a phased sunset of the Defender platform, with its final shutdown planned for July 1, 2026.**\n\n## **Defender Sunset Timeline**\n- **July 1, 2026:** The Defender platform will officially retire.",
+     "category": null
+    },
+    {
+     "url": "https://www.guardrail.ai/blog/migrating-from-openzeppelin-defender-to-guardrails-real-time-smart-contract-monitoring",
+     "title": "Migrating from OpenZeppelin Defender to Guardrail's real-time ...",
+     "description": "OpenZeppelin Defender provides a foundation for smart contract monitoring, where Guardrail extends its security application to be end-to-end, ...",
+     "category": null
+    },
+    {
+     "url": "https://techcommunity.microsoft.com/blog/microsoftsentinelblog/update-new-timeline-for-transitioning-sentinel-experience-to-defender-portal/4490464",
+     "title": "New timeline for transitioning Sentinel experience to Defender portal",
+     "description": "In July 2025, we announced that Microsoft Sentinel SIEM customers would have to transition from the Azure portal experience to the Defender ...",
+     "category": null
+    },
+    {
+     "url": "https://www.youtube.com/watch?v=EmUz2-D2488",
+     "title": "Understanding OpenZeppelin Contracts, Defender, and Wizard",
+     "description": "Alex Behrens, Technical Product Marketing Manager from OpenZeppelin, presented at SmartCon and detailed the latest technical updates across ...",
+     "category": null
+    }
+   ]
+  }
+ }
+}

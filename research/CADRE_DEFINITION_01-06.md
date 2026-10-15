@@ -36,6 +36,26 @@ Statuts : `[PROPOSITION]` à valider · `[À TRANCHER]` décision d'équipe · `
 
 ---
 
+### [RÉSULTAT RECHERCHE U1 — Banques & institutions financières (15/10, 32 Ko, 43 sources)]
+
+**Ce qui est vrai** : l'industrialisation est réelle et budgétée — garde institutionnelle (300+ banques chez Fireblocks), collatéral tokenisé (pilote DTCC/Digital Asset sur les *margin calls* ; DTC en production juillet 2026), jetons de dépôt (JPMD sur Base ; Kinexys > 7 Md$/jour), repo intraday (JPM/HQLAᵡ), pilote Agorá (BIS, CHF 800 k, mai 2026), 9 banques européennes + BNP sur un euro-stablecoin MiCA.
+
+**Douleurs documentées** (nommées par les infrastructures elles-mêmes) : réconciliation et interventions manuelles · mobilité du collatéral et appels de marge · liquidité intraday · trésorerie « 24/7 » sans fenêtre d'arrêt · fragmentation multi-chaînes · risque stablecoin (échec des tests BIS *singleness/elasticity/integrity*) · surveillance continue de positions tokenisées.
+
+**Le fait décisif — la donnée** : **les positions bancaires ne sont pas publiques** (Kinexys = registre privé permissionné ; conversions DTC sur Besu privé ; Canton = confidentialité sélective). Un agent qui ne lit que le public on-chain **est aveugle sur une grande partie du périmètre bancaire** : il doit s'intégrer aux **APIs de custody/ledger** (Fireblocks, Taurus, Canton, plateformes internes).
+
+**Contraintes structurantes** : **DORA** — l'agent devient un **tiers TIC** à contractualiser, auditer et pouvoir couper (depuis 17/01/2025) · **EU AI Act art. 14** — supervision humaine effective, double vérification dans certaines catégories (obligations principales : 02/08/2026) · **Bâle/SCO60** (depuis 01/01/2026) · **MiCA** · **GENIUS Act** (blocage/sanctions de stablecoins).
+
+**Jamais délégué** : la décision d'exposition et l'appétit au risque · la finalité juridique du règlement · les clés et la garde · la conformité AML/sanctions · l'élargissement du mandat.
+
+**3 cas d'usage documentés** : **UC1** collatéral & appels de marge (dans des paniers préapprouvés) · **UC2** trésorerie stablecoin/jetons de dépôt multi-chaînes (fenêtres de règlement) · **UC3** veille on-chain & réaction de contrepartie (dépeg, gel, suspension → playbook défensif préapprouvé, sinon escalade).
+
+**Verdict** : marché **crédible**, mais **pas un premier client pour un MVP 2026** → cible **phase 2 (2027-2028)**. Les workflows UC1-UC3 constituent le **meilleur gabarit de « bounded autonomy »** à montrer dans la soumission, en lisant les données publiques (explorers, Canton, dépôts tokenisés) — les banques restant la cible de déploiement ultérieure.
+
+**Condition de crédibilité si/vu** : intégration aux APIs de custody · enveloppe bornée vérifiable (allowlists, plafonds, fenêtres, double validation au-delà d'un seuil, kill switch, journal exportable) · positionnement **opérations** (jamais « décision d'investissement ») · mode *shadow/propose* d'abord · entrée via un fournisseur d'infrastructure ou un sandbox régulateur.
+
+---
+
 ## 02 — PROBLÈME FINANCIER PRÉCIS
 
 ### [PROPOSITION] La formulation

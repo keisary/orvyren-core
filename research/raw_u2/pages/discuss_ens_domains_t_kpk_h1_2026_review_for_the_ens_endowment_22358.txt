@@ -1,0 +1,309 @@
+[Skip to main content](https://discuss.ens.domains/t/kpk-h1-2026-review-for-the-ens-endowment/22358#main-container)
+
+- More
+
+
+Start Here
+
+
+- [Account Help](https://discuss.ens.domains/g/ForumAccess_Help)
+- [Guidelines](https://discuss.ens.domains/guidelines)
+- [Documentation](https://docs.ens.domains/dao/)
+- [ENS DAO Basics](https://basics.ensdao.org/)
+- [Delegate Voting Power](https://delegate.ens.domains/)
+- [Vote.ensdao.org](https://vote.ensdao.org/#/)
+- [Register your .eth](https://app.ens.domains/)
+
+Categories
+
+
+- [DAO-Wide](https://discuss.ens.domains/c/dao-wide/48 "Discussion and updates relevant to the ENS DAO.")
+- [🗳️ Meta-Governance](https://discuss.ens.domains/c/meta-governance/28 "Discussion of changes to the DAO itself.")
+- [🌱 ENS Ecosystem](https://discuss.ens.domains/c/ens-ecosystem/32 "Proposals relating to the ENS ecosystem.")
+- [🏛️ Public Goods](https://discuss.ens.domains/c/public-goods/37 "Proposals to fund public goods in the ENS and Ethereum ecosystems.")
+- [🧑‍💻 ENS Development](https://discuss.ens.domains/c/ens-dev/42 "Discussion of development of and on ENS.")
+- [All categories](https://discuss.ens.domains/categories)
+
+Tags
+
+
+- [newsletter](https://discuss.ens.domains/tag/newsletter "")
+- [All tags](https://discuss.ens.domains/tags)
+
+​
+
+
+# [KPK H1 2026 Review for the ENS Endowment](https://discuss.ens.domains/t/kpk-h1-2026-review-for-the-ens-endowment/22358)
+
+[🗳️ Meta-Governance](https://discuss.ens.domains/c/meta-governance/28) [Treasury Management](https://discuss.ens.domains/c/meta-governance/treasury-management/64)
+
+You have selected **0** posts.
+
+[select all](https://discuss.ens.domains/t/kpk-h1-2026-review-for-the-ens-endowment/22358)
+
+[cancel selecting](https://discuss.ens.domains/t/kpk-h1-2026-review-for-the-ens-endowment/22358)
+
+[Aug 14](https://discuss.ens.domains/t/kpk-h1-2026-review-for-the-ens-endowment/22358/1 "Jump to the first post")
+
+2 / 3
+
+
+Aug 14
+
+
+[Aug 17](https://discuss.ens.domains/t/kpk-h1-2026-review-for-the-ens-endowment/22358/3)
+
+## post by kpk on Aug 14
+
+[![](https://discuss.ens.domains/user_avatar/discuss.ens.domains/kpk/48/13441_2.png)](https://discuss.ens.domains/u/kpk)
+
+[kpk](https://discuss.ens.domains/u/kpk)
+
+1
+
+[Aug 14](https://discuss.ens.domains/t/kpk-h1-2026-review-for-the-ens-endowment/22358 "Post date")
+
+Endowment performance, composition, protocol revenue and key actions. January to June 2026.
+
+This review covers Endowment activity and broader KPK contributions from January through June 2026.
+
+## [Heading link](https://discuss.ens.domains/t/kpk-h1-2026-review-for-the-ens-endowment/22358\#p-62246-executive-summary-1) Executive Summary
+
+Endowment assets closed June at $67.7M, down from $101.6M in January, almost entirely the ETH price marking down the DAO’s 60% ETH allocation rather than the book. Through the drawdown the DeFi strategies stayed profitable every month, generated $1.15M net of fees, ran ahead of the IPS benchmark gross of fees, and held utilisation near 99%. No principal has been lost since inception in March 2023.
+
+During the April rsETH event, KPK exited the Endowment’s Aave positions precautionarily and rebuilt them once conditions stabilised, without a loss. KPK also worked to raise returns within the mandate, which drove the half’s permissions updates widening the asset and protocol universe. The Registrar Manager went live and now routes protocol revenue directly to the Endowment, and the Investment Policy Statement was refreshed in June.
+
+The H1 fees were $221,275, about 0.50% annualised. Net of the fee the Endowment returned 2.62% against a 2.80% benchmark, beating it gross; the extra return KPK earned over the benchmark covered about two-thirds of its fee. Its $1.37M of yield was roughly 31% of DAO income for the period. Much of the return is fixed by a deliberately conservative IPS that was constraining at points this half, and KPK continues to work with the DAO to refine the mandate, through further permissions updates and the ETH cap discussion.
+
+## [Heading link](https://discuss.ens.domains/t/kpk-h1-2026-review-for-the-ens-endowment/22358\#p-62246-market-environment-2) Market Environment
+
+The ETH price set the terms of the half. Endowment assets fell from $101.6M to $67.7M, with the steepest legs in February and June; June alone marked the portfolio down $18.8M before yield. Because the DAO mandates a 60% ETH allocation, that drawdown passes directly into NAV, and no yield strategy within the mandate offsets a move of that size. The stablecoin sleeve held its value and continued to compound as expected.
+
+The yield environment softened before recovering: the IPS benchmark rate drifted from 2.93% in January to 2.64% in April, then rebuilt to 2.81% by June. Protocol revenue was premium-heavy (roughly 59% of H1 registration revenue), so it is not a steady run-rate. The half also produced two risk events: the rsETH bridge incident on 18 April, which triggered precautionary exits, and a proactive security patch to the Zodiac Roles and Delay modifiers in June. Neither produced a loss.
+
+## [Heading link](https://discuss.ens.domains/t/kpk-h1-2026-review-for-the-ens-endowment/22358\#p-62246-performance-vs-mandate-3) Performance vs Mandate
+
+In the first six months of 2026, the Endowment achieved:
+
+- Accumulated DeFi yield of $1.37M gross of fees ($1.15M net of the KPK management fee), roughly $2.7M gross annualised.
+- A blended APY of 3.12% gross of fees (2.62% net) against an IPS benchmark of 2.80%: +0.32pp gross, ahead in four of six months.
+- Positive DeFi results in every month of the period.
+
+Since inception in March 2023, the Endowment has accumulated:
+
+- $9.9 million of DeFi yield gross of fees with no loss of principal.
+- An average blended APY of 3.58% before fees (ETH sleeve 2.78%, stablecoin sleeve 5.45%).
+
+Based on the June 2026 monthly report, the Endowment stood at:
+
+- $67.65M of ncAUM across seven protocols ($40.78M in ETH and LSTs, 60.3%; $26.87M in stablecoins, 39.7%).
+- ~99% capital utilisation.
+- A monthly APY of 3.29% gross (2.79% net).
+- Monthly DeFi yield of $185,665.
+
+The monthly evolution below sets out Endowment size, gross and net DeFi yield, KPK fees, APY against the IPS benchmark, and cumulative results across the half.
+
+| Metric | Jan '26 | Feb '26 | Mar '26 | Apr '26 | May '26 | Jun '26 |
+| --- | --- | --- | --- | --- | --- | --- |
+| Endowment total (USD) | 101,629,844 | 88,300,530 | 90,145,206 | 92,575,624 | 86,253,259 | 67,651,393 |
+| Gross DeFi yield (USD) | 294,337 | 201,468 | 199,468 | 260,335 | 229,449 | 185,665 |
+| Management fee (USD) | 42,162 | 37,177 | 38,294 | 38,914 | 36,213 | 28,515 |
+| Net DeFi yield (USD) | 252,175 | 164,291 | 161,174 | 221,421 | 193,236 | 157,150 |
+| Gross APY | 3.48% | 2.74% | 2.66% | 3.37% | 3.19% | 3.29% |
+| Net APY | 2.98% | 2.23% | 2.15% | 2.87% | 2.69% | 2.79% |
+| IPS benchmark APY | 2.93% | 2.93% | 2.71% | 2.64% | 2.75% | 2.81% |
+| Cumulative gross yield (USD) | 294,337 | 495,805 | 695,273 | 955,608 | 1,185,057 | 1,370,722 |
+
+_Gross yield per the on-chain accounting source [(Dune 8164884)](https://dune.com/queries/8164884), corroborated by Syncrone Strategy PnL ($1.35M for H1; monthly differences are recognition timing). Fee per the KPK fee sheet, charged monthly on month-end assets. NAV per Steakhouse accounting [(Dune 3528036)](https://dune.com/queries/3528036/5934287). Since-inception figures recomputed over March 2023 to June 2026 [(Dune 8169379)](https://dune.com/queries/8169379); they supersede earlier published lifetime figures, which were built on a yield series since found to understate yield by roughly 7%._
+
+The benchmark comparison isolates the lever KPK manages: strategy and venue selection within the DAO-mandated 60/40 allocation. Against the IPS benchmark, the Endowment returned 3.12% gross versus 2.80% over the half, ahead in four of six months. Net of the fee, the Endowment returned 2.62%, 0.18 percentage points below the benchmark. The fall in Endowment assets over the half reflects the ETH price marking down the 60% ETH allocation, not the yield result.
+
+June’s Endowment result was −$17.8M, of which −$18.8M was ETH mark-to-market and +$185k was realised investment P&L (yield-farming rewards claimed and converted to base currency). The decline tracks the broader ETH price drawdown over the period, not any impairment of the underlying strategies.
+
+## [Heading link](https://discuss.ens.domains/t/kpk-h1-2026-review-for-the-ens-endowment/22358\#p-62246-composition-and-portfolio-activity-4) Composition and Portfolio Activity
+
+[![Screenshot 2026-08-14 at 10.54.19](https://discuss.ens.domains/uploads/db9688/optimized/2X/7/7a72aaa776946cdb70277dd8bf819bc1d0a2d30e_2_690x461.png)\\
+Screenshot 2026-08-14 at 10.54.191996×1334 151 KB](https://discuss.ens.domains/uploads/db9688/original/2X/7/7a72aaa776946cdb70277dd8bf819bc1d0a2d30e.png "Screenshot 2026-08-14 at 10.54.19")
+
+Through Q1, the Endowment held a steady profile led by staking and LSTs (roughly half of assets, led by StakeWise and Stader), supported by lending and yield vaults. That profile bent in April: following the rsETH bridge incident on 18 April, KPK executed precautionary exits across its mandates, and the Endowment’s Aave lending positions were unwound to near zero, with the capital parked in yield vaults pending redeployment. During this period Positions were rebuilt from May. No funds were lost.
+
+| Strategy | Jan '26 | Feb '26 | Mar '26 | Apr '26 | May '26 | Jun '26 |
+| --- | --- | --- | --- | --- | --- | --- |
+| Staking & LST | 53,198,679 | 42,565,316 | 45,831,381 | 50,065,383 | 50,239,178 | 40,730,499 |
+| Lending | 12,426,105 | 17,931,121 | 15,836,757 | 67 | 15,586,575 | 16,485,497 |
+| Actively rebalanced Yield vaults | 35,996,159 | 27,798,633 | 28,462,604 | 42,450,625 | 20,424,211 | 10,384,924 |
+| Other | 8,902 | 5,460 | 14,463 | 59,548 | 3,294 | 50,473 |
+| **Total (USD)** | 101,629,845 | 88,300,530 | 90,145,205 | 92,575,623 | 86,253,258 | 67,651,393 |
+| ETH + LST share | 53.2% | 54.4% | 56.3% | 62.6% | 58.2% | 60.3% |
+| Stablecoin share | 46.8% | 45.6% | 43.7% | 37.4% | 41.8% | 39.7% |
+
+_Values in USD, month-end, per Steakhouse accounting [(Dune 3528036)](https://dune.com/queries/3528036/5934287). April shows the precautionary de-risking (lending to near zero, capital parked in yield vaults); positions were rebuilt from May._
+
+The Endowment maintains a 60% ETH / 40% stablecoin target allocation by market value, and at the end of June the deployed portfolio sat at 60.3 / 39.7, in line with the mandate. The largest protocol positions were StakeWise (24.1%) and Stader (23.3%); consistent with the 2026 Investment Policy Statement, no single protocol exceeds 30% of total exposure. On the ETH side, the Endowment does not allocate to any liquid-staking protocol holding more than 20% of Ethereum validator consensus; the 2026 mandate added a 5% buffer for protocols with majority DVT adoption, which may run up to a 25% consensus share and 10% of the portfolio.
+
+## [Heading link](https://discuss.ens.domains/t/kpk-h1-2026-review-for-the-ens-endowment/22358\#p-62246-ens-protocol-revenue-and-dao-income-5) ENS Protocol Revenue and DAO Income
+
+[![Screenshot 2026-08-14 at 12.01.36](https://discuss.ens.domains/uploads/db9688/optimized/2X/2/23470c73ce9c4fdbd5ccf354c7a3c5335c6f049c_2_670x500.png)\\
+Screenshot 2026-08-14 at 12.01.361716×1280 135 KB](https://discuss.ens.domains/uploads/db9688/original/2X/2/23470c73ce9c4fdbd5ccf354c7a3c5335c6f049c.png "Screenshot 2026-08-14 at 12.01.36")
+
+DAO income combines protocol revenue (.eth registrations and renewals) and the Endowment’s DeFi yield net of fees. With the Registrar Manager live since April (EP 6.39), registration and renewal revenue now flows directly to the Endowment.
+
+| DAO income | Jan '26 | Feb '26 | Mar '26 | Apr '26 | May '26 | Jun '26 | H1 Total |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| Protocol revenue (USD) | 695,117 | 587,479 | 483,747 | 441,097 | 509,310 | 337,112 | 3,053,862 |
+| Endowment yield, gross (USD) | 294,337 | 201,468 | 199,468 | 260,335 | 229,449 | 185,665 | 1,370,722 |
+| **Gross DAO income (USD)** | 989,454 | 788,947 | 683,215 | 701,432 | 738,759 | 522,777 | 4,424,584 |
+| less: KPK management fee (USD) | 42,162 | 37,177 | 38,294 | 38,914 | 36,213 | 28,515 | 221,275 |
+| **Net DAO income (USD)** | 947,292 | 751,770 | 644,921 | 662,518 | 702,546 | 494,262 | 4,203,309 |
+
+_Protocol revenue per [Dune 8163671](https://dune.com/queries/8163671) at monthly-average ETH prices; it agrees with the ENS dashboard “Revenue” series within ~4% on ETH. Premium sales made up roughly 59% of registration revenue in H1, so protocol revenue is not a steady run-rate. Yield as booked; fee at month-end ETH._
+
+## [Heading link](https://discuss.ens.domains/t/kpk-h1-2026-review-for-the-ens-endowment/22358\#p-62246-reserves-spending-and-runway-6) Reserves, Spending and Runway
+
+At the DAO level, based on the June 2026 report compiled by Steakhouse, monthly operational revenues were $0.6M in June (versus $0.8M the prior month and $1.2M a year earlier), against a normalised monthly cash burn of $1.24M, with Endowment recurring revenues covering roughly 15% of that burn. DAO reserves ended June at $88M ($50.0M in ETH and $36.7M in USDC), down from $148M a year earlier, indicative of a 71-month (~5.9-year) operational runway.
+
+Two adjustments apply to that headline figure:
+
+1. The 71-month runway rests on Steakhouse’s normalised burn of $1.24M per month; the DAO’s own projected 2H 2026 outflows total $8.17M over six months ($1.36M per month, excluding the pending MetaGov budget request), which implies a runway closer to 65 months (~5.4 years).
+2. June’s reserve movement includes an $8.17M transfer from the Endowment that pre-funds this 2H spend. The transfer is a reallocation within DAO-level reserves, not burn: it reduces Endowment NAV but leaves total reserves unchanged. Burn measured from Endowment-level actuals alone would overstate June spend by the full transfer, and timelock outflows over 2H will be correspondingly pre-funded.
+
+| Metric | Jan '26 | Feb '26 | Mar '26 | Apr '26 | May '26 | Jun '26 |
+| --- | --- | --- | --- | --- | --- | --- |
+| DAO reserves (USD M) | 117 | 100 | 104 | 108 | 100 | 88 |
+| Operational runway (months) | 102 | 76 | 77 | 71 | 73 | 71 |
+
+_Steakhouse monthly decks. Reserves are DAO-level, not Endowment-only; June includes the $8.17M transferred from the Endowment to pre-fund 2H 2026 spend, which nets out at DAO level. Runway is a model output (opex forecast plus trailing revenue); 71 months uses Steakhouse’s $1.24M normalised burn, while the DAO’s projected 2H outflows ($1.36M per month) imply ~65 months. The January-to-February step reflects a reporting scope change, not a swing in spend._
+
+## [Heading link](https://discuss.ens.domains/t/kpk-h1-2026-review-for-the-ens-endowment/22358\#p-62246-fees-and-ips-compliance-7) Fees and IPS Compliance
+
+Total KPK fees for H1 were $221,275, charged monthly on month-end assets, roughly 0.50% annualised. There is no performance fee. Monthly fee amounts appear in the evolution table above.
+
+Positions at 30 June against the 2026 Investment Policy Statement:
+
+| IPS requirement | Limit / target | Position at 30 Jun 2026 |
+| --- | --- | --- |
+| Strategic allocation | 60% ETH / 40% stablecoin | 60.3 / 39.7, in line |
+| Single-protocol cap | No protocol above 30% of exposure | Largest: StakeWise 24.1% (Stader 23.3%) |
+| LST consensus limit | No LST above 20% of validator consensus (25% with majority DVT, capped at 10% of portfolio) | Compliant; DVT buffer unused |
+| Moderate-risk budget | Up to 10% in moderate-risk strategies | 0% deployed; RWA sleeve phase-in planned for H2 |
+
+_Per Steakhouse accounting and KPK position monitoring, June 2026 month-end. Capital utilisation held near 99% throughout the half._
+
+## [Heading link](https://discuss.ens.domains/t/kpk-h1-2026-review-for-the-ens-endowment/22358\#p-62246-governance-and-strategy-actions-8) Governance and Strategy Actions
+
+Since the beginning of 2026, KPK has advanced the following proposals within ENS:
+
+**1\. Treasury Flow Automation (\[EP 6.39\] Treasury Flow Automation).** Live on-chain since April 2026. A Registrar Manager contract, built by Blockful, consolidates the .eth registrar controllers and routes registration and renewal revenue directly to the Endowment through a permissionless `withdraw()` function, superseding the prior guideline of routing a fixed share of Controller cash flows. A companion Zodiac module permission lets the manager maintain a rolling ~6-month USDC operating runway in the DAO timelock, rebalanced quarterly, without a separate proposal for each transfer. The proposal estimated that roughly $1M of registration revenue had gone uncaptured since January 2024 under the prior arrangement; that flow now accrues to the Endowment.
+
+**2\. Permissions updates (\[EP 6.38\] Update #8, \[EP 6.41\] Update #9).** Update #8 (March) retired the legacy Zodiac Roles v1 module, updated the Roles v2 policy, and extended CoW Swap permissions to GHO and FLUID, including Fluid Merkle reward claims. Update #9 (April) broadened the strategy universe by adding Stader and [ether.fi](http://ether.fi/), Morpho KPK USDT Prime vaults, and CoW Swap routing for weETH/eETH. These updates kept execution capability aligned with a changing position set, including the April de-risking and rebuild.
+
+**3\. 2026 Investment Policy Update (\[EP 6.46\] 2026 Endowment Investment Policy Update).** Reaffirmed the 60/40 ETH/stablecoin target and modernised the risk framework: risk tolerance moved from “very low” to “moderate-to-low” (permitting up to 10% in moderate-risk strategies), the single-protocol cap rose from 25% to 30%, standard rebalancing tranches increased to 1,500 ETH (with a 3,000 ETH emergency tranche), and a new allocation of up to 5% to tokenised real-world assets was introduced.
+
+**4\. Onchain options overlay (proposed).** KPK has proposed expanding the Endowment mandate to permit conservative options strategies (covered calls and cash-secured puts) as an additional, risk-controlled source of yield and hedging mechanism. Community discussion is underway, with a view to a formal proposal in H2 2026.
+
+## [Heading link](https://discuss.ens.domains/t/kpk-h1-2026-review-for-the-ens-endowment/22358\#p-62246-mandate-execution-9) Mandate Execution
+
+In the first half of 2026, KPK remained focused on executing its role as the Endowment’s manager under a demanding market.
+
+**1\. Operational execution and oversight:** KPK maintained responsibility for routine Endowment operations, including position monitoring, transaction execution, and permissions management under the Zodiac Roles framework. Capital stayed close to fully deployed all half, within every protocol cap and the 60/40 mandate.
+
+**2\. Risk management under stress:** During the April rsETH event, KPK exited the Endowment’s at-risk lending positions precautionarily and rebuilt deployment as conditions stabilised, without loss. Separately, when a proactive security patch was released for the Zodiac Roles Modifier v2 and Delay Modifier (v1.1.0) in June, KPK assessed it and confirmed no impact on the ENS Endowment and no action required, noting the Avatar Safe permission framework would have prevented any loss even unpatched. The updated modules were adopted as best practice.
+
+**3\. Transparency and collaboration:** Monthly reporting migrated to the Syncrone dashboard for all 2026 periods, and KPK continues to provide a standing Endowment update at each MetaGov Working Group meeting, now on a bi-weekly cadence, including benchmark comparison and a breakdown of DeFi yield by strategy. KPK remained engaged with the working group and the broader community on Endowment strategy, the 2026 IPS revision, and the Treasury Flow Automation rollout.
+
+**4\. Sourcing and negotiated execution:** KPK moved beyond standard venue selection this half, negotiating bespoke terms directly with counterparties on the Endowment’s behalf. On the ETH leg in particular, KPK sourced and executed a privately negotiated arrangement that improved the Endowment’s terms while holding its risk profile and every mandate constraint unchanged.
+
+## [Heading link](https://discuss.ens.domains/t/kpk-h1-2026-review-for-the-ens-endowment/22358\#p-62246-strategic-outlook-and-h2-priorities-10) Strategic Outlook and H2 Priorities
+
+The first half of 2026 tested the Endowment with a sharp ETH drawdown, and the strategy held: positive DeFi results every month, benchmark-beating gross yield, capital near fully deployed, and no principal loss.
+
+With the Registrar Manager live, protocol revenue now accrues more directly to the Endowment, and the refreshed IPS gives the mandate room to diversify further.
+
+In H2, KPK plans to:
+
+- bring the onchain options overlay to a formal proposal via PUR #11;
+- begin phasing in the approved RWA sleeve within the mandate’s caps and liquidity requirements;
+- propose a more efficient ETH/Stable split;
+- continue to broaden the LST and protocol set while advocating for validator diversity; and,
+- stay attentive to governance-attack vectors, including the ongoing renewal of the DAO’s Security Council.
+
+We appreciate the trust ENS has placed in KPK and look forward to the work ahead.
+
+- [ENS DAO Newsletter #118 — 08/15/2026](https://discuss.ens.domains/t/ens-dao-newsletter-118-08-15-2026/22359)
+- [Endowment Monthly Reports](https://discuss.ens.domains/t/endowment-monthly-reports/17614/45)
+- [ENS DAO Newsletter #119 — 09/01/2026](https://discuss.ens.domains/t/ens-dao-newsletter-119-09-01-2026/22397)
+
+136
+views
+2
+links
+
+
+[![](https://discuss.ens.domains/user_avatar/discuss.ens.domains/kpk/48/13441_2.png)](https://discuss.ens.domains/u/kpk "kpk")
+
+[![](https://discuss.ens.domains/user_avatar/discuss.ens.domains/mconnectdao/48/13235_2.png)](https://discuss.ens.domains/u/MconnectDAO "MconnectDAO")
+
+[![](https://discuss.ens.domains/user_avatar/discuss.ens.domains/riskypete/48/13825_2.png)](https://discuss.ens.domains/u/riskypete "riskypete")
+
+read
+8
+min
+
+
+## post by MconnectDAO on Aug 14
+
+[![](https://discuss.ens.domains/user_avatar/discuss.ens.domains/mconnectdao/48/13235_2.png)](https://discuss.ens.domains/u/mconnectdao)
+
+[MconnectDAO](https://discuss.ens.domains/u/mconnectdao)
+
+[Aug 14](https://discuss.ens.domains/t/kpk-h1-2026-review-for-the-ens-endowment/22358/2 "Post date")
+
+Strong report. One key addition would improve accountability: please share a strategy wise table showing allocation, gross and net yield, fees, and risk exposure for each protocol. Since net return was 2.62% versus a 2.80% benchmark, a clear net performance attribution is important.
+
+## post by riskypete on Aug 17
+
+[![](https://discuss.ens.domains/user_avatar/discuss.ens.domains/riskypete/48/13825_2.png)](https://discuss.ens.domains/u/riskypete)
+
+[riskypete](https://discuss.ens.domains/u/riskypete)
+
+[Aug 17](https://discuss.ens.domains/t/kpk-h1-2026-review-for-the-ens-endowment/22358/3 "Post date")
+
+Disclosure first: I’m part of the team behind Sentralis, which published an [independent risk teardown of the Endowment](https://discuss.ens.domains/t/ens-endowment-independent-risk-teardown/22282) here last month, built on the June book. Nobody at ENS or kpk asked or paid for it, and none of it is advice. That analysis ended by proposing three quantities worth tracking on a standing basis. The H1 review above and the July community update moved all three, so here are the updated readings, re-run on the July book (positions reconstructed from the July update’s own transaction list, prices as of August 17; all figures are model estimates under the same stated assumptions as the teardown, none of them facts or advice).
+
+**1\. Stablecoins sellable within a crisis week: $12.4M → $23.4M.** This is the largest single risk improvement in the book this year, and it did not come from prices. July’s redeployment of the exited $16M DAI position into USDC (and a little USDT and GHO) replaced the book’s slowest stablecoin with its fastest: under the same crisis assumptions (5% of daily volume, order books only), the DAI needed ~11 days and missed the week, while the USDC that replaced it clears in about a day. Nearly all of the $26.9M stablecoin side is now week-scale money. The redemption-path caveat from the teardown still applies in the treasury’s favor.
+
+**2\. Largest single protocol: 25.3% → about 22.7%, with a nuance.** After the July moves (Aave exited, [ether.fi](http://ether.fi/) and the new Lido position added, StakeWise and Stader trimmed), no protocol holds more than ~22.7% against the 30% cap, and the modeled single-protocol incident (temporary freeze, 80% recovery, 20% haircut) now comes to $5.4M–$6.3M (7.0–8.2%) for any of the top four, down from ~9% for the top two in June. The nuance: those top four (Fluid, StakeWise, [ether.fi](http://ether.fi/), Stader) are now nearly equal in size and together hold ~85% of the book, so the effective number of protocols, ~5.2 by concentration index, is essentially unchanged from June’s ~5.5. The book got flatter at the top, not more spread out.
+
+**3\. Floor-coverage probability: the model spread widened to 49% - 90%.** Across the same two Monte Carlo models (25,000 paths, one year, seeded), the probability of ending the year above the $49.34M floor figure is now 90% under the zero-drift model and 49% under the trailing-year bootstrap (it was 88% and 61% on the June book). Two things moved it: at August prices the book is back to ~65/35 ETH/stables, and the bootstrap’s trailing year now contains the full August-2025→2026 ETH decline, which makes its resampled year more negative (its median simulated year is −36%). The gap between the two models remains the point: anything sized off the floor inherits a spread that model choice alone moves by a factor of five.
+
+Two smaller updates. A repeat of the current bear’s core leg on the July book still costs on the order of 40% (the replay window has lengthened as the event ran on, so this is not comparable to the June figure). And crisis-regime correlation stress still does nothing (−1% VaR change): the diversification that exists continues to live entirely on the stablecoin side.
+
+None of this changes the teardown’s overall reading: an ETH-ecosystem endowment accepting ETH risk deliberately, with the defensive side now faster than it was. The H2 items in the review (the RWA sleeve phase-in, the ETH/stable split proposal, PUR #11) will each change these numbers when they land; happy to re-run any of them against the actual parameters at no cost, the same offer as before.
+
+* * *
+
+_Analysis produced with [Sentralis](https://sentralis.io/?ref=ensdao), a cryptocurrency portfolio risk- and scenario-analysis solution, suitable for beginner HODLers and professional investors alike._
+
+- [Expanding the Endowment Mandate: Onchain Options](https://discuss.ens.domains/t/expanding-the-endowment-mandate-onchain-options/22239/15)
+
+Reply
+
+### New & Unread Topics
+
+| Topic | Replies | Views | Activity |
+| --- | --- | --- | --- |
+| [\[EP 6.27\] \[Executable\] Endowment permissions to karpatkey - Update #7](https://discuss.ens.domains/t/ep-6-27-executable-endowment-permissions-to-karpatkey-update-7/21641)<br>[Treasury Management](https://discuss.ens.domains/c/meta-governance/treasury-management/64) | [6](https://discuss.ens.domains/t/ep-6-27-executable-endowment-permissions-to-karpatkey-update-7/21641/1) | 383 | [Dec 2025](https://discuss.ens.domains/t/ep-6-27-executable-endowment-permissions-to-karpatkey-update-7/21641/7) |
+| [Toward Sovereign Governance: Reducing Reliance on Extrinsic Assets and the Security Council](https://discuss.ens.domains/t/toward-sovereign-governance-reducing-reliance-on-extrinsic-assets-and-the-security-council/21768)<br>[Treasury Management](https://discuss.ens.domains/c/meta-governance/treasury-management/64) | [0](https://discuss.ens.domains/t/toward-sovereign-governance-reducing-reliance-on-extrinsic-assets-and-the-security-council/21768/1) | 95 | [Jan 4](https://discuss.ens.domains/t/toward-sovereign-governance-reducing-reliance-on-extrinsic-assets-and-the-security-council/21768/1) |
+| [\[Executable\] Treasury Flow Automation](https://discuss.ens.domains/t/executable-treasury-flow-automation/21923)<br>[Treasury Management](https://discuss.ens.domains/c/meta-governance/treasury-management/64) | [22](https://discuss.ens.domains/t/executable-treasury-flow-automation/21923/1) | 760 | [Jun 24](https://discuss.ens.domains/t/executable-treasury-flow-automation/21923/23) |
+| [\[EP 6.37\] \[Executable\] Transfer 900,000 USDC from Endowment to wallet.ensdao.eth](https://discuss.ens.domains/t/ep-6-37-executable-transfer-900-000-usdc-from-endowment-to-wallet-ensdao-eth/21948)<br>[Treasury Management](https://discuss.ens.domains/c/meta-governance/treasury-management/64) | [2](https://discuss.ens.domains/t/ep-6-37-executable-transfer-900-000-usdc-from-endowment-to-wallet-ensdao-eth/21948/1) | 112 | [Mar 11](https://discuss.ens.domains/t/ep-6-37-executable-transfer-900-000-usdc-from-endowment-to-wallet-ensdao-eth/21948/3) |
+| [\[EP 6.38\] \[Executable\] Endowment permissions to karpatkey - Update #8](https://discuss.ens.domains/t/ep-6-38-executable-endowment-permissions-to-karpatkey-update-8/21949)<br>[Treasury Management](https://discuss.ens.domains/c/meta-governance/treasury-management/64) | [3](https://discuss.ens.domains/t/ep-6-38-executable-endowment-permissions-to-karpatkey-update-8/21949/1) | 133 | [Mar 19](https://discuss.ens.domains/t/ep-6-38-executable-endowment-permissions-to-karpatkey-update-8/21949/4) |
+
+Topic list, column headers with buttons are sortable.
+
+### Want to read more? Browse other topics in [Treasury Management](https://discuss.ens.domains/c/meta-governance/treasury-management/64) or [view latest topics](https://discuss.ens.domains/latest).
+
+[Powered by Discourse](https://discourse.org/powered-by)
+
+Invalid date
+
+Invalid date
