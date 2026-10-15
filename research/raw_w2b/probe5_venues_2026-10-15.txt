@@ -1,0 +1,14 @@
+### A. Blockscout proxy eth_call archive (USDC/USD Chainlink @ block 16810000)
+{"message":"Unknown module","result":null,"status":"0"}
+### B. CoinGecko historique USDC 11-03-2023
+{"error":{"status":{"timestamp":"2026-10-15T02:59:00.245+00:00","error_code":10012,"error_message":"Your request exceeds the allowed time range. Public API users are limited to querying historical data within the past 365 days. Upgrade to a paid plan to enjoy full historical data access: https://www.coingecko.com/en/api/pricing. "}}}
+### C. CoinGecko simple price (multi-venues ?)
+{"usd-coin":{"usd":0.999654,"last_updated_at":1792033121}}
+### D. Kraken public trades USDCUSD 2023-03-11 (since=1678492800)
+{"error":[],"result":{"USDCUSD":[["0.99820000","1252.25395712",1678492800.3749223,"s","l","",6701698],["0.99820000","585.90478733",1678492800.6148193,"s","l","",6701699],["0.99820000","1252.25395712",1678492801.3616347,"s","l","",6701700],["0.99820000","1252.25395712",1678492802.3600385,"s","l","",6701701],["0.99820000","1252.25395712",1678492803.3619685,"s","l","",6701702],["0.99820000","6.33019434",1678492803.470723,"s","l","",6701703],["0.99820000","1252.25395712",1678492804.361419,"s","l",""
+### E. Bitstamp OHLC USDCUSD 2023-03-11 (start=1678492800 end=1678665600 step=3600)
+{"code": "validation-error", "errors": [{"code": "validation-error", "message": "Missing data for required field.", "field": "limit"}]}
+### F. Binance klines USDCUSDT 2023-03-11
+[[1678543200000,"1.00000000","1.00000000","0.88200000","0.91290000","108959660.00000000",1678546799999,"99089712.08660000",27487,"38341506.00000000","34895611.26770000","0"],[1678546800000,"0.91270000","0.91790000","0.90960000","0.91280000","53803548.00000000",1678550399999,"49154865.23950000",19161,"23634250.00000000","21591364.48290000","0"],[1678550400000,"0.91290000","0.92260000","0.91170000","0.92090000","60290210.00000000",1678553999999,"55259006.55720000",23618,"32379283.00000000","296718
+### G. Coinbase Exchange API candles USDC-USD 2023-03-11
+{"message":"NotFound"}

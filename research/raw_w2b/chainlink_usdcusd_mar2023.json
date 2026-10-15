@@ -1,0 +1,172 @@
+[
+ {
+  "roundId": 36893488147419104088,
+  "answer_raw": 100019000,
+  "startedAt": 1678428059,
+  "updatedAt": 1678428059,
+  "block": "0x1004960",
+  "rpc": "https://eth.drpc.org",
+  "answer": 1.00019,
+  "block_ts": 1678430087
+ },
+ {
+  "roundId": 36893488147419104088,
+  "answer_raw": 100019000,
+  "startedAt": 1678428059,
+  "updatedAt": 1678428059,
+  "block": "0x1004d48",
+  "rpc": "https://eth.drpc.org",
+  "answer": 1.00019,
+  "block_ts": 1678442363
+ },
+ {
+  "roundId": 36893488147419104088,
+  "answer_raw": 100019000,
+  "startedAt": 1678428059,
+  "updatedAt": 1678428059,
+  "block": "0x1005130",
+  "rpc": "https://eth.drpc.org",
+  "answer": 1.00019,
+  "block_ts": 1678454615
+ },
+ {
+  "roundId": 36893488147419104088,
+  "answer_raw": 100019000,
+  "startedAt": 1678428059,
+  "updatedAt": 1678428059,
+  "block": "0x1005518",
+  "rpc": "https://eth.drpc.org",
+  "answer": 1.00019,
+  "block_ts": 1678466771
+ },
+ {
+  "roundId": 36893488147419104088,
+  "answer_raw": 100019000,
+  "startedAt": 1678428059,
+  "updatedAt": 1678428059,
+  "block": "0x1005900",
+  "rpc": "https://eth.drpc.org",
+  "answer": 1.00019,
+  "block_ts": 1678478927
+ },
+ {
+  "roundId": 36893488147419104089,
+  "answer_raw": 99755917,
+  "startedAt": 1678487255,
+  "updatedAt": 1678487255,
+  "block": "0x1005ce8",
+  "rpc": "https://eth.drpc.org",
+  "answer": 0.99755917,
+  "block_ts": 1678491035
+ },
+ {
+  "roundId": 36893488147419104099,
+  "answer_raw": 99065000,
+  "startedAt": 1678503011,
+  "updatedAt": 1678503011,
+  "block": "0x10060d0",
+  "rpc": "https://eth.drpc.org",
+  "answer": 0.99065,
+  "block_ts": 1678503191
+ },
+ {
+  "roundId": 36893488147419104166,
+  "answer_raw": 93266951,
+  "startedAt": 1678515347,
+  "updatedAt": 1678515347,
+  "block": "0x10064b8",
+  "rpc": "https://eth.drpc.org",
+  "answer": 0.93266951,
+  "block_ts": 1678515371
+ },
+ {
+  "roundId": 36893488147419104240,
+  "answer_raw": 91000000,
+  "startedAt": 1678526939,
+  "updatedAt": 1678526939,
+  "block": "0x10068a0",
+  "rpc": "https://eth.drpc.org",
+  "answer": 0.91,
+  "block_ts": 1678527491
+ },
+ {
+  "roundId": 36893488147419104266,
+  "answer_raw": 90687439,
+  "startedAt": 1678539575,
+  "updatedAt": 1678539575,
+  "block": "0x1006c88",
+  "rpc": "https://eth.drpc.org",
+  "answer": 0.90687439,
+  "block_ts": 1678539599
+ },
+ {
+  "roundId": 36893488147419104276,
+  "answer_raw": 92240000,
+  "startedAt": 1678549907,
+  "updatedAt": 1678549907,
+  "block": "0x1007070",
+  "rpc": "https://eth.drpc.org",
+  "answer": 0.9224,
+  "block_ts": 1678551803
+ },
+ {
+  "roundId": 36893488147419104297,
+  "answer_raw": 95100000,
+  "startedAt": 1678560527,
+  "updatedAt": 1678560527,
+  "block": "0x1007458",
+  "rpc": "https://eth.drpc.org",
+  "answer": 0.951,
+  "block_ts": 1678563947
+ },
+ {
+  "roundId": 36893488147419104325,
+  "answer_raw": 95550000,
+  "startedAt": 1678574339,
+  "updatedAt": 1678574339,
+  "block": "0x1007840",
+  "rpc": "https://eth.drpc.org",
+  "answer": 0.9555,
+  "block_ts": 1678576103
+ },
+ {
+  "roundId": 36893488147419104340,
+  "answer_raw": 97543404,
+  "startedAt": 1678587011,
+  "updatedAt": 1678587011,
+  "block": "0x1007c28",
+  "rpc": "https://eth.drpc.org",
+  "answer": 0.97543404,
+  "block_ts": 1678588271
+ },
+ {
+  "roundId": 36893488147419104363,
+  "answer_raw": 97311829,
+  "startedAt": 1678599251,
+  "updatedAt": 1678599251,
+  "block": "0x1008010",
+  "rpc": "https://eth.drpc.org",
+  "answer": 0.97311829,
+  "block_ts": 1678600499
+ },
+ {
+  "roundId": 36893488147419104377,
+  "answer_raw": 95434030,
+  "startedAt": 1678610987,
+  "updatedAt": 1678610987,
+  "block": "0x10083f8",
+  "rpc": "https://eth.drpc.org",
+  "answer": 0.9543403,
+  "block_ts": 1678612643
+ },
+ {
+  "roundId": 36893488147419104382,
+  "answer_raw": 95760273,
+  "startedAt": 1678622135,
+  "updatedAt": 1678622135,
+  "block": "0x10087e0",
+  "rpc": "https://eth.drpc.org",
+  "answer": 0.95760273,
+  "block_ts": 1678624787
+ }
+]

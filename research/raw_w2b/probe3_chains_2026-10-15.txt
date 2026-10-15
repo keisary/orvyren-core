@@ -1,0 +1,16 @@
+=== Chain IDs multi-chaînes ===
+arbitrum -> {"jsonrpc":"2.0","id":1,"result":"0xa4b1"}
+optimism -> {"jsonrpc":"2.0","result":"0xa","id":1}
+base -> {"jsonrpc":"2.0","id":1,"result":"0x2105"}
+polygon -> {"error":"message: API key disabled, reason: tenant disabled, json-rpc code: -32051, rest code: 403"}
+ethereum-publicnode -> {"jsonrpc":"2.0","result":"0x1","id":1}
+ankr-eth -> {"jsonrpc": "2.0", "error": {"code": -32000, "message": "Unauthorized: You must authenticate your request with an API key. Create an account on https://www.ankr.com/rpc/ and generate your personal API key for free."}, "id": null}
+drpc-eth -> {"id":1,"jsonrpc":"2.0","result":"0x1"}
+
+=== Aave Address Book (GitHub raw) ===
+HTTP 404 size=14
+404: Not Found
+=== Blockscout public API test ===
+{"average_block_time":12182.0,"coin_image":"https://coin-images.coingecko.com/coins/images/279/small/ethereum.png?1696501628","coin_price":"2366.2","coin_price_change_percentage":-5.56,"gas_price_updated_at":"2026-10-15T02:56:47.959513Z","gas_prices":{"slow":0.61,"average":1.33,"fast":5.33},"gas_pri
+=== DefiLlama protocol Aave ===
+{"id":"parent#aave","name":"Aave","url":"https://aave.com","description":"Aave is an Open Source and Non-Custodial protocol to earn interest on deposits and borrow assets","logo":"https://icons.llamao.fi/icons/protocols/aave","chains":[],"gecko_id":"aave","cmcId":"7278","treasury":"aave.js","twitter":"aave","governanceID":["snapshot:aave.eth","eip155:1:0xEC568fffba86c094cf06b22134B23074DFE2252c"],

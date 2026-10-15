@@ -26,9 +26,9 @@ Trois raisons décisives, dans cet ordre :
 
 **Qui possède les actifs** : l'organisation (sa DAO, son protocole, son fonds). ORVYREN agit par **autorité déléguée, bornée et révocable**. **Qui bénéficie** : l'organisation — capital protégé, exécution disponible 24/7, décisions traçables ; à terme, ses utilisateurs finaux.
 
-### [À TRANCHER]
-1. **Le principal : trésoreries/DAOs d'abord** (ma recommandation — enveloppe standardisée, preuve de besoin chiffrée) **ou desks de trading d'abord** (cycle d'achat plus rapide, mais tout est interne et opaque) ?
-2. **La phase 2 « banques »** : on la garde comme cible de déploiement (et argument de vision devant le jury) ?
+### [TRANCHÉ par l'équipe — 16/10]
+1. **Trésoreries de DAOs/protocoles D'ABORD** ; les **desks de trading ensuite** si le temps le permet. Les deux personas sont développés avec des **objectifs et critères distincts** : **DAO = prévision du risque et anticipation** (protéger, prévenir, rendre des comptes) · **desks = rentabilité** (performance, P&L net). → objet du chantier de recherche **W2-D** (`W2D_objectifs_mesure.md`).
+2. **La phase 2 « banques »** reste conservée comme cible de déploiement (argument de vision devant le jury).
 
 ---
 

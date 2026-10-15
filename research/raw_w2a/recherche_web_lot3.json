@@ -1,0 +1,164 @@
+{
+ "dl_licence": [
+  {
+   "url": "https://defillama.com/terms",
+   "title": "Terms of Use - DefiLlama",
+   "desc": "Subject to Clause 8, we grant you a revocable, non-transferable, non-exclusive licence to access and use the Site for personal, non-commercial ..."
+  },
+  {
+   "url": "https://api-docs.defillama.com/",
+   "title": "API Docs - DefiLlama",
+   "desc": "# DefiLlama API\n## SDK\n```ts\nimport { DefiLlama } from '@defillama/api'\n\nconst client = new DefiLlama()\nconst protocols = await client.tvl.getProtocols()\n```\n\n```py\nfrom defillama_sdk import DefiLlama\n\nclient = DefiLlama()\nprotocols = client.tvl.getProtocols()\n```"
+  },
+  {
+   "url": "https://defillama.com/subscription",
+   "title": "Subscribe to DefiLlama Pro Analytics",
+   "desc": "What happens if I hit my API rate limit? You can continue to use the API, but additional calls beyond your plan's limits will be charged at $0.60 per 1,000 ..."
+  },
+  {
+   "url": "https://docs.llama.fi/pro-api",
+   "title": "Pricing | DefiLlama",
+   "desc": "API Limits: 1,000 requests per minute 1 million API calls per month $0.60 per 1,000 additional calls after the 1M limit API docs page: https:// ..."
+  },
+  {
+   "url": "https://eco.com/support/en/articles/14800367-defillama-free-tvl-and-defi-analytics",
+   "title": "DeFiLlama: Free TVL and DeFi Analytics | Support - Eco",
+   "desc": "# DeFiLlama: Free TVL and DeFi Analytics\n**The site and API are free; Pro ( [$300/month](https://defillama.com/pro-api)) buys higher rate limits and 38 additional endpoints.**\n\n# What Is DeFiLlama?\nThe product is free in a way that affects how it's used.\n\n# The DeFiLlama API\nThe [docs page](https://api-docs.defillama.com/) lists 31 free endpoints a"
+  }
+ ],
+ "aave_oracle_history": [
+  {
+   "url": "https://github.com/aave/aave-v3-core/blob/master/contracts/misc/AaveOracle.sol",
+   "title": "AaveOracle.sol - contracts - GitHub",
+   "desc": "This repository contains the core smart contracts of the Aave V3 protocol. - aave-v3-core/contracts/misc/AaveOracle.sol at master ..."
+  },
+  {
+   "url": "https://aave.com/docs/aave-v3/smart-contracts/oracles",
+   "title": "Oracles | Aave Protocol Documentation",
+   "desc": "# AaveOracle#Copy\nContract to get asset prices and manage price sources.\n\n## View Methods#Copy\n### getAssetPrice#Copy\n```solidity\nfunction getAssetPrice(address asset) public view override returns (uint256)\n```\n\n### getAssetsPrices#Copy\n```solidity\nfunction getAssetsPrices(address[] calldata assets) external view override returns (uint256[] memory)"
+  },
+  {
+   "url": "https://dune.com/cryptotraveler/aave-v3-core-market",
+   "title": "Aave V3 Core Market - Dune",
+   "desc": "Aave V3 Market Utilization on Ethereum: Calculates the USD-weighted utilization ratio (total borrowed / total supplied) across all assets in the Aave V3 pool by ..."
+  },
+  {
+   "url": "https://medium.com/@hacxyk/aave-v3s-price-oracle-manipulation-vulnerability-168e44e9e374",
+   "title": "Aave V3's Price Oracle Manipulation Vulnerability | by Hacxyk - Medium",
+   "desc": "On April 7th, after Aave V3 had launched for 3 weeks, we discovered an issue on Aave V3's price oracle. To be more specifically, ..."
+  },
+  {
+   "url": "https://aavescan.com/api/docs/oracle-pricing",
+   "title": "API: Oracle Pricing - Aavescan",
+   "desc": "Latest oracle price for every tracked token. Returns token addresses and their current oracle price, oracle source and update timestamp. GET /v2/pricing/latest ..."
+  }
+ ],
+ "xusd_chaos": [
+  {
+   "url": "https://chaoslabs.xyz/posts/risk-oracles-real-time-risk-management-for-defi",
+   "title": "Risk Oracles: Real-Time Risk Management for DeFi - Chaos Labs",
+   "desc": "# Risk Oracles: Real-Time Risk Management for DeFi\nbyOmer Goldberg\n\nbyOmer Goldberg\n\n## Risk Less.   Know More.\nChaos LabsChaos Labs\n\n## Resources\nChaos LabsChaos Labs\n\n## Company\nChaos LabsChaos Labs\n\n## Follow us\n- [![x](https://cdn.sanity.io/images/zmh9mnff/production/d058ca01c4d798317b352cb11cb12d56e54ab7e3-26x25.svg)](https://www.twitter.com/c"
+  },
+  {
+   "url": "https://x.com/omeragoldberg?lang=en",
+   "title": "Omer Goldberg (@omeragoldberg) / X",
+   "desc": "Chaos Labs has priced every loan initiated on Aave and managed risk across all Aave V2 and V3 markets and networks, with zero material bad debt."
+  },
+  {
+   "url": "https://www.youtube.com/watch?v=5Xal1ZDv2fc",
+   "title": "Omer Goldberg - Introducing the Edge Oracle Network by Chaos Labs",
+   "desc": "Omer Goldberg - Introducing the Edge Oracle Network by Chaos Labs - TOKEN2049 Singapore 2024. @TOKEN20494 likes438 views2 years ago"
+  },
+  {
+   "url": "https://www.linkedin.com/posts/robertklages_i-spoke-with-omer-goldberg-ceo-of-chaos-activity-7425319823405912064-kADv",
+   "title": "I spoke with Omer Goldberg, CEO of Chaos Labs where he stands on ...",
+   "desc": "everyone is a genius in a bull market until the oracle lag or a liquidity crunch hits. focus on battle-tested protocols is the only way to ..."
+  },
+  {
+   "url": "https://chaoslabs.xyz/posts/oracle-risk-portal",
+   "title": "Chaos Labs Oracle Risk Portal",
+   "desc": "# Chaos Labs Oracle Risk Portal\nbyOmer Goldberg\n\nbyOmer Goldberg"
+  }
+ ],
+ "usd0pp_oracle": [
+  {
+   "url": "https://x.com/Cbb0fe/status/1877629783929921639",
+   "title": "CBB on X",
+   "desc": "So we have @MEVCapital deploying USDC on USD0++ Morpho market with LTV at 86% and oracle hardcoded at $1 Then @usualmoney suddenly switched ..."
+  },
+  {
+   "url": "https://app.morpho.org/ethereum/variable/0x7559acbcb98c2e10bc157ffb52c71687981cde4bed78861bfd1199da9eff9cd8/usdt-usd0",
+   "title": "Morpho Markets | USDT | USD0++ 86%",
+   "desc": "1 USD0++ = 0.972 USDT Liquidations Liquidation Loan-To-Value (LLTV) 86% Realized Bad Debt 0.00 USDT Liquidation Penalty 4.38% Unrealized Bad Debt 0.00 … ..."
+  },
+  {
+   "url": "https://thedefiant.io/news/defi/pendle-oracle-move-liquidates-usd36-million",
+   "title": "Pendle Oracle Move Liquidates $36 Million | The Defiant",
+   "desc": "# Pendle Oracle Move Liquidates $36 Million\nNo bad debt was incurred.\n\nNo bad debt was incurred."
+  },
+  {
+   "url": "https://bingx.com/en/flash-news/post/resolv-exploit-mints-m-usr-as-hardcoded-oracle-prices-depegged-wstusr-at-triggering-m-fluid-bad-debt",
+   "title": "DeFi's hardcoded-oracle failure strikes again: fourth repeat in 14 months",
+   "desc": "January 2025: Usual Protocol's USD0++ was hardcoded to $1 by curator MEV Capital in a Morpho vault. Usual then lowered the redemption floor to ..."
+  },
+  {
+   "url": "https://www.gauntlet.xyz/resources/market-report-liquidity-stress-period-nov-2025",
+   "title": "Market Report: Gauntlet USDC Balanced Vault Recorded 35 ...",
+   "desc": "# Market Report: Gauntlet USDC Balanced Vault Recorded 35% Supply Increase During Liquidity Stress Period\n## **Takeaways**\nDuring the drawdown, Balanced (formerly “Core”)* TVL rose by +35%, while other curated vaults on Morpho fell by more than 60%, indicating a market preference for Gauntlet-curated vaults.\n\n## **Gauntlet USDC Prime on Ethereum Ma"
+  }
+ ],
+ "binance_terms": [
+  {
+   "url": "https://data.binance.vision/",
+   "title": "Binance Data Collection",
+   "desc": "Market Data. Terms of Use · Home / data /. Item, Size, Last Modified. futures/ · option/ · spot/"
+  },
+  {
+   "url": "https://github.com/binance/binance-public-data",
+   "title": "Details on how to get Binance public data - GitHub",
+   "desc": "# Binance Public Data\n## CHECKSUM\n```\n# Linux\nsha256sum -c BNBUSDT-1m-2021-01.zip.CHECKSUM\n\n# MacOS\nshasum -a 256 -c BNBUSDT-1m-2021-01.zip.CHECKSUM\n```\n\n## Dataset Terms\nFor details on how this dataset may be used, please see the [`TERMS_AND_CONDITIONS`](https://github.com/binance/binance-public-data/blob/master/TERMS_AND_CONDITIONS.md) document.\n"
+  },
+  {
+   "url": "https://developers.binance.com/en/docs/products/spot/faqs/market_data_only",
+   "title": "Market Data Only URLs | Binance Developer Docs",
+   "desc": "# Market Data Only URLs [Link to market-data-only-urls](https://developers.binance.com/en/docs/products/spot/faqs/market_data_only#market-data-only-urls)\n### RESTful API [Link to restful-api](https://developers.binance.com/en/docs/products/spot/faqs/market_data_only#restful-api)\n```text\nCode\n\ncurl -sX GET \"https://data-api.binance.vision/api/v3/exc"
+  },
+  {
+   "url": "https://data.binance.vision/?prefix=data/spot/",
+   "title": "spot - Binance Data Collection",
+   "desc": "Market Data. Terms of Use · Home / data / spot /. Item, Size, Last Modified ../ · daily/ · monthly/"
+  },
+  {
+   "url": "https://www.binance.com/en/binance-api",
+   "title": "Binance APIs",
+   "desc": "Rebates\n\nRebate on Volume"
+  }
+ ],
+ "chainlink_history": [
+  {
+   "url": "https://docs.chain.link/data-feeds/historical-data",
+   "title": "Getting Historical Data | Chainlink Documentation",
+   "desc": "# [Getting Historical Data](https://docs.chain.link/data-feeds/historical-data#overview)\n## [Historical rounds](https://docs.chain.link/data-feeds/historical-data#historical-rounds)\nAs shown in the following sequence diagram, to get historical data, call the `getRoundData` [function](https://docs.chain.link/data-feeds/api-reference/#getrounddata) a"
+  },
+  {
+   "url": "https://docs.chain.link/quickstarts/historical-price-feeds-api",
+   "title": "Historical Price Feeds API | Chainlink Documentation",
+   "desc": "# Historical Price Feeds API\n## [Steps to implement](https://docs.chain.link/quickstarts/historical-price-feeds-api#steps-to-implement)\n### [Request a single-round](https://docs.chain.link/quickstarts/historical-price-feeds-api#request-a-single-round)\n```json\n{\n  \"description\": \"ETH/USD\",\n  \"decimals\": 8,\n  \"rounds\": [\\\n    {\\\n      \"phaseId\": \"1\","
+  },
+  {
+   "url": "https://ethereum.stackexchange.com/questions/84804/how-to-get-all-the-historical-data-from-chainlink-price-feeds",
+   "title": "How to get all the historical data from chainlink price feeds?",
+   "desc": "You can view the entire history of reference contracts, you'll want to use the getPreviousAnswer method below, and input how many answers back ...Read all historical price data of a Chainlink price feed in JavascriptHow to validate the Chainlink price feed at a specific timeMore results from ethereum.stackexchange.com"
+  },
+  {
+   "url": "https://docs.chain.link/data-feeds/api-reference",
+   "title": "Data Feeds API Reference | Chainlink Documentation",
+   "desc": "# [Data Feeds API Reference](https://docs.chain.link/data-feeds/api-reference#overview)\n## [AggregatorV3Interface](https://docs.chain.link/data-feeds/api-reference#aggregatorv3interface)\n### [Functions in AggregatorV3Interface](https://docs.chain.link/data-feeds/api-reference#functions-in-aggregatorv3interface)\n#### [getRoundData](https://docs.chai"
+  },
+  {
+   "url": "https://github.com/smartcontractkit/quickstarts-historical-prices-api",
+   "title": "Historical Prices API - GitHub",
+   "desc": "This API endpoint allows you to fetch historical prices from Chainlink price feeds for a specified period. The API endpoint returns the price data in JSON ..."
+  }
+ ]
+}

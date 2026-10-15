@@ -1,0 +1,114 @@
+{
+ "USDC_2023-03-11_00:00Z": {
+  "timestamp": 1678492800,
+  "block": 16801143,
+  "block_ts_utc": "2023-03-10T23:59:59Z",
+  "ecart_s": -1,
+  "iterations": 2
+ },
+ "USDC_2023-03-11_03:11Z_tweet_Circle": {
+  "timestamp": 1678504260,
+  "block": 16802088,
+  "block_ts_utc": "2023-03-11T03:10:59Z",
+  "ecart_s": -1,
+  "iterations": 2
+ },
+ "USDC_2023-03-11_08:00Z": {
+  "timestamp": 1678521600,
+  "block": 16803515,
+  "block_ts_utc": "2023-03-11T07:59:59Z",
+  "ecart_s": -1,
+  "iterations": 2
+ },
+ "USDC_2023-03-13_00:00Z": {
+  "timestamp": 1678665600,
+  "block": 16815366,
+  "block_ts_utc": "2023-03-12T23:59:59Z",
+  "ecart_s": -1,
+  "iterations": 3
+ },
+ "stETH_2022-06-09_00:00Z": {
+  "timestamp": 1654732800,
+  "block": 14929561,
+  "block_ts_utc": "2022-06-09T00:00:15Z",
+  "ecart_s": 15,
+  "iterations": 99
+ },
+ "stETH_2022-06-11_00:00Z": {
+  "timestamp": 1654905600,
+  "block": 14941266,
+  "block_ts_utc": "2022-06-11T00:00:22Z",
+  "ecart_s": 22,
+  "iterations": 99
+ },
+ "stETH_2022-06-16_00:00Z": {
+  "timestamp": 1655337600,
+  "block": 14970303,
+  "block_ts_utc": "2022-06-16T00:01:03Z",
+  "ecart_s": 63,
+  "iterations": 99
+ },
+ "USD0pp_2025-01-09_00:00Z": {
+  "timestamp": 1736380800,
+  "block": 21583204,
+  "block_ts_utc": "2025-01-09T00:00:11Z",
+  "ecart_s": 11,
+  "iterations": 3
+ },
+ "USD0pp_2025-01-09_21:46Z": {
+  "timestamp": 1736459160,
+  "block": 21589695,
+  "block_ts_utc": "2025-01-09T21:46:11Z",
+  "ecart_s": 11,
+  "iterations": 3
+ },
+ "USD0pp_2025-01-10_04:02Z": {
+  "timestamp": 1736481720,
+  "block": 21591560,
+  "block_ts_utc": "2025-01-10T04:01:59Z",
+  "ecart_s": -1,
+  "iterations": 4
+ },
+ "USD0pp_2025-01-11_00:00Z": {
+  "timestamp": 1736553600,
+  "block": 21597521,
+  "block_ts_utc": "2025-01-11T00:00:11Z",
+  "ecart_s": 11,
+  "iterations": 3
+ },
+ "xUSD_2025-11-03_00:00Z": {
+  "timestamp": 1762128000,
+  "block": 23715078,
+  "block_ts_utc": "2025-11-02T23:59:59Z",
+  "ecart_s": -1,
+  "iterations": 4
+ },
+ "xUSD_2025-11-04_00:00Z": {
+  "timestamp": 1762214400,
+  "block": 23722235,
+  "block_ts_utc": "2025-11-03T23:59:59Z",
+  "ecart_s": -1,
+  "iterations": 4
+ },
+ "rsETH_2026-04-18_17:35Z": {
+  "timestamp": 1776533700,
+  "block": 24908282,
+  "block_ts_utc": "2026-04-18T17:34:59Z",
+  "ecart_s": -1,
+  "iterations": 4
+ },
+ "rsETH_2026-04-18_18:52Z": {
+  "timestamp": 1776538320,
+  "block": 24908664,
+  "block_ts_utc": "2026-04-18T18:51:59Z",
+  "ecart_s": -1,
+  "iterations": 4
+ },
+ "rsETH_2026-04-20_00:00Z": {
+  "timestamp": 1776643200,
+  "block": 24917377,
+  "block_ts_utc": "2026-04-20T00:00:11Z",
+  "ecart_s": 11,
+  "iterations": 3
+ }
+}

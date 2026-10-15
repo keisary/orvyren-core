@@ -1,0 +1,14 @@
+### Uniswap V3 QuoterV2 0x61fFE014bA17989E743c5F6cB21bF9697530B21e — quoteExactInputSingle (USDC->USDT)
+  1 USDC: out=1.0012 USDT -> slip=-12.33 bps
+  1 000 USDC: out=1001.2296 USDT -> slip=-12.30 bps
+  10 000 USDC: out=10011.9640 USDT -> slip=-11.96 bps
+  100 000 USDC: out=100106.5690 USDT -> slip=-10.66 bps
+### Curve stETH/ETH 0xDC24316b9AE028F1497c275EB9192a3Ea0f67022 — get_dy(0,1,X) [stETH->ETH]
+  1 ETH: out=1.000002 ETH -> slip=-0.02 bps
+  100 ETH: out=99.999646 ETH -> slip=0.04 bps
+  1 000 ETH: out=999.944267 ETH -> slip=0.56 bps
+  10 000 ETH: out=9992.870794 ETH -> slip=7.13 bps
+### Curve 3pool 0xbEbc44782C7dB0a1A60Cb6fe97d0b483032FF1C7 — get_dy(1,2,X) [USDC->USDT]
+  1 USDC: out=1.0011 USDT -> slip=-11.10 bps
+  10 000 USDC: out=10011.0959 USDT -> slip=-11.10 bps
+  100 000 USDC: out=100110.4244 USDT -> slip=-11.04 bps

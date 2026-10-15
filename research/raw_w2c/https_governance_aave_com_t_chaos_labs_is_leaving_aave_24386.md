@@ -1,0 +1,301 @@
+# URL: https://governance.aave.com/t/chaos-labs-is-leaving-aave/24386
+# fetched: 2026-10-15T03:04:18.763030Z
+
+[Skip to last reply](https://governance.aave.com/t/chaos-labs-is-leaving-aave/24386/18) [Skip to top](https://governance.aave.com/t/chaos-labs-is-leaving-aave/24386/1)
+
+[Skip to main content](https://governance.aave.com/t/chaos-labs-is-leaving-aave/24386#main-container)
+
+# [Chaos Labs Is Leaving Aave](https://governance.aave.com/t/chaos-labs-is-leaving-aave/24386)
+
+[Governance](https://governance.aave.com/c/governance/4) [General](https://governance.aave.com/c/governance/general/8)
+
+You have selected **0** posts.
+
+[select all](https://governance.aave.com/t/chaos-labs-is-leaving-aave/24386)
+
+[cancel selecting](https://governance.aave.com/t/chaos-labs-is-leaving-aave/24386)
+
+3.1k
+views
+70
+likes
+4
+links
+15
+users
+
+
+![](https://dub1.discourse-cdn.com/flex013/user_avatar/governance.aave.com/apumallku/48/13996_2.png)2
+
+![](https://dub1.discourse-cdn.com/flex013/user_avatar/governance.aave.com/r0mul0/48/13507_2.png)
+
+![](https://dub1.discourse-cdn.com/flex013/user_avatar/governance.aave.com/omergoldberg/48/2155_2.png)
+
+![](https://dub1.discourse-cdn.com/flex013/user_avatar/governance.aave.com/chaoslabs/48/6850_2.png)
+
+![](https://dub1.discourse-cdn.com/flex013/user_avatar/governance.aave.com/llamarisk/48/12865_2.png)
+
+read
+11
+min
+
+
+[Apr 6](https://governance.aave.com/t/chaos-labs-is-leaving-aave/24386/1 "Jump to the first post")
+
+1 / 16
+
+
+Apr 6
+
+
+[Apr 7](https://governance.aave.com/t/chaos-labs-is-leaving-aave/24386/18)
+
+## post by omergoldberg on Apr 6
+
+![](https://dub1.discourse-cdn.com/flex013/user_avatar/governance.aave.com/omergoldberg/48/2155_2.png)
+
+
+omergoldberg
+
+[Apr 6](https://governance.aave.com/t/chaos-labs-is-leaving-aave/24386 "Post date")
+
+[![image](https://europe1.discourse-cdn.com/flex013/uploads/aave/original/2X/7/7f90257fe6034d96a573e1cee533e61f6308ee5a.jpeg)\\
+image1920×768 111 KB](https://europe1.discourse-cdn.com/flex013/uploads/aave/original/2X/7/7f90257fe6034d96a573e1cee533e61f6308ee5a.jpeg "image")
+
+Since November 2022, Chaos Labs has priced every loan initiated on Aave and managed risk across all Aave V2 and V3 markets and networks, with zero material bad debt.
+
+During that time, Aave grew from $5.2 billion to more than $26 billion in TVL, facilitated over $2.5 trillion in cumulative deposit volume, and processed over $2 billion in liquidations.
+
+[![image](https://europe1.discourse-cdn.com/flex013/uploads/aave/original/2X/a/afd266a134ba759da75f6b29bf8c573643281e5f.jpeg)\\
+image2048×1152 167 KB](https://europe1.discourse-cdn.com/flex013/uploads/aave/original/2X/a/afd266a134ba759da75f6b29bf8c573643281e5f.jpeg "image")
+
+Today, we are stepping down from that mandate and seeking to proactively terminate our engagement.
+
+This decision was not made in haste. We worked in good faith with DAO contributors. Aave Labs was professional and supported increasing our budget to $5m to retain us. However, we are leaving because the engagement no longer reflects how we believe risk should be managed.
+
+Despite not agreeing on the path forward, I believe Aave Labs is doing what it thinks is in Aave’s best interest.
+
+## [Heading link](https://governance.aave.com/t/chaos-labs-is-leaving-aave/24386\#p-62694-why-were-walking-away-1) Why We’re Walking Away
+
+We’ve lived and breathed Aave for three years, through market crises that tested every parameter we set and every machine learning model we’ve built.
+
+When we joined, the DAO’s run rate was negative $35 million. At its peak several months ago, it reached $150 million. We take real pride in being a core contributor during that period.
+
+People don’t walk away from something like that without good reason. So, in the interest of transparency and in the hope that it’s useful to the DAO going forward, here is our reasoning.
+
+Money solves many problems, but not all of them. The deeper issue is a fundamental misalignment on how risk should be managed at Aave. The more we discussed the path forward, the clearer that gap became.
+
+It came down to three things:
+
+- Core Aave contributors left, materially increasing the workload and operational risk.
+
+- V4 expands the scope of the risk function, increases the operational and legal burden, and does so on an architecture we did not design and would not have designed this way.
+
+- For the past three years, we’ve run the Aave engagement at a loss. Even with an increase of $1m, we’d still be operating Aave’s risk with negative margins.
+
+
+That leaves two options, neither of which we’re willing to accept:
+
+- Do our best with the resources we receive, knowing it’s not enough to execute at the standard the largest DeFi application in the world demands.
+
+- Subsidize Aave’s risk operations and continue to lose money.
+
+
+But even if the economics were resolved, the misalignment on how risk should be prioritized and managed at Aave would remain. And that is not something a budget increase alone can fix.
+
+None of this changes how we feel about the work itself.
+
+Chaos Labs has always viewed our contributions to Aave as a privilege, and one that comes with great responsibility.
+
+Our reputation is our track record. Every engagement is worth doing at the standard it demands, or not at all.
+
+## [Heading link](https://governance.aave.com/t/chaos-labs-is-leaving-aave/24386\#p-62694-people-technology-and-operational-experience-2) People, Technology, and Operational Experience
+
+Aave is a great brand. Its dominance was never about having the flashiest features or the most aggressive growth strategy.
+
+What made Aave dominate over time was its reliability. The brand and sentiment were always a trailing indicator of its performance, security, and risk management across all market conditions, including the tail events that decimated other market participants. It was from this that “Just Use Aave” was born.
+
+Competitors shipped more novel mechanisms and more aggressive growth strategies. One by one, they blew up due to risk management failures or security exploits. In a market defined by the world’s most volatile asset classes, survival is the product. The protocol that manages risk best, longest, wins.
+
+Where Aave did innovate was in the areas most protocols overlooked: process and infrastructure. Risk Oracles, which we built and first launched on Aave, allowed the protocol to self-heal and update parameters in real time in line with dynamic, volatile market conditions. That infrastructure helped Aave scale to over 250 markets across 19 blockchains, streaming hundreds of parameter updates per month while maintaining the operational rigor that has earned it the trust it has today.
+
+[![image](https://europe1.discourse-cdn.com/flex013/uploads/aave/original/2X/3/3a89797e635ea1ae49cf6976dbcc17d575de51d3.jpeg)\\
+image1920×1080 204 KB](https://europe1.discourse-cdn.com/flex013/uploads/aave/original/2X/3/3a89797e635ea1ae49cf6976dbcc17d575de51d3.jpeg "image")
+
+[![image](https://europe1.discourse-cdn.com/flex013/uploads/aave/original/2X/a/a96f627aab399a4ebf0de4958195596e771fc055.jpeg)\\
+image2048×1087 176 KB](https://europe1.discourse-cdn.com/flex013/uploads/aave/original/2X/a/a96f627aab399a4ebf0de4958195596e771fc055.jpeg "image")
+
+That rigor was produced by a specific operators and stack: ACI on growth/governance, TokenLogic on treasury/growth, BGD on protocol engineering, and Chaos Labs on risk.
+
+The brand is what people see.
+
+The people, technology, and operational experience are what made it worth seeing.
+
+* * *
+
+## [Heading link](https://governance.aave.com/t/chaos-labs-is-leaving-aave/24386\#p-62694-gtm-and-institutional-expansion-3) GTM and Institutional Expansion
+
+Our contributions extended well beyond risk.
+
+Over the past few years, crypto has institutionalized rapidly. The largest financial institutions in the world now integrate DeFi, and while the benefits of coming onchain are real, none of them matter if an institution fears it might lose customer deposits. For any regulated entity, the conversation starts and ends with risk. A few extra basis points of yield are never worth principal risk. Institutions seek the best risk-adjusted returns, and they will not allocate capital to a protocol they cannot underwrite to their compliance team.
+
+That reality made Aave’s risk track record its most valuable go-to-market asset. It also positioned us, as the team responsible for that track record, to engage directly with these institutions. At Aave Labs’ request, we took on that role, traveling globally to meet partners, producing research and due diligence collateral, and supporting Aave’s institutional expansion firsthand. We hope the DAO will benefit from the fruits of that labor in the months to come.
+
+* * *
+
+## [Heading link](https://governance.aave.com/t/chaos-labs-is-leaving-aave/24386\#p-62694-the-ship-of-theseus-4) The Ship of Theseus
+
+If you replace every plank of a ship, is it still the same ship? The name is the same. The flag is the same. But nothing underneath is what it was.
+
+That is where Aave stands today.
+
+Core contributors who built and operated V3 have departed. Most of the accumulated operating knowledge that kept Aave running through three years of live markets has left with them.
+
+We are the last remaining technical contributor from that group.
+
+V3 is still the largest application in DeFi and requires 24/7/365 risk management. While Aave Labs is optimistic about a swift migration to V4, history suggests these transitions take months and even years. Until V4 fully absorbs V3’s markets and liquidity, both systems need to be operated and managed simultaneously. The workload during the transition doesn’t halve. It doubles.
+
+Then there is the question of operating experience. Even if you assume identical ability across teams, three years of continuous operation produce knowledge that doesn’t transfer in a handoff.
+
+How long does it take to close that gap?
+
+The answer is not zero, and until it closes, someone has to bear the cost of bridging it. That responsibility falls entirely on us, on a budget that was already insufficient before the scope expanded. Continuity of brand is not the same thing as continuity of system.
+
+* * *
+
+## [Heading link](https://governance.aave.com/t/chaos-labs-is-leaving-aave/24386\#p-62694-why-v4-is-different-5) Why V4 Is Different
+
+V4 is a completely new lending protocol, with a new smart contract codebase, new system architecture, and a new paradigm. The only resemblance it shares with Aave V3 is the name.
+
+The architecture changes in ways that matter directly for risk: more interdependent configurations across spokes and markets, new credit structures, and modified liquidation logic. And as with any new protocol, second-order failure modes will only surface once real capital moves through the system.
+
+Taking on something new responsibly requires new infrastructure, new tooling, new simulations, and the full operational burden of going from zero to one again on a codebase that has not yet been battle-tested. That is a materially larger scope than V3, and that expansion is core to our calculus.
+
+Risk is downstream of architecture. When the architecture changes completely, the risk engagement changes completely. Unlike turnkey solutions such as price oracles or proof-of-reserves, Risk Oracles and their accompanying systems are purpose-built for each protocol’s architecture. When that architecture is rewritten from scratch, the risk infrastructure must follow.
+
+As a result, while the scope changed materially, the resourcing did not.
+
+Aave Labs may be comfortable with those trade-offs. We are not.
+
+* * *
+
+## [Heading link](https://governance.aave.com/t/chaos-labs-is-leaving-aave/24386\#p-62694-what-it-actually-costs-6) What It Actually Costs
+
+We are walking away from a $5 million engagement that has worked historically. As a startup, that is not something you do lightly, and we think the reasoning deserves context that goes beyond the surface.
+
+Compensation is part of this story, but more than anything, it is a signal. How much an organization allocates to risk tells you how it prioritizes it.
+
+I also believe that very few people understand what it actually costs to run this type of operation, what the real expenses are, and what risks you take on. So I want to open that up.
+
+To be clear: the DAO has every right to decide what it values and what it wants to pay for. I take no issue with that. My job is simply to decide whether the terms work for us. In this case, they don’t.
+
+### [Heading link](https://governance.aave.com/t/chaos-labs-is-leaving-aave/24386\#p-62694-comparing-aave-to-a-bank-7) Comparing Aave to a Bank
+
+Aave likes comparing itself to banks, so let’s use that benchmark. Banks allocate 6 to 10 percent of revenue to compliance and risk infrastructure. In 2025, Aave generated $142 million in revenue. Our budget was $3 million, roughly 2% of protocol revenue.
+
+Our estimate for the minimum risk budget covering V3, V4, and the GTM work we were already performing was $8 million, or 5.6 percent of protocol revenue. Still below the floor of what any bank allocates to the equivalent function
+
+I also believe that the comparison is generous. The open nature of blockchains makes adversarial risk, both market and cyber, fundamentally more asymmetric than in traditional finance. Protocols are open source and transparent by design, which means attack surfaces are visible to everyone. Recent exploits have demonstrated that this is real. I believe that DeFi’s investments in risk management should exceed that of its traditional counterparts, not trail behind it.
+
+Nothing at Aave’s scale exists in DeFi, so no comparison will be perfect. The bank benchmark is a proxy for contextualizing the cost of risk infrastructure at institutions that take it seriously. Whether a DeFi protocol can afford to fund risk properly is a separate question from whether it chooses to.
+
+Thankfully, for Aave, affordability is not the constraint. The DAO holds $140 million in its treasury, and Aave Labs recently passed a proposal for $50 million in self-funding.
+
+But even if resources were scarce, the cost of managing risk at this scale would not change.
+
+Budgets don’t reshape the threat landscape. The cost is the cost.
+
+### [Heading link](https://governance.aave.com/t/chaos-labs-is-leaving-aave/24386\#p-62694-the-costs-that-dont-appear-in-a-budget-8) The Costs That Don’t Appear in a Budget
+
+Headcount and infrastructure are the visible costs. There are others that are harder to price, but that anyone in this role must absorb.
+
+The first is legal and institutional exposure. Risk management in DeFi, whether as a risk manager or vault curator, carries liability that remains fundamentally undefined. There is no regulatory framework, no safe harbor, and no settled law that answers the question of what a risk manager or curator owes when a protocol fails. If things work, the work is invisible. If things break, the blame is not.
+
+The second is cyber and operational security. Managing risk for a protocol that secures tens of billions makes you a target. The audits, monitoring, infrastructure, and internal controls required to ensure the systems managing risk are secure are a cost that scales with every dollar of user deposits.
+
+These costs are not unique to us. Anyone stepping into this role at this scale will face the same exposure. The question is whether the engagement is structured to reflect that.
+
+If the upside is incremental and the downside is uncapped, saying yes is not conviction.
+
+Ironically, it is poor risk management.
+
+* * *
+
+## [Heading link](https://governance.aave.com/t/chaos-labs-is-leaving-aave/24386\#p-62694-our-values-9) Our Values
+
+We have always held a simple principle at Chaos: we only put our name on work we fully believe in. That principle is easy to advertise when things are going well. It matters when it costs you something. Today it’s costing us $5 million.
+
+I’ve written about what institutional-grade risk management should look like in [The Market Crypto Never Built](https://x.com/omeragoldberg/status/2040105364520136922). This decision is what that conviction looks like in practice. If we are going to argue that the industry needs higher standards, we have to hold ourselves to them first.
+
+I want V4 to succeed, and if it proves my concerns are overstated, that will be genuinely good for everyone.
+
+To the Aave community: thank you for the trust. It was a privilege ![:ghost:](https://emoji.discourse-cdn.com/twitter/ghost.png?v=15)
+
+3.1k
+views
+70
+likes
+4
+links
+15
+users
+
+
+![](https://dub1.discourse-cdn.com/flex013/user_avatar/governance.aave.com/apumallku/48/13996_2.png)2
+
+![](https://dub1.discourse-cdn.com/flex013/user_avatar/governance.aave.com/r0mul0/48/13507_2.png)
+
+![](https://dub1.discourse-cdn.com/flex013/user_avatar/governance.aave.com/omergoldberg/48/2155_2.png)
+
+![](https://dub1.discourse-cdn.com/flex013/user_avatar/governance.aave.com/chaoslabs/48/6850_2.png)
+
+![](https://dub1.discourse-cdn.com/flex013/user_avatar/governance.aave.com/llamarisk/48/12865_2.png)
+
+read
+11
+min
+
+
+## post by ChaosLabs on Apr 6
+
+## post by ApuMallku on Apr 6
+
+## post by axieaur on Apr 6
+
+## post by nano on Apr 6
+
+## post by stani on Apr 6
+
+## post by ApuMallku on Apr 6
+
+## post by notrustverify.ch on Apr 6
+
+## post by LlamaRisk on Apr 6
+
+## post by Gross on Apr 6
+
+## post by kberg on Apr 6
+
+## post by Alexos on Apr 6
+
+## post by MikeZacharski on Apr 6
+
+## post by MconnectDAO on Apr 7
+
+## post by ST0X on Apr 7
+
+## post by r0mul0 on Apr 7
+
+Reply
+
+### Related topics
+
+| Topic | Replies | Views | Activity |
+| --- | --- | --- | --- |
+| [LlamaRisk: Ensuring Continuity of Aave’s Risk Management](https://governance.aave.com/t/llamarisk-ensuring-continuity-of-aaves-risk-management/24397)<br>[Risk](https://governance.aave.com/c/risk/7) | [5](https://governance.aave.com/t/llamarisk-ensuring-continuity-of-aaves-risk-management/24397/1) | 1.0k | [Jun 22](https://governance.aave.com/t/llamarisk-ensuring-continuity-of-aaves-risk-management/24397/6) |
+| [\[ARFC\] Renew LlamaRisk as Risk Service Provider - epoch 4](https://governance.aave.com/t/arfc-renew-llamarisk-as-risk-service-provider-epoch-4/24446)<br>[Service Provider engagements](https://governance.aave.com/c/service-provider-engagements/29) | [5](https://governance.aave.com/t/arfc-renew-llamarisk-as-risk-service-provider-epoch-4/24446/1) | 907 | [May 6](https://governance.aave.com/t/arfc-renew-llamarisk-as-risk-service-provider-epoch-4/24446/6) |
+| [\[TEMP CHECK\] Aave Will Win Framework](https://governance.aave.com/t/temp-check-aave-will-win-framework/24055)<br>[General](https://governance.aave.com/c/governance/general/8) | [135](https://governance.aave.com/t/temp-check-aave-will-win-framework/24055/1) | 18.1k | [Sep 28](https://governance.aave.com/t/temp-check-aave-will-win-framework/24055/166) |
+| [Aave Labs: $86 Million, 23% of the Token Supply, and this is their Track Record](https://governance.aave.com/t/aave-labs-86-million-23-of-the-token-supply-and-this-is-their-track-record/24159)<br>[General](https://governance.aave.com/c/governance/general/8) | [19](https://governance.aave.com/t/aave-labs-86-million-23-of-the-token-supply-and-this-is-their-track-record/24159/1) | 11.6k | [Feb 28](https://governance.aave.com/t/aave-labs-86-million-23-of-the-token-supply-and-this-is-their-track-record/24159/21) |
+| [\[ARFC\] Chaos Labs <> Aave Risk Management Service Renewal](https://governance.aave.com/t/arfc-chaos-labs-aave-risk-management-service-renewal/19306)<br>[Service Provider engagements](https://governance.aave.com/c/service-provider-engagements/29) | [7](https://governance.aave.com/t/arfc-chaos-labs-aave-risk-management-service-renewal/19306/1) | 940 | [Oct 2025](https://governance.aave.com/t/arfc-chaos-labs-aave-risk-management-service-renewal/19306/8) |
+
+Topic list, column headers with buttons are sortable.
