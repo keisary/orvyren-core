@@ -1,0 +1,98 @@
+{
+ "usd0pp_addr": [
+  {
+   "url": "https://etherscan.io/token/0x73a15fed60bf67631dc6cd7bc5b6e8da8190acf5",
+   "title": "Usual USD (USD0) | ERC-20 | Address: 0x73a15fed...a8190acf5",
+   "desc": "Token Rep: Neutral | Price: $0.999 | Onchain Market Cap: $546984448.93 | Holders: 123289 | As at Sep-15-2026 12:02:20 AM (UTC)"
+  },
+  {
+   "url": "https://etherscan.io/address/0xc4441c2be5d8fa8126822b9929ca0b81ea0de38e",
+   "title": "USUAL Token | Address: 0xc4441c2b...1ea0de38e - Etherscan",
+   "desc": "Contract: Verified | Token Rep: Neutral | Price: $0.0116 | Transactions: 158498 | As at Oct-12-2026 11:08:01 PM (UTC)"
+  },
+  {
+   "url": "https://etherscan.io/address/0x2e7fc02be94bc7f0cd69dcab572f64bcc173cd81",
+   "title": "Address: 0x2e7fc02b...cc173cd81 - Etherscan",
+   "desc": "USD0 Token (USD0a) Usual: USD0a Token 0 ETH$0.00. Token 0 ETH$0.00. A contract address hosts a smart contract, Powered by Ethereum Etherscan is a Block ..."
+  },
+  {
+   "url": "https://etherscan.io/address/0xab5801a7d398351b8be11c439e05c5b3259aec9b",
+   "title": "Vb | Address: 0xab5801a7...3259aec9b - Etherscan",
+   "desc": "# Address\n### Tokens\n| Chain | Token | Portfolio % | Price | Amount | Value |\n|-|-|-|-|-|-|\n| [ETH](https://etherscan.io/address/0xab5801a7d398351b8be11c439e05c5b3259aec9b) | ![](https://etherscan.io/token/images/fableofthedragon_32.png?=v34)<br>[Fable Of The Dragon (TYRANT)](https://etherscan.io/token/0x8ee325ae3e54e83956ef2d5952d3c8bc1fa6ec27?a=0"
+  },
+  {
+   "url": "https://info.etherscan.com/what-is-an-ethereum-address/",
+   "title": "What is an Ethereum Address | Etherscan Information Center",
+   "desc": "An Ethereum address is a unique identifier used to send, receive, and store assets on the Ethereum network. with “0x”."
+  },
+  {
+   "url": "https://www.youtube.com/watch?v=ppFWZdJw6jE",
+   "title": "How to Use Etherscan (Beginner Friendly!) - YouTube",
+   "desc": "... Addresses 8:12 Tracking Transactions 10:40 Tracking Tokens 15:59 Other Etherscan Features #crypto #cryptocurrency #defi."
+  }
+ ],
+ "xusd_stream": [
+  {
+   "url": "https://arxiv.org/html/2602.01317v5",
+   "title": "TxRay: Agentic Postmortem of Live Blockchain Attacks - arXiv",
+   "desc": "EOA and contracts share a global state; transactions invoke contract code that can call other contracts, emit logs, and modify balances and ..."
+  },
+  {
+   "url": "https://finance.yahoo.com/news/stream-finance-loses-93-million-225557903.html",
+   "title": "Stream Finance Loses $93 Million as Stablecoin XUSD Collapses",
+   "desc": "Stream Finance has been thrown into crisis after revealing that an external fund manager lost around $93 million of the platform's assets."
+  },
+  {
+   "url": "https://smartcontractshacking.com/hacks/stream-finance-hack-2025",
+   "title": "Stream Finance Hack (2025) - $93.0M | Smart Contract Hacking",
+   "desc": "The synthetic tokens xUSD, xBTC, and xETH used as collateral on Euler, Silo, Morpho, and Sonic platforms remained at risk. Protocol details."
+  },
+  {
+   "url": "https://hacken.io/discover/most-common-smart-contract-attacks/",
+   "title": "Most Common Smart Contract Attacks - Hacken.io",
+   "desc": "A useful list of most common smart contract vulnerabilities with explanations, examples, and recommendations."
+  },
+  {
+   "url": "https://coinmarketcap.com/currencies/staked-stream-usd/",
+   "title": "Staked Stream USD price XUSD - CoinMarketCap",
+   "desc": "The live Staked Stream USD price today is $0 USD with a 24-hour trading volume of $0 USD. We update our XUSD to USD price in real-time."
+  },
+  {
+   "url": "https://x.com/StreamDefi",
+   "title": "Stream Finance (@StreamDefi) / X",
+   "desc": "Stream has surpassed over 500k of profits generated for users; •16% on USDC •12% on ETH •7% on BTC Fully liquid. Just use Stream."
+  }
+ ],
+ "xusd_oracle": [
+  {
+   "url": "https://morpho.org/blog/establishing-morpho-blues-oracle-network-with-chainlink-price-feeds/",
+   "title": "Establishing Morpho Blue's Oracle Network with Chainlink Price Feeds",
+   "desc": "Morpho\n\nMorpho"
+  },
+  {
+   "url": "https://pharos.watch/learn/case-studies/stream-elixir-contagion-2025/",
+   "title": "Stream Finance: loss broke three stablecoins - Pharos Watch",
+   "desc": "## Timeline\n### Hardcoded $1 oracles block liquidation\nOn Morpho, Euler, and Silo, vaults priced xUSD at a fixed $1 rather than its collapsing market price.\n\nOn Morpho, Euler, and Silo, vaults priced xUSD at a fixed $1 rather than its collapsing market price.\n\nOn Morpho, Euler, and Silo, vaults priced xUSD at a fixed $1 rather than its collapsing m"
+  },
+  {
+   "url": "https://docs.robinhood.com/chain/oracles-and-price-feeds/",
+   "title": "Oracles & Price Feeds – Robinhood Chain Documentation",
+   "desc": "Oracles & Price Feeds\n\n## Reading a price feed\n```\nCopy\n// SPDX-License-Identifier: MIT\npragma solidity ^0.8.13;\n\ninterface AggregatorV3Interface {\n   function latestRoundData()\n       external\n       view\n       returns (\n           uint80 roundId,\n           int256 answer,\n           uint256 startedAt,\n           uint256 updatedAt,\n           uin"
+  },
+  {
+   "url": "https://chain.link/data-feeds",
+   "title": "Data Feeds: Off-Chain Data for Smart Contracts - Chainlink",
+   "desc": "Chainlink Data Feeds provide smart contract developers with access to a secure and reliable source of off-chain data to power their unique blockchain use ..."
+  },
+  {
+   "url": "https://blockeden.xyz/blog/2025/11/08/m-defi-contagion/",
+   "title": "Anatomy of a $285M DeFi Contagion: The Stream Finance xUSD Collapse",
+   "desc": "## Root causes: Recursive leverage meets fund manager failure [​](https://blockeden.xyz/blog/2025/11/08/m-defi-contagion/#root-causes-recursive-leverage-meets-fund-manager-failure)\n**Oracle hardcoding prevented proper liquidations**—Multiple lending protocols including Morpho, Euler, and Elixir had hardcoded xUSD's oracle price to $1.00 to prevent "
+  },
+  {
+   "url": "https://www.linkedin.com/posts/chainlink-labs_indias-most-trusted-trade-credit-infrastructure-activity-7462316491796013056-S4q7",
+   "title": "Vayana builds tokenization infrastructure on Chainlink in India",
+   "desc": "xUSD was sitting as collateral in vaults on Morpho, Euler, Silo, and Gearbox, with the oracle hardcoded at $1 to prevent mass liquidations."
+  }
+ ]
+}

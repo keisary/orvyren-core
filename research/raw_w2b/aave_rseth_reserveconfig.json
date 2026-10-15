@@ -1,0 +1,162 @@
+[
+ {
+  "utc": "2026-04-17T00:00:00",
+  "block": 24900327,
+  "config": {
+   "raw": "0x100000000000000000000003e800008165000000000105dc811229fe1d4c0000",
+   "ltv": 0.0,
+   "lt_thr": 0.75,
+   "liq_bonus": 1.075,
+   "decimals": 18,
+   "isActive": true,
+   "isFrozen": false,
+   "borrowingEnabled": false,
+   "stableBorrow": false,
+   "reserveFactor": 0.15,
+   "borrowCap": 1,
+   "supplyCap": 530000,
+   "eMode": 0,
+   "isPaused": false
+  }
+ },
+ {
+  "utc": "2026-04-18T12:00:00",
+  "block": 24911049,
+  "config": {
+   "raw": "0x100000000000000000000003e800008165000000000105dc831229fe1d4c0000",
+   "ltv": 0.0,
+   "lt_thr": 0.75,
+   "liq_bonus": 1.075,
+   "decimals": 18,
+   "isActive": true,
+   "isFrozen": true,
+   "borrowingEnabled": false,
+   "stableBorrow": false,
+   "reserveFactor": 0.15,
+   "borrowCap": 1,
+   "supplyCap": 530000,
+   "eMode": 0,
+   "isPaused": false
+  }
+ },
+ {
+  "utc": "2026-04-18T20:00:00",
+  "block": 24913432,
+  "config": {
+   "raw": "0x100000000000000000000003e800008165000000000105dc831229fe1d4c0000",
+   "ltv": 0.0,
+   "lt_thr": 0.75,
+   "liq_bonus": 1.075,
+   "decimals": 18,
+   "isActive": true,
+   "isFrozen": true,
+   "borrowingEnabled": false,
+   "stableBorrow": false,
+   "reserveFactor": 0.15,
+   "borrowCap": 1,
+   "supplyCap": 530000,
+   "eMode": 0,
+   "isPaused": false
+  }
+ },
+ {
+  "utc": "2026-04-19T00:00:00",
+  "block": 24914623,
+  "config": {
+   "raw": "0x100000000000000000000003e800008165000000000105dc831229fe1d4c0000",
+   "ltv": 0.0,
+   "lt_thr": 0.75,
+   "liq_bonus": 1.075,
+   "decimals": 18,
+   "isActive": true,
+   "isFrozen": true,
+   "borrowingEnabled": false,
+   "stableBorrow": false,
+   "reserveFactor": 0.15,
+   "borrowCap": 1,
+   "supplyCap": 530000,
+   "eMode": 0,
+   "isPaused": false
+  }
+ },
+ {
+  "utc": "2026-04-20T00:00:00",
+  "block": 24921772,
+  "config": {
+   "raw": "0x100000000000000000000003e800008165000000000105dc831229fe1d4c0000",
+   "ltv": 0.0,
+   "lt_thr": 0.75,
+   "liq_bonus": 1.075,
+   "decimals": 18,
+   "isActive": true,
+   "isFrozen": true,
+   "borrowingEnabled": false,
+   "stableBorrow": false,
+   "reserveFactor": 0.15,
+   "borrowCap": 1,
+   "supplyCap": 530000,
+   "eMode": 0,
+   "isPaused": false
+  }
+ },
+ {
+  "utc": "2026-04-25T00:00:00",
+  "block": 24957514,
+  "config": {
+   "raw": "0x100000000000000000000003e800008165000000000105dc931229fe1d4c0000",
+   "ltv": 0.0,
+   "lt_thr": 0.75,
+   "liq_bonus": 1.075,
+   "decimals": 18,
+   "isActive": true,
+   "isFrozen": true,
+   "borrowingEnabled": false,
+   "stableBorrow": false,
+   "reserveFactor": 0.15,
+   "borrowCap": 1,
+   "supplyCap": 530000,
+   "eMode": 0,
+   "isPaused": true
+  }
+ },
+ {
+  "utc": "2026-06-01T00:00:00",
+  "block": 25222005,
+  "config": {
+   "raw": "0x100000000000000000000003e800008165000000000105dc831229fe1d4c0000",
+   "ltv": 0.0,
+   "lt_thr": 0.75,
+   "liq_bonus": 1.075,
+   "decimals": 18,
+   "isActive": true,
+   "isFrozen": true,
+   "borrowingEnabled": false,
+   "stableBorrow": false,
+   "reserveFactor": 0.15,
+   "borrowCap": 1,
+   "supplyCap": 530000,
+   "eMode": 0,
+   "isPaused": false
+  }
+ },
+ {
+  "utc": "2026-10-14T00:00:00",
+  "block": 26187039,
+  "config": {
+   "raw": "0x100000000000000000000003e800008165000000000105dc831229fe1d4c0000",
+   "ltv": 0.0,
+   "lt_thr": 0.75,
+   "liq_bonus": 1.075,
+   "decimals": 18,
+   "isActive": true,
+   "isFrozen": true,
+   "borrowingEnabled": false,
+   "stableBorrow": false,
+   "reserveFactor": 0.15,
+   "borrowCap": 1,
+   "supplyCap": 530000,
+   "eMode": 0,
+   "isPaused": false
+  }
+ }
+]

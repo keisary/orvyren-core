@@ -1,0 +1,228 @@
+[
+ {
+  "id": "195",
+  "symbol": "USD0",
+  "name": "Usual USD",
+  "chains": [
+   "Ethereum",
+   "Arbitrum"
+  ],
+  "price": 0.9985564546856168,
+  "pegType": "peggedUSD",
+  "addresses": []
+ },
+ {
+  "id": "354",
+  "symbol": "apxUSD",
+  "name": "apxUSD",
+  "chains": [
+   "Ethereum",
+   "Base",
+   "BSC"
+  ],
+  "price": 0.9944916303549404,
+  "pegType": "peggedUSD",
+  "addresses": []
+ },
+ {
+  "id": "21",
+  "symbol": "FLEXUSD",
+  "name": "flexUSD",
+  "chains": [
+   "Ethereum",
+   "smartBCH"
+  ],
+  "price": 0.9997516689126948,
+  "pegType": "peggedUSD",
+  "addresses": []
+ },
+ {
+  "id": "235",
+  "symbol": "FRXUSD",
+  "name": "Frax USD",
+  "chains": [
+   "Ethereum",
+   "Fraxtal",
+   "Stable",
+   "Sonic",
+   "Polygon",
+   "OP Mainnet",
+   "Base",
+   "Solana",
+   "Hyperliquid L1",
+   "BSC",
+   "Sei",
+   "Avalanche",
+   "Katana",
+   "Linea",
+   "Arbitrum",
+   "Unichain",
+   "Ink",
+   "X Layer",
+   "Scroll",
+   "Plume Mainnet",
+   "Tempo",
+   "Berachain",
+   "Movement",
+   "Abstract",
+   "Mode",
+   "Monad",
+   "World Chain",
+   "Blast",
+   "ZKsync Era",
+   "Aptos",
+   "Polygon zkEVM",
+   "Aurora"
+  ],
+  "price": 1.0000193579488208,
+  "pegType": "peggedUSD",
+  "addresses": []
+ },
+ {
+  "id": "168",
+  "symbol": "fxUSD",
+  "name": "fxUSD",
+  "chains": [
+   "Ethereum",
+   "Base"
+  ],
+  "price": 1.0001290697730596,
+  "pegType": "peggedUSD",
+  "addresses": []
+ },
+ {
+  "id": "442",
+  "symbol": "USDx",
+  "name": "Axis USD",
+  "chains": [
+   "Ethereum"
+  ],
+  "price": 0.9988557523782409,
+  "pegType": "peggedUSD",
+  "addresses": []
+ },
+ {
+  "id": "290",
+  "symbol": "XUSD",
+  "name": "StraitsX XUSD",
+  "chains": [
+   "BSC",
+   "Ethereum"
+  ],
+  "price": 1.000400106637735,
+  "pegType": "peggedUSD",
+  "addresses": []
+ },
+ {
+  "id": "263",
+  "symbol": "USDX",
+  "name": "Hex Trust USDX",
+  "chains": [
+   "Flare",
+   "Songbird",
+   "Ethereum"
+  ],
+  "price": 0.9925142217003621,
+  "pegType": "peggedUSD",
+  "addresses": []
+ },
+ {
+  "id": "42",
+  "symbol": "USDX",
+  "name": "USDX",
+  "chains": [
+   "Kava"
+  ],
+  "price": null,
+  "pegType": "peggedUSD",
+  "addresses": []
+ },
+ {
+  "id": "103",
+  "symbol": "NXUSD",
+  "name": "NXUSD",
+  "chains": [
+   "Avalanche",
+   "Polygon"
+  ],
+  "price": null,
+  "pegType": "peggedUSD",
+  "addresses": []
+ },
+ {
+  "id": "214",
+  "symbol": "USDX",
+  "name": "USDX Money USDX",
+  "chains": [
+   "BSC",
+   "Arbitrum",
+   "Ethereum"
+  ],
+  "price": 0.008298855000001538,
+  "pegType": "peggedUSD",
+  "addresses": []
+ },
+ {
+  "id": "162",
+  "symbol": "XUSD",
+  "name": "XUSD",
+  "chains": [
+   "Rootstock"
+  ],
+  "price": 0.9846048322453164,
+  "pegType": "peggedUSD",
+  "addresses": []
+ },
+ {
+  "id": "418",
+  "symbol": "cdxUSD",
+  "name": "Cod3x USD",
+  "chains": [
+   "Base"
+  ],
+  "price": 0.20144965403988044,
+  "pegType": "peggedUSD",
+  "addresses": []
+ },
+ {
+  "id": "197",
+  "symbol": "USR",
+  "name": "Resolv USD",
+  "chains": [
+   "Ethereum",
+   "Base",
+   "BSC",
+   "Hyperliquid L1",
+   "Berachain",
+   "Soneium"
+  ],
+  "price": 0.08403040621247067,
+  "pegType": "peggedUSD",
+  "addresses": []
+ },
+ {
+  "id": "322",
+  "symbol": "USDXL",
+  "name": "Last USD",
+  "chains": [
+   "Hyperliquid L1"
+  ],
+  "price": 0.985479306328454,
+  "pegType": "peggedUSD",
+  "addresses": []
+ },
+ {
+  "id": "210",
+  "symbol": "DEUSD",
+  "name": "Elixir deUSD",
+  "chains": [
+   "Ethereum",
+   "Avalanche",
+   "Sei",
+   "Polygon"
+  ],
+  "price": 1e-08,
+  "pegType": "peggedUSD",
+  "addresses": []
+ }
+]

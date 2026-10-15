@@ -1,0 +1,317 @@
+{
+ "AVANT 18/04 ~17:21 UTC|rsETH": {
+  "block": 24908200,
+  "config": {
+   "LTV_bps": 0,
+   "seuil_liq_bps": 7500,
+   "bonus_liq_bps": 10750,
+   "decimals": 18,
+   "actif": 1,
+   "gele": 0,
+   "emprunt_actif": 0,
+   "paused": 0,
+   "frozen_bit": 0,
+   "eMode_cat": 0
+  },
+  "aToken": "0x2d62109243b87c4ba3ee7ba1d91b0dd0a074d7b1",
+  "vDebt": "0x6de3e52a1b7294a34e271a508082b1ff4a37e30e",
+  "aToken_supply": 476593.98269913613,
+  "vDebt_supply": 42.07707754485249,
+  "utilisation": 8.82870516042895e-05,
+  "prix_oracle_aave": 2526.7563881
+ },
+ "AVANT 18/04 ~17:21 UTC|WETH": {
+  "block": 24908200,
+  "config": {
+   "LTV_bps": 8050,
+   "seuil_liq_bps": 8300,
+   "bonus_liq_bps": 10500,
+   "decimals": 18,
+   "actif": 1,
+   "gele": 0,
+   "emprunt_actif": 1,
+   "paused": 0,
+   "frozen_bit": 0,
+   "eMode_cat": 1
+  },
+  "aToken": "0x4d5f47fa6a74757f35c14fd3a6ef8e3c9bc514e8",
+  "vDebt": "0xea51d7853eefb32b6ee06b1c12e6dcca88be0ffe",
+  "aToken_supply": 3008039.189637452,
+  "vDebt_supply": 2665219.740204274,
+  "utilisation": 0.8860322529659274,
+  "prix_oracle_aave": 2362.3148
+ },
+ "AVANT 18/04 ~17:21 UTC|USDC": {
+  "block": 24908200,
+  "config": {
+   "LTV_bps": 7500,
+   "seuil_liq_bps": 7800,
+   "bonus_liq_bps": 10450,
+   "decimals": 6,
+   "actif": 1,
+   "gele": 0,
+   "emprunt_actif": 1,
+   "paused": 0,
+   "frozen_bit": 0,
+   "eMode_cat": 0
+  },
+  "aToken": "0x98c23e9d8f34fefb1b7bd6a91b7ff122f4e16f5c",
+  "vDebt": "0x72e95b8931767c79ba4eee721354d6e99a61d004",
+  "aToken_supply": 3352120860.36257,
+  "vDebt_supply": 2577027621.498855,
+  "utilisation": 0.768775270596932,
+  "prix_oracle_aave": 0.9998176
+ },
+ "AU GEL 18:52 UTC|rsETH": {
+  "block": 24908664,
+  "config": {
+   "LTV_bps": 0,
+   "seuil_liq_bps": 7500,
+   "bonus_liq_bps": 10750,
+   "decimals": 18,
+   "actif": 1,
+   "gele": 0,
+   "emprunt_actif": 0,
+   "paused": 0,
+   "frozen_bit": 0,
+   "eMode_cat": 0
+  },
+  "aToken": "0x2d62109243b87c4ba3ee7ba1d91b0dd0a074d7b1",
+  "vDebt": "0x6de3e52a1b7294a34e271a508082b1ff4a37e30e",
+  "aToken_supply": 529482.8089517789,
+  "vDebt_supply": 42.07707764030446,
+  "utilisation": 7.946826021340477e-05,
+  "prix_oracle_aave": 2513.66460329
+ },
+ "AU GEL 18:52 UTC|WETH": {
+  "block": 24908664,
+  "config": {
+   "LTV_bps": 8050,
+   "seuil_liq_bps": 8300,
+   "bonus_liq_bps": 10500,
+   "decimals": 18,
+   "actif": 1,
+   "gele": 0,
+   "emprunt_actif": 1,
+   "paused": 0,
+   "frozen_bit": 0,
+   "eMode_cat": 1
+  },
+  "aToken": "0x4d5f47fa6a74757f35c14fd3a6ef8e3c9bc514e8",
+  "vDebt": "0xea51d7853eefb32b6ee06b1c12e6dcca88be0ffe",
+  "aToken_supply": 3002751.1822861377,
+  "vDebt_supply": 2719370.9487661016,
+  "utilisation": 0.9056264684227732,
+  "prix_oracle_aave": 2350.07503
+ },
+ "AU GEL 18:52 UTC|USDC": {
+  "block": 24908664,
+  "config": {
+   "LTV_bps": 7500,
+   "seuil_liq_bps": 7800,
+   "bonus_liq_bps": 10450,
+   "decimals": 6,
+   "actif": 1,
+   "gele": 0,
+   "emprunt_actif": 1,
+   "paused": 0,
+   "frozen_bit": 0,
+   "eMode_cat": 0
+  },
+  "aToken": "0x98c23e9d8f34fefb1b7bd6a91b7ff122f4e16f5c",
+  "vDebt": "0x72e95b8931767c79ba4eee721354d6e99a61d004",
+  "aToken_supply": 3344731691.165506,
+  "vDebt_supply": 2576877483.87804,
+  "utilisation": 0.7704287583618107,
+  "prix_oracle_aave": 0.9998176
+ },
+ "APRES gel ~18:57|rsETH": {
+  "block": 24909000,
+  "config": {
+   "LTV_bps": 0,
+   "seuil_liq_bps": 7500,
+   "bonus_liq_bps": 10750,
+   "decimals": 18,
+   "actif": 1,
+   "gele": 1,
+   "emprunt_actif": 0,
+   "paused": 0,
+   "frozen_bit": 1,
+   "eMode_cat": 0
+  },
+  "aToken": "0x2d62109243b87c4ba3ee7ba1d91b0dd0a074d7b1",
+  "vDebt": "0x6de3e52a1b7294a34e271a508082b1ff4a37e30e",
+  "aToken_supply": 529187.3170563859,
+  "vDebt_supply": 42.077077707021445,
+  "utilisation": 7.951263446954089e-05,
+  "prix_oracle_aave": 2513.73249145
+ },
+ "APRES gel ~18:57|WETH": {
+  "block": 24909000,
+  "config": {
+   "LTV_bps": 8050,
+   "seuil_liq_bps": 8300,
+   "bonus_liq_bps": 10500,
+   "decimals": 18,
+   "actif": 1,
+   "gele": 0,
+   "emprunt_actif": 1,
+   "paused": 0,
+   "frozen_bit": 0,
+   "eMode_cat": 1
+  },
+  "aToken": "0x4d5f47fa6a74757f35c14fd3a6ef8e3c9bc514e8",
+  "vDebt": "0xea51d7853eefb32b6ee06b1c12e6dcca88be0ffe",
+  "aToken_supply": 2712651.5157861034,
+  "vDebt_supply": 2710808.988045086,
+  "utilisation": 0.9993207650410327,
+  "prix_oracle_aave": 2350.1385
+ },
+ "APRES gel ~18:57|USDC": {
+  "block": 24909000,
+  "config": {
+   "LTV_bps": 7500,
+   "seuil_liq_bps": 7800,
+   "bonus_liq_bps": 10450,
+   "decimals": 6,
+   "actif": 1,
+   "gele": 0,
+   "emprunt_actif": 1,
+   "paused": 0,
+   "frozen_bit": 0,
+   "eMode_cat": 0
+  },
+  "aToken": "0x98c23e9d8f34fefb1b7bd6a91b7ff122f4e16f5c",
+  "vDebt": "0x72e95b8931767c79ba4eee721354d6e99a61d004",
+  "aToken_supply": 3182344831.885583,
+  "vDebt_supply": 2531096147.250535,
+  "utilisation": 0.7953557144059796,
+  "prix_oracle_aave": 0.9998176
+ },
+ "APRES gel ~19:07|rsETH": {
+  "block": 24909500,
+  "config": {
+   "LTV_bps": 0,
+   "seuil_liq_bps": 7500,
+   "bonus_liq_bps": 10750,
+   "decimals": 18,
+   "actif": 1,
+   "gele": 1,
+   "emprunt_actif": 0,
+   "paused": 0,
+   "frozen_bit": 1,
+   "eMode_cat": 0
+  },
+  "aToken": "0x2d62109243b87c4ba3ee7ba1d91b0dd0a074d7b1",
+  "vDebt": "0x6de3e52a1b7294a34e271a508082b1ff4a37e30e",
+  "aToken_supply": 525899.4156886409,
+  "vDebt_supply": 42.077077806942086,
+  "utilisation": 8.000974435737698e-05,
+  "prix_oracle_aave": 2515.33446829
+ },
+ "APRES gel ~19:07|WETH": {
+  "block": 24909500,
+  "config": {
+   "LTV_bps": 8050,
+   "seuil_liq_bps": 8300,
+   "bonus_liq_bps": 10500,
+   "decimals": 18,
+   "actif": 1,
+   "gele": 0,
+   "emprunt_actif": 1,
+   "paused": 0,
+   "frozen_bit": 0,
+   "eMode_cat": 1
+  },
+  "aToken": "0x4d5f47fa6a74757f35c14fd3a6ef8e3c9bc514e8",
+  "vDebt": "0xea51d7853eefb32b6ee06b1c12e6dcca88be0ffe",
+  "aToken_supply": 2691499.8727402003,
+  "vDebt_supply": 2691671.076153437,
+  "utilisation": 1.0000636089248862,
+  "prix_oracle_aave": 2351.63622
+ },
+ "APRES gel ~19:07|USDC": {
+  "block": 24909500,
+  "config": {
+   "LTV_bps": 7500,
+   "seuil_liq_bps": 7800,
+   "bonus_liq_bps": 10450,
+   "decimals": 6,
+   "actif": 1,
+   "gele": 0,
+   "emprunt_actif": 1,
+   "paused": 0,
+   "frozen_bit": 0,
+   "eMode_cat": 0
+  },
+  "aToken": "0x98c23e9d8f34fefb1b7bd6a91b7ff122f4e16f5c",
+  "vDebt": "0x72e95b8931767c79ba4eee721354d6e99a61d004",
+  "aToken_supply": 2971315672.493764,
+  "vDebt_supply": 2421995751.795022,
+  "utilisation": 0.8151256947271075,
+  "prix_oracle_aave": 0.9998176
+ },
+ "20/04 00:00 UTC|rsETH": {
+  "block": 24917377,
+  "config": {
+   "LTV_bps": 0,
+   "seuil_liq_bps": 7500,
+   "bonus_liq_bps": 10750,
+   "decimals": 18,
+   "actif": 1,
+   "gele": 1,
+   "emprunt_actif": 0,
+   "paused": 0,
+   "frozen_bit": 1,
+   "eMode_cat": 0
+  },
+  "aToken": "0x2d62109243b87c4ba3ee7ba1d91b0dd0a074d7b1",
+  "vDebt": "0x6de3e52a1b7294a34e271a508082b1ff4a37e30e",
+  "aToken_supply": 525801.6517922316,
+  "vDebt_supply": 42.07707938187152,
+  "utilisation": 8.002462380718824e-05,
+  "prix_oracle_aave": 2419.21294349
+ },
+ "20/04 00:00 UTC|WETH": {
+  "block": 24917377,
+  "config": {
+   "LTV_bps": 0,
+   "seuil_liq_bps": 8300,
+   "bonus_liq_bps": 10500,
+   "decimals": 18,
+   "actif": 1,
+   "gele": 1,
+   "emprunt_actif": 1,
+   "paused": 0,
+   "frozen_bit": 1,
+   "eMode_cat": 1
+  },
+  "aToken": "0x4d5f47fa6a74757f35c14fd3a6ef8e3c9bc514e8",
+  "vDebt": "0xea51d7853eefb32b6ee06b1c12e6dcca88be0ffe",
+  "aToken_supply": 2627231.5347099495,
+  "vDebt_supply": 2627291.851040509,
+  "utilisation": 1.000022958132834,
+  "prix_oracle_aave": 2261.77029478
+ },
+ "20/04 00:00 UTC|USDC": {
+  "block": 24917377,
+  "config": {
+   "LTV_bps": 7500,
+   "seuil_liq_bps": 7800,
+   "bonus_liq_bps": 10450,
+   "decimals": 6,
+   "actif": 1,
+   "gele": 0,
+   "emprunt_actif": 1,
+   "paused": 0,
+   "frozen_bit": 0,
+   "eMode_cat": 0
+  },
+  "aToken": "0x98c23e9d8f34fefb1b7bd6a91b7ff122f4e16f5c",
+  "vDebt": "0x72e95b8931767c79ba4eee721354d6e99a61d004",
+  "aToken_supply": 2242371716.861271,
+  "vDebt_supply": 2242431949.201695,
+  "utilisation": 1.0000268609972072,
+  "prix_oracle_aave": 0.99983537
+ }
+}
