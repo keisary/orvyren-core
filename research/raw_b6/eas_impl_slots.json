@@ -1,0 +1,16 @@
+{
+  "EAS": {
+    "impl_address": "0xc0d3c0d3c0d3c0d3c0d3c0d3c0d3c0d3c0d30021",
+    "impl_code_sha256": "9c576dec8bcebe50c5a85e4aba307540c9b28614374a485b75a805a6cbdcffd8",
+    "impl_code_size": 18385,
+    "impl_slot": "0x000000000000000000000000c0d3c0d3c0d3c0d3c0d3c0d3c0d3c0d3c0d30021",
+    "proxy": "0x4200000000000000000000000000000000000021"
+  },
+  "SchemaRegistry": {
+    "impl_address": "0xc0d3c0d3c0d3c0d3c0d3c0d3c0d3c0d3c0d30020",
+    "impl_code_sha256": "bda4f862814623d5f067378bc8c034dcf5786da243215d029fa48820a8eed4ff",
+    "impl_code_size": 2865,
+    "impl_slot": "0x000000000000000000000000c0d3c0d3c0d3c0d3c0d3c0d3c0d3c0d3c0d30020",
+    "proxy": "0x4200000000000000000000000000000000000020"
+  }
+}

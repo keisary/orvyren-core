@@ -1,0 +1,20 @@
+vecteurs keccak OK
+0xa9059cbb  transfer(address,uint256)  OK
+0x095ea7b3  approve(address,uint256)  OK
+0xdd62ed3e  allowance(address,address)  OK
+0x70a08231  balanceOf(address)  OK
+0x5ceae9c4  repay(address,uint256,address)
+0x573ade81  repay(address,uint256,uint256,address)
+0x617ba037  supply(address,uint256,address,uint16)
+0x69328dec  withdraw(address,uint256,address)
+0x04e45aaf  exactInputSingle((address,address,uint24,address,uint256,uint256,uint160))
+0x414bf389  exactInputSingle((address,address,uint24,address,uint256,uint256,uint256,uint160))
+0xc6a5026a  quoteExactInputSingle((address,address,uint256,uint24,uint160))
+0xbf92857c  getUserAccountData(address)
+0xd1946dbc  getReservesList()
+0x35ea6a75  getReserveData(address)  OK
+0x1698ee82  getPool(address,address,uint24)  OK
+0xc6fe8747  execTransactionWithRole(address,uint256,bytes,uint8,bytes32,bool)
+0x2b99e506  execTransactionWithRoleReturnData(address,uint256,bytes,uint8,bytes32,bool)
+0x957ed2b3  assignRoles(address,bytes32[],bool[])
+0xddf252ad  Transfer(address,address,uint256)  <<< ÉCART vs 0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef

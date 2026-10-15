@@ -1,0 +1,164 @@
+{
+ "safe_ts": [
+  {
+   "title": "Safe Transaction Service API â Safe Docs",
+   "url": "https://docs.safe.global/core-api/transaction-service-overview",
+   "desc": "Safe Transaction Service API â Safe Docs # Safe Transaction Service API The Safe Transaction Service offers a REST API to track transactions sent via the Safe Smart Account. It a"
+  },
+  {
+   "title": "Running the Safe Transaction Service â Safe Docs",
+   "url": "https://docs.safe.global/core-api/api-safe-transaction-service",
+   "desc": "The Safe Transaction Service tracks transactions sent via Safe contracts. It indexes these transactions using events (L2 chains) and tracing (L1 chains) mechanisms. ... - Blockchai"
+  },
+  {
+   "title": "Stable â Safe Docs",
+   "url": "https://docs.safe.global/core-api/transaction-service-reference/stable",
+   "desc": "# Safe Transaction Service API Reference The Safe Transaction Service API Reference is a collection of endpoints that allow to keep track of Safe transactions. This service is avai"
+  },
+  {
+   "title": "Base â Safe Docs",
+   "url": "https://docs.safe.global/core-api/transaction-service-reference/base",
+   "desc": "# Safe Transaction Service API Reference The Safe Transaction Service API Reference is a collection of endpoints that allow to keep track of Safe transactions. This service is avai"
+  },
+  {
+   "title": "Transactions with off-chain signatures",
+   "url": "https://docs.safe.global/core-api/transaction-service-guides/transactions",
+   "desc": "This guide shows how to interact with the Safe Transaction Service API to create, sign, and execute transactions with the owners of a Safe account. The different steps are implemen"
+  },
+  {
+   "title": "FAQ â Safe Docs",
+   "url": "https://docs.safe.global/core-api/api-safe-transaction-service/faq",
+   "desc": "## How can I interact with the service? Aside from using standard HTTP requests: - Safe{Core} API Kit (opens in a new tab) - Safe-eth-py (opens in a new tab) - Safe CLI (opens in a"
+  }
+ ],
+ "safe_queue2": [
+  {
+   "title": "Safe {Wallet} – Transaction queue",
+   "url": "https://safe.celo.org/transactions/queue",
+   "desc": "Celo Safe logo Celo is now supported on the official Safe app. Learn more here.\nNot connected Connect wallet\nTransactions\nQueue History\nBulk execute\nBy clicking \"Accept all\" you ag"
+  },
+  {
+   "title": "Safe {Wallet} – Transaction queue",
+   "url": "https://app.safe.global/transactions/queue?safe=eth%3A0x709D13330221D06E55667BF81B8A09Ec2efE224D",
+   "desc": "Safe\nAlmost there…\nSafe Home Toggle Sidebar\nNew transaction\n* Settings\n* API API\nNew\n* Help\n0x709D...224D 0\n0x709D...224D\n0x709 D13330221D06E55667BF81B8A09Ec2e fE224D 0x709D...224D"
+  },
+  {
+   "title": "Safe{Wallet} – Transaction queue",
+   "url": "https://app.safe.global/transactions/queue?safe=eth%3A0xc7591a15E13a5572b0435BfD1f214cD48C45B76b",
+   "desc": "Safe\nLoading Safe{Wallet}…\nSafe Home Toggle Sidebar\nNew transaction\n* Overview\n* Assets\n* Transactions 1\n* Address book\n* Apps\n* Settings\n  Defi\n* Swap\n* Bridge\n* Earn\n* Stake\n* AP"
+  },
+  {
+   "title": "Safe{Wallet} – Transaction queue",
+   "url": "https://app.safe.global/transactions/queue?safe=arb1%3A0x3Be327F22eB4BD8042e6944073b8826dCf357Aa2",
+   "desc": "Safe Home Toggle Sidebar\nNew transaction\n* Overview\n* Assets\n* Transactions\n* Address book\n* Apps\n* Settings\nDefi\n* Swap\n* Bridge\n* API API\nNew\n* Help\n0x3Be3...7Aa2 0\n0x3Be3...7Aa2"
+  },
+  {
+   "title": "getPendingTransactions – Safe Docs",
+   "url": "https://docs.safe.global/reference-sdk-api-kit/getpendingtransactions",
+   "desc": "Home Home SDK SDK API API Contracts Contracts Resource Hub Resource Hub GitHub (opens in a new tab)\nAPI Kit Reference\ngetPendingTransactions\ngetPendingTransactions\nReturns the list"
+  },
+  {
+   "title": "Safe{Wallet} – Transaction queue - Celo",
+   "url": "https://safe.celo.org/transactions/queue?safe",
+   "desc": "Celo Safe logo Celo is now supported on the official Safe app. Learn more here. Not connected Connect wallet New transaction\nHome\nAssets\nTransactions\nAddress book\nApps\nSettings\nWha"
+  }
+ ],
+ "tg1": [],
+ "tg2": [
+  {
+   "title": "GitHub - NEAR-DevHub/trezu: Frontend and back-end for Trezu",
+   "url": "https://github.com/NEAR-DevHub/trezu",
+   "desc": "A comprehensive treasury management platform for NEAR DAOs. Manage members, process payments, create vesting schedules, track balances, and handle multi-signature approvals through"
+  },
+  {
+   "title": "trezu-cli — Rust application",
+   "url": "https://lib.rs/crates/trezu-cli",
+   "desc": "# Treasury26\nA comprehensive treasury management platform for NEAR DAOs. Manage members, process payments, create vesting schedules, track balances, and handle multi-signature appr"
+  },
+  {
+   "title": "GitHub - misaakidis/daiana-safeai: Daiana .::.. Your AI Sidekick for DAOs 🦸",
+   "url": "https://github.com/misaakidis/daiana-safeai",
+   "desc": "- 💬 Telegram: [@DaianaSAFE_bot](https://t.me/DaianaSAFE_bot)\n\n## ⚙️ Configuration Options\n- `TELEGRAM_BOT_TOKEN`: Telegram bot token\n- `VENICE_API_KEY`: Venice API key\n- `TWITTER_U"
+  },
+  {
+   "title": "DAO Multisig Telegram Coordination: OpSec That Holds in 2026",
+   "url": "https://telegramvault.org/blog/dao-treasury-multi-sig-telegram-2026",
+   "desc": "Most DAO treasury teams running Gnosis Safe in 2026 have landed on roughly the same setup. A Safe with somewhere between three and seven signers, typically spread across Europe, th"
+  },
+  {
+   "title": "Magna + Telegram Bot Integration | B3OS",
+   "url": "https://b3os.org/integrations/combo/magna-and-telegram-bot",
+   "desc": "Combine Magna’s token allocation, vesting, and claim tools with a Telegram Bot to automate entire workflow cycles—from claim triggers to schedule updates—without leaving the chat i"
+  },
+  {
+   "title": "WAIaaS Security Framework Adds Telegram Approvals for AI",
+   "url": "https://semanticed.online/developer-tools/telegram-bot-approvals-mobile-first-transaction-signing-for-ai-agents-83b7db14",
+   "desc": "WAIaaS introduces a three-layer security architecture designed to mitigate these risks through scoped session tokens, policy-based transaction controls with time delays, and human "
+  }
+ ],
+ "siglink": [
+  {
+   "title": "\"Magic Link\" Signer | Crypto.com AI Agent SDK",
+   "url": "https://ai-agent-sdk-docs.crypto.com/crypto.com-ai-agent-sdk/ai-agent-sdk-examples/magic-link-signer",
+   "desc": "To successfully test and utilize the Magic Link functionality, you need to clone and run a local signer app that processes the signature requests. The magic link will redirect to t"
+  },
+  {
+   "title": "Developer Docs | Magic",
+   "url": "https://docs.magic.link/embedded-wallets/wallets/security/sign-confirmation",
+   "desc": "The Sign Confirmation feature allows you to protect users from front-end attacks when using Magicâs UI for on-chain signature requests such as Transaction Signing and Personal Si"
+  },
+  {
+   "title": "MagicLink",
+   "url": "https://www.tokenscript.org/docs/concept/magic-link/",
+   "desc": "A MagicLink contains some cryptographic data for decentralised actions. MagicLinks are action-triggering links that contain cryptographic information. Usually it's an Encoding Atte"
+  },
+  {
+   "title": "reactive-smart-contract-demos/src/demos/approval-magic at main Â· Reactive-Network/reactive-smart-contract-demos Â· GitHub",
+   "url": "https://github.com/Reactive-Network/reactive-smart-contract-demos/tree/main/src/demos/approval-magic",
+   "desc": "The Approval Magic Demo shows how a token approval can automatically trigger a cross-chain exchange or swap, with no additional user interaction. When a user calls`approve()` on an"
+  },
+  {
+   "title": "Multisig approvals | DALP Documentation | SettleMint",
+   "url": "https://docs.settlemint.com/docs/api-reference/wallets/smart-wallet-approvals",
+   "desc": "Create, inspect, and sign weighted multisig approvals for smart wallet user operations that need more signer weight before submission. When a wallet has a multisig threshold config"
+  },
+  {
+   "title": "Permit | DALP Documentation | SettleMint",
+   "url": "https://docs.settlemint.com/docs/operators/token-features/permit",
+   "desc": "Operate the permit token feature in the Console. Create custodial EIP-2612 approvals for a spender, set a deadline, and relay stored permits on-chain. The permit token feature impl"
+  }
+ ],
+ "siglink2": [
+  {
+   "title": "Transactions with off-chain signatures – Safe Docs",
+   "url": "https://docs.safe.global/core-api/transaction-service-guides/transactions",
+   "desc": "Home Home SDK SDK API API Contracts Contracts Resource Hub Resource Hub GitHub (opens in a new tab)\nAPI\nGuides\nTransactions\nTransactions with off-chain signatures\nThis guide shows "
+  },
+  {
+   "title": "Messages with off-chain signatures – Safe Docs",
+   "url": "https://docs.safe.global/core-api/transaction-service-guides/messages",
+   "desc": "Home Home SDK SDK API API Contracts Contracts Resource Hub Resource Hub GitHub (opens in a new tab)\nAPI\nGuides\nMessages\nMessages with off-chain signatures\nThis guide shows how to i"
+  },
+  {
+   "title": "Propose and confirm transactions – Safe Docs",
+   "url": "https://docs.safe.global/sdk/api-kit/guides/propose-and-confirm-transactions",
+   "desc": "Home Home SDK SDK API API Contracts Contracts Resource Hub Resource Hub GitHub (opens in a new tab)\nSDK\nAPI Kit\nGuides\nPropose and Confirm Transactions\nPropose and confirm transact"
+  },
+  {
+   "title": "Running the Safe Transaction Service – Safe Docs",
+   "url": "https://docs.safe.global/core-api/api-safe-transaction-service",
+   "desc": "Home Home SDK SDK API API Contracts Contracts Resource Hub Resource Hub GitHub (opens in a new tab)\nAPI\nRunning the Safe Transaction Service\nRunning the Safe Transaction Service\nTh"
+  },
+  {
+   "title": "Transaction signatures – Safe Docs",
+   "url": "https://docs.safe.global/sdk/protocol-kit/guides/signatures/transactions",
+   "desc": "Sign the transaction\nOnce the safeTransaction object is created, we need to collect the signatures from the signers who will sign it.\nFollowing our setup , we will sign a Safe tran"
+  },
+  {
+   "title": "Safe Transaction Service API – Safe Docs - docs.safe.global",
+   "url": "https://docs.safe.global/core-api/transaction-service-overview",
+   "desc": "Safe Transaction Service API – Safe Docs - docs.safe.global\nThe Safe Transaction Service offers a REST API to track transactions sent via the Safe Smart Account. It also provides e"
+  }
+ ],
+ "erc1271": []
+}

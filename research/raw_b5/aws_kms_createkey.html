@@ -1,0 +1,1115 @@
+<!DOCTYPE html>
+    <html xmlns="http://www.w3.org/1999/xhtml" lang="en-US"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>CreateKey - AWS Key Management Service</title><meta name="viewport" content="width=device-width,initial-scale=1" /><meta name="assets_root" content="/assets" /><meta name="target_state" content="API_CreateKey" /><meta name="default_state" content="API_CreateKey" /><link rel="icon" type="image/ico" href="/assets/images/favicon.ico" /><link rel="shortcut icon" type="image/ico" href="/assets/images/favicon.ico" /><link rel="canonical" href="https://docs.aws.amazon.com/kms/latest/APIReference/API_CreateKey.html" /><meta name="description" content="Creates a unique customer managed KMS key in your AWS account and Region. You can use a KMS key in cryptographic operations, such as encryption and signing. Some AWS services let you use KMS keys that you create and manage to protect your service resources." /><meta name="deployment_region" content="IAD" /><meta name="product" content="AWS Key Management Service" /><meta name="guide" content="API Reference" /><meta name="abstract" content="AWS Key Management Service (AWS KMS) is an encryption and key management web service. This guide describes the AWS KMS operations that you can call programmatically. For general information about AWS KMS, see the AWS Key Management Service Developer Guide." /><meta name="guide-locale" content="en_us" /><meta name="tocs" content="toc-contents.json" /><link rel="canonical" href="https://docs.aws.amazon.com/kms/latest/APIReference/API_CreateKey.html" /><link rel="alternate" href="https://docs.aws.amazon.com/id_id/kms/latest/APIReference/API_CreateKey.html" hreflang="id-id" /><link rel="alternate" href="https://docs.aws.amazon.com/id_id/kms/latest/APIReference/API_CreateKey.html" hreflang="id" /><link rel="alternate" href="https://docs.aws.amazon.com/de_de/kms/latest/APIReference/API_CreateKey.html" hreflang="de-de" /><link rel="alternate" href="https://docs.aws.amazon.com/de_de/kms/latest/APIReference/API_CreateKey.html" hreflang="de" /><link rel="alternate" href="https://docs.aws.amazon.com/kms/latest/APIReference/API_CreateKey.html" hreflang="en-us" /><link rel="alternate" href="https://docs.aws.amazon.com/kms/latest/APIReference/API_CreateKey.html" hreflang="en" /><link rel="alternate" href="https://docs.aws.amazon.com/es_es/kms/latest/APIReference/API_CreateKey.html" hreflang="es-es" /><link rel="alternate" href="https://docs.aws.amazon.com/es_es/kms/latest/APIReference/API_CreateKey.html" hreflang="es" /><link rel="alternate" href="https://docs.aws.amazon.com/fr_fr/kms/latest/APIReference/API_CreateKey.html" hreflang="fr-fr" /><link rel="alternate" href="https://docs.aws.amazon.com/fr_fr/kms/latest/APIReference/API_CreateKey.html" hreflang="fr" /><link rel="alternate" href="https://docs.aws.amazon.com/it_it/kms/latest/APIReference/API_CreateKey.html" hreflang="it-it" /><link rel="alternate" href="https://docs.aws.amazon.com/it_it/kms/latest/APIReference/API_CreateKey.html" hreflang="it" /><link rel="alternate" href="https://docs.aws.amazon.com/ja_jp/kms/latest/APIReference/API_CreateKey.html" hreflang="ja-jp" /><link rel="alternate" href="https://docs.aws.amazon.com/ja_jp/kms/latest/APIReference/API_CreateKey.html" hreflang="ja" /><link rel="alternate" href="https://docs.aws.amazon.com/ko_kr/kms/latest/APIReference/API_CreateKey.html" hreflang="ko-kr" /><link rel="alternate" href="https://docs.aws.amazon.com/ko_kr/kms/latest/APIReference/API_CreateKey.html" hreflang="ko" /><link rel="alternate" href="https://docs.aws.amazon.com/pt_br/kms/latest/APIReference/API_CreateKey.html" hreflang="pt-br" /><link rel="alternate" href="https://docs.aws.amazon.com/pt_br/kms/latest/APIReference/API_CreateKey.html" hreflang="pt" /><link rel="alternate" href="https://docs.aws.amazon.com/zh_cn/kms/latest/APIReference/API_CreateKey.html" hreflang="zh-cn" /><link rel="alternate" href="https://docs.aws.amazon.com/zh_tw/kms/latest/APIReference/API_CreateKey.html" hreflang="zh-tw" /><link rel="alternate" href="https://docs.aws.amazon.com/kms/latest/APIReference/API_CreateKey.html" hreflang="x-default" /><meta name="feedback-item" content="Key Management Service (KMS)" /><meta name="this_doc_product" content="AWS Key Management Service" /><meta name="this_doc_guide" content="API Reference" /><head xmlns="http://www.w3.org/1999/xhtml"> <script defer="" src="/assets/r/awsdocs-doc-page.2.0.0.js"></script><link href="/assets/r/awsdocs-doc-page.2.0.0.css" rel="stylesheet"/></head>
+<script defer="" id="awsc-panorama-bundle" type="text/javascript" src="https://prod.pa.cdn.uis.awsstatic.com/panorama-nav-init.js" data-config="{'appEntity':'aws-documentation','region':'us-east-1','service':'kms'}"></script><meta id="panorama-serviceSubSection" value="API Reference" /><meta id="panorama-serviceConsolePage" value="CreateKey" /></head><body class="awsdocs awsui"><div class="awsdocs-container"><p><a href="API_CreateKey.md">View a markdown version of this page</a></p><awsdocs-header></awsdocs-header><awsui-app-layout id="app-layout" class="awsui-util-no-gutters" ng-controller="ContentController as $ctrl" header-selector="awsdocs-header" navigation-hide="false" navigation-width="$ctrl.navWidth" navigation-open="$ctrl.navOpen" navigation-change="$ctrl.onNavChange($event)" tools-hide="$ctrl.hideTools" tools-width="$ctrl.toolsWidth" tools-open="$ctrl.toolsOpen" tools-change="$ctrl.onToolsChange($event)"><div id="guide-toc" dom-region="navigation"><awsdocs-toc></awsdocs-toc></div><div id="main-column" dom-region="content" tabindex="-1"><awsdocs-view class="awsdocs-view"><div id="awsdocs-content"><head><title>CreateKey - AWS Key Management Service</title><meta name="pdf" content="/pdfs/kms/latest/APIReference/kms-api-reference.pdf#API_CreateKey" /><meta name="forums" content="https://repost.aws/tags/TAMC3vcPOPTF-rPAHZVRj1PQ" /><meta name="feedback" content="https://docs.aws.amazon.com/forms/aws-doc-feedback?hidden_service_name=Key%20Management%20Service%20%28KMS%29&amp;topic_url=https://docs.aws.amazon.com/en_us/kms/latest/APIReference/API_CreateKey.html" /><meta name="feedback-yes" content="feedbackyes.html?topic_url=https://docs.aws.amazon.com/en_us/kms/latest/APIReference/API_CreateKey.html" /><meta name="feedback-no" content="feedbackno.html?topic_url=https://docs.aws.amazon.com/en_us/kms/latest/APIReference/API_CreateKey.html" /><meta name="keywords" content="API,requests,CreateKey" /><link rel="alternate" type="text/markdown" href="API_CreateKey.md" title="Markdown version" /><script type="application/ld+json">
+{
+    "@context" : "https://schema.org",
+    "@type" : "BreadcrumbList",
+    "itemListElement" : [
+      {
+        "@type" : "ListItem",
+        "position" : 1,
+        "name" : "AWS",
+        "item" : "https://aws.amazon.com"
+      },
+      {
+        "@type" : "ListItem",
+        "position" : 2,
+        "name" : "KMS",
+        "item" : "https://docs.aws.amazon.com/kms/index.html"
+      },
+      {
+        "@type" : "ListItem",
+        "position" : 3,
+        "name" : "API Reference",
+        "item" : "https://docs.aws.amazon.com/kms/latest/APIReference"
+      },
+      {
+        "@type" : "ListItem",
+        "position" : 4,
+        "name" : "Actions",
+        "item" : "https://docs.aws.amazon.com/kms/latest/APIReference/API_Operations.html"
+      },
+      {
+        "@type" : "ListItem",
+        "position" : 5,
+        "name" : "CreateKey",
+        "item" : "https://docs.aws.amazon.com/kms/latest/APIReference/API_Operations.html"
+      }
+    ]
+}
+</script></head><body><div id="main"><div style="display: none"><a href="/pdfs/kms/latest/APIReference/kms-api-reference.pdf#API_CreateKey" target="_blank" rel="noopener noreferrer" title="Open PDF"></a></div><div id="breadcrumbs" class="breadcrumb"><a href="/index.html">Documentation</a><a href="/kms/index.html">KMS</a><a href="Welcome.html">API Reference</a></div><div id="page-toc-src"><a href="#API_CreateKey_RequestSyntax">Request Syntax</a><a href="#API_CreateKey_RequestParameters">Request Parameters</a><a href="#API_CreateKey_ResponseSyntax">Response Syntax</a><a href="#API_CreateKey_ResponseElements">Response Elements</a><a href="#API_CreateKey_Errors">Errors</a><a href="#API_CreateKey_Examples">Examples</a><a href="#API_CreateKey_SeeAlso">See Also</a></div><div id="main-content" class="awsui-util-container"><div id="main-col-body"><awsdocs-language-banner data-service="$ctrl.pageService"></awsdocs-language-banner><h1 class="topictitle" id="API_CreateKey">CreateKey</h1><div class="awsdocs-page-header-container"><awsdocs-page-header></awsdocs-page-header><awsdocs-filter-selector id="awsdocs-filter-selector"></awsdocs-filter-selector></div><p>Creates a unique customer managed <a href="https://docs.aws.amazon.com/kms/latest/developerguide/concepts.html#kms-keys">KMS key</a> in your AWS account and Region.
+      You can use a KMS key in cryptographic operations, such as encryption and signing. Some AWS
+      services let you use KMS keys that you create and manage to protect your service
+      resources.</p><p>A KMS key is a logical representation of a cryptographic key. In addition to the key
+      material used in cryptographic operations, a KMS key includes metadata, such as the key ID,
+      key policy, creation date, description, and key state. </p><p>Use the parameters of <code class="code">CreateKey</code> to specify the type of KMS key, the source of
+      its key material, its key policy, description, tags, and other properties.</p><div class="awsdocs-note"><div class="awsdocs-note-title"><awsui-icon name="status-info" variant="link"></awsui-icon><h6>Note</h6></div><div class="awsdocs-note-text"><p>
+         AWS KMS has replaced the term <em>customer master key (CMK)</em> with <em>
+            AWS Key Management Service key</em> 
+  and <em>KMS key</em>. The concept has not changed. To prevent breaking changes, AWS KMS is keeping some variations of this term.</p></div></div><p>To create different types of KMS keys, use the following guidance:</p><div class="variablelist">
+       
+       
+       
+       
+       
+       
+   <dl>
+         <dt><span class="term">Symmetric encryption KMS key</span></dt>
+         <dd>
+            <p>By default, <code class="code">CreateKey</code> creates a symmetric encryption KMS key with key
+            material that KMS generates. This is the basic and most widely used type of KMS key, and
+            provides the best performance.</p>
+            <p>To create a symmetric encryption KMS key, you don't need to specify any parameters.
+            The default value for <code class="code">KeySpec</code>, <code class="code">SYMMETRIC_DEFAULT</code>, the default
+            value for <code class="code">KeyUsage</code>, <code class="code">ENCRYPT_DECRYPT</code>, and the default value for
+              <code class="code">Origin</code>, <code class="code">AWS_KMS</code>, create a symmetric encryption KMS key with
+            KMS key material.</p>
+            <p>If you need a key for basic encryption and decryption or you are creating a KMS key
+            to protect your resources in an AWS service, create a symmetric encryption KMS key.
+            The key material in a symmetric encryption key never leaves AWS KMS unencrypted. You can
+            use a symmetric encryption KMS key to encrypt and decrypt data up to 4,096 bytes, but
+            they are typically used to generate data keys and data keys pairs. For details, see
+              <a href="./API_GenerateDataKey.html">GenerateDataKey</a> and <a href="./API_GenerateDataKeyPair.html">GenerateDataKeyPair</a>.</p>
+            <p> </p>
+         </dd>
+       
+         <dt><span class="term">Asymmetric KMS keys</span></dt>
+         <dd>
+            <p>To create an asymmetric KMS key, use the <code class="code">KeySpec</code> parameter to specify
+            the type of key material in the KMS key. Then, use the <code class="code">KeyUsage</code> parameter
+            to determine whether the KMS key will be used to encrypt and decrypt or sign and verify.
+            You can't change these properties after the KMS key is created.</p>
+            <p>Asymmetric KMS keys contain an RSA key pair, Elliptic Curve (ECC) key pair, ML-DSA
+            key pair or an SM2 key pair (China Regions only). The private key in an asymmetric KMS
+            key never leaves AWS KMS unencrypted. However, you can use the <a href="./API_GetPublicKey.html">GetPublicKey</a> operation to download the public key so it can be used
+            outside of AWS KMS. Each KMS key can have only one key usage. KMS keys with RSA key pairs
+            can be used to encrypt and decrypt data or sign and verify messages (but not both). KMS
+            keys with NIST-standard ECC key pairs can be used to sign and verify messages or
+            derive shared secrets (but not both). KMS keys with <code class="code">ECC_SECG_P256K1</code> can be
+            used only to sign and verify messages. KMS keys with ML-DSA key pairs can be used to
+            sign and verify messages. KMS keys with SM2 key pairs (China Regions only) can be used
+            to either encrypt and decrypt data, sign and verify messages, or derive shared secrets
+            (you must choose one key usage type). For information about asymmetric KMS keys, see
+              <a href="https://docs.aws.amazon.com/kms/latest/developerguide/symmetric-asymmetric.html">Asymmetric
+              KMS keys</a> in the <em>
+                  AWS Key Management Service Developer Guide</em>.</p>
+            <p> </p>
+         </dd>
+       
+         <dt><span class="term">HMAC KMS key</span></dt>
+         <dd>
+            <p>To create an HMAC KMS key, set the <code class="code">KeySpec</code> parameter to a key spec
+            value for HMAC KMS keys. Then set the <code class="code">KeyUsage</code> parameter to
+              <code class="code">GENERATE_VERIFY_MAC</code>. You must set the key usage even though
+              <code class="code">GENERATE_VERIFY_MAC</code> is the only valid key usage value for HMAC KMS keys.
+            You can't change these properties after the KMS key is created.</p>
+            <p>HMAC KMS keys are symmetric keys that never leave AWS KMS unencrypted. You can use
+            HMAC keys to generate (<a href="./API_GenerateMac.html">GenerateMac</a>) and verify (<a href="./API_VerifyMac.html">VerifyMac</a>) HMAC codes for messages up to 4096 bytes.</p>
+            <p> </p>
+         </dd>
+       
+         <dt><span class="term">Multi-Region primary keys</span></dt>
+         <dd>
+            <p>To create a multi-Region <em>primary key</em> in the local AWS Region,
+            use the <code class="code">MultiRegion</code> parameter with a value of <code class="code">True</code>. To create
+            a multi-Region <em>replica key</em>, that is, a KMS key with the same key ID
+            and key material as a primary key, but in a different AWS Region, use the <a href="./API_ReplicateKey.html">ReplicateKey</a> operation. To change a replica key to a primary key, and its
+            primary key to a replica key, use the <a href="./API_UpdatePrimaryRegion.html">UpdatePrimaryRegion</a>
+            operation.</p>
+            <p>You can create multi-Region KMS keys for all supported KMS key types: symmetric
+            encryption KMS keys, HMAC KMS keys, asymmetric encryption KMS keys, and asymmetric
+            signing KMS keys. You can also create multi-Region keys with imported key material.
+            However, you can't create multi-Region keys in a custom key store.</p>
+            <p>This operation supports <em>multi-Region keys</em>, an AWS KMS feature that lets you create multiple
+      interoperable KMS keys in different AWS Regions. Because these KMS keys have the same key ID, key
+      material, and other metadata, you can use them interchangeably to encrypt data in one AWS Region and decrypt
+      it in a different AWS Region without re-encrypting the data or making a cross-Region call. For more information about multi-Region keys, see <a href="https://docs.aws.amazon.com/kms/latest/developerguide/multi-region-keys-overview.html">Multi-Region keys in AWS KMS</a> in the <em>
+                  AWS Key Management Service Developer Guide</em>.</p>
+            <p> </p>
+         </dd>
+       
+         <dt><span class="term">Imported key material</span></dt>
+         <dd>
+            <p>To import your own key material into a KMS key, begin by creating a KMS key with no
+            key material. To do this, use the <code class="code">Origin</code> parameter of
+              <code class="code">CreateKey</code> with a value of <code class="code">EXTERNAL</code>. Next, use <a href="./API_GetParametersForImport.html">GetParametersForImport</a> operation to get a public key and import token. Use
+            the wrapping public key to encrypt your key material. Then, use <a href="./API_ImportKeyMaterial.html">ImportKeyMaterial</a> with your import token to import the key material. For
+            step-by-step instructions, see <a href="https://docs.aws.amazon.com/kms/latest/developerguide/importing-keys.html">Importing Key Material</a> in the <em>
+                  <em>
+                     AWS Key Management Service Developer Guide</em>
+               </em>.</p>
+            <p>You can import key material into KMS keys of all supported KMS key types: symmetric
+            encryption KMS keys, HMAC KMS keys, asymmetric encryption KMS keys, and asymmetric
+            signing KMS keys. You can also create multi-Region keys with imported key material.
+            However, you can't import key material into a KMS key in a custom key store.</p>
+            <p>To create a multi-Region primary key with imported key material, use the
+              <code class="code">Origin</code> parameter of <code class="code">CreateKey</code> with a value of
+              <code class="code">EXTERNAL</code> and the <code class="code">MultiRegion</code> parameter with a value of
+              <code class="code">True</code>. To create replicas of the multi-Region primary key, use the <a href="./API_ReplicateKey.html">ReplicateKey</a> operation. For instructions, see <a href="https://docs.aws.amazon.com/kms/latest/developerguide/importing-keys-create-cmk.html ">Importing key material step
+              1</a>. For more information about multi-Region keys, see <a href="https://docs.aws.amazon.com/kms/latest/developerguide/multi-region-keys-overview.html">Multi-Region keys in AWS KMS</a> in the <em>
+                  AWS Key Management Service Developer Guide</em>.</p>
+            <p> </p>
+         </dd>
+       
+         <dt><span class="term">Custom key store</span></dt>
+         <dd>
+            <p>A <a href="https://docs.aws.amazon.com/kms/latest/developerguide/key-store-overview.html">custom key store</a> lets you protect your AWS resources using keys in a backing key
+            store that you own and manage. When you request a cryptographic operation with a KMS key
+            in a custom key store, the operation is performed in the backing key store using its
+            cryptographic keys.</p>
+            <p>
+               AWS KMS supports <a href="https://docs.aws.amazon.com/kms/latest/developerguide/keystore-cloudhsm.html">AWS CloudHSM key stores</a> backed by an AWS CloudHSM cluster and <a href="https://docs.aws.amazon.com/kms/latest/developerguide/keystore-external.html">external key stores</a> backed by an
+            external key manager outside of AWS. When you create a KMS key in an AWS CloudHSM key store,
+            AWS KMS generates an encryption key in the AWS CloudHSM cluster and associates it with the KMS
+            key. When you create a KMS key in an external key store, you specify an existing
+            encryption key in the external key manager.</p>
+            <div class="awsdocs-note"><div class="awsdocs-note-title"><awsui-icon name="status-info" variant="link"></awsui-icon><h6>Note</h6></div><div class="awsdocs-note-text"><p>Some external key managers provide a simpler method for creating a KMS key in an
+              external key store. For details, see your external key manager documentation.</p></div></div>
+            <p>Before you create a KMS key in a custom key store, the <code class="code">ConnectionState</code>
+            of the key store must be <code class="code">CONNECTED</code>. To connect the custom key store, use
+            the <a href="./API_ConnectCustomKeyStore.html">ConnectCustomKeyStore</a> operation. To find the
+              <code class="code">ConnectionState</code>, use the <a href="./API_DescribeCustomKeyStores.html">DescribeCustomKeyStores</a>
+            operation.</p>
+            <p>To create a KMS key in a custom key store, use the <code class="code">CustomKeyStoreId</code>.
+            Use the default <code class="code">KeySpec</code> value, <code class="code">SYMMETRIC_DEFAULT</code>, and the
+            default <code class="code">KeyUsage</code> value, <code class="code">ENCRYPT_DECRYPT</code> to create a symmetric
+            encryption key. No other key type is supported in a custom key store.</p>
+            <p>To create a KMS key in an <a href="https://docs.aws.amazon.com/kms/latest/developerguide/create-cmk-keystore.html">AWS CloudHSM key store</a>, use the
+              <code class="code">Origin</code> parameter with a value of <code class="code">AWS_CLOUDHSM</code>. The AWS CloudHSM
+            cluster that is associated with the custom key store must have at least two active HSMs
+            in different Availability Zones in the AWS Region.</p>
+            <p>To create a KMS key in an <a href="https://docs.aws.amazon.com/kms/latest/developerguide/create-xks-keys.html">external key store</a>, use the
+              <code class="code">Origin</code> parameter with a value of <code class="code">EXTERNAL_KEY_STORE</code> and an
+              <code class="code">XksKeyId</code> parameter that identifies an existing external key.</p>
+            <div class="awsdocs-note"><div class="awsdocs-note-title"><awsui-icon name="status-info" variant="link"></awsui-icon><h6>Note</h6></div><div class="awsdocs-note-text"><p>Some external key managers provide a simpler method for creating a KMS key in an
+              external key store. For details, see your external key manager documentation.</p></div></div>
+         </dd>
+      </dl></div><p>
+      <b>Cross-account use</b>: No. You cannot use this operation to
+      create a KMS key in a different AWS account.</p><p>
+      <b>Required permissions</b>: <a href="https://docs.aws.amazon.com/kms/latest/developerguide/kms-api-permissions-reference.html">kms:CreateKey</a> (IAM policy). To use the
+        <code class="code">Tags</code> parameter, <a href="https://docs.aws.amazon.com/kms/latest/developerguide/kms-api-permissions-reference.html">kms:TagResource</a> (IAM policy). For examples and information about related
+      permissions, see <a href="https://docs.aws.amazon.com/kms/latest/developerguide/customer-managed-policies.html#iam-policy-example-create-key">Allow a user
+        to create KMS keys</a> in the <em>
+         AWS Key Management Service Developer Guide</em>.</p><p>
+      <b>Related operations:</b>
+   </p><div class="itemizedlist">
+       
+       
+       
+   <ul class="itemizedlist"><li class="listitem">
+         <p>
+            <a href="./API_DescribeKey.html">DescribeKey</a>
+         </p>
+      </li><li class="listitem">
+         <p>
+            <a href="./API_ListKeys.html">ListKeys</a>
+         </p>
+      </li><li class="listitem">
+         <p>
+            <a href="./API_ScheduleKeyDeletion.html">ScheduleKeyDeletion</a>
+         </p>
+      </li></ul></div><p>
+      <b>Eventual consistency</b>: The AWS KMS API follows an eventual consistency model. 
+  For more information, see <a href="https://docs.aws.amazon.com/kms/latest/developerguide/accessing-kms.html#programming-eventual-consistency">AWS KMS eventual consistency</a>.</p>
+      <h2 id="API_CreateKey_RequestSyntax">Request Syntax</h2>
+      <pre class="programlisting"><div class="code-btn-container"></div><!--DEBUG: cli ()--><code class="nohighlight"><span>{</span>
+   "<a href="#KMS-CreateKey-request-BypassPolicyLockoutSafetyCheck">BypassPolicyLockoutSafetyCheck</a>": <code class="replaceable">boolean</code>,
+   "<a href="#KMS-CreateKey-request-CustomerMasterKeySpec">CustomerMasterKeySpec</a>": "<code class="replaceable">string</code>",
+   "<a href="#KMS-CreateKey-request-CustomKeyStoreId">CustomKeyStoreId</a>": "<code class="replaceable">string</code>",
+   "<a href="#KMS-CreateKey-request-Description">Description</a>": "<code class="replaceable">string</code>",
+   "<a href="#KMS-CreateKey-request-KeySpec">KeySpec</a>": "<code class="replaceable">string</code>",
+   "<a href="#KMS-CreateKey-request-KeyUsage">KeyUsage</a>": "<code class="replaceable">string</code>",
+   "<a href="#KMS-CreateKey-request-MultiRegion">MultiRegion</a>": <code class="replaceable">boolean</code>,
+   "<a href="#KMS-CreateKey-request-Origin">Origin</a>": "<code class="replaceable">string</code>",
+   "<a href="#KMS-CreateKey-request-Policy">Policy</a>": "<code class="replaceable">string</code>",
+   "<a href="#KMS-CreateKey-request-Tags">Tags</a>": [ 
+      <span>{</span> 
+         "<a href="./API_Tag.html#KMS-Type-Tag-TagKey">TagKey</a>": "<code class="replaceable">string</code>",
+         "<a href="./API_Tag.html#KMS-Type-Tag-TagValue">TagValue</a>": "<code class="replaceable">string</code>"
+      }
+   ],
+   "<a href="#KMS-CreateKey-request-XksKeyId">XksKeyId</a>": "<code class="replaceable">string</code>"
+}</code></pre>
+    
+      <h2 id="API_CreateKey_RequestParameters">Request Parameters</h2>
+      <p>For information about the parameters that are common to all actions, see <a href="./CommonParameters.html">Common Parameters</a>.</p>
+      <p>The request accepts the following data in JSON format.</p>
+      <div class="awsdocs-note"><div class="awsdocs-note-title"><awsui-icon name="status-info" variant="link"></awsui-icon><h6>Note</h6></div><div class="awsdocs-note-text"><p>In the following list, the required parameters are described first.</p></div></div>
+      <div class="variablelist">
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+      <dl>
+            <dt id="KMS-CreateKey-request-BypassPolicyLockoutSafetyCheck"><span class="term">
+               <b>
+                  <a href="#API_CreateKey_RequestSyntax">BypassPolicyLockoutSafetyCheck</a>
+               </b>
+            </span></dt>
+            <dd>
+               <p>Skips ("bypasses") the key policy lockout safety check. The default value is false.</p>
+               <div class="awsdocs-note awsdocs-important"><div class="awsdocs-note-title"><awsui-icon name="status-warning" variant="error"></awsui-icon><h6>Important</h6></div><div class="awsdocs-note-text"><p>Setting this value to true increases the risk that the KMS key becomes unmanageable. Do
+        not set this value to true indiscriminately.</p><p>For more information, see <a href="https://docs.aws.amazon.com/kms/latest/developerguide/key-policy-default.html#prevent-unmanageable-key">Default key policy</a> in the <em>
+                        AWS Key Management Service Developer Guide</em>.</p></div></div>
+               <p>Use this parameter only when you intend to prevent the principal that is making the
+      request from making a subsequent <a href="https://docs.aws.amazon.com/kms/latest/APIReference/API_PutKeyPolicy.html">PutKeyPolicy</a>
+      request on the KMS key.</p>
+               <p>Type: Boolean</p>
+               <p>Required: No</p>
+            </dd>
+          
+            <dt id="KMS-CreateKey-request-CustomerMasterKeySpec"><span class="term">
+               <b>
+                  <a href="#API_CreateKey_RequestSyntax">CustomerMasterKeySpec</a>
+               </b>
+            </span></dt>
+            <dd>
+               <p>
+                  <em>This parameter has been deprecated.</em>
+               </p>
+               <p>Instead, use the <code class="code">KeySpec</code> parameter.</p>
+               <p>The <code class="code">KeySpec</code> and <code class="code">CustomerMasterKeySpec</code> parameters work the same
+      way. Only the names differ. We recommend that you use <code class="code">KeySpec</code> parameter in your
+      code. However, to avoid breaking changes, AWS KMS supports both parameters.</p>
+               <p>Type: String</p>
+               <p>Valid Values: <code class="code">RSA_2048 | RSA_3072 | RSA_4096 | ECC_NIST_P256 | ECC_NIST_P384 | ECC_NIST_P521 | ECC_SECG_P256K1 | SYMMETRIC_DEFAULT | HMAC_224 | HMAC_256 | HMAC_384 | HMAC_512 | SM2</code>
+               </p>
+               <p>Required: No</p>
+            </dd>
+          
+            <dt id="KMS-CreateKey-request-CustomKeyStoreId"><span class="term">
+               <b>
+                  <a href="#API_CreateKey_RequestSyntax">CustomKeyStoreId</a>
+               </b>
+            </span></dt>
+            <dd>
+               <p>Creates the KMS key in the specified <a href="https://docs.aws.amazon.com/kms/latest/developerguide/key-store-overview.html">custom key store</a>. The <code class="code">ConnectionState</code> of
+      the custom key store must be <code class="code">CONNECTED</code>. To find the CustomKeyStoreID and
+      ConnectionState use the <a href="./API_DescribeCustomKeyStores.html">DescribeCustomKeyStores</a> operation.</p>
+               <p>This parameter is valid only for symmetric encryption KMS keys in a single Region. You
+      cannot create any other type of KMS key in a custom key store.</p>
+               <p>When you create a KMS key in an AWS CloudHSM key store, AWS KMS generates a non-exportable 256-bit
+      symmetric key in its associated AWS CloudHSM cluster and associates it with the KMS key. When you
+      create a KMS key in an external key store, you must use the <code class="code">XksKeyId</code> parameter to
+      specify an external key that serves as key material for the KMS key.</p>
+               <p>Type: String</p>
+               <p>Length Constraints: Minimum length of 1. Maximum length of 64.</p>
+               <p>Required: No</p>
+            </dd>
+          
+            <dt id="KMS-CreateKey-request-Description"><span class="term">
+               <b>
+                  <a href="#API_CreateKey_RequestSyntax">Description</a>
+               </b>
+            </span></dt>
+            <dd>
+               <p>A description of the KMS key. Use a description that helps you decide whether the KMS key
+      is appropriate for a task. The default value is an empty string (no description).</p>
+               <div class="awsdocs-note awsdocs-important"><div class="awsdocs-note-title"><awsui-icon name="status-warning" variant="error"></awsui-icon><h6>Important</h6></div><div class="awsdocs-note-text"><p>Do not include confidential or sensitive information in this field. This field may be displayed in plaintext in CloudTrail logs and other output.</p></div></div>
+               <p>To set or change the description after the key is created, use <a href="./API_UpdateKeyDescription.html">UpdateKeyDescription</a>.</p>
+               <p>Type: String</p>
+               <p>Length Constraints: Minimum length of 0. Maximum length of 8192.</p>
+               <p>Required: No</p>
+            </dd>
+          
+            <dt id="KMS-CreateKey-request-KeySpec"><span class="term">
+               <b>
+                  <a href="#API_CreateKey_RequestSyntax">KeySpec</a>
+               </b>
+            </span></dt>
+            <dd>
+               <p>Specifies the type of KMS key to create. The default value,
+      <code class="code">SYMMETRIC_DEFAULT</code>, creates a KMS key with a 256-bit AES-GCM key that is used for
+      encryption and decryption, except in China Regions, where it creates a 128-bit symmetric key
+      that uses SM4 encryption. For a detailed description of all supported key specs, see <a href="https://docs.aws.amazon.com/kms/latest/developerguide/symm-asymm-choose-key-spec.html">Key spec
+        reference</a> in the <em>
+                     <em>
+                        AWS Key Management Service Developer Guide</em>
+                  </em>.</p>
+               <p>The <code class="code">KeySpec</code> determines whether the KMS key contains a symmetric key or an
+      asymmetric key pair. It also determines the algorithms that the KMS key supports. You can't
+      change the <code class="code">KeySpec</code> after the KMS key is created. To further restrict the
+      algorithms that can be used with the KMS key, use a condition key in its key policy or IAM
+      policy. For more information, see <a href="https://docs.aws.amazon.com/kms/latest/developerguide/conditions-kms.html#conditions-kms-encryption-algorithm">kms:EncryptionAlgorithm</a>, <a href="https://docs.aws.amazon.com/kms/latest/developerguide/conditions-kms.html#conditions-kms-mac-algorithm">kms:MacAlgorithm</a>, <a href="https://docs.aws.amazon.com/kms/latest/developerguide/conditions-kms.html#conditions-kms-key-agreement-algorithm">kms:KeyAgreementAlgorithm</a>, or <a href="https://docs.aws.amazon.com/kms/latest/developerguide/conditions-kms.html#conditions-kms-signing-algorithm">kms:SigningAlgorithm</a> in the <em>
+                     <em>
+                        AWS Key Management Service Developer Guide</em>
+                  </em>.</p>
+               <div class="awsdocs-note awsdocs-important"><div class="awsdocs-note-title"><awsui-icon name="status-warning" variant="error"></awsui-icon><h6>Important</h6></div><div class="awsdocs-note-text"><p>
+                     <a href="http://aws.amazon.com/kms/features/#AWS_Service_Integration" rel="noopener noreferrer" target="_blank"><span>AWS services that
+          are integrated with AWS KMS</span><awsui-icon class="awsdocs-link-icon" name="external"></awsui-icon></a> use symmetric encryption KMS keys to protect your data.
+        These services do not support asymmetric KMS keys or HMAC KMS keys.</p></div></div>
+               <p>
+                  AWS KMS supports the following key specs for KMS keys:</p>
+               <div class="itemizedlist">
+                   
+                   
+                   
+                   
+                   
+                   
+                   
+               <ul class="itemizedlist"><li class="listitem">
+                     <p>Symmetric encryption key (default)</p>
+                     <div class="itemizedlist">
+                         
+                     <ul class="itemizedlist"><li class="listitem">
+                           <p>
+                              <code class="code">SYMMETRIC_DEFAULT</code>
+                           </p>
+                        </li></ul></div>
+                  </li><li class="listitem">
+                     <p>HMAC keys (symmetric)</p>
+                     <div class="itemizedlist">
+                         
+                         
+                         
+                         
+                     <ul class="itemizedlist"><li class="listitem">
+                           <p>
+                              <code class="code">HMAC_224</code>
+                           </p>
+                        </li><li class="listitem">
+                           <p>
+                              <code class="code">HMAC_256</code>
+                           </p>
+                        </li><li class="listitem">
+                           <p>
+                              <code class="code">HMAC_384</code>
+                           </p>
+                        </li><li class="listitem">
+                           <p>
+                              <code class="code">HMAC_512</code>
+                           </p>
+                        </li></ul></div>
+                  </li><li class="listitem">
+                     <p>Asymmetric RSA key pairs (encryption and decryption -or- signing and
+          verification)</p>
+                     <div class="itemizedlist">
+                         
+                         
+                         
+                     <ul class="itemizedlist"><li class="listitem">
+                           <p>
+                              <code class="code">RSA_2048</code>
+                           </p>
+                        </li><li class="listitem">
+                           <p>
+                              <code class="code">RSA_3072</code>
+                           </p>
+                        </li><li class="listitem">
+                           <p>
+                              <code class="code">RSA_4096</code>
+                           </p>
+                        </li></ul></div>
+                  </li><li class="listitem">
+                     <p>Asymmetric NIST-standard elliptic curve key pairs (signing and verification -or-
+          deriving shared secrets)</p>
+                     <div class="itemizedlist">
+                         
+                         
+                         
+                         
+                     <ul class="itemizedlist"><li class="listitem">
+                           <p>
+                              <code class="code">ECC_NIST_P256</code> (secp256r1)</p>
+                        </li><li class="listitem">
+                           <p>
+                              <code class="code">ECC_NIST_P384</code> (secp384r1)</p>
+                        </li><li class="listitem">
+                           <p>
+                              <code class="code">ECC_NIST_P521</code> (secp521r1)</p>
+                        </li><li class="listitem">
+                           <p>
+                              <code class="code">ECC_NIST_EDWARDS25519</code> (ed25519) - signing and verification only</p>
+                           <div class="itemizedlist">
+                               
+                           <ul class="itemizedlist"><li class="listitem">
+                                 <p>
+                                    <b>Note:</b> For ECC_NIST_EDWARDS25519 KMS keys, the
+                          ED25519_SHA_512 signing algorithm requires <a href="kms/latest/APIReference/API_Sign.html#KMS-Sign-request-MessageType" rel="noopener noreferrer" target="_blank"><code class="code">MessageType:RAW</code></a>, while ED25519_PH_SHA_512 requires <a href="kms/latest/APIReference/API_Sign.html#KMS-Sign-request-MessageType" rel="noopener noreferrer" target="_blank"><code class="code">MessageType:DIGEST</code></a>. These message types cannot be used interchangeably.</p>
+                              </li></ul></div>
+                        </li></ul></div>
+                  </li><li class="listitem">
+                     <p>Other asymmetric elliptic curve key pairs (signing and verification)</p>
+                     <div class="itemizedlist">
+                         
+                     <ul class="itemizedlist"><li class="listitem">
+                           <p>
+                              <code class="code">ECC_SECG_P256K1</code> (secp256k1), commonly used for
+              cryptocurrencies.</p>
+                        </li></ul></div>
+                  </li><li class="listitem">
+                     <p>Asymmetric ML-DSA key pairs (signing and verification)</p>
+                     <div class="itemizedlist">
+                         
+                         
+                         
+                     <ul class="itemizedlist"><li class="listitem">
+                           <p>
+                              <code class="code">ML_DSA_44</code>
+                           </p>
+                        </li><li class="listitem">
+                           <p>
+                              <code class="code">ML_DSA_65</code>
+                           </p>
+                        </li><li class="listitem">
+                           <p>
+                              <code class="code">ML_DSA_87</code>
+                           </p>
+                        </li></ul></div>
+                  </li><li class="listitem">
+                     <p>SM2 key pairs (encryption and decryption -or- signing and verification -or- deriving
+          shared secrets)</p>
+                     <div class="itemizedlist">
+                         
+                     <ul class="itemizedlist"><li class="listitem">
+                           <p>
+                              <code class="code">SM2</code> (China Regions only)</p>
+                        </li></ul></div>
+                  </li></ul></div>
+               <p>Type: String</p>
+               <p>Valid Values: <code class="code">RSA_2048 | RSA_3072 | RSA_4096 | ECC_NIST_P256 | ECC_NIST_P384 | ECC_NIST_P521 | ECC_SECG_P256K1 | SYMMETRIC_DEFAULT | HMAC_224 | HMAC_256 | HMAC_384 | HMAC_512 | SM2 | ML_DSA_44 | ML_DSA_65 | ML_DSA_87 | ECC_NIST_EDWARDS25519</code>
+               </p>
+               <p>Required: No</p>
+            </dd>
+          
+            <dt id="KMS-CreateKey-request-KeyUsage"><span class="term">
+               <b>
+                  <a href="#API_CreateKey_RequestSyntax">KeyUsage</a>
+               </b>
+            </span></dt>
+            <dd>
+               <p>Determines the <a href="https://docs.aws.amazon.com/kms/latest/developerguide/kms-cryptography.html#cryptographic-operations">cryptographic operations</a> for which you can use the KMS key. The default value is
+        <code class="code">ENCRYPT_DECRYPT</code>. This parameter is optional when you are creating a symmetric
+      encryption KMS key; otherwise, it is required. You can't change the <a href="https://docs.aws.amazon.com/kms/latest/developerguide/create-keys.html#key-usage"><code class="code">KeyUsage</code></a> value after the KMS key is created. Each AWS KMS key can have
+      only one key usage. This follows key usage best practices according to <a href="https://csrc.nist.gov/pubs/sp/800/57/pt1/r5/final" rel="noopener noreferrer" target="_blank"><span>NIST SP 800-57 Recommendations for
+        Key Management</span><awsui-icon class="awsdocs-link-icon" name="external"></awsui-icon></a>, section 5.2, Key usage.</p>
+               <p>Select only one valid value.</p>
+               <div class="itemizedlist">
+                   
+                   
+                   
+                   
+                   
+                   
+                   
+               <ul class="itemizedlist"><li class="listitem">
+                     <p>For symmetric encryption KMS keys, omit the parameter or specify
+            <code class="code">ENCRYPT_DECRYPT</code>.</p>
+                  </li><li class="listitem">
+                     <p>For HMAC KMS keys (symmetric), specify <code class="code">GENERATE_VERIFY_MAC</code>.</p>
+                  </li><li class="listitem">
+                     <p>For asymmetric KMS keys with RSA key pairs, specify <code class="code">ENCRYPT_DECRYPT</code> or
+            <code class="code">SIGN_VERIFY</code>.</p>
+                  </li><li class="listitem">
+                     <p>For asymmetric KMS keys with NIST-standard elliptic curve key pairs, specify
+            <code class="code">SIGN_VERIFY</code> or <code class="code">KEY_AGREEMENT</code>.</p>
+                  </li><li class="listitem">
+                     <p>For asymmetric KMS keys with <code class="code">ECC_SECG_P256K1</code> key pairs, specify
+            <code class="code">SIGN_VERIFY</code>.</p>
+                  </li><li class="listitem">
+                     <p>For asymmetric KMS keys with ML-DSA key pairs, specify
+          <code class="code">SIGN_VERIFY</code>.</p>
+                  </li><li class="listitem">
+                     <p>For asymmetric KMS keys with SM2 key pairs (China Regions only), specify
+            <code class="code">ENCRYPT_DECRYPT</code>, <code class="code">SIGN_VERIFY</code>, or
+          <code class="code">KEY_AGREEMENT</code>.</p>
+                  </li></ul></div>
+               <p>Type: String</p>
+               <p>Valid Values: <code class="code">SIGN_VERIFY | ENCRYPT_DECRYPT | GENERATE_VERIFY_MAC | KEY_AGREEMENT</code>
+               </p>
+               <p>Required: No</p>
+            </dd>
+          
+            <dt id="KMS-CreateKey-request-MultiRegion"><span class="term">
+               <b>
+                  <a href="#API_CreateKey_RequestSyntax">MultiRegion</a>
+               </b>
+            </span></dt>
+            <dd>
+               <p>Creates a multi-Region primary key that you can replicate into other AWS Regions. You
+      cannot change this value after you create the KMS key. </p>
+               <p>For a multi-Region key, set this parameter to <code class="code">True</code>. For a single-Region KMS
+      key, omit this parameter or set it to <code class="code">False</code>. The default value is
+        <code class="code">False</code>.</p>
+               <p>This operation supports <em>multi-Region keys</em>, an AWS KMS feature that lets you create multiple
+      interoperable KMS keys in different AWS Regions. Because these KMS keys have the same key ID, key
+      material, and other metadata, you can use them interchangeably to encrypt data in one AWS Region and decrypt
+      it in a different AWS Region without re-encrypting the data or making a cross-Region call. For more information about multi-Region keys, see <a href="https://docs.aws.amazon.com/kms/latest/developerguide/multi-region-keys-overview.html">Multi-Region keys in AWS KMS</a> in the <em>
+                     AWS Key Management Service Developer Guide</em>.</p>
+               <p>This value creates a <em>primary key</em>, not a replica. To create a
+        <em>replica key</em>, use the <a href="./API_ReplicateKey.html">ReplicateKey</a> operation. </p>
+               <p>You can create a symmetric or asymmetric multi-Region key, and you can create a
+      multi-Region key with imported key material. However, you cannot create a multi-Region key in
+      a custom key store.</p>
+               <p>Type: Boolean</p>
+               <p>Required: No</p>
+            </dd>
+          
+            <dt id="KMS-CreateKey-request-Origin"><span class="term">
+               <b>
+                  <a href="#API_CreateKey_RequestSyntax">Origin</a>
+               </b>
+            </span></dt>
+            <dd>
+               <p>The source of the key material for the KMS key. You cannot change the origin after you
+      create the KMS key. The default is <code class="code">AWS_KMS</code>, which means that AWS KMS creates the
+      key material.</p>
+               <p>To <a href="https://docs.aws.amazon.com/kms/latest/developerguide/importing-keys-create-cmk.html">create a
+        KMS key with no key material</a> (for imported key material), set this value to
+        <code class="code">EXTERNAL</code>. For more information about importing key material into AWS KMS, see
+        <a href="https://docs.aws.amazon.com/kms/latest/developerguide/importing-keys.html">Importing Key
+        Material</a> in the <em>
+                     AWS Key Management Service Developer Guide</em>. The <code class="code">EXTERNAL</code> origin value is valid
+      only for symmetric KMS keys.</p>
+               <p>To <a href="https://docs.aws.amazon.com/kms/latest/developerguide/create-cmk-keystore.html">create a KMS
+        key in an AWS CloudHSM key store</a> and create its key material in the associated AWS CloudHSM
+      cluster, set this value to <code class="code">AWS_CLOUDHSM</code>. You must also use the
+        <code class="code">CustomKeyStoreId</code> parameter to identify the AWS CloudHSM key store. The
+        <code class="code">KeySpec</code> value must be <code class="code">SYMMETRIC_DEFAULT</code>.</p>
+               <p>To <a href="https://docs.aws.amazon.com/kms/latest/developerguide/create-xks-keys.html">create a KMS key in
+        an external key store</a>, set this value to <code class="code">EXTERNAL_KEY_STORE</code>. You must
+      also use the <code class="code">CustomKeyStoreId</code> parameter to identify the external key store and
+      the <code class="code">XksKeyId</code> parameter to identify the associated external key. The
+        <code class="code">KeySpec</code> value must be <code class="code">SYMMETRIC_DEFAULT</code>.</p>
+               <p>Type: String</p>
+               <p>Valid Values: <code class="code">AWS_KMS | EXTERNAL | AWS_CLOUDHSM | EXTERNAL_KEY_STORE</code>
+               </p>
+               <p>Required: No</p>
+            </dd>
+          
+            <dt id="KMS-CreateKey-request-Policy"><span class="term">
+               <b>
+                  <a href="#API_CreateKey_RequestSyntax">Policy</a>
+               </b>
+            </span></dt>
+            <dd>
+               <p>The key policy to attach to the KMS key.</p>
+               <p>If you provide a key policy, it must meet the following criteria:</p>
+               <div class="itemizedlist">
+                   
+                   
+               <ul class="itemizedlist"><li class="listitem">
+                     <p>The key policy must allow the calling principal to make a
+          subsequent <code class="code">PutKeyPolicy</code> request on the KMS key.  This reduces the risk that
+          the KMS key becomes unmanageable. For more information, see <a href="https://docs.aws.amazon.com/kms/latest/developerguide/key-policy-default.html#prevent-unmanageable-key">Default key policy</a> in the <em>
+                           AWS Key Management Service Developer Guide</em>. (To omit
+          this condition, set <code class="code">BypassPolicyLockoutSafetyCheck</code> to true.)</p>
+                  </li><li class="listitem">
+                     <p>Each statement in the key policy must contain one or more principals. The principals
+          in the key policy must exist and be visible to AWS KMS. When you create a new AWS
+          principal, you might need to enforce a delay before including the new principal in a key
+          policy because the new principal might not be immediately visible to AWS KMS. For more
+          information, see <a href="https://docs.aws.amazon.com/IAM/latest/UserGuide/troubleshoot_general.html#troubleshoot_general_eventual-consistency">Changes that I make are not always immediately visible</a> in the <em>
+                           AWS
+            Identity and Access Management User Guide</em>.</p>
+                  </li></ul></div>
+               <div class="awsdocs-note"><div class="awsdocs-note-title"><awsui-icon name="status-info" variant="link"></awsui-icon><h6>Note</h6></div><div class="awsdocs-note-text"><p>If either of the required <code class="code">Resource</code> or <code class="code">Action</code> elements are
+        missing from a key policy statement, the policy statement has no effect. When a key policy
+        statement is missing one of these elements, the AWS KMS console correctly reports an error,
+        but the <code class="code">CreateKey</code> and <code class="code">PutKeyPolicy</code> API requests succeed, even
+        though the policy statement is ineffective.</p><p>For more information on required key policy elements, see <a href="https://docs.aws.amazon.com/kms/latest/developerguide/key-policy-overview.html#key-policy-elements">Elements in a key
+          policy</a> in the <em>
+                        AWS Key Management Service Developer Guide</em>.</p></div></div>
+               <p>If you do not provide a key policy, AWS KMS attaches a default key policy to the KMS key.
+      For more information, see <a href="https://docs.aws.amazon.com/kms/latest/developerguide/key-policy-default.html">Default key policy</a> in the
+      <em>
+                     AWS Key Management Service Developer Guide</em>. </p>
+               <div class="awsdocs-note"><div class="awsdocs-note-title"><awsui-icon name="status-info" variant="link"></awsui-icon><h6>Note</h6></div><div class="awsdocs-note-text"><p>If the key policy exceeds the length constraint, AWS KMS returns a
+          <code class="code">LimitExceededException</code>.</p></div></div>
+               <p>For help writing and formatting a JSON policy document, see the <a href="https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_policies.html">IAM JSON Policy Reference</a> in the <em>
+                     <em>
+                        AWS Identity and Access Management User Guide</em>
+                  </em>.</p>
+               <p>Type: String</p>
+               <p>Length Constraints: Minimum length of 1. Maximum length of 32768.</p>
+               <p>Pattern: <code class="code">[\u0009\u000A\u000D\u0020-\u00FF]+</code>
+               </p>
+               <p>Required: No</p>
+            </dd>
+          
+            <dt id="KMS-CreateKey-request-Tags"><span class="term">
+               <b>
+                  <a href="#API_CreateKey_RequestSyntax">Tags</a>
+               </b>
+            </span></dt>
+            <dd>
+               <p>Assigns one or more tags to the KMS key. Use this parameter to tag the KMS key when it is
+      created. To tag an existing KMS key, use the <a href="./API_TagResource.html">TagResource</a> operation.</p>
+               <div class="awsdocs-note awsdocs-important"><div class="awsdocs-note-title"><awsui-icon name="status-warning" variant="error"></awsui-icon><h6>Important</h6></div><div class="awsdocs-note-text"><p>Do not include confidential or sensitive information in this field. This field may be displayed in plaintext in CloudTrail logs and other output.</p></div></div>
+               <div class="awsdocs-note"><div class="awsdocs-note-title"><awsui-icon name="status-info" variant="link"></awsui-icon><h6>Note</h6></div><div class="awsdocs-note-text"><p>Tagging or untagging a KMS key can allow or deny permission to the KMS key. For details, see <a href="https://docs.aws.amazon.com/kms/latest/developerguide/abac.html">ABAC for AWS KMS</a> in the <em>
+                        AWS Key Management Service Developer Guide</em>.</p></div></div>
+               <p>To use this parameter, you must have <a href="https://docs.aws.amazon.com/kms/latest/developerguide/kms-api-permissions-reference.html">kms:TagResource</a> permission in an IAM policy.</p>
+               <p>Each tag consists of a tag key and a tag value. Both the tag key and the tag value are
+      required, but the tag value can be an empty (null) string. You cannot have more than one tag
+      on a KMS key with the same tag key. If you specify an existing tag key with a different tag
+      value, AWS KMS replaces the current tag value with the specified one.</p>
+               <p>When you add tags to an AWS resource, AWS generates a cost allocation
+              report with usage and costs aggregated by tags. Tags can also be used to control access to a KMS key. For details,
+              see <a href="https://docs.aws.amazon.com/kms/latest/developerguide/tagging-keys.html">Tags in AWS KMS</a>.</p>
+               <p>Type: Array of <a href="./API_Tag.html">Tag</a> objects</p>
+               <p>Required: No</p>
+            </dd>
+          
+            <dt id="KMS-CreateKey-request-XksKeyId"><span class="term">
+               <b>
+                  <a href="#API_CreateKey_RequestSyntax">XksKeyId</a>
+               </b>
+            </span></dt>
+            <dd>
+               <p>Identifies the <a href="https://docs.aws.amazon.com/kms/latest/developerguide/keystore-external.html#concept-external-key">external key</a> that
+      serves as key material for the KMS key in an <a href="https://docs.aws.amazon.com/kms/latest/developerguide/keystore-external.html">external key store</a>. Specify the ID that
+      the <a href="https://docs.aws.amazon.com/kms/latest/developerguide/keystore-external.html#concept-xks-proxy">external key store proxy</a> uses to refer to the external key. For help, see the
+      documentation for your external key store proxy.</p>
+               <p>This parameter is required for a KMS key with an <code class="code">Origin</code> value of
+        <code class="code">EXTERNAL_KEY_STORE</code>. It is not valid for KMS keys with any other
+        <code class="code">Origin</code> value.</p>
+               <p>The external key must be an existing 256-bit AES symmetric encryption key hosted outside
+      of AWS in an external key manager associated with the external key store specified by the
+        <code class="code">CustomKeyStoreId</code> parameter. This key must be enabled and configured to perform
+      encryption and decryption. Each KMS key in an external key store must use a different external
+      key. For details, see <a href="https://docs.aws.amazon.com/kms/latest/developerguide/create-xks-keys.html#xks-key-requirements">Requirements for a KMS key in
+        an external key store</a> in the <em>
+                     AWS Key Management Service Developer Guide</em>.</p>
+               <p>Each KMS key in an external key store is associated two backing keys. One is key material
+      that AWS KMS generates. The other is the external key specified by this parameter. When you use
+      the KMS key in an external key store to encrypt data, the encryption operation is performed
+      first by AWS KMS using the AWS KMS key material, and then by the external key manager using the
+      specified external key, a process known as <em>double encryption</em>. For
+      details, see <a href="https://docs.aws.amazon.com/kms/latest/developerguide/keystore-external.html#concept-double-encryption">Double
+        encryption</a> in the <em>
+                     AWS Key Management Service Developer Guide</em>.</p>
+               <p>Type: String</p>
+               <p>Length Constraints: Minimum length of 1. Maximum length of 128.</p>
+               <p>Pattern: <code class="code">^[a-zA-Z0-9-_.]+$</code>
+               </p>
+               <p>Required: No</p>
+            </dd>
+         </dl></div>
+    
+      <h2 id="API_CreateKey_ResponseSyntax">Response Syntax</h2>
+      <pre class="programlisting"><div class="code-btn-container"></div><!--DEBUG: cli ()--><code class="nohighlight"><span>{</span>
+   "<a href="#KMS-CreateKey-response-KeyMetadata">KeyMetadata</a>": <span>{</span> 
+      "<a href="./API_KeyMetadata.html#KMS-Type-KeyMetadata-Arn">Arn</a>": "<b><em>string</em></b>",
+      "<a href="./API_KeyMetadata.html#KMS-Type-KeyMetadata-AWSAccountId">AWSAccountId</a>": "<b><em>string</em></b>",
+      "<a href="./API_KeyMetadata.html#KMS-Type-KeyMetadata-CloudHsmClusterId">CloudHsmClusterId</a>": "<b><em>string</em></b>",
+      "<a href="./API_KeyMetadata.html#KMS-Type-KeyMetadata-CreationDate">CreationDate</a>": <b><em>number</em></b>,
+      "<a href="./API_KeyMetadata.html#KMS-Type-KeyMetadata-CurrentKeyMaterialId">CurrentKeyMaterialId</a>": "<b><em>string</em></b>",
+      "<a href="./API_KeyMetadata.html#KMS-Type-KeyMetadata-CustomerMasterKeySpec">CustomerMasterKeySpec</a>": "<b><em>string</em></b>",
+      "<a href="./API_KeyMetadata.html#KMS-Type-KeyMetadata-CustomKeyStoreId">CustomKeyStoreId</a>": "<b><em>string</em></b>",
+      "<a href="./API_KeyMetadata.html#KMS-Type-KeyMetadata-DeletionDate">DeletionDate</a>": <b><em>number</em></b>,
+      "<a href="./API_KeyMetadata.html#KMS-Type-KeyMetadata-Description">Description</a>": "<b><em>string</em></b>",
+      "<a href="./API_KeyMetadata.html#KMS-Type-KeyMetadata-Enabled">Enabled</a>": <b><em>boolean</em></b>,
+      "<a href="./API_KeyMetadata.html#KMS-Type-KeyMetadata-EncryptionAlgorithms">EncryptionAlgorithms</a>": [ "<b><em>string</em></b>" ],
+      "<a href="./API_KeyMetadata.html#KMS-Type-KeyMetadata-ExpirationModel">ExpirationModel</a>": "<b><em>string</em></b>",
+      "<a href="./API_KeyMetadata.html#KMS-Type-KeyMetadata-KeyAgreementAlgorithms">KeyAgreementAlgorithms</a>": [ "<b><em>string</em></b>" ],
+      "<a href="./API_KeyMetadata.html#KMS-Type-KeyMetadata-KeyId">KeyId</a>": "<b><em>string</em></b>",
+      "<a href="./API_KeyMetadata.html#KMS-Type-KeyMetadata-KeyManager">KeyManager</a>": "<b><em>string</em></b>",
+      "<a href="./API_KeyMetadata.html#KMS-Type-KeyMetadata-KeySpec">KeySpec</a>": "<b><em>string</em></b>",
+      "<a href="./API_KeyMetadata.html#KMS-Type-KeyMetadata-KeyState">KeyState</a>": "<b><em>string</em></b>",
+      "<a href="./API_KeyMetadata.html#KMS-Type-KeyMetadata-KeyUsage">KeyUsage</a>": "<b><em>string</em></b>",
+      "<a href="./API_KeyMetadata.html#KMS-Type-KeyMetadata-MacAlgorithms">MacAlgorithms</a>": [ "<b><em>string</em></b>" ],
+      "<a href="./API_KeyMetadata.html#KMS-Type-KeyMetadata-MultiRegion">MultiRegion</a>": <b><em>boolean</em></b>,
+      "<a href="./API_KeyMetadata.html#KMS-Type-KeyMetadata-MultiRegionConfiguration">MultiRegionConfiguration</a>": <span>{</span> 
+         "<a href="./API_MultiRegionConfiguration.html#KMS-Type-MultiRegionConfiguration-MultiRegionKeyType">MultiRegionKeyType</a>": "<b><em>string</em></b>",
+         "<a href="./API_MultiRegionConfiguration.html#KMS-Type-MultiRegionConfiguration-PrimaryKey">PrimaryKey</a>": <span>{</span> 
+            "<a href="./API_MultiRegionKey.html#KMS-Type-MultiRegionKey-Arn">Arn</a>": "<b><em>string</em></b>",
+            "<a href="./API_MultiRegionKey.html#KMS-Type-MultiRegionKey-Region">Region</a>": "<b><em>string</em></b>"
+         },
+         "<a href="./API_MultiRegionConfiguration.html#KMS-Type-MultiRegionConfiguration-ReplicaKeys">ReplicaKeys</a>": [ 
+            <span>{</span> 
+               "<a href="./API_MultiRegionKey.html#KMS-Type-MultiRegionKey-Arn">Arn</a>": "<b><em>string</em></b>",
+               "<a href="./API_MultiRegionKey.html#KMS-Type-MultiRegionKey-Region">Region</a>": "<b><em>string</em></b>"
+            }
+         ]
+      },
+      "<a href="./API_KeyMetadata.html#KMS-Type-KeyMetadata-Origin">Origin</a>": "<b><em>string</em></b>",
+      "<a href="./API_KeyMetadata.html#KMS-Type-KeyMetadata-PendingDeletionWindowInDays">PendingDeletionWindowInDays</a>": <b><em>number</em></b>,
+      "<a href="./API_KeyMetadata.html#KMS-Type-KeyMetadata-SigningAlgorithms">SigningAlgorithms</a>": [ "<b><em>string</em></b>" ],
+      "<a href="./API_KeyMetadata.html#KMS-Type-KeyMetadata-ValidTo">ValidTo</a>": <b><em>number</em></b>,
+      "<a href="./API_KeyMetadata.html#KMS-Type-KeyMetadata-XksKeyConfiguration">XksKeyConfiguration</a>": <span>{</span> 
+         "<a href="./API_XksKeyConfigurationType.html#KMS-Type-XksKeyConfigurationType-Id">Id</a>": "<b><em>string</em></b>"
+      }
+   }
+}</code></pre>
+    
+      <h2 id="API_CreateKey_ResponseElements">Response Elements</h2>
+      <p>If the action is successful, the service sends back an HTTP 200 response.</p>
+      <p>The following data is returned in JSON format by the service.</p>
+      <div class="variablelist">
+          
+      <dl>
+            <dt id="KMS-CreateKey-response-KeyMetadata"><span class="term">
+               <b>
+                  <a href="#API_CreateKey_ResponseSyntax">KeyMetadata</a>
+               </b>
+            </span></dt>
+            <dd>
+               <p>Metadata associated with the KMS key.</p>
+               <p>Type: <a href="./API_KeyMetadata.html">KeyMetadata</a> object</p>
+            </dd>
+         </dl></div>
+    
+      <h2 id="API_CreateKey_Errors">Errors</h2>
+      <p>For information about the errors that are common to all actions, see <a href="./CommonErrors.html">Common Error Types</a>.</p>
+      <div class="variablelist">
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+      <dl>
+            <dt><span class="term">
+               <b>
+                  CloudHsmClusterInvalidConfigurationException
+               </b>
+            </span></dt>
+            <dd>
+               <p>The request was rejected because the associated AWS CloudHSM cluster did not meet the
+      configuration requirements for an AWS CloudHSM key store.</p>
+               <div class="itemizedlist">
+                   
+                   
+                   
+               <ul class="itemizedlist"><li class="listitem">
+                     <p>The AWS CloudHSM cluster must be configured with private subnets in at least two different
+          Availability Zones in the Region.</p>
+                  </li><li class="listitem">
+                     <p>The <a href="https://docs.aws.amazon.com/cloudhsm/latest/userguide/configure-sg.html">security group for
+            the cluster</a> (cloudhsm-cluster-<em>&lt;cluster-id&gt;</em>-sg) must
+          include inbound rules and outbound rules that allow TCP traffic on ports 2223-2225. The
+            <b>Source</b> in the inbound rules and the <b>Destination</b> in the outbound rules must match the security group
+          ID. These rules are set by default when you create the AWS CloudHSM cluster. Do not delete or
+          change them. To get information about a particular security group, use the <a href="https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_DescribeSecurityGroups.html">DescribeSecurityGroups</a> operation.</p>
+                  </li><li class="listitem">
+                     <p>The AWS CloudHSM cluster must contain at least as many HSMs as the operation requires. To add
+          HSMs, use the AWS CloudHSM
+                        <a href="https://docs.aws.amazon.com/cloudhsm/latest/APIReference/API_CreateHsm.html">CreateHsm</a> operation.</p>
+                     <p>For the <a href="./API_CreateCustomKeyStore.html">CreateCustomKeyStore</a>, <a href="./API_UpdateCustomKeyStore.html">UpdateCustomKeyStore</a>, and <a href="./API_CreateKey.html">CreateKey</a> operations, the AWS CloudHSM cluster must have at least two
+          active HSMs, each in a different Availability Zone. For the <a href="./API_ConnectCustomKeyStore.html">ConnectCustomKeyStore</a> operation, the AWS CloudHSM must contain at least one active
+          HSM.</p>
+                  </li></ul></div>
+               <p>For information about the requirements for an AWS CloudHSM cluster that is associated with an
+      AWS CloudHSM key store, see <a href="https://docs.aws.amazon.com/kms/latest/developerguide/create-keystore.html#before-keystore">Assemble the Prerequisites</a>
+      in the <em>
+                     AWS Key Management Service Developer Guide</em>. For information about creating a private subnet for an AWS CloudHSM cluster,
+      see <a href="https://docs.aws.amazon.com/cloudhsm/latest/userguide/create-subnets.html">Create a Private
+        Subnet</a> in the <em>
+                     AWS CloudHSM User Guide</em>. For information about cluster security groups, see
+        <a href="https://docs.aws.amazon.com/cloudhsm/latest/userguide/configure-sg.html">Configure a Default Security
+        Group</a> in the <em>
+                     <em>
+                        AWS CloudHSM User Guide</em>
+                  </em>. </p>
+               <p>HTTP Status Code: 400</p>
+            </dd>
+          
+            <dt><span class="term">
+               <b>
+                  CustomKeyStoreInvalidStateException
+               </b>
+            </span></dt>
+            <dd>
+               <p>The request was rejected because of the <code class="code">ConnectionState</code> of the custom key
+      store. To get the <code class="code">ConnectionState</code> of a custom key store, use the <a href="./API_DescribeCustomKeyStores.html">DescribeCustomKeyStores</a> operation.</p>
+               <p>This exception is thrown under the following conditions:</p>
+               <div class="itemizedlist">
+                   
+                   
+                   
+                   
+                   
+               <ul class="itemizedlist"><li class="listitem">
+                     <p>You requested the <a href="./API_ConnectCustomKeyStore.html">ConnectCustomKeyStore</a> operation on a custom key
+          store with a <code class="code">ConnectionState</code> of <code class="code">DISCONNECTING</code> or
+            <code class="code">FAILED</code>. This operation is valid for all other <code class="code">ConnectionState</code>
+          values. To reconnect a custom key store in a <code class="code">FAILED</code> state, disconnect it
+            (<a href="./API_DisconnectCustomKeyStore.html">DisconnectCustomKeyStore</a>), then connect it
+            (<code class="code">ConnectCustomKeyStore</code>).</p>
+                  </li><li class="listitem">
+                     <p>You requested the <a href="./API_CreateKey.html">CreateKey</a> operation in a custom key store that is
+          not connected. This operations is valid only when the custom key store
+            <code class="code">ConnectionState</code> is <code class="code">CONNECTED</code>.</p>
+                  </li><li class="listitem">
+                     <p>You requested the <a href="./API_DisconnectCustomKeyStore.html">DisconnectCustomKeyStore</a> operation on a custom key
+          store with a <code class="code">ConnectionState</code> of <code class="code">DISCONNECTING</code> or
+            <code class="code">DISCONNECTED</code>. This operation is valid for all other
+            <code class="code">ConnectionState</code> values.</p>
+                  </li><li class="listitem">
+                     <p>You requested the <a href="./API_UpdateCustomKeyStore.html">UpdateCustomKeyStore</a> or <a href="./API_DeleteCustomKeyStore.html">DeleteCustomKeyStore</a> operation on a custom key store that is not
+          disconnected. <code class="code">UpdateCustomKeyStore</code> can be called on a custom key store in the
+            <code class="code">CONNECTED</code> state only to update <code class="code">NewCustomKeyStoreName</code>.
+            For all other properties, the custom key store
+            <code class="code">ConnectionState</code> must be <code class="code">DISCONNECTED</code>.</p>
+                  </li><li class="listitem">
+                     <p>You requested the <a href="./API_GenerateRandom.html">GenerateRandom</a> operation in an AWS CloudHSM key store
+          that is not connected. This operation is valid only when the AWS CloudHSM key store
+            <code class="code">ConnectionState</code> is <code class="code">CONNECTED</code>. </p>
+                  </li></ul></div>
+               <p>HTTP Status Code: 400</p>
+            </dd>
+          
+            <dt><span class="term">
+               <b>
+                  CustomKeyStoreNotFoundException
+               </b>
+            </span></dt>
+            <dd>
+               <p>The request was rejected because AWS KMS cannot find a custom key store with the specified
+      key store name or ID.</p>
+               <p>HTTP Status Code: 400</p>
+            </dd>
+          
+            <dt><span class="term">
+               <b>
+                  DependencyTimeoutException
+               </b>
+            </span></dt>
+            <dd>
+               <p>The system timed out while trying to fulfill the request. You can retry the
+      request.</p>
+               <p>HTTP Status Code: 500</p>
+            </dd>
+          
+            <dt><span class="term">
+               <b>
+                  InvalidArnException
+               </b>
+            </span></dt>
+            <dd>
+               <p>The request was rejected because a specified ARN, or an ARN in a key policy, is not
+      valid.</p>
+               <p>HTTP Status Code: 400</p>
+            </dd>
+          
+            <dt><span class="term">
+               <b>
+                  KMSInternalException
+               </b>
+            </span></dt>
+            <dd>
+               <p>The request was rejected because an internal exception occurred. The request can be
+      retried.</p>
+               <p>HTTP Status Code: 500</p>
+            </dd>
+          
+            <dt><span class="term">
+               <b>
+                  LimitExceededException
+               </b>
+            </span></dt>
+            <dd>
+               <p>The request was rejected because a length constraint or quota was exceeded. For more
+      information, see <a href="https://docs.aws.amazon.com/kms/latest/developerguide/limits.html">Quotas</a> in
+      the <em>
+                     AWS Key Management Service Developer Guide</em>.</p>
+               <p>HTTP Status Code: 400</p>
+            </dd>
+          
+            <dt><span class="term">
+               <b>
+                  MalformedPolicyDocumentException
+               </b>
+            </span></dt>
+            <dd>
+               <p>The request was rejected because the specified policy is not syntactically or semantically
+      correct.</p>
+               <p>HTTP Status Code: 400</p>
+            </dd>
+          
+            <dt><span class="term">
+               <b>
+                  TagException
+               </b>
+            </span></dt>
+            <dd>
+               <p>The request was rejected because one or more tags are not valid.</p>
+               <p>HTTP Status Code: 400</p>
+            </dd>
+          
+            <dt><span class="term">
+               <b>
+                  UnsupportedOperationException
+               </b>
+            </span></dt>
+            <dd>
+               <p>The request was rejected because a specified parameter is not supported or a specified
+      resource is not valid for this operation.</p>
+               <p>HTTP Status Code: 400</p>
+            </dd>
+          
+            <dt><span class="term">
+               <b>
+                  XksKeyAlreadyInUseException
+               </b>
+            </span></dt>
+            <dd>
+               <p>The request was rejected because the (<code class="code">XksKeyId</code>) is already associated with
+      another KMS key in this external key store. Each KMS key in an external key store must be
+      associated with a different external key.</p>
+               <p>HTTP Status Code: 400</p>
+            </dd>
+          
+            <dt><span class="term">
+               <b>
+                  XksKeyInvalidConfigurationException
+               </b>
+            </span></dt>
+            <dd>
+               <p>The request was rejected because the external key specified by the <code class="code">XksKeyId</code>
+      parameter did not meet the configuration requirements for an external key store.</p>
+               <p>The external key must be an AES-256 symmetric key that is enabled and performs encryption
+      and decryption.</p>
+               <p>HTTP Status Code: 400</p>
+            </dd>
+          
+            <dt><span class="term">
+               <b>
+                  XksKeyNotFoundException
+               </b>
+            </span></dt>
+            <dd>
+               <p>The request was rejected because the external key store proxy could not find the external
+      key. This exception is thrown when the value of the <code class="code">XksKeyId</code> parameter doesn't
+      identify a key in the external key manager associated with the external key proxy.</p>
+               <p>Verify that the <code class="code">XksKeyId</code> represents an existing key in the external key
+      manager. Use the key identifier that the external key store proxy uses to identify the key.
+      For details, see the documentation provided with your external key store proxy or key
+      manager.</p>
+               <p>HTTP Status Code: 400</p>
+            </dd>
+         </dl></div>
+    
+      <h2 id="API_CreateKey_Examples">Examples</h2>
+      <p>The following examples are formatted for
+    legibility.</p>
+       
+         <h3 id="API_CreateKey_Example_1">Example Request</h3>
+         <p>This example illustrates one usage of CreateKey.</p>
+         
+            <pre class="programlisting"><div class="code-btn-container"><div class="btn-copy-code" title="Copy"><awsui-icon name="copy"></awsui-icon></div></div><!--DEBUG: cli ()--><code class="">POST / HTTP/1.1
+Host: kms.us-east-2.amazonaws.com
+Content-Type: application/x-amz-json-1.1
+Authorization: AWS4-HMAC-SHA256\
+ Credential=AKIAI44QH8DHBEXAMPLE/20170705/us-east-2/kms/aws4_request,\
+ SignedHeaders=content-type;host;x-amz-date;x-amz-target,\
+ Signature=8fb59aa17854a97df47aae69f560b66178ed0b5e1ebe334be516c4f3f59acedc
+X-Amz-Target: TrentService.CreateKey
+X-Amz-Date: 20170705T210455Z
+Content-Length: 62
+
+<span>{</span>
+  "Tags": [<span>{</span>
+    "TagValue": "ExampleUser",
+    "TagKey": "CreatedBy"
+  }]
+}</code></pre>
+         
+       
+       
+         <h3 id="API_CreateKey_Example_2">Example Response</h3>
+         <p>This example illustrates one usage of CreateKey.</p>
+         
+            <pre class="programlisting"><div class="code-btn-container"><div class="btn-copy-code" title="Copy"><awsui-icon name="copy"></awsui-icon></div></div><!--DEBUG: cli ()--><code class="">HTTP/1.1 200 OK
+Server: Server
+Date: Wed, 05 Jul 2017 21:04:55 GMT
+Content-Type: application/x-amz-json-1.1
+Content-Length: 335
+Connection: keep-alive
+x-amzn-RequestId: 98b2de61-61c5-11e7-bd87-9fc4a74e147b
+
+<span>{</span>
+  "KeyMetadata": <span>{</span>
+    "AWSAccountId": "111122223333",
+    "Arn": "arn:aws:kms:us-east-2:111122223333:key/1234abcd-12ab-34cd-56ef-1234567890ab",
+    "CreationDate": "2025-04-16T16:03:04.060000-07:00",
+    "CustomerMasterKeySpec": "SYMMETRIC_DEFAULT",
+    "Description": "",
+    "Enabled": true,
+    "KeyId": "1234abcd-12ab-34cd-56ef-1234567890ab",
+    "KeyManager": "CUSTOMER",
+    "KeySpec": "SYMMETRIC_DEFAULT",
+    "KeyState": "Enabled",
+    "KeyUsage": "ENCRYPT_DECRYPT",
+    "MultiRegion": false,
+    "Origin": "AWS_KMS",
+    "EncryptionAlgorithms": [
+      "SYMMETRIC_DEFAULT"
+    ],
+    "CurrentKeyMaterialId": "0b7fd7ddbac6eef27907413567cad8c810e2883dc8a7534067a82ee1142fc1e6"
+  }
+}</code></pre>
+         
+       
+    
+      <h2 id="API_CreateKey_SeeAlso">See Also</h2>
+      <p>For more information about using this API in one of the language-specific AWS SDKs, see the following:</p>
+      <div class="itemizedlist">
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+      <ul class="itemizedlist"><li class="listitem">
+            <p>
+               <a href="https://docs.aws.amazon.com/goto/cli2/kms-2014-11-01/CreateKey">AWS Command Line Interface V2</a>
+            </p>
+         </li><li class="listitem">
+            <p>
+               <a href="https://docs.aws.amazon.com/goto/DotNetSDKV4/kms-2014-11-01/CreateKey">AWS SDK for .NET V4</a>
+            </p>
+         </li><li class="listitem">
+            <p>
+               <a href="https://docs.aws.amazon.com/goto/SdkForCpp/kms-2014-11-01/CreateKey">AWS SDK for C++</a>
+            </p>
+         </li><li class="listitem">
+            <p>
+               <a href="https://docs.aws.amazon.com/goto/SdkForGoV2/kms-2014-11-01/CreateKey">AWS SDK for Go v2</a>
+            </p>
+         </li><li class="listitem">
+            <p>
+               <a href="https://docs.aws.amazon.com/goto/SdkForJavaV2/kms-2014-11-01/CreateKey">AWS SDK for Java V2</a>
+            </p>
+         </li><li class="listitem">
+            <p>
+               <a href="https://docs.aws.amazon.com/goto/SdkForJavaScriptV3/kms-2014-11-01/CreateKey">AWS SDK for JavaScript V3</a>
+            </p>
+         </li><li class="listitem">
+            <p>
+               <a href="https://docs.aws.amazon.com/goto/SdkForKotlin/kms-2014-11-01/CreateKey">AWS SDK for Kotlin</a>
+            </p>
+         </li><li class="listitem">
+            <p>
+               <a href="https://docs.aws.amazon.com/goto/SdkForPHPV3/kms-2014-11-01/CreateKey">AWS SDK for PHP V3</a>
+            </p>
+         </li><li class="listitem">
+            <p>
+               <a href="https://docs.aws.amazon.com/goto/boto3/kms-2014-11-01/CreateKey">AWS SDK for Python (Boto3)</a>
+            </p>
+         </li><li class="listitem">
+            <p>
+               <a href="https://docs.aws.amazon.com/goto/SdkForRubyV3/kms-2014-11-01/CreateKey">AWS SDK for Ruby V3</a>
+            </p>
+         </li></ul></div>
+   <awsdocs-copyright class="copyright-print"></awsdocs-copyright><awsdocs-thumb-feedback right-edge="{{$ctrl.thumbFeedbackRightEdge}}"></awsdocs-thumb-feedback></div><noscript><div><div><div><div id="js_error_message"><p><img src="https://d1ge0kk1l5kms0.cloudfront.net/images/G/01/webservices/console/warning.png" alt="Warning" /> <strong>Javascript is disabled or is unavailable in your browser.</strong></p><p>To use the Amazon Web Services Documentation, Javascript must be enabled. Please refer to your browser's Help pages for instructions.</p></div></div></div></div></noscript><div id="main-col-footer" class="awsui-util-font-size-0"><div id="doc-conventions"><a target="_top" href="/general/latest/gr/docconventions.html">Document Conventions</a></div><div class="prev-next"><div id="previous" class="prev-link" accesskey="p" href="./API_CreateGrant.html">CreateGrant</div><div id="next" class="next-link" accesskey="n" href="./API_Decrypt.html">Decrypt</div></div></div><awsdocs-page-utilities></awsdocs-page-utilities></div><div id="quick-feedback-yes" style="display: none;"><div class="title">Did this page help you? - Yes</div><div class="content"><p>Thanks for letting us know we're doing a good job!</p><p>If you've got a moment, please tell us what we did right so we can do more of it.</p><p><awsui-button id="fblink" rel="noopener noreferrer" target="_blank" text="Feedback" click="linkClick($event)" href="https://docs.aws.amazon.com/forms/aws-doc-feedback?hidden_service_name=Key Management Service (KMS)&amp;topic_url=https://docs.aws.amazon.com/en_us/kms/latest/APIReference/API_CreateKey.html"></awsui-button></p></div></div><div id="quick-feedback-no" style="display: none;"><div class="title">Did this page help you? - No</div><div class="content"><p>Thanks for letting us know this page needs work. We're sorry we let you down.</p><p>If you've got a moment, please tell us how we can make the documentation better.</p><p><awsui-button id="fblink" rel="noopener noreferrer" target="_blank" text="Feedback" click="linkClick($event)" href="https://docs.aws.amazon.com/forms/aws-doc-feedback?hidden_service_name=Key Management Service (KMS)&amp;topic_url=https://docs.aws.amazon.com/en_us/kms/latest/APIReference/API_CreateKey.html"></awsui-button></p></div></div></div></body></div></awsdocs-view><div class="page-loading-indicator" id="page-loading-indicator"><awsui-spinner size="large"></awsui-spinner></div></div><div id="tools-panel" dom-region="tools"><awsdocs-tools-panel id="awsdocs-tools-panel"></awsdocs-tools-panel></div></awsui-app-layout><awsdocs-cookie-banner class="doc-cookie-banner"></awsdocs-cookie-banner></div></body></html>

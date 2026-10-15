@@ -1,0 +1,9 @@
+1. execTransactionWithRole (0xc6fe8747) depuis adresse non membre :
+{"jsonrpc": "2.0", "id": 1, "error": {"code": 3, "message": "execution reverted", "data": "0x4a0bfec10000000000000000000000009999999999999999999999999999999999999999"}}
+2. contrôle 0xdeadbeef sur le module Roles :
+{"jsonrpc": "2.0", "id": 1, "error": {"code": 3, "message": "execution reverted"}}
+3. repay(USDC_A,1,FROM) sur le Pool :
+{"jsonrpc": "2.0", "id": 1, "error": {"code": 3, "message": "execution reverted"}}
+4. recherche de l'erreur 0x2c5211c6 :
+   TROUVÉ : InvalidAmount()
+   (fin)
