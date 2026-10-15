@@ -1,0 +1,3 @@
+URL: https://chainscorelabs.com/guides/governance-operations-architecture/treasury-management-systems/how-to-design-a-treasury-stress-testing-and-simulation-process
+Titre: How to Design a Treasury Stress Testing and Simulation Process — ChainScore Labs (consulté le 15/10/2026)
+Extraits : « The core output of a stress testing pipeline is not a single number but a loss distribution across scenarios mapped against predefined thresholds. Define three tiers: operational buffer (funds needed for 12 months of contributor payments and infrastructure...) » ; escalade par niveaux avec transactions pré-signées (Safe) déclenchées par des conditions ; mention du « Llama Risk Framework » utilisé par Gitcoin et ENS pour des évaluations trimestrielles de risque de trésorerie.
