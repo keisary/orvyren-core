@@ -246,9 +246,7 @@ class ArchiveRpc:
 
     # -- transport ---------------------------------------------------------- #
     def _post(self, url: str, payload: bytes) -> bytes:
-        if url == "" or self._transport is not _http_post:
-            return self._transport(url, payload, self.timeout)
-        return _http_post(url, payload, self.timeout)
+        return self._transport(url, payload, self.timeout)
 
     def call(self, method: str, params: Sequence[Any], *, url: Optional[str] = None) -> Any:
         """Send one JSON-RPC request, walking endpoints until one answers."""
