@@ -5,6 +5,14 @@ Statuts : `[PROPOSITION]` à valider · `[À TRANCHER]` décision d'équipe · `
 
 ---
 
+> **MISE À JOUR DU 15/10 (soir) — direction corrigée par l'équipe, sections 01 et 02 en révision.**
+> **Cible** : ce ne sont pas les profils grand public proposés en v1, mais — par ordre d'étude — **(1) les banques et institutions financières, (2) les organisations et la gestion basée sur la DeFi** (trésoreries on-chain, DAOs, fonds), **(3) les équipes de trading crypto**. Le critère décisif n'est pas le profil mais **la donnée disponible** : chaque famille d'utilisateur expose des données différentes (publiques on-chain, APIs privées, flux de custody), et le produit doit être défini par ce qu'il peut réellement lire et faire.
+> **Problème** : il ne se formule pas à partir du cas USDC, mais **comme celui de MIMIR — en version on-chain**. Transposition de travail (d'après MIMIR, design technique §2.1) :
+> *« L'information on-chain et de marché est publique et abondante, mais ses effets voyagent à travers des chaînes d'acteurs, de variables, d'instruments et de régimes, sur plusieurs horizons. Trois familles d'approches dominent : les pipelines événement→transaction, la prévision isolée par actif, et les graphes de connaissance descriptifs. Le pari d'ORVYREN est qu'une modélisation intégrée et épistémiquement explicite — structure des événements, mécanismes causals, contexte temporel, transmission entre marchés et protocoles, régimes, scénarios — apporte une valeur prédictive et décisionnelle incrémentale par rapport à ces baselines fragmentées. »*
+> **Recherche en cours** : `U1_banques_institutions.md`, `U2_defi_organisations.md`, `P1_probleme_financier.md` → les sections 01 et 02 ci-dessous seront réécrites à leur retour, avec sources et chiffres vérifiés.
+
+---
+
 ## 01 — UTILISATEUR PRINCIPAL
 
 ### [PROPOSITION] Trois profils candidats, un principal recommandé
