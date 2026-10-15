@@ -1,0 +1,55 @@
+===== rsETH =====
+[200] bs_rsETH_holders_p1.json (23994 o)
+[200] bs_rsETH_holders_p2.json (19251 o)
+[200] bs_rsETH_holders_p3.json (35446 o)
+[200] bs_rsETH_holders_p4.json (27535 o)
+   200 comptes récupérés (pages), cumul = 99.6953% du supply
+   top-10 = 97.9466% du supply | HHI (sur 200 comptes) = 0.72636
+   top-10 :
+     0x2D62109243b87C4bA3EE7bA1D91B0dD0A074d7b1  part=85.0095%  contrat=True  label=InitializableImmutableAdminUpgradeabilit  tags=[]
+     0x85d456B2DfF1fd8245387C0BfB64Dfb700e98Ef3  part=4.5299%  contrat=True  label=RSETH_OFTAdapter  tags=[]
+     0x55e5a21B4cCC7FA502434ab1109D4EDe0397AB25  part=3.2214%  contrat=True  label=LockReleaseTokenPool  tags=[]
+     0x62De59c08eB5dAE4b7E6F7a8cAd3006d6965ec16  part=1.6209%  contrat=True  label=TransparentUpgradeableProxy  tags=[]
+     0x22162DbBa43fE0477cdC5234E248264eC7C6EA7c  part=1.5802%  contrat=False  label=  tags=[]
+     0x267ed5f71EE47D3E45Bb1569Aa37889a2d10f91e  part=0.6233%  contrat=False  label=  tags=[]
+     0x52Aa899454998Be5b000Ad077a46Bbe360F4e497  part=0.4411%  contrat=True  label=FluidLiquidityProxy  tags=[]
+     0xa1486dAe9F01e7da3Bd8Efbd12Af0e1Be1C73B60  part=0.3607%  contrat=False  label=  tags=[]
+     0xCca852Bc40e560adC3b1Cc58CA5b55638ce826c9  part=0.3224%  contrat=True  label=TransparentUpgradeableProxy  tags=[]
+     0x8c2AEcCef3B3634D039c96993577F80D3278FEe8  part=0.2371%  contrat=False  label=  tags=[]
+===== stETH =====
+[200] bs_stETH_holders_p1.json (26970 o)
+[200] bs_stETH_holders_p2.json (22779 o)
+[200] bs_stETH_holders_p3.json (20758 o)
+[200] bs_stETH_holders_p4.json (23554 o)
+   200 comptes récupérés (pages), cumul = 76.9398% du supply
+   top-10 = 62.7026% du supply | HHI (sur 200 comptes) = 0.22859
+   top-10 :
+     0x7f39C581F595B53c5cb19bD0b3f8dA6c935E2Ca0  part=47.3115%  contrat=True  label=Wrapped stETH  tags=['Lido']
+     0x1B7a4C3797236A1C37f8741c0Be35c2c72736fFf  part=5.2935%  contrat=True  label=UUPSProxy  tags=[]
+     0x176F3DAb24a159341c0509bB36B833E7fdd0a132  part=2.4685%  contrat=False  label=  tags=[]
+     0x93c4b944D05dfe6df7645A86cd2206016c51564D  part=2.2561%  contrat=True  label=TransparentUpgradeableProxy  tags=[]
+     0x000000000073F8f0541E942D85Ef5Fb5d0e84844  part=1.8478%  contrat=True  label=ERC1967Proxy  tags=[]
+     0x58180016d0F07815f75C1e6835f31b1AdDAb81e6  part=1.4467%  contrat=False  label=  tags=[]
+     0xccC5eEEBe15291620bE733997AF60735618548d7  part=0.6295%  contrat=False  label=  tags=[]
+     0xCab3F132A11E5b723Fc20dDAB8bb1B858d00a8E8  part=0.6219%  contrat=False  label=  tags=[]
+     0xE53FFF67f9f384d20Ebea36F43b93DC49Ed22753  part=0.4795%  contrat=False  label=  tags=[]
+     0x4d72BFF1BeaC69925F8Bd12526a39BAAb069e5Da  part=0.3476%  contrat=True  label=OssifiableProxy  tags=[]
+===== xUSD =====
+[200] bs_xUSD_holders_p1.json (19145 o)
+[200] bs_xUSD_holders_p2.json (33764 o)
+[200] bs_xUSD_holders_p3.json (26121 o)
+[200] bs_xUSD_holders_p4.json (18842 o)
+   200 comptes récupérés (pages), cumul = 99.9961% du supply
+   top-10 = 91.3954% du supply | HHI (sur 200 comptes) = 0.40511
+   top-10 :
+     0x14bCD9da052Cdc6fE0b9446d5a616D5b7B4d4550  part=61.6924%  contrat=True  label=SafeProxy  tags=[]
+     0xf1BA8c5Ca5aB011d06f31e64DaD313d204aCb9Eb  part=14.5076%  contrat=True  label=BeaconProxy  tags=[]
+     0xF078969E55caBF9AE3f26afeB5EC627B4430f19E  part=2.9430%  contrat=False  label=  tags=[]
+     0x1597E4B7cF6D2877A1d690b6088668afDb045763  part=2.3603%  contrat=False  label=  tags=[]
+     0x9843d6129aD455839262a1F3ACb80507bE601B5E  part=1.8615%  contrat=True  label=EthereumXUSDPendleSY  tags=[]
+     0xE2Fc85BfB48C4cF147921fBE110cf92Ef9f26F94  part=1.8339%  contrat=True  label=StreamVault  tags=[]
+     0x2b4fEc2Ca26F9499d1e8aF0A27a38ED78e565187  part=1.7928%  contrat=False  label=  tags=[]
+     0x6b75DA999d2d52fF125c7eB5476e8749e311B81c  part=1.6369%  contrat=False  label=  tags=[]
+     0xbA1333333333a1BA1108E8412f11850A5C319bA9  part=1.4040%  contrat=True  label=Vault  tags=[]
+     0x2E3A8F2DD842910FF8a3c65D93B129806e500417  part=1.3630%  contrat=True  label=Silo Finance Borrowable xUSD Deposit, Si  tags=[]
+-> bs_concentration_resultats.json

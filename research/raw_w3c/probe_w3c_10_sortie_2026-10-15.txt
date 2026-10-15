@@ -1,0 +1,9 @@
+== block_at(2025-11-04 12:00) ==
+   bloc: 23725820
+   horodatage: 2025-11-04T12:00:11
+== Compound V2 cUSDC @ archive (2025-11-04) ==
+   getCash=18,967,767,190,243 totalBorrows=23,065,777,755,613 -> U=54.8747%
+== Morpho API (corrigée) ==
+   [HTTP 400] corps: b'{"errors":[{"message":"Cannot query field \\"uniqueKey\\" on type \\"Market\\".","status":"GRAPHQL_VALIDATION_FAILED","extensions":{}}],"extensions":{"maximumComplexity":1000000}}\n'
+   [HTTP 400] corps: b'{"errors":[{"message":"Cannot query field \\"uniqueKey\\" on type \\"Market\\".","status":"GRAPHQL_VALIDATION_FAILED","extensions":{}}],"extensions":{"maximumComplexity":1000000}}\n'
+   [HTTP 400] corps: b'{"errors":[{"message":"Cannot query field \\"uniqueKey\\" on type \\"Market\\".","status":"GRAPHQL_VALIDATION_FAILED","extensions":{}}],"extensions":{"maximumComplexity":1000000}}\n'

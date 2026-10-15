@@ -1,0 +1,23 @@
+absent: Crypto.Hash.keccak
+absent: eth_hash.auto
+absent: sha3
+absent: web3
+[200] cg_search_xusd.json (344 o)
+   CG xUSD candidat: staked-stream-usd | Staked Stream USD | XUSD
+[200] cg_search_usd0.json (2110 o)
+   CG USD0 candidat: usual-usd | Usual USD | USD0
+   CG USD0 candidat: usd0-liquid-bond | Bond USD0 | BUSD0
+   CG USD0 candidat: alpha-usd0 | Alpha USD0 | USD0A
+   CG USD0 candidat: savings-usd0 | Savings USD0 | SUSD0
+   CG USD0 candidat: busd0-redemption-token | bUSD0 Redemption Token | RT-BUSD0
+   CG USD0 candidat: mev-capital-usd0-morpho-vault | MEV Capital USD0 Morpho Vault | MC.USD0
+   CG USD0 candidat: layerzero-bridged-pyusd0 | LayerZero Bridged PYUSD0 (Flow EVM) | PYUSD0
+[200] cg_xusd_market_chart_365d.json (24727 o)
+   xUSD market_chart 365j: 236 points; premier: [1760572800000, 1.2574086376975715] ; dernier: [1790035200000, 0.02186495481421918]
+[200] cg_xusd_range_octnov.json (47536 o)
+   xUSD range 25/10->12/11: 457 points; exemples: [[1761350400000, 1.2645407948139566], [1761354000000, 1.2622218897726298]] [[1762988400000, 0.06686514599271917], [1762992000000, 0.06683204957912342]]
+[200] ll_protocol_streamfinance.json (447369 o)
+   LL stream-finance: chains = ['Ethereum'] | tvl actuel = {}
+   vgUSDC? 0x8399c8fc273bd165c346af74a02e65f10e4fd78f: decimals=6 symbol=vgUSDC err=None
+   xUSD 0xe2fc85bfb48c4cf147921fbe110cf92ef9f26f94: decimals=6 symbol=xUSD err=None
+   Vault Balancer v3 0xbA13...9bA9 : code len = 49078 err = None

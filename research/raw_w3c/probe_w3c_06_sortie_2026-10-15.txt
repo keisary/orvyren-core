@@ -1,0 +1,38 @@
+== A. CoinGecko usd0-liquid-bond : test janv. 2025 hors fenêtre 365 j ==
+[401] cg_usd0pp_range_jan2025.json (335 o)
+   réponse: {'error': {'status': {'timestamp': '2026-10-15T07:00:27.979+00:00', 'error_code': 10012, 'error_message': 'Your request exceeds the allowed time range. Public API users are limited to querying histori
+[200] cg_usd0pp_market_chart_365d.json (31774 o)
+   365 j points: 363 | premier: [1760572800000, 0.9292041837201116] | dernier: [1792047540000, 0.9768188539799342]
+== B. DefiLlama chart USD0++ : fenêtres et plafond de span ==
+[400] ll_usd0pp_chart_jan_full.json (68 o)
+   start 01/01 + span=1000 -> 0 points
+[400] ll_usd0pp_chart_fev.json (68 o)
+   start 16/01 + span=1000 -> 0 points
+[200] ll_usd0pp_chart_daily_400.json (18026 o)
+   daily span=400 -> 398 points
+   premier: 2024-12-31T23:57:59 | dernier: 2026-02-03T23:57:20
+== C. points historiques datés USD0++ ==
+[200] https://coins.llama.fi/prices/historical/1736337600/ethereum:0x35D8949372D46B7a3D5A56006AE77B215fc69bC0 (153 o)
+   2025-01-08 12:00 -> {'decimals': 18, 'symbol': 'bUSD0', 'price': 1.002, 'timestamp': 1736337479, 'confidence': 0.99}
+[200] https://coins.llama.fi/prices/historical/1736402400/ethereum:0x35D8949372D46B7a3D5A56006AE77B215fc69bC0 (156 o)
+   2025-01-09 06:00 -> {'decimals': 18, 'symbol': 'bUSD0', 'price': 0.997873, 'timestamp': 1736402287, 'confidence': 0.99}
+[200] https://coins.llama.fi/prices/historical/1736424000/ethereum:0x35D8949372D46B7a3D5A56006AE77B215fc69bC0 (156 o)
+   2025-01-09 12:00 -> {'decimals': 18, 'symbol': 'bUSD0', 'price': 0.997709, 'timestamp': 1736423837, 'confidence': 0.99}
+[200] https://coins.llama.fi/prices/historical/1736445600/ethereum:0x35D8949372D46B7a3D5A56006AE77B215fc69bC0 (153 o)
+   2025-01-09 18:00 -> {'decimals': 18, 'symbol': 'bUSD0', 'price': 1.001, 'timestamp': 1736445493, 'confidence': 0.99}
+[200] https://coins.llama.fi/prices/historical/1736467200/ethereum:0x35D8949372D46B7a3D5A56006AE77B215fc69bC0 (156 o)
+   2025-01-10 00:00 -> {'decimals': 18, 'symbol': 'bUSD0', 'price': 0.978885, 'timestamp': 1736466997, 'confidence': 0.99}
+[200] https://coins.llama.fi/prices/historical/1736510400/ethereum:0x35D8949372D46B7a3D5A56006AE77B215fc69bC0 (155 o)
+   2025-01-10 12:00 -> {'decimals': 18, 'symbol': 'bUSD0', 'price': 0.91799, 'timestamp': 1736510257, 'confidence': 0.99}
+[200] https://coins.llama.fi/prices/historical/1736553600/ethereum:0x35D8949372D46B7a3D5A56006AE77B215fc69bC0 (156 o)
+   2025-01-11 00:00 -> {'decimals': 18, 'symbol': 'bUSD0', 'price': 0.920837, 'timestamp': 1736553517, 'confidence': 0.99}
+[200] https://coins.llama.fi/prices/historical/1736683200/ethereum:0x35D8949372D46B7a3D5A56006AE77B215fc69bC0 (156 o)
+   2025-01-12 12:00 -> {'decimals': 18, 'symbol': 'bUSD0', 'price': 0.935762, 'timestamp': 1736682995, 'confidence': 0.99}
+[200] https://coins.llama.fi/prices/historical/1736769600/ethereum:0x35D8949372D46B7a3D5A56006AE77B215fc69bC0 (156 o)
+   2025-01-13 12:00 -> {'decimals': 18, 'symbol': 'bUSD0', 'price': 0.926546, 'timestamp': 1736768717, 'confidence': 0.99}
+[200] https://coins.llama.fi/prices/historical/1737374400/ethereum:0x35D8949372D46B7a3D5A56006AE77B215fc69bC0 (156 o)
+   2025-01-20 12:00 -> {'decimals': 18, 'symbol': 'bUSD0', 'price': 0.909526, 'timestamp': 1737374220, 'confidence': 0.99}
+[200] https://coins.llama.fi/prices/historical/1738411200/ethereum:0x35D8949372D46B7a3D5A56006AE77B215fc69bC0 (156 o)
+   2025-02-01 12:00 -> {'decimals': 18, 'symbol': 'bUSD0', 'price': 0.932797, 'timestamp': 1738411097, 'confidence': 0.99}
+[200] https://coins.llama.fi/prices/historical/1740830400/ethereum:0x35D8949372D46B7a3D5A56006AE77B215fc69bC0 (156 o)
+   2025-03-01 12:00 -> {'decimals': 18, 'symbol': 'bUSD0', 'price': 0.936432, 'timestamp': 1740830282, 'confidence': 0.99}

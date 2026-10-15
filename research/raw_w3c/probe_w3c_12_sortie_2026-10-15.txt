@@ -1,0 +1,16 @@
+== 1) marchés Morpho (top par supply) ==
+   0x8eaf7b29f02ba8d8... USDC/PAXG util=1.000000 supply=$16,100,586,880
+   0x0f9563442d64ab3b... USDC/sdeUSD util=1.000000 supply=$10,686,969,794
+   0x1dca6989b0d2b0a5... USR/BONDUSD util=1.000000 supply=$5,536,527,842
+   0x64d65c9a2d91c36d... USDC/cbBTC util=0.894655 supply=$340,583,999
+   0xd9e34b1eed46d123... USDC/wstUSR util=1.000000 supply=$338,700,367
+   0xb74aae3bada73b0b... USDT/USDT util=1.000000 supply=$335,036,416
+== 2) marchés Morpho avec collatéral xUSD ==
+   -> {"data": {"markets": {"items": [{"marketId": "0xc05394d0261ed1c3c1af310007fdc4e64b3bcf650822b70526763fefc64b729e", "loanAsset": {"symbol": "USDC"}, "collateralAsset": {"symbol": "xUSD"}, "state": {"borrowAssets": 0, "supplyAssets": 101000, "utilization": 0, "supplyAssetsUsd": 0.1009710535574784, "borrowAssetsUsd": 0}}, {"marketId": "0x39fe55e5102beac5fb3caff54142f26250b97dcdb5bea6122818c7760f38b331", "loanAsset": {"symbol": "USDC"}, "collateralAsset": {"symbol": "xUSD"}, "state": {"borrowAssets": 101072, "supplyAssets": 112109, "utilization": 0.9015511689516452, "supplyAssetsUsd": 0.11207686973539946, "borrowAssetsUsd": 0.10104303292239064}}]}}, "extensions": {"complexity": 1250, "maximumComplexity": 1000000}}
+== 3) Morpho Blue adresse 0xBBBB... ==
+   code len: 31248 err: None
+== 4) lecture on-chain market(id) ==
+   mots: [8242668726125807, 93828252743194492, 8242668726125807, 93709222461198075, 1789387463, 0]
+   utilisation on-chain = 100.000000% (borrowAssets/supplyAssets)
+== 5) idToMarketParams(id) ==
+   loanToken: 0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48 collateral: 0x45804880de22913dafe09f4980848ece6ecbaf78 lltv: 915000000000000000

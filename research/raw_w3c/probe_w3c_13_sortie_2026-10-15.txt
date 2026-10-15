@@ -1,0 +1,10 @@
+topic0 Swap v3 = 0xc42079f94a6350d7e6235f29174924f928cc2ac818eb64fed8004e115fbcca67
+===== 1) USD0++/USDT pool 0x00cc0523 (janv. 2025) =====
+   token0=0x35d8949372d46b7a3d5a56006ae77b215fc69bc0 (dec 18) | token1=0xdac17f958d2ee523a2206206994597c13d831ec7 (dec 6)
+   blocs 21576036 -> 21608271
+   logs 21576036-21608271: +610 (total 610)
+   610 swaps récupérés
+   563 blocs uniques -> timestamps par lots
+===== 2) USDC/xUSD pool 0x7224d2ec (nov. 2025) =====
+   pool introuvable/déployé après la fenêtre: 0x
+EXIT=0

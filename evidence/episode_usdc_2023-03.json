@@ -1,0 +1,6098 @@
+{
+ "schema": "orvyren.evidence.episode-usdc-2023-03.v1",
+ "case": "usdc-2023-03",
+ "episode": "Decrochage USDC/USD (exposition SVB), 10-14 mars 2023",
+ "generated_at": "2026-10-15T07:13:13Z",
+ "generated_by": "scripts/reconstruct_usdc2023_episode.py",
+ "mode": "network",
+ "window": {
+  "start_utc": "2023-03-10T00:00:00Z",
+  "end_utc": "2023-03-14T00:00:00Z",
+  "step_s": 3600,
+  "n_points": 97
+ },
+ "sources": {
+  "binance": {
+   "mode": "network",
+   "endpoint": "https://api.binance.com/api/v3/klines (USDCUSDT, 1h)",
+   "points": 59
+  },
+  "okx": {
+   "mode": "network",
+   "endpoint": "https://www.okx.com/api/v5/market/history-candles (USDC-USDT, 1H)",
+   "points": 97
+  },
+  "bitstamp": {
+   "mode": "network",
+   "endpoint": "https://www.bitstamp.net/api/v2/ohlc/usdcusd (3600 s)",
+   "points": 97
+  },
+  "defillama": {
+   "mode": "network",
+   "endpoint": "https://coins.llama.fi/chart (USDC ETH, period=1h)",
+   "points": 95
+  },
+  "chainlink": {
+   "mode": "network",
+   "endpoint": "eth_call latestRoundData()",
+   "contract": "0x8fFfFfd4AfB6115b954Bd326cbe7B4BA576818f6",
+   "points": 97
+  },
+  "aave": {
+   "mode": "network",
+   "endpoint": "eth_call aEthUSDC.totalSupply() + USDC.balanceOf(aEthUSDC)",
+   "pool": "0x87870Bca3F3fD6335C3F4ce8392D69350B4fA4E2",
+   "a_token": "0x98C23E9d8f34FEFb1B7BD6a91B7FF122F4e16F5c",
+   "points": 97
+  }
+ },
+ "facts": {
+  "minima": {
+   "binance": {
+    "low": 0.882,
+    "utc": "2023-03-11T14:00:00Z",
+    "decote_bps": 1180.0
+   },
+   "okx": {
+    "low": 0.8698,
+    "utc": "2023-03-11T07:00:00Z",
+    "decote_bps": 1302.0
+   },
+   "bitstamp": {
+    "low": 0.80526,
+    "utc": "2023-03-11T07:00:00Z",
+    "decote_bps": 1947.4
+   },
+   "defillama": {
+    "low": 0.876675,
+    "utc": "2023-03-11T07:57:53Z",
+    "decote_bps": 1233.3
+   },
+   "oracle_chainlink": {
+    "answer": 0.8833,
+    "updated_at": "2023-03-11T07:53:23Z",
+    "block": 16803515,
+    "stale_s": 397
+   }
+  },
+  "signals": {
+   "dispersion_window_bps": {
+    "value_bps": 870.07,
+    "method": "(max(minima_venues) - min(minima_venues)) / max(minima_venues) * 10000",
+    "max_venue": "binance",
+    "min_venue": "bitstamp"
+   },
+   "max_hourly_dispersion": {
+    "value_bps": 1047.7,
+    "utc": "2023-03-11T08:00:00Z",
+    "venues": {
+     "okx": 0.877,
+     "bitstamp": 0.825,
+     "defillama": 0.921553
+    }
+   },
+   "divergence_same_hour": {
+    "max_bps": 20.2,
+    "max_utc": "2023-03-11T04:00:00Z",
+    "min_bps": -558.9,
+    "min_utc": "2023-03-11T03:00:00Z",
+    "largest_gap_bps": -558.9,
+    "largest_gap_utc": "2023-03-11T03:00:00Z",
+    "method": "(mediane_inter_venues(plus bas horaire) - oracle) * 10000 ; negatif = oracle au-dessus du marche (survalorisation retenue) ; largest_gap = plus grand ecart en valeur absolue (signe conserve)"
+   },
+   "oracle_min_minus_venue_min_bps": {
+    "binance": 13.0,
+    "okx": 135.0,
+    "bitstamp": 780.4,
+    "defillama": 66.2
+   },
+   "aave_usdc_utilisation": {
+    "start": 0.644314,
+    "start_utc": "2023-03-10T00:00:00Z",
+    "end": 0.443871,
+    "end_utc": "2023-03-14T00:00:00Z",
+    "min": 0.275359,
+    "min_utc": "2023-03-12T23:00:00Z",
+    "max": 0.872742,
+    "max_utc": "2023-03-11T03:00:00Z",
+    "n": 97
+   }
+  },
+  "blocks": {
+   "method": "recherche dichotomique locale (fenêtre interpolée) + affinage par lots JSON-RPC",
+   "rounds": 4,
+   "probes_single": 0,
+   "probes_batch": 463,
+   "endpoints_single": [
+    "https://eth-mainnet.public.blastapi.io",
+    "https://eth.drpc.org"
+   ],
+   "endpoints_batch": [
+    "https://eth-mainnet.public.blastapi.io"
+   ],
+   "seeds": [
+    {
+     "block": 16794041,
+     "ts": 1678406400,
+     "utc": "2023-03-10T00:00:00Z"
+    },
+    {
+     "block": 16820846,
+     "ts": 1678730400,
+     "utc": "2023-03-13T18:00:00Z"
+    }
+   ],
+   "verified": "ts(bloc) <= heure < ts(bloc+1) pour chaque heure"
+  }
+ },
+ "w2b_comparison": {
+  "defillama_min": {
+   "w2b": 0.876675,
+   "measured": 0.876675,
+   "delta": 0.0,
+   "reproduced": true
+  },
+  "bitstamp_min": {
+   "w2b": 0.80526,
+   "measured": 0.80526,
+   "delta": 0.0,
+   "reproduced": true
+  },
+  "okx_min": {
+   "w2b": 0.8698,
+   "measured": 0.8698,
+   "delta": 0.0,
+   "reproduced": true
+  },
+  "binance_min": {
+   "w2b": 0.882,
+   "measured": 0.882,
+   "delta": 0.0,
+   "reproduced": true
+  },
+  "dispersion_bps": {
+   "w2b": 870.07,
+   "measured": 870.07,
+   "delta": 0.0,
+   "reproduced": true
+  },
+  "oracle_min": {
+   "w2b": 0.90687439,
+   "w2b_value_present_in_series": true,
+   "w2b_value_utc": "2023-03-11T12:59:35Z",
+   "dense_min": 0.8833,
+   "dense_min_utc": "2023-03-11T07:53:23Z",
+   "delta_dense_vs_w2b_bps": -235.74,
+   "reproduced": true,
+   "note": "Correction W3 : W2-B echantillonnait tous ~1000 blocs (17 points) ; l'echantillonnage horaire (97 points) trouve un minimum d'oracle plus bas, invisible dans la grille de W2-B (voir research/W3_reconstruction_usdc2023.md)."
+  }
+ },
+ "hourly": [
+  {
+   "utc": "2023-03-10T00:00:00Z",
+   "ts": 1678406400,
+   "venues": {
+    "okx": {
+     "low": 1.0,
+     "high": 1.0001,
+     "last": 1.0,
+     "volume": 213040.1353,
+     "n": 1
+    },
+    "bitstamp": {
+     "low": 0.99993,
+     "high": 0.99994,
+     "last": 0.99994,
+     "volume": 342.8422,
+     "n": 1
+    }
+   },
+   "market": {
+    "n": 2,
+    "min": 0.99993,
+    "max": 1.0,
+    "median": 0.999965,
+    "lowest_venue": "bitstamp"
+   },
+   "signals": {
+    "decote_min_bps": 0.7,
+    "decote_median_bps": 0.4,
+    "sigma_disp_bps": 0.7,
+    "divergence_bps": -0.4,
+    "divergence_defillama_bps": null
+   },
+   "oracle": {
+    "price": 1.0,
+    "roundId": 36893488147419104087,
+    "updated_at": "2023-03-09T06:00:35Z",
+    "updatedAt": 1678341635,
+    "block": 16794061,
+    "sample_ts": 1678406400,
+    "source": "network"
+   },
+   "aave": {
+    "supply_usdc": 65871837.148354,
+    "cash_usdc": 23429697.379045,
+    "utilisation": 0.6443138920464972,
+    "block": 16794061,
+    "sample_ts": 1678406400,
+    "source": "network"
+   }
+  },
+  {
+   "utc": "2023-03-10T01:00:00Z",
+   "ts": 1678410000,
+   "venues": {
+    "okx": {
+     "low": 1.0,
+     "high": 1.0002,
+     "last": 1.0001,
+     "volume": 401329.4738,
+     "n": 1
+    },
+    "bitstamp": {
+     "low": 0.99993,
+     "high": 0.99993,
+     "last": 0.99993,
+     "volume": 1426.6377,
+     "n": 1
+    },
+    "defillama": {
+     "low": 1.00172004,
+     "high": 1.00172004,
+     "last": 1.00172004,
+     "volume": null,
+     "n": 1
+    }
+   },
+   "market": {
+    "n": 3,
+    "min": 0.99993,
+    "max": 1.00172004,
+    "median": 1.0,
+    "lowest_venue": "bitstamp"
+   },
+   "signals": {
+    "decote_min_bps": 0.7,
+    "decote_median_bps": 0.0,
+    "sigma_disp_bps": 17.9,
+    "divergence_bps": 0.0,
+    "divergence_defillama_bps": 17.2
+   },
+   "oracle": {
+    "price": 1.0,
+    "roundId": 36893488147419104087,
+    "updated_at": "2023-03-09T06:00:35Z",
+    "updatedAt": 1678341635,
+    "block": 16794357,
+    "sample_ts": 1678410000,
+    "source": "network"
+   },
+   "aave": {
+    "supply_usdc": 66061960.400205,
+    "cash_usdc": 23543613.445705,
+    "utilisation": 0.6436131579644745,
+    "block": 16794357,
+    "sample_ts": 1678410000,
+    "source": "network"
+   }
+  },
+  {
+   "utc": "2023-03-10T02:00:00Z",
+   "ts": 1678413600,
+   "venues": {
+    "okx": {
+     "low": 1.0001,
+     "high": 1.0002,
+     "last": 1.0001,
+     "volume": 663419.2641,
+     "n": 1
+    },
+    "bitstamp": {
+     "low": 0.99993,
+     "high": 0.99993,
+     "last": 0.99993,
+     "volume": 52.7531,
+     "n": 1
+    },
+    "defillama": {
+     "low": 1.00039524,
+     "high": 1.00039524,
+     "last": 1.00039524,
+     "volume": null,
+     "n": 1
+    }
+   },
+   "market": {
+    "n": 3,
+    "min": 0.99993,
+    "max": 1.00039524,
+    "median": 1.0001,
+    "lowest_venue": "bitstamp"
+   },
+   "signals": {
+    "decote_min_bps": 0.7,
+    "decote_median_bps": -1.0,
+    "sigma_disp_bps": 4.7,
+    "divergence_bps": 1.0,
+    "divergence_defillama_bps": 4.0
+   },
+   "oracle": {
+    "price": 1.0,
+    "roundId": 36893488147419104087,
+    "updated_at": "2023-03-09T06:00:35Z",
+    "updatedAt": 1678341635,
+    "block": 16794649,
+    "sample_ts": 1678413600,
+    "source": "network"
+   },
+   "aave": {
+    "supply_usdc": 66428702.968087,
+    "cash_usdc": 25127491.870873,
+    "utilisation": 0.6217374305359462,
+    "block": 16794649,
+    "sample_ts": 1678413600,
+    "source": "network"
+   }
+  },
+  {
+   "utc": "2023-03-10T03:00:00Z",
+   "ts": 1678417200,
+   "venues": {
+    "okx": {
+     "low": 1.0001,
+     "high": 1.0002,
+     "last": 1.0001,
+     "volume": 351216.1758,
+     "n": 1
+    },
+    "bitstamp": {
+     "low": 0.99992,
+     "high": 0.99993,
+     "last": 0.99992,
+     "volume": 50849.6211,
+     "n": 1
+    },
+    "defillama": {
+     "low": 1.0,
+     "high": 1.00011322,
+     "last": 1.0,
+     "volume": null,
+     "n": 2
+    }
+   },
+   "market": {
+    "n": 3,
+    "min": 0.99992,
+    "max": 1.0001,
+    "median": 1.0,
+    "lowest_venue": "bitstamp"
+   },
+   "signals": {
+    "decote_min_bps": 0.8,
+    "decote_median_bps": 0.0,
+    "sigma_disp_bps": 1.8,
+    "divergence_bps": 0.0,
+    "divergence_defillama_bps": 0.0
+   },
+   "oracle": {
+    "price": 1.0,
+    "roundId": 36893488147419104087,
+    "updated_at": "2023-03-09T06:00:35Z",
+    "updatedAt": 1678341635,
+    "block": 16794943,
+    "sample_ts": 1678417200,
+    "source": "network"
+   },
+   "aave": {
+    "supply_usdc": 66429679.19796,
+    "cash_usdc": 25169107.402592,
+    "utilisation": 0.6211165294417842,
+    "block": 16794943,
+    "sample_ts": 1678417200,
+    "source": "network"
+   }
+  },
+  {
+   "utc": "2023-03-10T04:00:00Z",
+   "ts": 1678420800,
+   "venues": {
+    "okx": {
+     "low": 1.0001,
+     "high": 1.0002,
+     "last": 1.0002,
+     "volume": 229003.5677,
+     "n": 1
+    },
+    "bitstamp": {
+     "low": 0.99992,
+     "high": 1.0,
+     "last": 0.99996,
+     "volume": 27260.7558,
+     "n": 1
+    }
+   },
+   "market": {
+    "n": 2,
+    "min": 0.99992,
+    "max": 1.0001,
+    "median": 1.00001,
+    "lowest_venue": "bitstamp"
+   },
+   "signals": {
+    "decote_min_bps": 0.8,
+    "decote_median_bps": -0.1,
+    "sigma_disp_bps": 1.8,
+    "divergence_bps": 0.1,
+    "divergence_defillama_bps": null
+   },
+   "oracle": {
+    "price": 1.0,
+    "roundId": 36893488147419104087,
+    "updated_at": "2023-03-09T06:00:35Z",
+    "updatedAt": 1678341635,
+    "block": 16795238,
+    "sample_ts": 1678420800,
+    "source": "network"
+   },
+   "aave": {
+    "supply_usdc": 66429795.904183,
+    "cash_usdc": 25238969.590339,
+    "utilisation": 0.6200655256152949,
+    "block": 16795238,
+    "sample_ts": 1678420800,
+    "source": "network"
+   }
+  },
+  {
+   "utc": "2023-03-10T05:00:00Z",
+   "ts": 1678424400,
+   "venues": {
+    "okx": {
+     "low": 1.0001,
+     "high": 1.0002,
+     "last": 1.0002,
+     "volume": 1236860.354,
+     "n": 1
+    },
+    "bitstamp": {
+     "low": 0.99996,
+     "high": 1.0,
+     "last": 1.0,
+     "volume": 77400.3162,
+     "n": 1
+    },
+    "defillama": {
+     "low": 0.99971315,
+     "high": 0.99971315,
+     "last": 0.99971315,
+     "volume": null,
+     "n": 1
+    }
+   },
+   "market": {
+    "n": 3,
+    "min": 0.99971315,
+    "max": 1.0001,
+    "median": 0.99996,
+    "lowest_venue": "defillama"
+   },
+   "signals": {
+    "decote_min_bps": 2.9,
+    "decote_median_bps": 0.4,
+    "sigma_disp_bps": 3.9,
+    "divergence_bps": -0.4,
+    "divergence_defillama_bps": -2.9
+   },
+   "oracle": {
+    "price": 1.0,
+    "roundId": 36893488147419104087,
+    "updated_at": "2023-03-09T06:00:35Z",
+    "updatedAt": 1678341635,
+    "block": 16795536,
+    "sample_ts": 1678424400,
+    "source": "network"
+   },
+   "aave": {
+    "supply_usdc": 65548079.474606,
+    "cash_usdc": 24335225.033171,
+    "utilisation": 0.6287423639528795,
+    "block": 16795536,
+    "sample_ts": 1678424400,
+    "source": "network"
+   }
+  },
+  {
+   "utc": "2023-03-10T06:00:00Z",
+   "ts": 1678428000,
+   "venues": {
+    "okx": {
+     "low": 1.0,
+     "high": 1.0002,
+     "last": 1.0,
+     "volume": 1543603.7485,
+     "n": 1
+    },
+    "bitstamp": {
+     "low": 0.9998,
+     "high": 1.0,
+     "last": 1.0,
+     "volume": 30505.5792,
+     "n": 1
+    },
+    "defillama": {
+     "low": 1.00027428,
+     "high": 1.00027428,
+     "last": 1.00027428,
+     "volume": null,
+     "n": 1
+    }
+   },
+   "market": {
+    "n": 3,
+    "min": 0.9998,
+    "max": 1.00027428,
+    "median": 1.0,
+    "lowest_venue": "bitstamp"
+   },
+   "signals": {
+    "decote_min_bps": 2.0,
+    "decote_median_bps": 0.0,
+    "sigma_disp_bps": 4.7,
+    "divergence_bps": 0.0,
+    "divergence_defillama_bps": 2.7
+   },
+   "oracle": {
+    "price": 1.0,
+    "roundId": 36893488147419104087,
+    "updated_at": "2023-03-09T06:00:35Z",
+    "updatedAt": 1678341635,
+    "block": 16795830,
+    "sample_ts": 1678428000,
+    "source": "network"
+   },
+   "aave": {
+    "supply_usdc": 65548201.290239,
+    "cash_usdc": 24332228.512155,
+    "utilisation": 0.6287887686739866,
+    "block": 16795830,
+    "sample_ts": 1678428000,
+    "source": "network"
+   }
+  },
+  {
+   "utc": "2023-03-10T07:00:00Z",
+   "ts": 1678431600,
+   "venues": {
+    "okx": {
+     "low": 1.0,
+     "high": 1.0001,
+     "last": 1.0,
+     "volume": 602748.0306,
+     "n": 1
+    },
+    "bitstamp": {
+     "low": 0.99995,
+     "high": 1.0,
+     "last": 0.99995,
+     "volume": 33531.7011,
+     "n": 1
+    },
+    "defillama": {
+     "low": 1.00075371,
+     "high": 1.00213566,
+     "last": 1.00075371,
+     "volume": null,
+     "n": 2
+    }
+   },
+   "market": {
+    "n": 3,
+    "min": 0.99995,
+    "max": 1.00075371,
+    "median": 1.0,
+    "lowest_venue": "bitstamp"
+   },
+   "signals": {
+    "decote_min_bps": 0.5,
+    "decote_median_bps": 0.0,
+    "sigma_disp_bps": 8.0,
+    "divergence_bps": -1.9,
+    "divergence_defillama_bps": 5.6
+   },
+   "oracle": {
+    "price": 1.00019,
+    "roundId": 36893488147419104088,
+    "updated_at": "2023-03-10T06:00:59Z",
+    "updatedAt": 1678428059,
+    "block": 16796124,
+    "sample_ts": 1678431600,
+    "source": "network"
+   },
+   "aave": {
+    "supply_usdc": 64546866.966627,
+    "cash_usdc": 23434732.196523,
+    "utilisation": 0.6369346290868063,
+    "block": 16796124,
+    "sample_ts": 1678431600,
+    "source": "network"
+   }
+  },
+  {
+   "utc": "2023-03-10T08:00:00Z",
+   "ts": 1678435200,
+   "venues": {
+    "okx": {
+     "low": 1.0,
+     "high": 1.0001,
+     "last": 1.0001,
+     "volume": 240610.5942,
+     "n": 1
+    },
+    "bitstamp": {
+     "low": 0.9993,
+     "high": 1.0,
+     "last": 0.9993,
+     "volume": 74140.6248,
+     "n": 1
+    },
+    "defillama": {
+     "low": 1.001,
+     "high": 1.001,
+     "last": 1.001,
+     "volume": null,
+     "n": 1
+    }
+   },
+   "market": {
+    "n": 3,
+    "min": 0.9993,
+    "max": 1.001,
+    "median": 1.0,
+    "lowest_venue": "bitstamp"
+   },
+   "signals": {
+    "decote_min_bps": 7.0,
+    "decote_median_bps": 0.0,
+    "sigma_disp_bps": 17.0,
+    "divergence_bps": -1.9,
+    "divergence_defillama_bps": 8.1
+   },
+   "oracle": {
+    "price": 1.00019,
+    "roundId": 36893488147419104088,
+    "updated_at": "2023-03-10T06:00:59Z",
+    "updatedAt": 1678428059,
+    "block": 16796418,
+    "sample_ts": 1678435200,
+    "source": "network"
+   },
+   "aave": {
+    "supply_usdc": 64529983.820483,
+    "cash_usdc": 23367203.627105,
+    "utilisation": 0.6378861074549376,
+    "block": 16796418,
+    "sample_ts": 1678435200,
+    "source": "network"
+   }
+  },
+  {
+   "utc": "2023-03-10T09:00:00Z",
+   "ts": 1678438800,
+   "venues": {
+    "okx": {
+     "low": 1.0,
+     "high": 1.0001,
+     "last": 1.0,
+     "volume": 264330.8546,
+     "n": 1
+    },
+    "bitstamp": {
+     "low": 0.99997,
+     "high": 1.0,
+     "last": 0.99997,
+     "volume": 3359.7094,
+     "n": 1
+    },
+    "defillama": {
+     "low": 1.001,
+     "high": 1.001,
+     "last": 1.001,
+     "volume": null,
+     "n": 1
+    }
+   },
+   "market": {
+    "n": 3,
+    "min": 0.99997,
+    "max": 1.001,
+    "median": 1.0,
+    "lowest_venue": "bitstamp"
+   },
+   "signals": {
+    "decote_min_bps": 0.3,
+    "decote_median_bps": 0.0,
+    "sigma_disp_bps": 10.3,
+    "divergence_bps": -1.9,
+    "divergence_defillama_bps": 8.1
+   },
+   "oracle": {
+    "price": 1.00019,
+    "roundId": 36893488147419104088,
+    "updated_at": "2023-03-10T06:00:59Z",
+    "updatedAt": 1678428059,
+    "block": 16796711,
+    "sample_ts": 1678438800,
+    "source": "network"
+   },
+   "aave": {
+    "supply_usdc": 64580103.739012,
+    "cash_usdc": 23411203.626498,
+    "utilisation": 0.6374858157380816,
+    "block": 16796711,
+    "sample_ts": 1678438800,
+    "source": "network"
+   }
+  },
+  {
+   "utc": "2023-03-10T10:00:00Z",
+   "ts": 1678442400,
+   "venues": {
+    "okx": {
+     "low": 1.0,
+     "high": 1.0001,
+     "last": 1.0,
+     "volume": 457500.2007,
+     "n": 1
+    },
+    "bitstamp": {
+     "low": 0.99998,
+     "high": 1.0,
+     "last": 1.0,
+     "volume": 523.5287,
+     "n": 1
+    }
+   },
+   "market": {
+    "n": 2,
+    "min": 0.99998,
+    "max": 1.0,
+    "median": 0.99999,
+    "lowest_venue": "bitstamp"
+   },
+   "signals": {
+    "decote_min_bps": 0.2,
+    "decote_median_bps": 0.1,
+    "sigma_disp_bps": 0.2,
+    "divergence_bps": -2.0,
+    "divergence_defillama_bps": null
+   },
+   "oracle": {
+    "price": 1.00019,
+    "roundId": 36893488147419104088,
+    "updated_at": "2023-03-10T06:00:59Z",
+    "updatedAt": 1678428059,
+    "block": 16797003,
+    "sample_ts": 1678442400,
+    "source": "network"
+   },
+   "aave": {
+    "supply_usdc": 63830083.226052,
+    "cash_usdc": 22665841.988773,
+    "utilisation": 0.6449034554991459,
+    "block": 16797003,
+    "sample_ts": 1678442400,
+    "source": "network"
+   }
+  },
+  {
+   "utc": "2023-03-10T11:00:00Z",
+   "ts": 1678446000,
+   "venues": {
+    "okx": {
+     "low": 1.0,
+     "high": 1.0001,
+     "last": 1.0,
+     "volume": 213147.9921,
+     "n": 1
+    },
+    "bitstamp": {
+     "low": 0.99997,
+     "high": 1.0,
+     "last": 0.99999,
+     "volume": 130270.4044,
+     "n": 1
+    },
+    "defillama": {
+     "low": 0.99998395,
+     "high": 0.99998395,
+     "last": 0.99998395,
+     "volume": null,
+     "n": 1
+    }
+   },
+   "market": {
+    "n": 3,
+    "min": 0.99997,
+    "max": 1.0,
+    "median": 0.99998395,
+    "lowest_venue": "bitstamp"
+   },
+   "signals": {
+    "decote_min_bps": 0.3,
+    "decote_median_bps": 0.2,
+    "sigma_disp_bps": 0.3,
+    "divergence_bps": -2.1,
+    "divergence_defillama_bps": -2.1
+   },
+   "oracle": {
+    "price": 1.00019,
+    "roundId": 36893488147419104088,
+    "updated_at": "2023-03-10T06:00:59Z",
+    "updatedAt": 1678428059,
+    "block": 16797293,
+    "sample_ts": 1678446000,
+    "source": "network"
+   },
+   "aave": {
+    "supply_usdc": 63837098.78465,
+    "cash_usdc": 22657916.552278,
+    "utilisation": 0.6450666307892077,
+    "block": 16797293,
+    "sample_ts": 1678446000,
+    "source": "network"
+   }
+  },
+  {
+   "utc": "2023-03-10T12:00:00Z",
+   "ts": 1678449600,
+   "venues": {
+    "okx": {
+     "low": 1.0,
+     "high": 1.0001,
+     "last": 1.0001,
+     "volume": 571727.9058,
+     "n": 1
+    },
+    "bitstamp": {
+     "low": 0.99994,
+     "high": 1.0,
+     "last": 0.99999,
+     "volume": 17507.6582,
+     "n": 1
+    },
+    "defillama": {
+     "low": 1.00069312,
+     "high": 1.00191338,
+     "last": 1.00069312,
+     "volume": null,
+     "n": 2
+    }
+   },
+   "market": {
+    "n": 3,
+    "min": 0.99994,
+    "max": 1.00069312,
+    "median": 1.0,
+    "lowest_venue": "bitstamp"
+   },
+   "signals": {
+    "decote_min_bps": 0.6,
+    "decote_median_bps": 0.0,
+    "sigma_disp_bps": 7.5,
+    "divergence_bps": -1.9,
+    "divergence_defillama_bps": 5.0
+   },
+   "oracle": {
+    "price": 1.00019,
+    "roundId": 36893488147419104088,
+    "updated_at": "2023-03-10T06:00:59Z",
+    "updatedAt": 1678428059,
+    "block": 16797588,
+    "sample_ts": 1678449600,
+    "source": "network"
+   },
+   "aave": {
+    "supply_usdc": 63787020.399757,
+    "cash_usdc": 22532053.415198,
+    "utilisation": 0.6467611549498895,
+    "block": 16797588,
+    "sample_ts": 1678449600,
+    "source": "network"
+   }
+  },
+  {
+   "utc": "2023-03-10T13:00:00Z",
+   "ts": 1678453200,
+   "venues": {
+    "okx": {
+     "low": 1.0,
+     "high": 1.0001,
+     "last": 1.0,
+     "volume": 6771370.4824,
+     "n": 1
+    },
+    "bitstamp": {
+     "low": 0.9998,
+     "high": 1.00002,
+     "last": 0.99998,
+     "volume": 8650.4262,
+     "n": 1
+    }
+   },
+   "market": {
+    "n": 2,
+    "min": 0.9998,
+    "max": 1.0,
+    "median": 0.9999,
+    "lowest_venue": "bitstamp"
+   },
+   "signals": {
+    "decote_min_bps": 2.0,
+    "decote_median_bps": 1.0,
+    "sigma_disp_bps": 2.0,
+    "divergence_bps": -2.9,
+    "divergence_defillama_bps": null
+   },
+   "oracle": {
+    "price": 1.00019,
+    "roundId": 36893488147419104088,
+    "updated_at": "2023-03-10T06:00:59Z",
+    "updatedAt": 1678428059,
+    "block": 16797884,
+    "sample_ts": 1678453200,
+    "source": "network"
+   },
+   "aave": {
+    "supply_usdc": 63983302.999779,
+    "cash_usdc": 22725014.175198,
+    "utilisation": 0.6448289927252351,
+    "block": 16797884,
+    "sample_ts": 1678453200,
+    "source": "network"
+   }
+  },
+  {
+   "utc": "2023-03-10T14:00:00Z",
+   "ts": 1678456800,
+   "venues": {
+    "okx": {
+     "low": 1.0,
+     "high": 1.0001,
+     "last": 1.0,
+     "volume": 1269405.8921,
+     "n": 1
+    },
+    "bitstamp": {
+     "low": 0.99997,
+     "high": 1.00002,
+     "last": 0.99997,
+     "volume": 1833.9014,
+     "n": 1
+    },
+    "defillama": {
+     "low": 0.99558,
+     "high": 0.99558,
+     "last": 0.99558,
+     "volume": null,
+     "n": 1
+    }
+   },
+   "market": {
+    "n": 3,
+    "min": 0.99558,
+    "max": 1.0,
+    "median": 0.99997,
+    "lowest_venue": "defillama"
+   },
+   "signals": {
+    "decote_min_bps": 44.2,
+    "decote_median_bps": 0.3,
+    "sigma_disp_bps": 44.2,
+    "divergence_bps": -2.2,
+    "divergence_defillama_bps": -46.1
+   },
+   "oracle": {
+    "price": 1.00019,
+    "roundId": 36893488147419104088,
+    "updated_at": "2023-03-10T06:00:59Z",
+    "updatedAt": 1678428059,
+    "block": 16798181,
+    "sample_ts": 1678456800,
+    "source": "network"
+   },
+   "aave": {
+    "supply_usdc": 63890811.42501,
+    "cash_usdc": 22632995.203466,
+    "utilisation": 0.6457550827941695,
+    "block": 16798181,
+    "sample_ts": 1678456800,
+    "source": "network"
+   }
+  },
+  {
+   "utc": "2023-03-10T15:00:00Z",
+   "ts": 1678460400,
+   "venues": {
+    "okx": {
+     "low": 1.0,
+     "high": 1.0001,
+     "last": 1.0,
+     "volume": 196482.3805,
+     "n": 1
+    },
+    "bitstamp": {
+     "low": 0.99986,
+     "high": 1.00003,
+     "last": 0.99997,
+     "volume": 52905.4772,
+     "n": 1
+    },
+    "defillama": {
+     "low": 0.99614395,
+     "high": 0.99614395,
+     "last": 0.99614395,
+     "volume": null,
+     "n": 1
+    }
+   },
+   "market": {
+    "n": 3,
+    "min": 0.99614395,
+    "max": 1.0,
+    "median": 0.99986,
+    "lowest_venue": "defillama"
+   },
+   "signals": {
+    "decote_min_bps": 38.6,
+    "decote_median_bps": 1.4,
+    "sigma_disp_bps": 38.6,
+    "divergence_bps": -3.3,
+    "divergence_defillama_bps": -40.5
+   },
+   "oracle": {
+    "price": 1.00019,
+    "roundId": 36893488147419104088,
+    "updated_at": "2023-03-10T06:00:59Z",
+    "updatedAt": 1678428059,
+    "block": 16798475,
+    "sample_ts": 1678460400,
+    "source": "network"
+   },
+   "aave": {
+    "supply_usdc": 63825188.059608,
+    "cash_usdc": 23112396.178334,
+    "utilisation": 0.6378797010868384,
+    "block": 16798475,
+    "sample_ts": 1678460400,
+    "source": "network"
+   }
+  },
+  {
+   "utc": "2023-03-10T16:00:00Z",
+   "ts": 1678464000,
+   "venues": {
+    "okx": {
+     "low": 1.0,
+     "high": 1.0001,
+     "last": 1.0,
+     "volume": 542720.1241,
+     "n": 1
+    },
+    "bitstamp": {
+     "low": 0.99998,
+     "high": 1.00002,
+     "last": 1.00002,
+     "volume": 20.0002,
+     "n": 1
+    },
+    "defillama": {
+     "low": 0.99947826,
+     "high": 0.99947826,
+     "last": 0.99947826,
+     "volume": null,
+     "n": 1
+    }
+   },
+   "market": {
+    "n": 3,
+    "min": 0.99947826,
+    "max": 1.0,
+    "median": 0.99998,
+    "lowest_venue": "defillama"
+   },
+   "signals": {
+    "decote_min_bps": 5.2,
+    "decote_median_bps": 0.2,
+    "sigma_disp_bps": 5.2,
+    "divergence_bps": -2.1,
+    "divergence_defillama_bps": -7.1
+   },
+   "oracle": {
+    "price": 1.00019,
+    "roundId": 36893488147419104088,
+    "updated_at": "2023-03-10T06:00:59Z",
+    "updatedAt": 1678428059,
+    "block": 16798773,
+    "sample_ts": 1678464000,
+    "source": "network"
+   },
+   "aave": {
+    "supply_usdc": 67824298.48753,
+    "cash_usdc": 27192431.496262,
+    "utilisation": 0.5990753741262576,
+    "block": 16798773,
+    "sample_ts": 1678464000,
+    "source": "network"
+   }
+  },
+  {
+   "utc": "2023-03-10T17:00:00Z",
+   "ts": 1678467600,
+   "venues": {
+    "okx": {
+     "low": 1.0,
+     "high": 1.0001,
+     "last": 1.0001,
+     "volume": 205307.9683,
+     "n": 1
+    },
+    "bitstamp": {
+     "low": 0.99998,
+     "high": 1.00003,
+     "last": 1.00002,
+     "volume": 10809.7309,
+     "n": 1
+    },
+    "defillama": {
+     "low": 0.99883119,
+     "high": 0.99883119,
+     "last": 0.99883119,
+     "volume": null,
+     "n": 1
+    }
+   },
+   "market": {
+    "n": 3,
+    "min": 0.99883119,
+    "max": 1.0,
+    "median": 0.99998,
+    "lowest_venue": "defillama"
+   },
+   "signals": {
+    "decote_min_bps": 11.7,
+    "decote_median_bps": 0.2,
+    "sigma_disp_bps": 11.7,
+    "divergence_bps": -2.1,
+    "divergence_defillama_bps": -13.6
+   },
+   "oracle": {
+    "price": 1.00019,
+    "roundId": 36893488147419104088,
+    "updated_at": "2023-03-10T06:00:59Z",
+    "updatedAt": 1678428059,
+    "block": 16799068,
+    "sample_ts": 1678467600,
+    "source": "network"
+   },
+   "aave": {
+    "supply_usdc": 67740724.087298,
+    "cash_usdc": 27080807.187721,
+    "utilisation": 0.6002285544981516,
+    "block": 16799068,
+    "sample_ts": 1678467600,
+    "source": "network"
+   }
+  },
+  {
+   "utc": "2023-03-10T18:00:00Z",
+   "ts": 1678471200,
+   "venues": {
+    "okx": {
+     "low": 1.0,
+     "high": 1.0001,
+     "last": 1.0,
+     "volume": 658426.0244,
+     "n": 1
+    },
+    "bitstamp": {
+     "low": 0.99694,
+     "high": 1.00001,
+     "last": 0.99997,
+     "volume": 407245.6333,
+     "n": 1
+    },
+    "defillama": {
+     "low": 1.00317896,
+     "high": 1.00317896,
+     "last": 1.00317896,
+     "volume": null,
+     "n": 1
+    }
+   },
+   "market": {
+    "n": 3,
+    "min": 0.99694,
+    "max": 1.00317896,
+    "median": 1.0,
+    "lowest_venue": "bitstamp"
+   },
+   "signals": {
+    "decote_min_bps": 30.6,
+    "decote_median_bps": 0.0,
+    "sigma_disp_bps": 62.2,
+    "divergence_bps": -1.9,
+    "divergence_defillama_bps": 29.9
+   },
+   "oracle": {
+    "price": 1.00019,
+    "roundId": 36893488147419104088,
+    "updated_at": "2023-03-10T06:00:59Z",
+    "updatedAt": 1678428059,
+    "block": 16799366,
+    "sample_ts": 1678471200,
+    "source": "network"
+   },
+   "aave": {
+    "supply_usdc": 67228144.373579,
+    "cash_usdc": 26587696.489023,
+    "utilisation": 0.604515389547594,
+    "block": 16799366,
+    "sample_ts": 1678471200,
+    "source": "network"
+   }
+  },
+  {
+   "utc": "2023-03-10T19:00:00Z",
+   "ts": 1678474800,
+   "venues": {
+    "okx": {
+     "low": 0.9999,
+     "high": 1.0001,
+     "last": 0.9999,
+     "volume": 2116680.1206,
+     "n": 1
+    },
+    "bitstamp": {
+     "low": 0.99986,
+     "high": 0.99997,
+     "last": 0.99997,
+     "volume": 130522.3713,
+     "n": 1
+    },
+    "defillama": {
+     "low": 0.99907454,
+     "high": 0.99907454,
+     "last": 0.99907454,
+     "volume": null,
+     "n": 1
+    }
+   },
+   "market": {
+    "n": 3,
+    "min": 0.99907454,
+    "max": 0.9999,
+    "median": 0.99986,
+    "lowest_venue": "defillama"
+   },
+   "signals": {
+    "decote_min_bps": 9.3,
+    "decote_median_bps": 1.4,
+    "sigma_disp_bps": 8.3,
+    "divergence_bps": -3.3,
+    "divergence_defillama_bps": -11.2
+   },
+   "oracle": {
+    "price": 1.00019,
+    "roundId": 36893488147419104088,
+    "updated_at": "2023-03-10T06:00:59Z",
+    "updatedAt": 1678428059,
+    "block": 16799658,
+    "sample_ts": 1678474800,
+    "source": "network"
+   },
+   "aave": {
+    "supply_usdc": 67152324.396648,
+    "cash_usdc": 26513398.693108,
+    "utilisation": 0.6051752648724182,
+    "block": 16799658,
+    "sample_ts": 1678474800,
+    "source": "network"
+   }
+  },
+  {
+   "utc": "2023-03-10T20:00:00Z",
+   "ts": 1678478400,
+   "venues": {
+    "okx": {
+     "low": 0.9958,
+     "high": 1.0,
+     "last": 0.9995,
+     "volume": 2155230.1508,
+     "n": 1
+    },
+    "bitstamp": {
+     "low": 0.9993,
+     "high": 0.99998,
+     "last": 0.99987,
+     "volume": 71531.7017,
+     "n": 1
+    },
+    "defillama": {
+     "low": 0.99872211,
+     "high": 0.998901,
+     "last": 0.998901,
+     "volume": null,
+     "n": 2
+    }
+   },
+   "market": {
+    "n": 3,
+    "min": 0.9958,
+    "max": 0.9993,
+    "median": 0.99872211,
+    "lowest_venue": "okx"
+   },
+   "signals": {
+    "decote_min_bps": 42.0,
+    "decote_median_bps": 12.8,
+    "sigma_disp_bps": 35.0,
+    "divergence_bps": -14.7,
+    "divergence_defillama_bps": -14.7
+   },
+   "oracle": {
+    "price": 1.00019,
+    "roundId": 36893488147419104088,
+    "updated_at": "2023-03-10T06:00:59Z",
+    "updatedAt": 1678428059,
+    "block": 16799956,
+    "sample_ts": 1678478400,
+    "source": "network"
+   },
+   "aave": {
+    "supply_usdc": 62722542.371018,
+    "cash_usdc": 21408735.089163,
+    "utilisation": 0.6586755848873997,
+    "block": 16799956,
+    "sample_ts": 1678478400,
+    "source": "network"
+   }
+  },
+  {
+   "utc": "2023-03-10T21:00:00Z",
+   "ts": 1678482000,
+   "venues": {
+    "okx": {
+     "low": 0.9983,
+     "high": 0.9997,
+     "last": 0.9988,
+     "volume": 3424283.4572,
+     "n": 1
+    },
+    "bitstamp": {
+     "low": 0.997,
+     "high": 0.99988,
+     "last": 0.9998,
+     "volume": 202002.2532,
+     "n": 1
+    },
+    "defillama": {
+     "low": 0.99189383,
+     "high": 0.99189383,
+     "last": 0.99189383,
+     "volume": null,
+     "n": 1
+    }
+   },
+   "market": {
+    "n": 3,
+    "min": 0.99189383,
+    "max": 0.9983,
+    "median": 0.997,
+    "lowest_venue": "defillama"
+   },
+   "signals": {
+    "decote_min_bps": 81.1,
+    "decote_median_bps": 30.0,
+    "sigma_disp_bps": 64.2,
+    "divergence_bps": -31.9,
+    "divergence_defillama_bps": -83.0
+   },
+   "oracle": {
+    "price": 1.00019,
+    "roundId": 36893488147419104088,
+    "updated_at": "2023-03-10T06:00:59Z",
+    "updatedAt": 1678428059,
+    "block": 16800254,
+    "sample_ts": 1678482000,
+    "source": "network"
+   },
+   "aave": {
+    "supply_usdc": 62996909.724297,
+    "cash_usdc": 21666683.237001,
+    "utilisation": 0.6560675224892107,
+    "block": 16800254,
+    "sample_ts": 1678482000,
+    "source": "network"
+   }
+  },
+  {
+   "utc": "2023-03-10T22:00:00Z",
+   "ts": 1678485600,
+   "venues": {
+    "okx": {
+     "low": 0.9959,
+     "high": 0.9989,
+     "last": 0.9964,
+     "volume": 7472574.8108,
+     "n": 1
+    },
+    "bitstamp": {
+     "low": 0.99101,
+     "high": 0.99985,
+     "last": 0.99799,
+     "volume": 1005498.8563,
+     "n": 1
+    },
+    "defillama": {
+     "low": 0.99423831,
+     "high": 0.99423831,
+     "last": 0.99423831,
+     "volume": null,
+     "n": 1
+    }
+   },
+   "market": {
+    "n": 3,
+    "min": 0.99101,
+    "max": 0.9959,
+    "median": 0.99423831,
+    "lowest_venue": "bitstamp"
+   },
+   "signals": {
+    "decote_min_bps": 89.9,
+    "decote_median_bps": 57.6,
+    "sigma_disp_bps": 49.1,
+    "divergence_bps": -59.5,
+    "divergence_defillama_bps": -59.5
+   },
+   "oracle": {
+    "price": 1.00019,
+    "roundId": 36893488147419104088,
+    "updated_at": "2023-03-10T06:00:59Z",
+    "updatedAt": 1678428059,
+    "block": 16800549,
+    "sample_ts": 1678485600,
+    "source": "network"
+   },
+   "aave": {
+    "supply_usdc": 61644779.508144,
+    "cash_usdc": 20067361.896691,
+    "utilisation": 0.6744677804543066,
+    "block": 16800549,
+    "sample_ts": 1678485600,
+    "source": "network"
+   }
+  },
+  {
+   "utc": "2023-03-10T23:00:00Z",
+   "ts": 1678489200,
+   "venues": {
+    "okx": {
+     "low": 0.9905,
+     "high": 0.9966,
+     "last": 0.9947,
+     "volume": 16775586.3285,
+     "n": 1
+    },
+    "bitstamp": {
+     "low": 0.99162,
+     "high": 0.99807,
+     "last": 0.99773,
+     "volume": 409813.5396,
+     "n": 1
+    }
+   },
+   "market": {
+    "n": 2,
+    "min": 0.9905,
+    "max": 0.99162,
+    "median": 0.99106,
+    "lowest_venue": "okx"
+   },
+   "signals": {
+    "decote_min_bps": 95.0,
+    "decote_median_bps": 89.4,
+    "sigma_disp_bps": 11.3,
+    "divergence_bps": -65.0,
+    "divergence_defillama_bps": null
+   },
+   "oracle": {
+    "price": 0.99755917,
+    "roundId": 36893488147419104089,
+    "updated_at": "2023-03-10T22:27:35Z",
+    "updatedAt": 1678487255,
+    "block": 16800848,
+    "sample_ts": 1678489200,
+    "source": "network"
+   },
+   "aave": {
+    "supply_usdc": 61571610.984712,
+    "cash_usdc": 19967914.442473,
+    "utilisation": 0.6756960858563379,
+    "block": 16800848,
+    "sample_ts": 1678489200,
+    "source": "network"
+   }
+  },
+  {
+   "utc": "2023-03-11T00:00:00Z",
+   "ts": 1678492800,
+   "venues": {
+    "okx": {
+     "low": 0.9761,
+     "high": 0.996,
+     "last": 0.9875,
+     "volume": 26762571.8245,
+     "n": 1
+    },
+    "bitstamp": {
+     "low": 0.99666,
+     "high": 0.99854,
+     "last": 0.99666,
+     "volume": 202562.1406,
+     "n": 1
+    },
+    "defillama": {
+     "low": 0.99407208,
+     "high": 0.99407208,
+     "last": 0.99407208,
+     "volume": null,
+     "n": 1
+    }
+   },
+   "market": {
+    "n": 3,
+    "min": 0.9761,
+    "max": 0.99666,
+    "median": 0.99407208,
+    "lowest_venue": "okx"
+   },
+   "signals": {
+    "decote_min_bps": 239.0,
+    "decote_median_bps": 59.3,
+    "sigma_disp_bps": 206.3,
+    "divergence_bps": -34.9,
+    "divergence_defillama_bps": -34.9
+   },
+   "oracle": {
+    "price": 0.99755917,
+    "roundId": 36893488147419104089,
+    "updated_at": "2023-03-10T22:27:35Z",
+    "updatedAt": 1678487255,
+    "block": 16801143,
+    "sample_ts": 1678492800,
+    "source": "network"
+   },
+   "aave": {
+    "supply_usdc": 59629908.302468,
+    "cash_usdc": 17754338.468216,
+    "utilisation": 0.7022578270931004,
+    "block": 16801143,
+    "sample_ts": 1678492800,
+    "source": "network"
+   }
+  },
+  {
+   "utc": "2023-03-11T01:00:00Z",
+   "ts": 1678496400,
+   "venues": {
+    "okx": {
+     "low": 0.973,
+     "high": 0.9898,
+     "last": 0.9778,
+     "volume": 37303889.9084,
+     "n": 1
+    },
+    "bitstamp": {
+     "low": 0.9924,
+     "high": 0.99911,
+     "last": 0.99792,
+     "volume": 726102.2974,
+     "n": 1
+    },
+    "defillama": {
+     "low": 0.99126505,
+     "high": 0.99126505,
+     "last": 0.99126505,
+     "volume": null,
+     "n": 1
+    }
+   },
+   "market": {
+    "n": 3,
+    "min": 0.973,
+    "max": 0.9924,
+    "median": 0.99126505,
+    "lowest_venue": "okx"
+   },
+   "signals": {
+    "decote_min_bps": 270.0,
+    "decote_median_bps": 87.3,
+    "sigma_disp_bps": 195.5,
+    "divergence_bps": -37.7,
+    "divergence_defillama_bps": -37.7
+   },
+   "oracle": {
+    "price": 0.99503491,
+    "roundId": 36893488147419104090,
+    "updated_at": "2023-03-11T00:38:11Z",
+    "updatedAt": 1678495091,
+    "block": 16801441,
+    "sample_ts": 1678496400,
+    "source": "network"
+   },
+   "aave": {
+    "supply_usdc": 59533145.821212,
+    "cash_usdc": 14718508.142721,
+    "utilisation": 0.7527678415159995,
+    "block": 16801441,
+    "sample_ts": 1678496400,
+    "source": "network"
+   }
+  },
+  {
+   "utc": "2023-03-11T02:00:00Z",
+   "ts": 1678500000,
+   "venues": {
+    "okx": {
+     "low": 0.9732,
+     "high": 0.9861,
+     "last": 0.9804,
+     "volume": 55770201.8975,
+     "n": 1
+    },
+    "bitstamp": {
+     "low": 0.99707,
+     "high": 0.99971,
+     "last": 0.9993,
+     "volume": 113268.3493,
+     "n": 1
+    },
+    "defillama": {
+     "low": 0.98406694,
+     "high": 0.98406694,
+     "last": 0.98406694,
+     "volume": null,
+     "n": 1
+    }
+   },
+   "market": {
+    "n": 3,
+    "min": 0.9732,
+    "max": 0.99707,
+    "median": 0.98406694,
+    "lowest_venue": "okx"
+   },
+   "signals": {
+    "decote_min_bps": 268.0,
+    "decote_median_bps": 159.3,
+    "sigma_disp_bps": 239.4,
+    "divergence_bps": -37.2,
+    "divergence_defillama_bps": -37.2
+   },
+   "oracle": {
+    "price": 0.98778232,
+    "roundId": 36893488147419104094,
+    "updated_at": "2023-03-11T01:59:11Z",
+    "updatedAt": 1678499951,
+    "block": 16801739,
+    "sample_ts": 1678500000,
+    "source": "network"
+   },
+   "aave": {
+    "supply_usdc": 53670463.200694,
+    "cash_usdc": 8849501.694759,
+    "utilisation": 0.8351141173932598,
+    "block": 16801739,
+    "sample_ts": 1678500000,
+    "source": "network"
+   }
+  },
+  {
+   "utc": "2023-03-11T03:00:00Z",
+   "ts": 1678503600,
+   "venues": {
+    "okx": {
+     "low": 0.9315,
+     "high": 0.9807,
+     "last": 0.9388,
+     "volume": 106642739.6507,
+     "n": 1
+    },
+    "bitstamp": {
+     "low": 0.97501,
+     "high": 0.99975,
+     "last": 0.997,
+     "volume": 842545.3799,
+     "n": 1
+    },
+    "defillama": {
+     "low": 0.93475954,
+     "high": 0.97982575,
+     "last": 0.93475954,
+     "volume": null,
+     "n": 2
+    }
+   },
+   "market": {
+    "n": 3,
+    "min": 0.9315,
+    "max": 0.97501,
+    "median": 0.93475954,
+    "lowest_venue": "okx"
+   },
+   "signals": {
+    "decote_min_bps": 685.0,
+    "decote_median_bps": 652.4,
+    "sigma_disp_bps": 446.3,
+    "divergence_bps": -558.9,
+    "divergence_defillama_bps": -558.9
+   },
+   "oracle": {
+    "price": 0.99065,
+    "roundId": 36893488147419104099,
+    "updated_at": "2023-03-11T02:50:11Z",
+    "updatedAt": 1678503011,
+    "block": 16802034,
+    "sample_ts": 1678503600,
+    "source": "network"
+   },
+   "aave": {
+    "supply_usdc": 52690677.195702,
+    "cash_usdc": 6705308.034605,
+    "utilisation": 0.8727420410692319,
+    "block": 16802034,
+    "sample_ts": 1678503600,
+    "source": "network"
+   }
+  },
+  {
+   "utc": "2023-03-11T04:00:00Z",
+   "ts": 1678507200,
+   "venues": {
+    "okx": {
+     "low": 0.93,
+     "high": 0.957,
+     "last": 0.9459,
+     "volume": 76750225.7358,
+     "n": 1
+    },
+    "bitstamp": {
+     "low": 0.96593,
+     "high": 0.997,
+     "last": 0.98622,
+     "volume": 1108754.0477,
+     "n": 1
+    }
+   },
+   "market": {
+    "n": 2,
+    "min": 0.93,
+    "max": 0.96593,
+    "median": 0.947965,
+    "lowest_venue": "okx"
+   },
+   "signals": {
+    "decote_min_bps": 700.0,
+    "decote_median_bps": 520.4,
+    "sigma_disp_bps": 372.0,
+    "divergence_bps": 20.2,
+    "divergence_defillama_bps": null
+   },
+   "oracle": {
+    "price": 0.94594839,
+    "roundId": 36893488147419104125,
+    "updated_at": "2023-03-11T03:58:47Z",
+    "updatedAt": 1678507127,
+    "block": 16802331,
+    "sample_ts": 1678507200,
+    "source": "network"
+   },
+   "aave": {
+    "supply_usdc": 52995066.026284,
+    "cash_usdc": 6964503.145411,
+    "utilisation": 0.8685820460728022,
+    "block": 16802331,
+    "sample_ts": 1678507200,
+    "source": "network"
+   }
+  },
+  {
+   "utc": "2023-03-11T05:00:00Z",
+   "ts": 1678510800,
+   "venues": {
+    "okx": {
+     "low": 0.932,
+     "high": 0.95,
+     "last": 0.9332,
+     "volume": 58571516.6568,
+     "n": 1
+    },
+    "bitstamp": {
+     "low": 0.9312,
+     "high": 0.99799,
+     "last": 0.933,
+     "volume": 2068634.2189,
+     "n": 1
+    },
+    "defillama": {
+     "low": 0.94514911,
+     "high": 0.94514911,
+     "last": 0.94514911,
+     "volume": null,
+     "n": 1
+    }
+   },
+   "market": {
+    "n": 3,
+    "min": 0.9312,
+    "max": 0.94514911,
+    "median": 0.932,
+    "lowest_venue": "bitstamp"
+   },
+   "signals": {
+    "decote_min_bps": 688.0,
+    "decote_median_bps": 680.0,
+    "sigma_disp_bps": 147.6,
+    "divergence_bps": -159.5,
+    "divergence_defillama_bps": -28.0
+   },
+   "oracle": {
+    "price": 0.9479459,
+    "roundId": 36893488147419104149,
+    "updated_at": "2023-03-11T04:52:23Z",
+    "updatedAt": 1678510343,
+    "block": 16802627,
+    "sample_ts": 1678510800,
+    "source": "network"
+   },
+   "aave": {
+    "supply_usdc": 55777137.023269,
+    "cash_usdc": 10257016.998084,
+    "utilisation": 0.8161071445132618,
+    "block": 16802627,
+    "sample_ts": 1678510800,
+    "source": "network"
+   }
+  },
+  {
+   "utc": "2023-03-11T06:00:00Z",
+   "ts": 1678514400,
+   "venues": {
+    "okx": {
+     "low": 0.887,
+     "high": 0.935,
+     "last": 0.8951,
+     "volume": 103967899.9933,
+     "n": 1
+    },
+    "bitstamp": {
+     "low": 0.82093,
+     "high": 0.94078,
+     "last": 0.88194,
+     "volume": 1402386.9508,
+     "n": 1
+    },
+    "defillama": {
+     "low": 0.89491176,
+     "high": 0.93614905,
+     "last": 0.89491176,
+     "volume": null,
+     "n": 2
+    }
+   },
+   "market": {
+    "n": 3,
+    "min": 0.82093,
+    "max": 0.89491176,
+    "median": 0.887,
+    "lowest_venue": "bitstamp"
+   },
+   "signals": {
+    "decote_min_bps": 1790.7,
+    "decote_median_bps": 1130.0,
+    "sigma_disp_bps": 826.7,
+    "divergence_bps": -525.0,
+    "divergence_defillama_bps": -445.9
+   },
+   "oracle": {
+    "price": 0.93949942,
+    "roundId": 36893488147419104162,
+    "updated_at": "2023-03-11T05:53:23Z",
+    "updatedAt": 1678514003,
+    "block": 16802921,
+    "sample_ts": 1678514400,
+    "source": "network"
+   },
+   "aave": {
+    "supply_usdc": 61283954.910512,
+    "cash_usdc": 19043036.801767,
+    "utilisation": 0.689265537291547,
+    "block": 16802921,
+    "sample_ts": 1678514400,
+    "source": "network"
+   }
+  },
+  {
+   "utc": "2023-03-11T07:00:00Z",
+   "ts": 1678518000,
+   "venues": {
+    "okx": {
+     "low": 0.8698,
+     "high": 0.8994,
+     "last": 0.8787,
+     "volume": 102699036.4157,
+     "n": 1
+    },
+    "bitstamp": {
+     "low": 0.80526,
+     "high": 0.8802,
+     "last": 0.86267,
+     "volume": 859447.3212,
+     "n": 1
+    },
+    "defillama": {
+     "low": 0.876675,
+     "high": 0.876675,
+     "last": 0.876675,
+     "volume": null,
+     "n": 1
+    }
+   },
+   "market": {
+    "n": 3,
+    "min": 0.80526,
+    "max": 0.876675,
+    "median": 0.8698,
+    "lowest_venue": "bitstamp"
+   },
+   "signals": {
+    "decote_min_bps": 1947.4,
+    "decote_median_bps": 1302.0,
+    "sigma_disp_bps": 814.6,
+    "divergence_bps": -364.3,
+    "divergence_defillama_bps": -295.5
+   },
+   "oracle": {
+    "price": 0.90622834,
+    "roundId": 36893488147419104190,
+    "updated_at": "2023-03-11T06:56:59Z",
+    "updatedAt": 1678517819,
+    "block": 16803216,
+    "sample_ts": 1678518000,
+    "source": "network"
+   },
+   "aave": {
+    "supply_usdc": 65924415.435758,
+    "cash_usdc": 21257485.858139,
+    "utilisation": 0.6775476017856543,
+    "block": 16803216,
+    "sample_ts": 1678518000,
+    "source": "network"
+   }
+  },
+  {
+   "utc": "2023-03-11T08:00:00Z",
+   "ts": 1678521600,
+   "venues": {
+    "okx": {
+     "low": 0.877,
+     "high": 0.93,
+     "last": 0.9234,
+     "volume": 89681277.9577,
+     "n": 1
+    },
+    "bitstamp": {
+     "low": 0.825,
+     "high": 0.92001,
+     "last": 0.92,
+     "volume": 895520.0417,
+     "n": 1
+    },
+    "defillama": {
+     "low": 0.921553,
+     "high": 0.921553,
+     "last": 0.921553,
+     "volume": null,
+     "n": 1
+    }
+   },
+   "market": {
+    "n": 3,
+    "min": 0.825,
+    "max": 0.921553,
+    "median": 0.877,
+    "lowest_venue": "bitstamp"
+   },
+   "signals": {
+    "decote_min_bps": 1750.0,
+    "decote_median_bps": 1230.0,
+    "sigma_disp_bps": 1047.7,
+    "divergence_bps": -63.0,
+    "divergence_defillama_bps": 382.5
+   },
+   "oracle": {
+    "price": 0.8833,
+    "roundId": 36893488147419104216,
+    "updated_at": "2023-03-11T07:53:23Z",
+    "updatedAt": 1678521203,
+    "block": 16803515,
+    "sample_ts": 1678521600,
+    "source": "network"
+   },
+   "aave": {
+    "supply_usdc": 65226159.04893,
+    "cash_usdc": 21168093.730434,
+    "utilisation": 0.6754661927194798,
+    "block": 16803515,
+    "sample_ts": 1678521600,
+    "source": "network"
+   }
+  },
+  {
+   "utc": "2023-03-11T09:00:00Z",
+   "ts": 1678525200,
+   "venues": {
+    "okx": {
+     "low": 0.9021,
+     "high": 0.9237,
+     "last": 0.906,
+     "volume": 43318058.1526,
+     "n": 1
+    },
+    "bitstamp": {
+     "low": 0.90033,
+     "high": 0.92456,
+     "last": 0.90205,
+     "volume": 863706.6689,
+     "n": 1
+    }
+   },
+   "market": {
+    "n": 2,
+    "min": 0.90033,
+    "max": 0.9021,
+    "median": 0.901215,
+    "lowest_venue": "bitstamp"
+   },
+   "signals": {
+    "decote_min_bps": 996.7,
+    "decote_median_bps": 987.9,
+    "sigma_disp_bps": 19.6,
+    "divergence_bps": -223.8,
+    "divergence_defillama_bps": null
+   },
+   "oracle": {
+    "price": 0.9236,
+    "roundId": 36893488147419104235,
+    "updated_at": "2023-03-11T08:55:59Z",
+    "updatedAt": 1678524959,
+    "block": 16803809,
+    "sample_ts": 1678525200,
+    "source": "network"
+   },
+   "aave": {
+    "supply_usdc": 73422451.602463,
+    "cash_usdc": 31428735.967698,
+    "utilisation": 0.5719465193308295,
+    "block": 16803809,
+    "sample_ts": 1678525200,
+    "source": "network"
+   }
+  },
+  {
+   "utc": "2023-03-11T10:00:00Z",
+   "ts": 1678528800,
+   "venues": {
+    "okx": {
+     "low": 0.899,
+     "high": 0.9146,
+     "last": 0.9,
+     "volume": 41255001.7391,
+     "n": 1
+    },
+    "bitstamp": {
+     "low": 0.88364,
+     "high": 0.91999,
+     "last": 0.88364,
+     "volume": 2119755.8621,
+     "n": 1
+    },
+    "defillama": {
+     "low": 0.90732842,
+     "high": 0.90732842,
+     "last": 0.90732842,
+     "volume": null,
+     "n": 1
+    }
+   },
+   "market": {
+    "n": 3,
+    "min": 0.88364,
+    "max": 0.90732842,
+    "median": 0.899,
+    "lowest_venue": "bitstamp"
+   },
+   "signals": {
+    "decote_min_bps": 1163.6,
+    "decote_median_bps": 1010.0,
+    "sigma_disp_bps": 261.1,
+    "divergence_bps": -109.3,
+    "divergence_defillama_bps": -26.0
+   },
+   "oracle": {
+    "price": 0.90992869,
+    "roundId": 36893488147419104242,
+    "updated_at": "2023-03-11T09:51:35Z",
+    "updatedAt": 1678528295,
+    "block": 16804108,
+    "sample_ts": 1678528800,
+    "source": "network"
+   },
+   "aave": {
+    "supply_usdc": 72644441.580552,
+    "cash_usdc": 33377228.742372,
+    "utilisation": 0.5405398125972025,
+    "block": 16804108,
+    "sample_ts": 1678528800,
+    "source": "network"
+   }
+  },
+  {
+   "utc": "2023-03-11T11:00:00Z",
+   "ts": 1678532400,
+   "venues": {
+    "okx": {
+     "low": 0.8945,
+     "high": 0.9097,
+     "last": 0.9078,
+     "volume": 38870389.9888,
+     "n": 1
+    },
+    "bitstamp": {
+     "low": 0.87399,
+     "high": 0.91,
+     "last": 0.90911,
+     "volume": 660620.0938,
+     "n": 1
+    },
+    "defillama": {
+     "low": 0.90282528,
+     "high": 0.90282528,
+     "last": 0.90282528,
+     "volume": null,
+     "n": 1
+    }
+   },
+   "market": {
+    "n": 3,
+    "min": 0.87399,
+    "max": 0.90282528,
+    "median": 0.8945,
+    "lowest_venue": "bitstamp"
+   },
+   "signals": {
+    "decote_min_bps": 1260.1,
+    "decote_median_bps": 1055.0,
+    "sigma_disp_bps": 319.4,
+    "divergence_bps": -166.0,
+    "divergence_defillama_bps": -82.7
+   },
+   "oracle": {
+    "price": 0.91109897,
+    "roundId": 36893488147419104246,
+    "updated_at": "2023-03-11T10:59:59Z",
+    "updatedAt": 1678532399,
+    "block": 16804403,
+    "sample_ts": 1678532400,
+    "source": "network"
+   },
+   "aave": {
+    "supply_usdc": 76041773.048225,
+    "cash_usdc": 42063022.261422,
+    "utilisation": 0.44684322083408,
+    "block": 16804403,
+    "sample_ts": 1678532400,
+    "source": "network"
+   }
+  },
+  {
+   "utc": "2023-03-11T12:00:00Z",
+   "ts": 1678536000,
+   "venues": {
+    "okx": {
+     "low": 0.907,
+     "high": 0.9251,
+     "last": 0.9144,
+     "volume": 39055786.9484,
+     "n": 1
+    },
+    "bitstamp": {
+     "low": 0.88852,
+     "high": 0.9195,
+     "last": 0.90446,
+     "volume": 1087594.3566,
+     "n": 1
+    },
+    "defillama": {
+     "low": 0.8954775,
+     "high": 0.90435451,
+     "last": 0.8954775,
+     "volume": null,
+     "n": 2
+    }
+   },
+   "market": {
+    "n": 3,
+    "min": 0.88852,
+    "max": 0.907,
+    "median": 0.8954775,
+    "lowest_venue": "bitstamp"
+   },
+   "signals": {
+    "decote_min_bps": 1114.8,
+    "decote_median_bps": 1045.2,
+    "sigma_disp_bps": 203.7,
+    "divergence_bps": -141.8,
+    "divergence_defillama_bps": -141.8
+   },
+   "oracle": {
+    "price": 0.90965689,
+    "roundId": 36893488147419104254,
+    "updated_at": "2023-03-11T11:33:59Z",
+    "updatedAt": 1678534439,
+    "block": 16804701,
+    "sample_ts": 1678536000,
+    "source": "network"
+   },
+   "aave": {
+    "supply_usdc": 78651557.705902,
+    "cash_usdc": 44945693.340606,
+    "utilisation": 0.42854668551296493,
+    "block": 16804701,
+    "sample_ts": 1678536000,
+    "source": "network"
+   }
+  },
+  {
+   "utc": "2023-03-11T13:00:00Z",
+   "ts": 1678539600,
+   "venues": {
+    "okx": {
+     "low": 0.905,
+     "high": 0.9144,
+     "last": 0.912,
+     "volume": 28491236.8841,
+     "n": 1
+    },
+    "bitstamp": {
+     "low": 0.88852,
+     "high": 0.91177,
+     "last": 0.91158,
+     "volume": 921574.6303,
+     "n": 1
+    }
+   },
+   "market": {
+    "n": 2,
+    "min": 0.88852,
+    "max": 0.905,
+    "median": 0.89676,
+    "lowest_venue": "bitstamp"
+   },
+   "signals": {
+    "decote_min_bps": 1114.8,
+    "decote_median_bps": 1032.4,
+    "sigma_disp_bps": 182.1,
+    "divergence_bps": -101.1,
+    "divergence_defillama_bps": null
+   },
+   "oracle": {
+    "price": 0.90687439,
+    "roundId": 36893488147419104266,
+    "updated_at": "2023-03-11T12:59:35Z",
+    "updatedAt": 1678539575,
+    "block": 16805000,
+    "sample_ts": 1678539600,
+    "source": "network"
+   },
+   "aave": {
+    "supply_usdc": 78795933.724038,
+    "cash_usdc": 45318852.520133,
+    "utilisation": 0.42485797961541594,
+    "block": 16805000,
+    "sample_ts": 1678539600,
+    "source": "network"
+   }
+  },
+  {
+   "utc": "2023-03-11T14:00:00Z",
+   "ts": 1678543200,
+   "venues": {
+    "binance": {
+     "low": 0.882,
+     "high": 1.0,
+     "last": 0.9129,
+     "volume": 108959660.0,
+     "n": 1
+    },
+    "okx": {
+     "low": 0.9046,
+     "high": 0.914,
+     "last": 0.9122,
+     "volume": 19963605.166,
+     "n": 1
+    },
+    "bitstamp": {
+     "low": 0.8988,
+     "high": 0.91501,
+     "last": 0.915,
+     "volume": 510437.494,
+     "n": 1
+    },
+    "defillama": {
+     "low": 0.90784916,
+     "high": 0.90784916,
+     "last": 0.90784916,
+     "volume": null,
+     "n": 1
+    }
+   },
+   "market": {
+    "n": 4,
+    "min": 0.882,
+    "max": 0.90784916,
+    "median": 0.9017,
+    "lowest_venue": "binance"
+   },
+   "signals": {
+    "decote_min_bps": 1180.0,
+    "decote_median_bps": 983.0,
+    "sigma_disp_bps": 284.7,
+    "divergence_bps": -113.0,
+    "divergence_defillama_bps": -51.5
+   },
+   "oracle": {
+    "price": 0.913,
+    "roundId": 36893488147419104272,
+    "updated_at": "2023-03-11T13:19:11Z",
+    "updatedAt": 1678540751,
+    "block": 16805295,
+    "sample_ts": 1678543200,
+    "source": "network"
+   },
+   "aave": {
+    "supply_usdc": 80285552.305044,
+    "cash_usdc": 47152025.180941,
+    "utilisation": 0.41269601033835523,
+    "block": 16805295,
+    "sample_ts": 1678543200,
+    "source": "network"
+   }
+  },
+  {
+   "utc": "2023-03-11T15:00:00Z",
+   "ts": 1678546800,
+   "venues": {
+    "binance": {
+     "low": 0.9096,
+     "high": 0.9179,
+     "last": 0.9128,
+     "volume": 53803548.0,
+     "n": 1
+    },
+    "okx": {
+     "low": 0.91,
+     "high": 0.9155,
+     "last": 0.9139,
+     "volume": 12934882.3122,
+     "n": 1
+    },
+    "bitstamp": {
+     "low": 0.91064,
+     "high": 0.924,
+     "last": 0.92399,
+     "volume": 434023.218,
+     "n": 1
+    },
+    "defillama": {
+     "low": 0.91156504,
+     "high": 0.91156504,
+     "last": 0.91156504,
+     "volume": null,
+     "n": 1
+    }
+   },
+   "market": {
+    "n": 4,
+    "min": 0.9096,
+    "max": 0.91156504,
+    "median": 0.91032,
+    "lowest_venue": "binance"
+   },
+   "signals": {
+    "decote_min_bps": 904.0,
+    "decote_median_bps": 896.8,
+    "sigma_disp_bps": 21.6,
+    "divergence_bps": -50.8,
+    "divergence_defillama_bps": -38.3
+   },
+   "oracle": {
+    "price": 0.9154,
+    "roundId": 36893488147419104273,
+    "updated_at": "2023-03-11T14:50:47Z",
+    "updatedAt": 1678546247,
+    "block": 16805591,
+    "sample_ts": 1678546800,
+    "source": "network"
+   },
+   "aave": {
+    "supply_usdc": 82008702.481351,
+    "cash_usdc": 48841508.628125,
+    "utilisation": 0.4044350520088805,
+    "block": 16805591,
+    "sample_ts": 1678546800,
+    "source": "network"
+   }
+  },
+  {
+   "utc": "2023-03-11T16:00:00Z",
+   "ts": 1678550400,
+   "venues": {
+    "binance": {
+     "low": 0.9117,
+     "high": 0.9226,
+     "last": 0.9209,
+     "volume": 60290210.0,
+     "n": 1
+    },
+    "okx": {
+     "low": 0.9134,
+     "high": 0.9211,
+     "last": 0.9203,
+     "volume": 13975067.9169,
+     "n": 1
+    },
+    "bitstamp": {
+     "low": 0.91418,
+     "high": 0.92918,
+     "last": 0.92839,
+     "volume": 341234.6013,
+     "n": 1
+    },
+    "defillama": {
+     "low": 0.91501911,
+     "high": 0.91501911,
+     "last": 0.91501911,
+     "volume": null,
+     "n": 1
+    }
+   },
+   "market": {
+    "n": 4,
+    "min": 0.9117,
+    "max": 0.91501911,
+    "median": 0.91379,
+    "lowest_venue": "binance"
+   },
+   "signals": {
+    "decote_min_bps": 883.0,
+    "decote_median_bps": 862.1,
+    "sigma_disp_bps": 36.3,
+    "divergence_bps": -86.1,
+    "divergence_defillama_bps": -73.8
+   },
+   "oracle": {
+    "price": 0.9224,
+    "roundId": 36893488147419104276,
+    "updated_at": "2023-03-11T15:51:47Z",
+    "updatedAt": 1678549907,
+    "block": 16805885,
+    "sample_ts": 1678550400,
+    "source": "network"
+   },
+   "aave": {
+    "supply_usdc": 85740206.859941,
+    "cash_usdc": 52614867.408291,
+    "utilisation": 0.3863454575723285,
+    "block": 16805885,
+    "sample_ts": 1678550400,
+    "source": "network"
+   }
+  },
+  {
+   "utc": "2023-03-11T17:00:00Z",
+   "ts": 1678554000,
+   "venues": {
+    "binance": {
+     "low": 0.9203,
+     "high": 0.941,
+     "last": 0.9385,
+     "volume": 75317277.0,
+     "n": 1
+    },
+    "okx": {
+     "low": 0.9203,
+     "high": 0.9403,
+     "last": 0.9384,
+     "volume": 30385185.9299,
+     "n": 1
+    },
+    "bitstamp": {
+     "low": 0.92186,
+     "high": 0.95001,
+     "last": 0.95001,
+     "volume": 1582940.4707,
+     "n": 1
+    },
+    "defillama": {
+     "low": 0.92173999,
+     "high": 0.92173999,
+     "last": 0.92173999,
+     "volume": null,
+     "n": 1
+    }
+   },
+   "market": {
+    "n": 4,
+    "min": 0.9203,
+    "max": 0.92186,
+    "median": 0.92101999,
+    "lowest_venue": "binance"
+   },
+   "signals": {
+    "decote_min_bps": 797.0,
+    "decote_median_bps": 789.8,
+    "sigma_disp_bps": 16.9,
+    "divergence_bps": -64.6,
+    "divergence_defillama_bps": -57.4
+   },
+   "oracle": {
+    "price": 0.92747908,
+    "roundId": 36893488147419104278,
+    "updated_at": "2023-03-11T16:47:11Z",
+    "updatedAt": 1678553231,
+    "block": 16806180,
+    "sample_ts": 1678554000,
+    "source": "network"
+   },
+   "aave": {
+    "supply_usdc": 85056587.787969,
+    "cash_usdc": 53431731.937052,
+    "utilisation": 0.3718095996250421,
+    "block": 16806180,
+    "sample_ts": 1678554000,
+    "source": "network"
+   }
+  },
+  {
+   "utc": "2023-03-11T18:00:00Z",
+   "ts": 1678557600,
+   "venues": {
+    "binance": {
+     "low": 0.928,
+     "high": 0.9437,
+     "last": 0.942,
+     "volume": 55537199.0,
+     "n": 1
+    },
+    "okx": {
+     "low": 0.9293,
+     "high": 0.9442,
+     "last": 0.9425,
+     "volume": 14327332.313,
+     "n": 1
+    },
+    "bitstamp": {
+     "low": 0.94228,
+     "high": 0.9554,
+     "last": 0.95359,
+     "volume": 271705.5863,
+     "n": 1
+    },
+    "defillama": {
+     "low": 0.93544294,
+     "high": 0.93544294,
+     "last": 0.93544294,
+     "volume": null,
+     "n": 1
+    }
+   },
+   "market": {
+    "n": 4,
+    "min": 0.928,
+    "max": 0.94228,
+    "median": 0.93237147,
+    "lowest_venue": "binance"
+   },
+   "signals": {
+    "decote_min_bps": 720.0,
+    "decote_median_bps": 676.3,
+    "sigma_disp_bps": 151.5,
+    "divergence_bps": -138.6,
+    "divergence_defillama_bps": -107.9
+   },
+   "oracle": {
+    "price": 0.94623,
+    "roundId": 36893488147419104289,
+    "updated_at": "2023-03-11T17:55:47Z",
+    "updatedAt": 1678557347,
+    "block": 16806477,
+    "sample_ts": 1678557600,
+    "source": "network"
+   },
+   "aave": {
+    "supply_usdc": 85402545.852214,
+    "cash_usdc": 56364683.529072,
+    "utilisation": 0.3400116710032387,
+    "block": 16806477,
+    "sample_ts": 1678557600,
+    "source": "network"
+   }
+  },
+  {
+   "utc": "2023-03-11T19:00:00Z",
+   "ts": 1678561200,
+   "venues": {
+    "binance": {
+     "low": 0.9394,
+     "high": 0.948,
+     "last": 0.9461,
+     "volume": 36085501.0,
+     "n": 1
+    },
+    "okx": {
+     "low": 0.9361,
+     "high": 0.946,
+     "last": 0.9454,
+     "volume": 9537231.9458,
+     "n": 1
+    },
+    "bitstamp": {
+     "low": 0.94469,
+     "high": 0.9548,
+     "last": 0.9548,
+     "volume": 236660.5743,
+     "n": 1
+    },
+    "defillama": {
+     "low": 0.94831525,
+     "high": 0.94831525,
+     "last": 0.94831525,
+     "volume": null,
+     "n": 1
+    }
+   },
+   "market": {
+    "n": 4,
+    "min": 0.9361,
+    "max": 0.94831525,
+    "median": 0.942045,
+    "lowest_venue": "okx"
+   },
+   "signals": {
+    "decote_min_bps": 639.0,
+    "decote_median_bps": 579.5,
+    "sigma_disp_bps": 128.8,
+    "divergence_bps": -89.5,
+    "divergence_defillama_bps": -26.8
+   },
+   "oracle": {
+    "price": 0.951,
+    "roundId": 36893488147419104297,
+    "updated_at": "2023-03-11T18:48:47Z",
+    "updatedAt": 1678560527,
+    "block": 16806774,
+    "sample_ts": 1678561200,
+    "source": "network"
+   },
+   "aave": {
+    "supply_usdc": 86249014.882033,
+    "cash_usdc": 57454821.907131,
+    "utilisation": 0.33384952876604135,
+    "block": 16806774,
+    "sample_ts": 1678561200,
+    "source": "network"
+   }
+  },
+  {
+   "utc": "2023-03-11T20:00:00Z",
+   "ts": 1678564800,
+   "venues": {
+    "binance": {
+     "low": 0.9458,
+     "high": 0.9786,
+     "last": 0.9764,
+     "volume": 95718722.0,
+     "n": 1
+    },
+    "okx": {
+     "low": 0.9458,
+     "high": 0.9799,
+     "last": 0.9745,
+     "volume": 52847590.272,
+     "n": 1
+    },
+    "bitstamp": {
+     "low": 0.95108,
+     "high": 0.9876,
+     "last": 0.97333,
+     "volume": 415633.8966,
+     "n": 1
+    },
+    "defillama": {
+     "low": 0.94487699,
+     "high": 0.97377463,
+     "last": 0.97377463,
+     "volume": null,
+     "n": 2
+    }
+   },
+   "market": {
+    "n": 4,
+    "min": 0.94487699,
+    "max": 0.95108,
+    "median": 0.9458,
+    "lowest_venue": "defillama"
+   },
+   "signals": {
+    "decote_min_bps": 551.2,
+    "decote_median_bps": 542.0,
+    "sigma_disp_bps": 65.2,
+    "divergence_bps": -77.0,
+    "divergence_defillama_bps": -86.2
+   },
+   "oracle": {
+    "price": 0.9535,
+    "roundId": 36893488147419104298,
+    "updated_at": "2023-03-11T19:52:23Z",
+    "updatedAt": 1678564343,
+    "block": 16807070,
+    "sample_ts": 1678564800,
+    "source": "network"
+   },
+   "aave": {
+    "supply_usdc": 86438530.587646,
+    "cash_usdc": 57761803.088824,
+    "utilisation": 0.3317586185681938,
+    "block": 16807070,
+    "sample_ts": 1678564800,
+    "source": "network"
+   }
+  },
+  {
+   "utc": "2023-03-11T21:00:00Z",
+   "ts": 1678568400,
+   "venues": {
+    "binance": {
+     "low": 0.9482,
+     "high": 0.9784,
+     "last": 0.9545,
+     "volume": 57778322.0,
+     "n": 1
+    },
+    "okx": {
+     "low": 0.949,
+     "high": 0.9775,
+     "last": 0.9542,
+     "volume": 20421903.0114,
+     "n": 1
+    },
+    "bitstamp": {
+     "low": 0.93634,
+     "high": 0.9788,
+     "last": 0.95891,
+     "volume": 458628.425,
+     "n": 1
+    }
+   },
+   "market": {
+    "n": 3,
+    "min": 0.93634,
+    "max": 0.949,
+    "median": 0.9482,
+    "lowest_venue": "bitstamp"
+   },
+   "signals": {
+    "decote_min_bps": 636.6,
+    "decote_median_bps": 518.0,
+    "sigma_disp_bps": 133.4,
+    "divergence_bps": -316.3,
+    "divergence_defillama_bps": null
+   },
+   "oracle": {
+    "price": 0.97982655,
+    "roundId": 36893488147419104312,
+    "updated_at": "2023-03-11T20:59:59Z",
+    "updatedAt": 1678568399,
+    "block": 16807362,
+    "sample_ts": 1678568400,
+    "source": "network"
+   },
+   "aave": {
+    "supply_usdc": 85939802.705229,
+    "cash_usdc": 57579312.930163,
+    "utilisation": 0.3300041294293128,
+    "block": 16807362,
+    "sample_ts": 1678568400,
+    "source": "network"
+   }
+  },
+  {
+   "utc": "2023-03-11T22:00:00Z",
+   "ts": 1678572000,
+   "venues": {
+    "binance": {
+     "low": 0.9477,
+     "high": 0.9555,
+     "last": 0.9496,
+     "volume": 35146051.0,
+     "n": 1
+    },
+    "okx": {
+     "low": 0.947,
+     "high": 0.9556,
+     "last": 0.9501,
+     "volume": 5842984.3867,
+     "n": 1
+    },
+    "bitstamp": {
+     "low": 0.94825,
+     "high": 0.95974,
+     "last": 0.95002,
+     "volume": 568747.6447,
+     "n": 1
+    },
+    "defillama": {
+     "low": 0.9554956,
+     "high": 0.9554956,
+     "last": 0.9554956,
+     "volume": null,
+     "n": 1
+    }
+   },
+   "market": {
+    "n": 4,
+    "min": 0.947,
+    "max": 0.9554956,
+    "median": 0.947975,
+    "lowest_venue": "okx"
+   },
+   "signals": {
+    "decote_min_bps": 530.0,
+    "decote_median_bps": 520.2,
+    "sigma_disp_bps": 88.9,
+    "divergence_bps": -124.0,
+    "divergence_defillama_bps": -48.8
+   },
+   "oracle": {
+    "price": 0.96038,
+    "roundId": 36893488147419104323,
+    "updated_at": "2023-03-11T21:56:23Z",
+    "updatedAt": 1678571783,
+    "block": 16807660,
+    "sample_ts": 1678572000,
+    "source": "network"
+   },
+   "aave": {
+    "supply_usdc": 86529859.317781,
+    "cash_usdc": 56952292.636195,
+    "utilisation": 0.341819192990507,
+    "block": 16807660,
+    "sample_ts": 1678572000,
+    "source": "network"
+   }
+  },
+  {
+   "utc": "2023-03-11T23:00:00Z",
+   "ts": 1678575600,
+   "venues": {
+    "binance": {
+     "low": 0.9486,
+     "high": 0.9664,
+     "last": 0.9592,
+     "volume": 37662918.0,
+     "n": 1
+    },
+    "okx": {
+     "low": 0.95,
+     "high": 0.9652,
+     "last": 0.9607,
+     "volume": 15532900.3119,
+     "n": 1
+    },
+    "bitstamp": {
+     "low": 0.94518,
+     "high": 0.97211,
+     "last": 0.96853,
+     "volume": 357046.1584,
+     "n": 1
+    },
+    "defillama": {
+     "low": 0.94973439,
+     "high": 0.94973439,
+     "last": 0.94973439,
+     "volume": null,
+     "n": 1
+    }
+   },
+   "market": {
+    "n": 4,
+    "min": 0.94518,
+    "max": 0.95,
+    "median": 0.9491672,
+    "lowest_venue": "bitstamp"
+   },
+   "signals": {
+    "decote_min_bps": 548.2,
+    "decote_median_bps": 508.3,
+    "sigma_disp_bps": 50.7,
+    "divergence_bps": -63.3,
+    "divergence_defillama_bps": -57.7
+   },
+   "oracle": {
+    "price": 0.9555,
+    "roundId": 36893488147419104325,
+    "updated_at": "2023-03-11T22:38:59Z",
+    "updatedAt": 1678574339,
+    "block": 16807958,
+    "sample_ts": 1678575600,
+    "source": "network"
+   },
+   "aave": {
+    "supply_usdc": 87503185.310769,
+    "cash_usdc": 58045096.653851,
+    "utilisation": 0.33665161505032204,
+    "block": 16807958,
+    "sample_ts": 1678575600,
+    "source": "network"
+   }
+  },
+  {
+   "utc": "2023-03-12T00:00:00Z",
+   "ts": 1678579200,
+   "venues": {
+    "binance": {
+     "low": 0.9581,
+     "high": 0.963,
+     "last": 0.9605,
+     "volume": 22505103.0,
+     "n": 1
+    },
+    "okx": {
+     "low": 0.9585,
+     "high": 0.9617,
+     "last": 0.9611,
+     "volume": 5728301.8862,
+     "n": 1
+    },
+    "bitstamp": {
+     "low": 0.96115,
+     "high": 0.97,
+     "last": 0.96763,
+     "volume": 321936.0981,
+     "n": 1
+    },
+    "defillama": {
+     "low": 0.960264,
+     "high": 0.96306359,
+     "last": 0.96306359,
+     "volume": null,
+     "n": 2
+    }
+   },
+   "market": {
+    "n": 4,
+    "min": 0.9581,
+    "max": 0.96115,
+    "median": 0.959382,
+    "lowest_venue": "binance"
+   },
+   "signals": {
+    "decote_min_bps": 419.0,
+    "decote_median_bps": 406.2,
+    "sigma_disp_bps": 31.7,
+    "divergence_bps": -87.4,
+    "divergence_defillama_bps": -78.6
+   },
+   "oracle": {
+    "price": 0.96812,
+    "roundId": 36893488147419104332,
+    "updated_at": "2023-03-11T23:59:59Z",
+    "updatedAt": 1678579199,
+    "block": 16808257,
+    "sample_ts": 1678579200,
+    "source": "network"
+   },
+   "aave": {
+    "supply_usdc": 87126766.129434,
+    "cash_usdc": 57877579.688767,
+    "utilisation": 0.3357083906593632,
+    "block": 16808257,
+    "sample_ts": 1678579200,
+    "source": "network"
+   }
+  },
+  {
+   "utc": "2023-03-12T01:00:00Z",
+   "ts": 1678582800,
+   "venues": {
+    "binance": {
+     "low": 0.96,
+     "high": 0.9744,
+     "last": 0.9689,
+     "volume": 49686256.0,
+     "n": 1
+    },
+    "okx": {
+     "low": 0.9608,
+     "high": 0.974,
+     "last": 0.9693,
+     "volume": 11637508.3957,
+     "n": 1
+    },
+    "bitstamp": {
+     "low": 0.96409,
+     "high": 0.98502,
+     "last": 0.985,
+     "volume": 920452.4151,
+     "n": 1
+    }
+   },
+   "market": {
+    "n": 3,
+    "min": 0.96,
+    "max": 0.96409,
+    "median": 0.9608,
+    "lowest_venue": "binance"
+   },
+   "signals": {
+    "decote_min_bps": 400.0,
+    "decote_median_bps": 392.0,
+    "sigma_disp_bps": 42.4,
+    "divergence_bps": -73.2,
+    "divergence_defillama_bps": null
+   },
+   "oracle": {
+    "price": 0.96812,
+    "roundId": 36893488147419104332,
+    "updated_at": "2023-03-11T23:59:59Z",
+    "updatedAt": 1678579199,
+    "block": 16808550,
+    "sample_ts": 1678582800,
+    "source": "network"
+   },
+   "aave": {
+    "supply_usdc": 87190031.975863,
+    "cash_usdc": 56976956.693079,
+    "utilisation": 0.3465198325784299,
+    "block": 16808550,
+    "sample_ts": 1678582800,
+    "source": "network"
+   }
+  },
+  {
+   "utc": "2023-03-12T02:00:00Z",
+   "ts": 1678586400,
+   "venues": {
+    "binance": {
+     "low": 0.9624,
+     "high": 0.9699,
+     "last": 0.9662,
+     "volume": 36184151.0,
+     "n": 1
+    },
+    "okx": {
+     "low": 0.9582,
+     "high": 0.9696,
+     "last": 0.9663,
+     "volume": 13560575.6291,
+     "n": 1
+    },
+    "bitstamp": {
+     "low": 0.97271,
+     "high": 0.98501,
+     "last": 0.985,
+     "volume": 699166.6134,
+     "n": 1
+    },
+    "defillama": {
+     "low": 0.97135889,
+     "high": 0.97135889,
+     "last": 0.97135889,
+     "volume": null,
+     "n": 1
+    }
+   },
+   "market": {
+    "n": 4,
+    "min": 0.9582,
+    "max": 0.97271,
+    "median": 0.96687944,
+    "lowest_venue": "okx"
+   },
+   "signals": {
+    "decote_min_bps": 418.0,
+    "decote_median_bps": 331.2,
+    "sigma_disp_bps": 149.2,
+    "divergence_bps": -111.3,
+    "divergence_defillama_bps": -66.5
+   },
+   "oracle": {
+    "price": 0.97801,
+    "roundId": 36893488147419104337,
+    "updated_at": "2023-03-12T01:58:35Z",
+    "updatedAt": 1678586315,
+    "block": 16808846,
+    "sample_ts": 1678586400,
+    "source": "network"
+   },
+   "aave": {
+    "supply_usdc": 85538105.447617,
+    "cash_usdc": 55730940.360336,
+    "utilisation": 0.3484665101161811,
+    "block": 16808846,
+    "sample_ts": 1678586400,
+    "source": "network"
+   }
+  },
+  {
+   "utc": "2023-03-12T03:00:00Z",
+   "ts": 1678590000,
+   "venues": {
+    "binance": {
+     "low": 0.9649,
+     "high": 0.97,
+     "last": 0.9691,
+     "volume": 30778343.0,
+     "n": 1
+    },
+    "okx": {
+     "low": 0.965,
+     "high": 0.9704,
+     "last": 0.9691,
+     "volume": 7114694.1516,
+     "n": 1
+    },
+    "bitstamp": {
+     "low": 0.98063,
+     "high": 0.98502,
+     "last": 0.985,
+     "volume": 616543.1083,
+     "n": 1
+    },
+    "defillama": {
+     "low": 0.9653922,
+     "high": 0.9697274,
+     "last": 0.9697274,
+     "volume": null,
+     "n": 2
+    }
+   },
+   "market": {
+    "n": 4,
+    "min": 0.9649,
+    "max": 0.98063,
+    "median": 0.9651961,
+    "lowest_venue": "binance"
+   },
+   "signals": {
+    "decote_min_bps": 351.0,
+    "decote_median_bps": 348.0,
+    "sigma_disp_bps": 160.4,
+    "divergence_bps": -102.2,
+    "divergence_defillama_bps": -100.3
+   },
+   "oracle": {
+    "price": 0.97542,
+    "roundId": 36893488147419104342,
+    "updated_at": "2023-03-12T02:56:11Z",
+    "updatedAt": 1678589771,
+    "block": 16809139,
+    "sample_ts": 1678590000,
+    "source": "network"
+   },
+   "aave": {
+    "supply_usdc": 85313351.611514,
+    "cash_usdc": 54893783.256665,
+    "utilisation": 0.356562809692071,
+    "block": 16809139,
+    "sample_ts": 1678590000,
+    "source": "network"
+   }
+  },
+  {
+   "utc": "2023-03-12T04:00:00Z",
+   "ts": 1678593600,
+   "venues": {
+    "binance": {
+     "low": 0.959,
+     "high": 0.9698,
+     "last": 0.9596,
+     "volume": 37561919.0,
+     "n": 1
+    },
+    "okx": {
+     "low": 0.9602,
+     "high": 0.9693,
+     "last": 0.9617,
+     "volume": 12376463.3595,
+     "n": 1
+    },
+    "bitstamp": {
+     "low": 0.97101,
+     "high": 0.98515,
+     "last": 0.985,
+     "volume": 1078218.8627,
+     "n": 1
+    }
+   },
+   "market": {
+    "n": 3,
+    "min": 0.959,
+    "max": 0.97101,
+    "median": 0.9602,
+    "lowest_venue": "binance"
+   },
+   "signals": {
+    "decote_min_bps": 410.0,
+    "decote_median_bps": 398.0,
+    "sigma_disp_bps": 123.7,
+    "divergence_bps": -200.5,
+    "divergence_defillama_bps": null
+   },
+   "oracle": {
+    "price": 0.980248,
+    "roundId": 36893488147419104347,
+    "updated_at": "2023-03-12T03:46:11Z",
+    "updatedAt": 1678592771,
+    "block": 16809436,
+    "sample_ts": 1678593600,
+    "source": "network"
+   },
+   "aave": {
+    "supply_usdc": 87649141.212289,
+    "cash_usdc": 57196488.600304,
+    "utilisation": 0.34743811737102726,
+    "block": 16809436,
+    "sample_ts": 1678593600,
+    "source": "network"
+   }
+  },
+  {
+   "utc": "2023-03-12T05:00:00Z",
+   "ts": 1678597200,
+   "venues": {
+    "binance": {
+     "low": 0.9591,
+     "high": 0.965,
+     "last": 0.9599,
+     "volume": 33576633.0,
+     "n": 1
+    },
+    "okx": {
+     "low": 0.9605,
+     "high": 0.9623,
+     "last": 0.9606,
+     "volume": 9989838.7742,
+     "n": 1
+    },
+    "bitstamp": {
+     "low": 0.97528,
+     "high": 0.98501,
+     "last": 0.98,
+     "volume": 586753.3832,
+     "n": 1
+    },
+    "defillama": {
+     "low": 0.9621363,
+     "high": 0.9621363,
+     "last": 0.9621363,
+     "volume": null,
+     "n": 1
+    }
+   },
+   "market": {
+    "n": 4,
+    "min": 0.9591,
+    "max": 0.97528,
+    "median": 0.96131815,
+    "lowest_venue": "binance"
+   },
+   "signals": {
+    "decote_min_bps": 409.0,
+    "decote_median_bps": 386.8,
+    "sigma_disp_bps": 165.9,
+    "divergence_bps": -99.1,
+    "divergence_defillama_bps": -90.9
+   },
+   "oracle": {
+    "price": 0.97122435,
+    "roundId": 36893488147419104354,
+    "updated_at": "2023-03-12T04:53:11Z",
+    "updatedAt": 1678596791,
+    "block": 16809732,
+    "sample_ts": 1678597200,
+    "source": "network"
+   },
+   "aave": {
+    "supply_usdc": 87592974.750942,
+    "cash_usdc": 57158487.317815,
+    "utilisation": 0.3474535203269793,
+    "block": 16809732,
+    "sample_ts": 1678597200,
+    "source": "network"
+   }
+  },
+  {
+   "utc": "2023-03-12T06:00:00Z",
+   "ts": 1678600800,
+   "venues": {
+    "binance": {
+     "low": 0.9438,
+     "high": 0.9604,
+     "last": 0.9458,
+     "volume": 32584980.0,
+     "n": 1
+    },
+    "okx": {
+     "low": 0.945,
+     "high": 0.9607,
+     "last": 0.9464,
+     "volume": 16179949.8969,
+     "n": 1
+    },
+    "bitstamp": {
+     "low": 0.95696,
+     "high": 0.97999,
+     "last": 0.95737,
+     "volume": 143460.6191,
+     "n": 1
+    },
+    "defillama": {
+     "low": 0.96192057,
+     "high": 0.96192057,
+     "last": 0.96192057,
+     "volume": null,
+     "n": 1
+    }
+   },
+   "market": {
+    "n": 4,
+    "min": 0.9438,
+    "max": 0.96192057,
+    "median": 0.95098,
+    "lowest_venue": "binance"
+   },
+   "signals": {
+    "decote_min_bps": 562.0,
+    "decote_median_bps": 490.2,
+    "sigma_disp_bps": 188.4,
+    "divergence_bps": -221.4,
+    "divergence_defillama_bps": -112.0
+   },
+   "oracle": {
+    "price": 0.97311829,
+    "roundId": 36893488147419104363,
+    "updated_at": "2023-03-12T05:34:11Z",
+    "updatedAt": 1678599251,
+    "block": 16810025,
+    "sample_ts": 1678600800,
+    "source": "network"
+   },
+   "aave": {
+    "supply_usdc": 86231666.329859,
+    "cash_usdc": 55672179.994684,
+    "utilisation": 0.3543882153254102,
+    "block": 16810025,
+    "sample_ts": 1678600800,
+    "source": "network"
+   }
+  },
+  {
+   "utc": "2023-03-12T07:00:00Z",
+   "ts": 1678604400,
+   "venues": {
+    "binance": {
+     "low": 0.9323,
+     "high": 0.9477,
+     "last": 0.9396,
+     "volume": 59652959.0,
+     "n": 1
+    },
+    "okx": {
+     "low": 0.9382,
+     "high": 0.9473,
+     "last": 0.94,
+     "volume": 16054479.5826,
+     "n": 1
+    },
+    "bitstamp": {
+     "low": 0.9447,
+     "high": 0.95681,
+     "last": 0.94757,
+     "volume": 279373.1661,
+     "n": 1
+    },
+    "defillama": {
+     "low": 0.947868,
+     "high": 0.947868,
+     "last": 0.947868,
+     "volume": null,
+     "n": 1
+    }
+   },
+   "market": {
+    "n": 4,
+    "min": 0.9323,
+    "max": 0.947868,
+    "median": 0.94145,
+    "lowest_venue": "binance"
+   },
+   "signals": {
+    "decote_min_bps": 677.0,
+    "decote_median_bps": 585.5,
+    "sigma_disp_bps": 164.2,
+    "divergence_bps": -132.0,
+    "divergence_defillama_bps": -67.8
+   },
+   "oracle": {
+    "price": 0.95465184,
+    "roundId": 36893488147419104369,
+    "updated_at": "2023-03-12T06:54:11Z",
+    "updatedAt": 1678604051,
+    "block": 16810318,
+    "sample_ts": 1678604400,
+    "source": "network"
+   },
+   "aave": {
+    "supply_usdc": 84751766.645884,
+    "cash_usdc": 54256991.161899,
+    "utilisation": 0.3598128592575597,
+    "block": 16810318,
+    "sample_ts": 1678604400,
+    "source": "network"
+   }
+  },
+  {
+   "utc": "2023-03-12T08:00:00Z",
+   "ts": 1678608000,
+   "venues": {
+    "binance": {
+     "low": 0.9394,
+     "high": 0.9497,
+     "last": 0.9456,
+     "volume": 44546788.0,
+     "n": 1
+    },
+    "okx": {
+     "low": 0.9401,
+     "high": 0.95,
+     "last": 0.9456,
+     "volume": 8429086.352,
+     "n": 1
+    },
+    "bitstamp": {
+     "low": 0.94692,
+     "high": 0.95663,
+     "last": 0.95234,
+     "volume": 121223.0208,
+     "n": 1
+    },
+    "defillama": {
+     "low": 0.9414875,
+     "high": 0.9414875,
+     "last": 0.9414875,
+     "volume": null,
+     "n": 1
+    }
+   },
+   "market": {
+    "n": 4,
+    "min": 0.9394,
+    "max": 0.94692,
+    "median": 0.94079375,
+    "lowest_venue": "binance"
+   },
+   "signals": {
+    "decote_min_bps": 606.0,
+    "decote_median_bps": 592.1,
+    "sigma_disp_bps": 79.4,
+    "divergence_bps": -60.0,
+    "divergence_defillama_bps": -53.0
+   },
+   "oracle": {
+    "price": 0.94679,
+    "roundId": 36893488147419104372,
+    "updated_at": "2023-03-12T07:41:23Z",
+    "updatedAt": 1678606883,
+    "block": 16810616,
+    "sample_ts": 1678608000,
+    "source": "network"
+   },
+   "aave": {
+    "supply_usdc": 85341330.83427,
+    "cash_usdc": 54455536.621153,
+    "utilisation": 0.3619089825666789,
+    "block": 16810616,
+    "sample_ts": 1678608000,
+    "source": "network"
+   }
+  },
+  {
+   "utc": "2023-03-12T09:00:00Z",
+   "ts": 1678611600,
+   "venues": {
+    "binance": {
+     "low": 0.9456,
+     "high": 0.9515,
+     "last": 0.9494,
+     "volume": 23809864.0,
+     "n": 1
+    },
+    "okx": {
+     "low": 0.9457,
+     "high": 0.9511,
+     "last": 0.95,
+     "volume": 3286245.1308,
+     "n": 1
+    },
+    "bitstamp": {
+     "low": 0.95368,
+     "high": 0.95797,
+     "last": 0.95553,
+     "volume": 218196.2141,
+     "n": 1
+    },
+    "defillama": {
+     "low": 0.94782691,
+     "high": 0.94782691,
+     "last": 0.94782691,
+     "volume": null,
+     "n": 1
+    }
+   },
+   "market": {
+    "n": 4,
+    "min": 0.9456,
+    "max": 0.95368,
+    "median": 0.94676345,
+    "lowest_venue": "binance"
+   },
+   "signals": {
+    "decote_min_bps": 544.0,
+    "decote_median_bps": 532.4,
+    "sigma_disp_bps": 84.7,
+    "divergence_bps": -75.8,
+    "divergence_defillama_bps": -65.1
+   },
+   "oracle": {
+    "price": 0.9543403,
+    "roundId": 36893488147419104377,
+    "updated_at": "2023-03-12T08:49:47Z",
+    "updatedAt": 1678610987,
+    "block": 16810913,
+    "sample_ts": 1678611600,
+    "source": "network"
+   },
+   "aave": {
+    "supply_usdc": 85296925.651833,
+    "cash_usdc": 53539631.824565,
+    "utilisation": 0.3723146360150853,
+    "block": 16810913,
+    "sample_ts": 1678611600,
+    "source": "network"
+   }
+  },
+  {
+   "utc": "2023-03-12T10:00:00Z",
+   "ts": 1678615200,
+   "venues": {
+    "binance": {
+     "low": 0.9488,
+     "high": 0.954,
+     "last": 0.9527,
+     "volume": 21211411.0,
+     "n": 1
+    },
+    "okx": {
+     "low": 0.9494,
+     "high": 0.9532,
+     "last": 0.9529,
+     "volume": 3897656.476,
+     "n": 1
+    },
+    "bitstamp": {
+     "low": 0.95739,
+     "high": 0.95885,
+     "last": 0.9588,
+     "volume": 39261.8439,
+     "n": 1
+    },
+    "defillama": {
+     "low": 0.95096661,
+     "high": 0.95096661,
+     "last": 0.95096661,
+     "volume": null,
+     "n": 1
+    }
+   },
+   "market": {
+    "n": 4,
+    "min": 0.9488,
+    "max": 0.95739,
+    "median": 0.95018331,
+    "lowest_venue": "binance"
+   },
+   "signals": {
+    "decote_min_bps": 512.0,
+    "decote_median_bps": 498.2,
+    "sigma_disp_bps": 89.7,
+    "divergence_bps": -66.8,
+    "divergence_defillama_bps": -59.0
+   },
+   "oracle": {
+    "price": 0.95686705,
+    "roundId": 36893488147419104378,
+    "updated_at": "2023-03-12T09:23:47Z",
+    "updatedAt": 1678613027,
+    "block": 16811212,
+    "sample_ts": 1678615200,
+    "source": "network"
+   },
+   "aave": {
+    "supply_usdc": 88067348.927341,
+    "cash_usdc": 56282656.903642,
+    "utilisation": 0.3609134646476371,
+    "block": 16811212,
+    "sample_ts": 1678615200,
+    "source": "network"
+   }
+  },
+  {
+   "utc": "2023-03-12T11:00:00Z",
+   "ts": 1678618800,
+   "venues": {
+    "binance": {
+     "low": 0.9502,
+     "high": 0.9585,
+     "last": 0.9529,
+     "volume": 36803716.0,
+     "n": 1
+    },
+    "okx": {
+     "low": 0.9502,
+     "high": 0.9581,
+     "last": 0.9523,
+     "volume": 6911502.5692,
+     "n": 1
+    },
+    "bitstamp": {
+     "low": 0.95711,
+     "high": 0.96305,
+     "last": 0.95789,
+     "volume": 48020.3694,
+     "n": 1
+    },
+    "defillama": {
+     "low": 0.95407931,
+     "high": 0.95407931,
+     "last": 0.95407931,
+     "volume": null,
+     "n": 1
+    }
+   },
+   "market": {
+    "n": 4,
+    "min": 0.9502,
+    "max": 0.95711,
+    "median": 0.95213966,
+    "lowest_venue": "binance"
+   },
+   "signals": {
+    "decote_min_bps": 498.0,
+    "decote_median_bps": 478.6,
+    "sigma_disp_bps": 72.2,
+    "divergence_bps": -71.6,
+    "divergence_defillama_bps": -52.2
+   },
+   "oracle": {
+    "price": 0.9593,
+    "roundId": 36893488147419104379,
+    "updated_at": "2023-03-12T10:43:23Z",
+    "updatedAt": 1678617803,
+    "block": 16811507,
+    "sample_ts": 1678618800,
+    "source": "network"
+   },
+   "aave": {
+    "supply_usdc": 88079839.912498,
+    "cash_usdc": 56490767.078195,
+    "utilisation": 0.35864135159288246,
+    "block": 16811507,
+    "sample_ts": 1678618800,
+    "source": "network"
+   }
+  },
+  {
+   "utc": "2023-03-12T12:00:00Z",
+   "ts": 1678622400,
+   "venues": {
+    "binance": {
+     "low": 0.9482,
+     "high": 0.9539,
+     "last": 0.9507,
+     "volume": 26699698.0,
+     "n": 1
+    },
+    "okx": {
+     "low": 0.9482,
+     "high": 0.9532,
+     "last": 0.9501,
+     "volume": 3978527.7509,
+     "n": 1
+    },
+    "bitstamp": {
+     "low": 0.95509,
+     "high": 0.9589,
+     "last": 0.95723,
+     "volume": 52185.9191,
+     "n": 1
+    },
+    "defillama": {
+     "low": 0.95022089,
+     "high": 0.95293823,
+     "last": 0.95022089,
+     "volume": null,
+     "n": 2
+    }
+   },
+   "market": {
+    "n": 4,
+    "min": 0.9482,
+    "max": 0.95509,
+    "median": 0.94921045,
+    "lowest_venue": "binance"
+   },
+   "signals": {
+    "decote_min_bps": 518.0,
+    "decote_median_bps": 507.9,
+    "sigma_disp_bps": 72.1,
+    "divergence_bps": -83.9,
+    "divergence_defillama_bps": -73.8
+   },
+   "oracle": {
+    "price": 0.95760273,
+    "roundId": 36893488147419104382,
+    "updated_at": "2023-03-12T11:55:35Z",
+    "updatedAt": 1678622135,
+    "block": 16811806,
+    "sample_ts": 1678622400,
+    "source": "network"
+   },
+   "aave": {
+    "supply_usdc": 88154842.987256,
+    "cash_usdc": 56527165.543934,
+    "utilisation": 0.3587741339167744,
+    "block": 16811806,
+    "sample_ts": 1678622400,
+    "source": "network"
+   }
+  },
+  {
+   "utc": "2023-03-12T13:00:00Z",
+   "ts": 1678626000,
+   "venues": {
+    "binance": {
+     "low": 0.9502,
+     "high": 0.96,
+     "last": 0.9542,
+     "volume": 46643678.0,
+     "n": 1
+    },
+    "okx": {
+     "low": 0.95,
+     "high": 0.957,
+     "last": 0.9538,
+     "volume": 4566536.4463,
+     "n": 1
+    },
+    "bitstamp": {
+     "low": 0.95296,
+     "high": 0.96527,
+     "last": 0.95826,
+     "volume": 652606.4575,
+     "n": 1
+    },
+    "defillama": {
+     "low": 0.95602705,
+     "high": 0.95602705,
+     "last": 0.95602705,
+     "volume": null,
+     "n": 1
+    }
+   },
+   "market": {
+    "n": 4,
+    "min": 0.95,
+    "max": 0.95602705,
+    "median": 0.95158,
+    "lowest_venue": "okx"
+   },
+   "signals": {
+    "decote_min_bps": 500.0,
+    "decote_median_bps": 484.2,
+    "sigma_disp_bps": 63.0,
+    "divergence_bps": -60.2,
+    "divergence_defillama_bps": -15.8
+   },
+   "oracle": {
+    "price": 0.95760273,
+    "roundId": 36893488147419104382,
+    "updated_at": "2023-03-12T11:55:35Z",
+    "updatedAt": 1678622135,
+    "block": 16812101,
+    "sample_ts": 1678626000,
+    "source": "network"
+   },
+   "aave": {
+    "supply_usdc": 91012426.98591,
+    "cash_usdc": 59414699.857415,
+    "utilisation": 0.34718035959404503,
+    "block": 16812101,
+    "sample_ts": 1678626000,
+    "source": "network"
+   }
+  },
+  {
+   "utc": "2023-03-12T14:00:00Z",
+   "ts": 1678629600,
+   "venues": {
+    "binance": {
+     "low": 0.9462,
+     "high": 0.9561,
+     "last": 0.9496,
+     "volume": 46302932.0,
+     "n": 1
+    },
+    "okx": {
+     "low": 0.9463,
+     "high": 0.9554,
+     "last": 0.9494,
+     "volume": 10053503.6756,
+     "n": 1
+    },
+    "bitstamp": {
+     "low": 0.95341,
+     "high": 0.96081,
+     "last": 0.9591,
+     "volume": 288840.152,
+     "n": 1
+    }
+   },
+   "market": {
+    "n": 3,
+    "min": 0.9462,
+    "max": 0.95341,
+    "median": 0.9463,
+    "lowest_venue": "binance"
+   },
+   "signals": {
+    "decote_min_bps": 538.0,
+    "decote_median_bps": 537.0,
+    "sigma_disp_bps": 75.6,
+    "divergence_bps": -170.1,
+    "divergence_defillama_bps": null
+   },
+   "oracle": {
+    "price": 0.96330602,
+    "roundId": 36893488147419104384,
+    "updated_at": "2023-03-12T13:22:11Z",
+    "updatedAt": 1678627331,
+    "block": 16812399,
+    "sample_ts": 1678629600,
+    "source": "network"
+   },
+   "aave": {
+    "supply_usdc": 91738095.999151,
+    "cash_usdc": 60419924.270903,
+    "utilisation": 0.3413867639953836,
+    "block": 16812399,
+    "sample_ts": 1678629600,
+    "source": "network"
+   }
+  },
+  {
+   "utc": "2023-03-12T15:00:00Z",
+   "ts": 1678633200,
+   "venues": {
+    "binance": {
+     "low": 0.9478,
+     "high": 0.9519,
+     "last": 0.9484,
+     "volume": 38125324.0,
+     "n": 1
+    },
+    "okx": {
+     "low": 0.9472,
+     "high": 0.9511,
+     "last": 0.9481,
+     "volume": 6399095.4806,
+     "n": 1
+    },
+    "bitstamp": {
+     "low": 0.95542,
+     "high": 0.9612,
+     "last": 0.95904,
+     "volume": 94108.9439,
+     "n": 1
+    },
+    "defillama": {
+     "low": 0.94991819,
+     "high": 0.95085189,
+     "last": 0.95085189,
+     "volume": null,
+     "n": 2
+    }
+   },
+   "market": {
+    "n": 4,
+    "min": 0.9472,
+    "max": 0.95542,
+    "median": 0.9488591,
+    "lowest_venue": "okx"
+   },
+   "signals": {
+    "decote_min_bps": 528.0,
+    "decote_median_bps": 511.4,
+    "sigma_disp_bps": 86.0,
+    "divergence_bps": -111.5,
+    "divergence_defillama_bps": -100.9
+   },
+   "oracle": {
+    "price": 0.96001,
+    "roundId": 36893488147419104389,
+    "updated_at": "2023-03-12T14:57:35Z",
+    "updatedAt": 1678633055,
+    "block": 16812697,
+    "sample_ts": 1678633200,
+    "source": "network"
+   },
+   "aave": {
+    "supply_usdc": 92123825.250031,
+    "cash_usdc": 60801237.978354,
+    "utilisation": 0.3400052829619823,
+    "block": 16812697,
+    "sample_ts": 1678633200,
+    "source": "network"
+   }
+  },
+  {
+   "utc": "2023-03-12T16:00:00Z",
+   "ts": 1678636800,
+   "venues": {
+    "binance": {
+     "low": 0.945,
+     "high": 0.9509,
+     "last": 0.9477,
+     "volume": 33502493.0,
+     "n": 1
+    },
+    "okx": {
+     "low": 0.9465,
+     "high": 0.9497,
+     "last": 0.9477,
+     "volume": 5301389.4382,
+     "n": 1
+    },
+    "bitstamp": {
+     "low": 0.95826,
+     "high": 0.95921,
+     "last": 0.95856,
+     "volume": 14972.091,
+     "n": 1
+    }
+   },
+   "market": {
+    "n": 3,
+    "min": 0.945,
+    "max": 0.95826,
+    "median": 0.9465,
+    "lowest_venue": "binance"
+   },
+   "signals": {
+    "decote_min_bps": 550.0,
+    "decote_median_bps": 535.0,
+    "sigma_disp_bps": 138.4,
+    "divergence_bps": -134.0,
+    "divergence_defillama_bps": null
+   },
+   "oracle": {
+    "price": 0.9599,
+    "roundId": 36893488147419104391,
+    "updated_at": "2023-03-12T15:45:11Z",
+    "updatedAt": 1678635911,
+    "block": 16812993,
+    "sample_ts": 1678636800,
+    "source": "network"
+   },
+   "aave": {
+    "supply_usdc": 93088302.945165,
+    "cash_usdc": 61764484.611327,
+    "utilisation": 0.3364957501941972,
+    "block": 16812993,
+    "sample_ts": 1678636800,
+    "source": "network"
+   }
+  },
+  {
+   "utc": "2023-03-12T17:00:00Z",
+   "ts": 1678640400,
+   "venues": {
+    "binance": {
+     "low": 0.9471,
+     "high": 0.96,
+     "last": 0.9532,
+     "volume": 58859044.0,
+     "n": 1
+    },
+    "okx": {
+     "low": 0.9474,
+     "high": 0.9589,
+     "last": 0.9537,
+     "volume": 9170590.6803,
+     "n": 1
+    },
+    "bitstamp": {
+     "low": 0.95898,
+     "high": 0.96845,
+     "last": 0.9657,
+     "volume": 145978.7496,
+     "n": 1
+    },
+    "defillama": {
+     "low": 0.95843657,
+     "high": 0.95843657,
+     "last": 0.95843657,
+     "volume": null,
+     "n": 1
+    }
+   },
+   "market": {
+    "n": 4,
+    "min": 0.9471,
+    "max": 0.95898,
+    "median": 0.95291829,
+    "lowest_venue": "binance"
+   },
+   "signals": {
+    "decote_min_bps": 529.0,
+    "decote_median_bps": 470.8,
+    "sigma_disp_bps": 123.9,
+    "divergence_bps": -70.0,
+    "divergence_defillama_bps": -14.8
+   },
+   "oracle": {
+    "price": 0.95992,
+    "roundId": 36893488147419104393,
+    "updated_at": "2023-03-12T16:25:35Z",
+    "updatedAt": 1678638335,
+    "block": 16813290,
+    "sample_ts": 1678640400,
+    "source": "network"
+   },
+   "aave": {
+    "supply_usdc": 97533505.755244,
+    "cash_usdc": 67800176.741657,
+    "utilisation": 0.304852458479258,
+    "block": 16813290,
+    "sample_ts": 1678640400,
+    "source": "network"
+   }
+  },
+  {
+   "utc": "2023-03-12T18:00:00Z",
+   "ts": 1678644000,
+   "venues": {
+    "binance": {
+     "low": 0.9476,
+     "high": 0.9598,
+     "last": 0.9548,
+     "volume": 60194232.0,
+     "n": 1
+    },
+    "okx": {
+     "low": 0.949,
+     "high": 0.9604,
+     "last": 0.9546,
+     "volume": 8760633.7772,
+     "n": 1
+    },
+    "bitstamp": {
+     "low": 0.96078,
+     "high": 0.972,
+     "last": 0.96956,
+     "volume": 295084.4076,
+     "n": 1
+    },
+    "defillama": {
+     "low": 0.96316581,
+     "high": 0.96316581,
+     "last": 0.96316581,
+     "volume": null,
+     "n": 1
+    }
+   },
+   "market": {
+    "n": 4,
+    "min": 0.9476,
+    "max": 0.96316581,
+    "median": 0.95489,
+    "lowest_venue": "binance"
+   },
+   "signals": {
+    "decote_min_bps": 524.0,
+    "decote_median_bps": 451.1,
+    "sigma_disp_bps": 161.6,
+    "divergence_bps": -96.0,
+    "divergence_defillama_bps": -13.2
+   },
+   "oracle": {
+    "price": 0.96449,
+    "roundId": 36893488147419104396,
+    "updated_at": "2023-03-12T17:58:11Z",
+    "updatedAt": 1678643891,
+    "block": 16813588,
+    "sample_ts": 1678644000,
+    "source": "network"
+   },
+   "aave": {
+    "supply_usdc": 102156647.488757,
+    "cash_usdc": 72687915.057953,
+    "utilisation": 0.28846612682789163,
+    "block": 16813588,
+    "sample_ts": 1678644000,
+    "source": "network"
+   }
+  },
+  {
+   "utc": "2023-03-12T19:00:00Z",
+   "ts": 1678647600,
+   "venues": {
+    "binance": {
+     "low": 0.9516,
+     "high": 0.9563,
+     "last": 0.9528,
+     "volume": 43741274.0,
+     "n": 1
+    },
+    "okx": {
+     "low": 0.952,
+     "high": 0.9554,
+     "last": 0.9526,
+     "volume": 3683858.0798,
+     "n": 1
+    },
+    "bitstamp": {
+     "low": 0.9641,
+     "high": 0.972,
+     "last": 0.96731,
+     "volume": 287411.5928,
+     "n": 1
+    },
+    "defillama": {
+     "low": 0.964681,
+     "high": 0.9667318,
+     "last": 0.964681,
+     "volume": null,
+     "n": 2
+    }
+   },
+   "market": {
+    "n": 4,
+    "min": 0.9516,
+    "max": 0.964681,
+    "median": 0.95805,
+    "lowest_venue": "binance"
+   },
+   "signals": {
+    "decote_min_bps": 484.0,
+    "decote_median_bps": 419.5,
+    "sigma_disp_bps": 135.6,
+    "divergence_bps": -143.5,
+    "divergence_defillama_bps": -77.2
+   },
+   "oracle": {
+    "price": 0.9724,
+    "roundId": 36893488147419104399,
+    "updated_at": "2023-03-12T18:49:47Z",
+    "updatedAt": 1678646987,
+    "block": 16813885,
+    "sample_ts": 1678647600,
+    "source": "network"
+   },
+   "aave": {
+    "supply_usdc": 103097975.438597,
+    "cash_usdc": 73428461.879358,
+    "utilisation": 0.28777978842959473,
+    "block": 16813885,
+    "sample_ts": 1678647600,
+    "source": "network"
+   }
+  },
+  {
+   "utc": "2023-03-12T20:00:00Z",
+   "ts": 1678651200,
+   "venues": {
+    "binance": {
+     "low": 0.9525,
+     "high": 0.9597,
+     "last": 0.9594,
+     "volume": 28327960.0,
+     "n": 1
+    },
+    "okx": {
+     "low": 0.9524,
+     "high": 0.9597,
+     "last": 0.9593,
+     "volume": 6053951.8247,
+     "n": 1
+    },
+    "bitstamp": {
+     "low": 0.96679,
+     "high": 0.97121,
+     "last": 0.9692,
+     "volume": 150258.4868,
+     "n": 1
+    },
+    "defillama": {
+     "low": 0.968015,
+     "high": 0.968015,
+     "last": 0.968015,
+     "volume": null,
+     "n": 1
+    }
+   },
+   "market": {
+    "n": 4,
+    "min": 0.9524,
+    "max": 0.968015,
+    "median": 0.959645,
+    "lowest_venue": "okx"
+   },
+   "signals": {
+    "decote_min_bps": 476.0,
+    "decote_median_bps": 403.6,
+    "sigma_disp_bps": 161.3,
+    "divergence_bps": -70.1,
+    "divergence_defillama_bps": 13.6
+   },
+   "oracle": {
+    "price": 0.96665149,
+    "roundId": 36893488147419104405,
+    "updated_at": "2023-03-12T19:59:11Z",
+    "updatedAt": 1678651151,
+    "block": 16814181,
+    "sample_ts": 1678651200,
+    "source": "network"
+   },
+   "aave": {
+    "supply_usdc": 104155198.224796,
+    "cash_usdc": 74496595.429831,
+    "utilisation": 0.2847539373978575,
+    "block": 16814181,
+    "sample_ts": 1678651200,
+    "source": "network"
+   }
+  },
+  {
+   "utc": "2023-03-12T21:00:00Z",
+   "ts": 1678654800,
+   "venues": {
+    "binance": {
+     "low": 0.9589,
+     "high": 0.9641,
+     "last": 0.9595,
+     "volume": 24535429.0,
+     "n": 1
+    },
+    "okx": {
+     "low": 0.9593,
+     "high": 0.9634,
+     "last": 0.9601,
+     "volume": 5391149.5463,
+     "n": 1
+    },
+    "bitstamp": {
+     "low": 0.96772,
+     "high": 0.97112,
+     "last": 0.96833,
+     "volume": 101931.7054,
+     "n": 1
+    },
+    "defillama": {
+     "low": 0.96933,
+     "high": 0.96933,
+     "last": 0.96933,
+     "volume": null,
+     "n": 1
+    }
+   },
+   "market": {
+    "n": 4,
+    "min": 0.9589,
+    "max": 0.96933,
+    "median": 0.96351,
+    "lowest_venue": "binance"
+   },
+   "signals": {
+    "decote_min_bps": 411.0,
+    "decote_median_bps": 364.9,
+    "sigma_disp_bps": 107.6,
+    "divergence_bps": -56.9,
+    "divergence_defillama_bps": 1.3
+   },
+   "oracle": {
+    "price": 0.9692,
+    "roundId": 36893488147419104410,
+    "updated_at": "2023-03-12T20:49:11Z",
+    "updatedAt": 1678654151,
+    "block": 16814481,
+    "sample_ts": 1678654800,
+    "source": "network"
+   },
+   "aave": {
+    "supply_usdc": 102958037.582263,
+    "cash_usdc": 73296396.022364,
+    "utilisation": 0.288094472820536,
+    "block": 16814481,
+    "sample_ts": 1678654800,
+    "source": "network"
+   }
+  },
+  {
+   "utc": "2023-03-12T22:00:00Z",
+   "ts": 1678658400,
+   "venues": {
+    "binance": {
+     "low": 0.9566,
+     "high": 0.9833,
+     "last": 0.9829,
+     "volume": 114978827.0,
+     "n": 1
+    },
+    "okx": {
+     "low": 0.9568,
+     "high": 0.9856,
+     "last": 0.9828,
+     "volume": 74958142.1395,
+     "n": 1
+    },
+    "bitstamp": {
+     "low": 0.96773,
+     "high": 0.99,
+     "last": 0.98945,
+     "volume": 1032401.8067,
+     "n": 1
+    },
+    "defillama": {
+     "low": 0.98784138,
+     "high": 0.98784138,
+     "last": 0.98784138,
+     "volume": null,
+     "n": 1
+    }
+   },
+   "market": {
+    "n": 4,
+    "min": 0.9566,
+    "max": 0.98784138,
+    "median": 0.962265,
+    "lowest_venue": "binance"
+   },
+   "signals": {
+    "decote_min_bps": 434.0,
+    "decote_median_bps": 377.3,
+    "sigma_disp_bps": 316.3,
+    "divergence_bps": -69.0,
+    "divergence_defillama_bps": 186.7
+   },
+   "oracle": {
+    "price": 0.96916799,
+    "roundId": 36893488147419104412,
+    "updated_at": "2023-03-12T21:59:47Z",
+    "updatedAt": 1678658387,
+    "block": 16814776,
+    "sample_ts": 1678658400,
+    "source": "network"
+   },
+   "aave": {
+    "supply_usdc": 103644991.877159,
+    "cash_usdc": 74133323.902512,
+    "utilisation": 0.2847380026776837,
+    "block": 16814776,
+    "sample_ts": 1678658400,
+    "source": "network"
+   }
+  },
+  {
+   "utc": "2023-03-12T23:00:00Z",
+   "ts": 1678662000,
+   "venues": {
+    "binance": {
+     "low": 0.9789,
+     "high": 0.9878,
+     "last": 0.9848,
+     "volume": 107254469.0,
+     "n": 1
+    },
+    "okx": {
+     "low": 0.9805,
+     "high": 0.9879,
+     "last": 0.9853,
+     "volume": 31894752.8664,
+     "n": 1
+    },
+    "bitstamp": {
+     "low": 0.98522,
+     "high": 0.99419,
+     "last": 0.99153,
+     "volume": 248367.3985,
+     "n": 1
+    },
+    "defillama": {
+     "low": 0.992771,
+     "high": 0.992771,
+     "last": 0.992771,
+     "volume": null,
+     "n": 1
+    }
+   },
+   "market": {
+    "n": 4,
+    "min": 0.9789,
+    "max": 0.992771,
+    "median": 0.98286,
+    "lowest_venue": "binance"
+   },
+   "signals": {
+    "decote_min_bps": 211.0,
+    "decote_median_bps": 171.4,
+    "sigma_disp_bps": 139.7,
+    "divergence_bps": -50.5,
+    "divergence_defillama_bps": 48.6
+   },
+   "oracle": {
+    "price": 0.98791113,
+    "roundId": 36893488147419104419,
+    "updated_at": "2023-03-12T22:35:23Z",
+    "updatedAt": 1678660523,
+    "block": 16815072,
+    "sample_ts": 1678662000,
+    "source": "network"
+   },
+   "aave": {
+    "supply_usdc": 107095580.093444,
+    "cash_usdc": 77605810.017442,
+    "utilisation": 0.27535935703668923,
+    "block": 16815072,
+    "sample_ts": 1678662000,
+    "source": "network"
+   }
+  },
+  {
+   "utc": "2023-03-13T00:00:00Z",
+   "ts": 1678665600,
+   "venues": {
+    "binance": {
+     "low": 0.9835,
+     "high": 0.988,
+     "last": 0.9874,
+     "volume": 59436502.0,
+     "n": 1
+    },
+    "okx": {
+     "low": 0.9847,
+     "high": 0.9879,
+     "last": 0.9872,
+     "volume": 11265922.7816,
+     "n": 1
+    },
+    "bitstamp": {
+     "low": 0.95,
+     "high": 0.99551,
+     "last": 0.99516,
+     "volume": 1605465.2725,
+     "n": 1
+    },
+    "defillama": {
+     "low": 0.992171,
+     "high": 0.992171,
+     "last": 0.992171,
+     "volume": null,
+     "n": 1
+    }
+   },
+   "market": {
+    "n": 4,
+    "min": 0.95,
+    "max": 0.992171,
+    "median": 0.9841,
+    "lowest_venue": "bitstamp"
+   },
+   "signals": {
+    "decote_min_bps": 500.0,
+    "decote_median_bps": 159.0,
+    "sigma_disp_bps": 425.0,
+    "divergence_bps": -67.2,
+    "divergence_defillama_bps": 13.5
+   },
+   "oracle": {
+    "price": 0.99082058,
+    "roundId": 36893488147419104422,
+    "updated_at": "2023-03-12T23:51:59Z",
+    "updatedAt": 1678665119,
+    "block": 16815366,
+    "sample_ts": 1678665600,
+    "source": "network"
+   },
+   "aave": {
+    "supply_usdc": 104404693.085054,
+    "cash_usdc": 74797311.698265,
+    "utilisation": 0.2835828592750054,
+    "block": 16815366,
+    "sample_ts": 1678665600,
+    "source": "network"
+   }
+  },
+  {
+   "utc": "2023-03-13T01:00:00Z",
+   "ts": 1678669200,
+   "venues": {
+    "binance": {
+     "low": 0.9859,
+     "high": 0.989,
+     "last": 0.9877,
+     "volume": 50521522.0,
+     "n": 1
+    },
+    "okx": {
+     "low": 0.9831,
+     "high": 0.9885,
+     "last": 0.9874,
+     "volume": 9827810.8948,
+     "n": 1
+    },
+    "bitstamp": {
+     "low": 0.98898,
+     "high": 0.99492,
+     "last": 0.99409,
+     "volume": 70878.4748,
+     "n": 1
+    },
+    "defillama": {
+     "low": 0.993052,
+     "high": 0.993052,
+     "last": 0.993052,
+     "volume": null,
+     "n": 1
+    }
+   },
+   "market": {
+    "n": 4,
+    "min": 0.9831,
+    "max": 0.993052,
+    "median": 0.98744,
+    "lowest_venue": "okx"
+   },
+   "signals": {
+    "decote_min_bps": 169.0,
+    "decote_median_bps": 125.6,
+    "sigma_disp_bps": 100.2,
+    "divergence_bps": -60.0,
+    "divergence_defillama_bps": -3.8
+   },
+   "oracle": {
+    "price": 0.99343639,
+    "roundId": 36893488147419104423,
+    "updated_at": "2023-03-13T00:08:35Z",
+    "updatedAt": 1678666115,
+    "block": 16815658,
+    "sample_ts": 1678669200,
+    "source": "network"
+   },
+   "aave": {
+    "supply_usdc": 100563988.964787,
+    "cash_usdc": 70824570.194869,
+    "utilisation": 0.29572632386660214,
+    "block": 16815658,
+    "sample_ts": 1678669200,
+    "source": "network"
+   }
+  },
+  {
+   "utc": "2023-03-13T02:00:00Z",
+   "ts": 1678672800,
+   "venues": {
+    "binance": {
+     "low": 0.987,
+     "high": 0.9898,
+     "last": 0.9897,
+     "volume": 58962961.0,
+     "n": 1
+    },
+    "okx": {
+     "low": 0.9869,
+     "high": 0.9902,
+     "last": 0.99,
+     "volume": 14642988.3756,
+     "n": 1
+    },
+    "bitstamp": {
+     "low": 0.9872,
+     "high": 0.9947,
+     "last": 0.99465,
+     "volume": 328746.2495,
+     "n": 1
+    },
+    "defillama": {
+     "low": 0.99472264,
+     "high": 0.99472264,
+     "last": 0.99472264,
+     "volume": null,
+     "n": 1
+    }
+   },
+   "market": {
+    "n": 4,
+    "min": 0.9869,
+    "max": 0.99472264,
+    "median": 0.9871,
+    "lowest_venue": "okx"
+   },
+   "signals": {
+    "decote_min_bps": 131.0,
+    "decote_median_bps": 129.0,
+    "sigma_disp_bps": 78.6,
+    "divergence_bps": -63.4,
+    "divergence_defillama_bps": 12.9
+   },
+   "oracle": {
+    "price": 0.99343639,
+    "roundId": 36893488147419104423,
+    "updated_at": "2023-03-13T00:08:35Z",
+    "updatedAt": 1678666115,
+    "block": 16815957,
+    "sample_ts": 1678672800,
+    "source": "network"
+   },
+   "aave": {
+    "supply_usdc": 102844687.544446,
+    "cash_usdc": 73029316.145572,
+    "utilisation": 0.289906772150859,
+    "block": 16815957,
+    "sample_ts": 1678672800,
+    "source": "network"
+   }
+  },
+  {
+   "utc": "2023-03-13T03:00:00Z",
+   "ts": 1678676400,
+   "venues": {
+    "binance": {
+     "low": 0.9881,
+     "high": 0.992,
+     "last": 0.9891,
+     "volume": 61303787.0,
+     "n": 1
+    },
+    "okx": {
+     "low": 0.9891,
+     "high": 0.9922,
+     "last": 0.99,
+     "volume": 12263109.0932,
+     "n": 1
+    },
+    "bitstamp": {
+     "low": 0.99301,
+     "high": 0.9947,
+     "last": 0.99301,
+     "volume": 48805.8712,
+     "n": 1
+    },
+    "defillama": {
+     "low": 0.991942,
+     "high": 0.991942,
+     "last": 0.991942,
+     "volume": null,
+     "n": 1
+    }
+   },
+   "market": {
+    "n": 4,
+    "min": 0.9881,
+    "max": 0.99301,
+    "median": 0.990521,
+    "lowest_venue": "binance"
+   },
+   "signals": {
+    "decote_min_bps": 119.0,
+    "decote_median_bps": 94.8,
+    "sigma_disp_bps": 49.4,
+    "divergence_bps": -29.2,
+    "divergence_defillama_bps": -14.9
+   },
+   "oracle": {
+    "price": 0.99343639,
+    "roundId": 36893488147419104423,
+    "updated_at": "2023-03-13T00:08:35Z",
+    "updatedAt": 1678666115,
+    "block": 16816253,
+    "sample_ts": 1678676400,
+    "source": "network"
+   },
+   "aave": {
+    "supply_usdc": 87840153.72621,
+    "cash_usdc": 57798150.474894,
+    "utilisation": 0.34200763519784205,
+    "block": 16816253,
+    "sample_ts": 1678676400,
+    "source": "network"
+   }
+  },
+  {
+   "utc": "2023-03-13T04:00:00Z",
+   "ts": 1678680000,
+   "venues": {
+    "binance": {
+     "low": 0.9868,
+     "high": 0.9905,
+     "last": 0.9875,
+     "volume": 50137078.0,
+     "n": 1
+    },
+    "okx": {
+     "low": 0.9866,
+     "high": 0.9907,
+     "last": 0.9876,
+     "volume": 8075019.034,
+     "n": 1
+    },
+    "bitstamp": {
+     "low": 0.98761,
+     "high": 0.99388,
+     "last": 0.99174,
+     "volume": 33825.4968,
+     "n": 1
+    }
+   },
+   "market": {
+    "n": 3,
+    "min": 0.9866,
+    "max": 0.98761,
+    "median": 0.9868,
+    "lowest_venue": "okx"
+   },
+   "signals": {
+    "decote_min_bps": 134.0,
+    "decote_median_bps": 132.0,
+    "sigma_disp_bps": 10.2,
+    "divergence_bps": -67.0,
+    "divergence_defillama_bps": null
+   },
+   "oracle": {
+    "price": 0.9935,
+    "roundId": 36893488147419104425,
+    "updated_at": "2023-03-13T03:54:11Z",
+    "updatedAt": 1678679651,
+    "block": 16816549,
+    "sample_ts": 1678680000,
+    "source": "network"
+   },
+   "aave": {
+    "supply_usdc": 87357855.671327,
+    "cash_usdc": 57315805.357184,
+    "utilisation": 0.3438963798192627,
+    "block": 16816549,
+    "sample_ts": 1678680000,
+    "source": "network"
+   }
+  },
+  {
+   "utc": "2023-03-13T05:00:00Z",
+   "ts": 1678683600,
+   "venues": {
+    "binance": {
+     "low": 0.9861,
+     "high": 0.9879,
+     "last": 0.9869,
+     "volume": 23471481.0,
+     "n": 1
+    },
+    "okx": {
+     "low": 0.987,
+     "high": 0.9895,
+     "last": 0.988,
+     "volume": 4007564.2641,
+     "n": 1
+    },
+    "bitstamp": {
+     "low": 0.98954,
+     "high": 0.9916,
+     "last": 0.99028,
+     "volume": 36564.5899,
+     "n": 1
+    },
+    "defillama": {
+     "low": 0.98603983,
+     "high": 0.98603983,
+     "last": 0.98603983,
+     "volume": null,
+     "n": 1
+    }
+   },
+   "market": {
+    "n": 4,
+    "min": 0.98603983,
+    "max": 0.98954,
+    "median": 0.98655,
+    "lowest_venue": "defillama"
+   },
+   "signals": {
+    "decote_min_bps": 139.6,
+    "decote_median_bps": 134.5,
+    "sigma_disp_bps": 35.4,
+    "divergence_bps": -69.5,
+    "divergence_defillama_bps": -74.6
+   },
+   "oracle": {
+    "price": 0.9935,
+    "roundId": 36893488147419104425,
+    "updated_at": "2023-03-13T03:54:11Z",
+    "updatedAt": 1678679651,
+    "block": 16816846,
+    "sample_ts": 1678683600,
+    "source": "network"
+   },
+   "aave": {
+    "supply_usdc": 86512764.927203,
+    "cash_usdc": 54128556.702915,
+    "utilisation": 0.37432866989672575,
+    "block": 16816846,
+    "sample_ts": 1678683600,
+    "source": "network"
+   }
+  },
+  {
+   "utc": "2023-03-13T06:00:00Z",
+   "ts": 1678687200,
+   "venues": {
+    "binance": {
+     "low": 0.9855,
+     "high": 0.9882,
+     "last": 0.9882,
+     "volume": 42167412.0,
+     "n": 1
+    },
+    "okx": {
+     "low": 0.9867,
+     "high": 0.9887,
+     "last": 0.9881,
+     "volume": 4411548.2334,
+     "n": 1
+    },
+    "bitstamp": {
+     "low": 0.98892,
+     "high": 0.99162,
+     "last": 0.99097,
+     "volume": 95878.4824,
+     "n": 1
+    },
+    "defillama": {
+     "low": 0.983199,
+     "high": 0.983199,
+     "last": 0.983199,
+     "volume": null,
+     "n": 1
+    }
+   },
+   "market": {
+    "n": 4,
+    "min": 0.983199,
+    "max": 0.98892,
+    "median": 0.9861,
+    "lowest_venue": "defillama"
+   },
+   "signals": {
+    "decote_min_bps": 168.0,
+    "decote_median_bps": 139.0,
+    "sigma_disp_bps": 57.9,
+    "divergence_bps": -49.0,
+    "divergence_defillama_bps": -78.0
+   },
+   "oracle": {
+    "price": 0.991,
+    "roundId": 36893488147419104426,
+    "updated_at": "2023-03-13T05:07:11Z",
+    "updatedAt": 1678684031,
+    "block": 16817145,
+    "sample_ts": 1678687200,
+    "source": "network"
+   },
+   "aave": {
+    "supply_usdc": 86444959.994181,
+    "cash_usdc": 50343562.258688,
+    "utilisation": 0.4176229329960145,
+    "block": 16817145,
+    "sample_ts": 1678687200,
+    "source": "network"
+   }
+  },
+  {
+   "utc": "2023-03-13T07:00:00Z",
+   "ts": 1678690800,
+   "venues": {
+    "binance": {
+     "low": 0.9867,
+     "high": 0.9882,
+     "last": 0.9873,
+     "volume": 24380373.0,
+     "n": 1
+    },
+    "okx": {
+     "low": 0.987,
+     "high": 0.9885,
+     "last": 0.9875,
+     "volume": 1867830.2386,
+     "n": 1
+    },
+    "bitstamp": {
+     "low": 0.99074,
+     "high": 0.99184,
+     "last": 0.99151,
+     "volume": 15043.0839,
+     "n": 1
+    },
+    "defillama": {
+     "low": 0.98469128,
+     "high": 0.98469128,
+     "last": 0.98469128,
+     "volume": null,
+     "n": 1
+    }
+   },
+   "market": {
+    "n": 4,
+    "min": 0.98469128,
+    "max": 0.99074,
+    "median": 0.98685,
+    "lowest_venue": "defillama"
+   },
+   "signals": {
+    "decote_min_bps": 153.1,
+    "decote_median_bps": 131.5,
+    "sigma_disp_bps": 61.1,
+    "divergence_bps": -41.5,
+    "divergence_defillama_bps": -63.1
+   },
+   "oracle": {
+    "price": 0.991,
+    "roundId": 36893488147419104426,
+    "updated_at": "2023-03-13T05:07:11Z",
+    "updatedAt": 1678684031,
+    "block": 16817442,
+    "sample_ts": 1678690800,
+    "source": "network"
+   },
+   "aave": {
+    "supply_usdc": 97686466.096258,
+    "cash_usdc": 61565003.231409,
+    "utilisation": 0.36976936835094165,
+    "block": 16817442,
+    "sample_ts": 1678690800,
+    "source": "network"
+   }
+  },
+  {
+   "utc": "2023-03-13T08:00:00Z",
+   "ts": 1678694400,
+   "venues": {
+    "binance": {
+     "low": 0.9863,
+     "high": 0.9887,
+     "last": 0.9879,
+     "volume": 38182038.0,
+     "n": 1
+    },
+    "okx": {
+     "low": 0.9872,
+     "high": 0.9891,
+     "last": 0.9881,
+     "volume": 3445991.4923,
+     "n": 1
+    },
+    "bitstamp": {
+     "low": 0.98385,
+     "high": 0.9913,
+     "last": 0.98843,
+     "volume": 350580.691,
+     "n": 1
+    },
+    "defillama": {
+     "low": 0.98032369,
+     "high": 0.98972672,
+     "last": 0.98972672,
+     "volume": null,
+     "n": 2
+    }
+   },
+   "market": {
+    "n": 4,
+    "min": 0.98032369,
+    "max": 0.9872,
+    "median": 0.985075,
+    "lowest_venue": "defillama"
+   },
+   "signals": {
+    "decote_min_bps": 196.8,
+    "decote_median_bps": 149.2,
+    "sigma_disp_bps": 69.7,
+    "divergence_bps": -59.2,
+    "divergence_defillama_bps": -106.8
+   },
+   "oracle": {
+    "price": 0.991,
+    "roundId": 36893488147419104426,
+    "updated_at": "2023-03-13T05:07:11Z",
+    "updatedAt": 1678684031,
+    "block": 16817742,
+    "sample_ts": 1678694400,
+    "source": "network"
+   },
+   "aave": {
+    "supply_usdc": 98770975.912899,
+    "cash_usdc": 62644832.152109,
+    "utilisation": 0.3657566752468637,
+    "block": 16817742,
+    "sample_ts": 1678694400,
+    "source": "network"
+   }
+  },
+  {
+   "utc": "2023-03-13T09:00:00Z",
+   "ts": 1678698000,
+   "venues": {
+    "binance": {
+     "low": 0.9853,
+     "high": 0.9885,
+     "last": 0.986,
+     "volume": 39402901.0,
+     "n": 1
+    },
+    "okx": {
+     "low": 0.9852,
+     "high": 0.9889,
+     "last": 0.9859,
+     "volume": 6589133.3052,
+     "n": 1
+    },
+    "bitstamp": {
+     "low": 0.95,
+     "high": 0.9904,
+     "last": 0.99036,
+     "volume": 596737.3564,
+     "n": 1
+    },
+    "defillama": {
+     "low": 0.990544,
+     "high": 0.990544,
+     "last": 0.990544,
+     "volume": null,
+     "n": 1
+    }
+   },
+   "market": {
+    "n": 4,
+    "min": 0.95,
+    "max": 0.990544,
+    "median": 0.98525,
+    "lowest_venue": "bitstamp"
+   },
+   "signals": {
+    "decote_min_bps": 500.0,
+    "decote_median_bps": 147.5,
+    "sigma_disp_bps": 409.3,
+    "divergence_bps": -57.5,
+    "divergence_defillama_bps": -4.6
+   },
+   "oracle": {
+    "price": 0.991,
+    "roundId": 36893488147419104426,
+    "updated_at": "2023-03-13T05:07:11Z",
+    "updatedAt": 1678684031,
+    "block": 16818041,
+    "sample_ts": 1678698000,
+    "source": "network"
+   },
+   "aave": {
+    "supply_usdc": 98033086.130955,
+    "cash_usdc": 61898446.821413,
+    "utilisation": 0.3685963661418601,
+    "block": 16818041,
+    "sample_ts": 1678698000,
+    "source": "network"
+   }
+  },
+  {
+   "utc": "2023-03-13T10:00:00Z",
+   "ts": 1678701600,
+   "venues": {
+    "binance": {
+     "low": 0.9838,
+     "high": 0.9874,
+     "last": 0.986,
+     "volume": 34429787.0,
+     "n": 1
+    },
+    "okx": {
+     "low": 0.9841,
+     "high": 0.9895,
+     "last": 0.9857,
+     "volume": 8474446.3237,
+     "n": 1
+    },
+    "bitstamp": {
+     "low": 0.98955,
+     "high": 0.99088,
+     "last": 0.99,
+     "volume": 644349.671,
+     "n": 1
+    }
+   },
+   "market": {
+    "n": 3,
+    "min": 0.9838,
+    "max": 0.98955,
+    "median": 0.9841,
+    "lowest_venue": "binance"
+   },
+   "signals": {
+    "decote_min_bps": 162.0,
+    "decote_median_bps": 159.0,
+    "sigma_disp_bps": 58.1,
+    "divergence_bps": -58.2,
+    "divergence_defillama_bps": null
+   },
+   "oracle": {
+    "price": 0.98991589,
+    "roundId": 36893488147419104427,
+    "updated_at": "2023-03-13T09:39:23Z",
+    "updatedAt": 1678700363,
+    "block": 16818336,
+    "sample_ts": 1678701600,
+    "source": "network"
+   },
+   "aave": {
+    "supply_usdc": 99109652.588571,
+    "cash_usdc": 61887768.707395,
+    "utilisation": 0.3755626511546092,
+    "block": 16818336,
+    "sample_ts": 1678701600,
+    "source": "network"
+   }
+  },
+  {
+   "utc": "2023-03-13T11:00:00Z",
+   "ts": 1678705200,
+   "venues": {
+    "binance": {
+     "low": 0.9859,
+     "high": 0.9873,
+     "last": 0.987,
+     "volume": 17089126.0,
+     "n": 1
+    },
+    "okx": {
+     "low": 0.9855,
+     "high": 0.9873,
+     "last": 0.9872,
+     "volume": 2781975.6099,
+     "n": 1
+    },
+    "bitstamp": {
+     "low": 0.9883,
+     "high": 0.99109,
+     "last": 0.99,
+     "volume": 524795.0889,
+     "n": 1
+    },
+    "defillama": {
+     "low": 0.99198663,
+     "high": 0.99198663,
+     "last": 0.99198663,
+     "volume": null,
+     "n": 1
+    }
+   },
+   "market": {
+    "n": 4,
+    "min": 0.9855,
+    "max": 0.99198663,
+    "median": 0.9871,
+    "lowest_venue": "okx"
+   },
+   "signals": {
+    "decote_min_bps": 145.0,
+    "decote_median_bps": 129.0,
+    "sigma_disp_bps": 65.4,
+    "divergence_bps": -28.2,
+    "divergence_defillama_bps": 20.7
+   },
+   "oracle": {
+    "price": 0.98991589,
+    "roundId": 36893488147419104427,
+    "updated_at": "2023-03-13T09:39:23Z",
+    "updatedAt": 1678700363,
+    "block": 16818633,
+    "sample_ts": 1678705200,
+    "source": "network"
+   },
+   "aave": {
+    "supply_usdc": 101378897.88751,
+    "cash_usdc": 63596433.207297,
+    "utilisation": 0.37268569167260446,
+    "block": 16818633,
+    "sample_ts": 1678705200,
+    "source": "network"
+   }
+  },
+  {
+   "utc": "2023-03-13T12:00:00Z",
+   "ts": 1678708800,
+   "venues": {
+    "binance": {
+     "low": 0.987,
+     "high": 0.9903,
+     "last": 0.9901,
+     "volume": 34358958.0,
+     "n": 1
+    },
+    "okx": {
+     "low": 0.9846,
+     "high": 0.991,
+     "last": 0.9901,
+     "volume": 4995911.9438,
+     "n": 1
+    },
+    "bitstamp": {
+     "low": 0.98193,
+     "high": 0.99058,
+     "last": 0.99058,
+     "volume": 738941.5634,
+     "n": 1
+    },
+    "defillama": {
+     "low": 0.99102079,
+     "high": 0.994156,
+     "last": 0.994156,
+     "volume": null,
+     "n": 2
+    }
+   },
+   "market": {
+    "n": 4,
+    "min": 0.98193,
+    "max": 0.99102079,
+    "median": 0.9858,
+    "lowest_venue": "bitstamp"
+   },
+   "signals": {
+    "decote_min_bps": 180.7,
+    "decote_median_bps": 142.0,
+    "sigma_disp_bps": 91.7,
+    "divergence_bps": -41.2,
+    "divergence_defillama_bps": 11.0
+   },
+   "oracle": {
+    "price": 0.98991589,
+    "roundId": 36893488147419104427,
+    "updated_at": "2023-03-13T09:39:23Z",
+    "updatedAt": 1678700363,
+    "block": 16818931,
+    "sample_ts": 1678708800,
+    "source": "network"
+   },
+   "aave": {
+    "supply_usdc": 97965873.796644,
+    "cash_usdc": 59769513.337234,
+    "utilisation": 0.3898945518385045,
+    "block": 16818931,
+    "sample_ts": 1678708800,
+    "source": "network"
+   }
+  },
+  {
+   "utc": "2023-03-13T13:00:00Z",
+   "ts": 1678712400,
+   "venues": {
+    "binance": {
+     "low": 0.9901,
+     "high": 0.9947,
+     "last": 0.9944,
+     "volume": 87668870.0,
+     "n": 1
+    },
+    "okx": {
+     "low": 0.9901,
+     "high": 0.9944,
+     "last": 0.9944,
+     "volume": 8072208.1558,
+     "n": 1
+    },
+    "bitstamp": {
+     "low": 0.98668,
+     "high": 0.99672,
+     "last": 0.99636,
+     "volume": 528159.6752,
+     "n": 1
+    }
+   },
+   "market": {
+    "n": 3,
+    "min": 0.98668,
+    "max": 0.9901,
+    "median": 0.9901,
+    "lowest_venue": "bitstamp"
+   },
+   "signals": {
+    "decote_min_bps": 133.2,
+    "decote_median_bps": 99.0,
+    "sigma_disp_bps": 34.5,
+    "divergence_bps": 1.8,
+    "divergence_defillama_bps": null
+   },
+   "oracle": {
+    "price": 0.98991589,
+    "roundId": 36893488147419104427,
+    "updated_at": "2023-03-13T09:39:23Z",
+    "updatedAt": 1678700363,
+    "block": 16819226,
+    "sample_ts": 1678712400,
+    "source": "network"
+   },
+   "aave": {
+    "supply_usdc": 97869082.3206,
+    "cash_usdc": 59685129.511056,
+    "utilisation": 0.3901533753474956,
+    "block": 16819226,
+    "sample_ts": 1678712400,
+    "source": "network"
+   }
+  },
+  {
+   "utc": "2023-03-13T14:00:00Z",
+   "ts": 1678716000,
+   "venues": {
+    "binance": {
+     "low": 0.9907,
+     "high": 0.9949,
+     "last": 0.9923,
+     "volume": 84562338.0,
+     "n": 1
+    },
+    "okx": {
+     "low": 0.9909,
+     "high": 0.9947,
+     "last": 0.9923,
+     "volume": 12867859.2247,
+     "n": 1
+    },
+    "bitstamp": {
+     "low": 0.99054,
+     "high": 0.99946,
+     "last": 0.99921,
+     "volume": 2262492.8034,
+     "n": 1
+    },
+    "defillama": {
+     "low": 0.998713,
+     "high": 0.999044,
+     "last": 0.999044,
+     "volume": null,
+     "n": 2
+    }
+   },
+   "market": {
+    "n": 4,
+    "min": 0.99054,
+    "max": 0.998713,
+    "median": 0.9908,
+    "lowest_venue": "bitstamp"
+   },
+   "signals": {
+    "decote_min_bps": 94.6,
+    "decote_median_bps": 92.0,
+    "sigma_disp_bps": 81.8,
+    "divergence_bps": -49.0,
+    "divergence_defillama_bps": 30.1
+   },
+   "oracle": {
+    "price": 0.99570186,
+    "roundId": 36893488147419104431,
+    "updated_at": "2023-03-13T13:52:59Z",
+    "updatedAt": 1678715579,
+    "block": 16819522,
+    "sample_ts": 1678716000,
+    "source": "network"
+   },
+   "aave": {
+    "supply_usdc": 95696002.241165,
+    "cash_usdc": 57511726.473172,
+    "utilisation": 0.39901641524965903,
+    "block": 16819522,
+    "sample_ts": 1678716000,
+    "source": "network"
+   }
+  },
+  {
+   "utc": "2023-03-13T15:00:00Z",
+   "ts": 1678719600,
+   "venues": {
+    "binance": {
+     "low": 0.9905,
+     "high": 0.9949,
+     "last": 0.9939,
+     "volume": 99434640.0,
+     "n": 1
+    },
+    "okx": {
+     "low": 0.9912,
+     "high": 0.9943,
+     "last": 0.9939,
+     "volume": 12980310.186,
+     "n": 1
+    },
+    "bitstamp": {
+     "low": 0.99537,
+     "high": 0.99955,
+     "last": 0.99866,
+     "volume": 1149229.0535,
+     "n": 1
+    },
+    "defillama": {
+     "low": 0.998811,
+     "high": 0.998811,
+     "last": 0.998811,
+     "volume": null,
+     "n": 1
+    }
+   },
+   "market": {
+    "n": 4,
+    "min": 0.9905,
+    "max": 0.998811,
+    "median": 0.993285,
+    "lowest_venue": "binance"
+   },
+   "signals": {
+    "decote_min_bps": 95.0,
+    "decote_median_bps": 67.2,
+    "sigma_disp_bps": 83.2,
+    "divergence_bps": -49.4,
+    "divergence_defillama_bps": 5.9
+   },
+   "oracle": {
+    "price": 0.99822327,
+    "roundId": 36893488147419104432,
+    "updated_at": "2023-03-13T14:01:59Z",
+    "updatedAt": 1678716119,
+    "block": 16819818,
+    "sample_ts": 1678719600,
+    "source": "network"
+   },
+   "aave": {
+    "supply_usdc": 92679864.727322,
+    "cash_usdc": 53490416.634126,
+    "utilisation": 0.42284748913366677,
+    "block": 16819818,
+    "sample_ts": 1678719600,
+    "source": "network"
+   }
+  },
+  {
+   "utc": "2023-03-13T16:00:00Z",
+   "ts": 1678723200,
+   "venues": {
+    "binance": {
+     "low": 0.9925,
+     "high": 0.9947,
+     "last": 0.9941,
+     "volume": 51587036.0,
+     "n": 1
+    },
+    "okx": {
+     "low": 0.993,
+     "high": 0.9948,
+     "last": 0.9946,
+     "volume": 7803796.806,
+     "n": 1
+    },
+    "bitstamp": {
+     "low": 0.99761,
+     "high": 0.9994,
+     "last": 0.99793,
+     "volume": 131577.7824,
+     "n": 1
+    }
+   },
+   "market": {
+    "n": 3,
+    "min": 0.9925,
+    "max": 0.99761,
+    "median": 0.993,
+    "lowest_venue": "binance"
+   },
+   "signals": {
+    "decote_min_bps": 75.0,
+    "decote_median_bps": 70.0,
+    "sigma_disp_bps": 51.2,
+    "divergence_bps": -53.0,
+    "divergence_defillama_bps": null
+   },
+   "oracle": {
+    "price": 0.9983,
+    "roundId": 36893488147419104434,
+    "updated_at": "2023-03-13T15:55:47Z",
+    "updatedAt": 1678722947,
+    "block": 16820114,
+    "sample_ts": 1678723200,
+    "source": "network"
+   },
+   "aave": {
+    "supply_usdc": 87754813.845131,
+    "cash_usdc": 48549047.436001,
+    "utilisation": 0.4467648518783257,
+    "block": 16820114,
+    "sample_ts": 1678723200,
+    "source": "network"
+   }
+  },
+  {
+   "utc": "2023-03-13T17:00:00Z",
+   "ts": 1678726800,
+   "venues": {
+    "binance": {
+     "low": 0.994,
+     "high": 0.996,
+     "last": 0.9955,
+     "volume": 59796441.0,
+     "n": 1
+    },
+    "okx": {
+     "low": 0.9924,
+     "high": 0.995,
+     "last": 0.995,
+     "volume": 4610273.9072,
+     "n": 1
+    },
+    "bitstamp": {
+     "low": 0.99706,
+     "high": 0.99812,
+     "last": 0.99812,
+     "volume": 37890.0255,
+     "n": 1
+    },
+    "defillama": {
+     "low": 1.002,
+     "high": 1.002,
+     "last": 1.002,
+     "volume": null,
+     "n": 1
+    }
+   },
+   "market": {
+    "n": 4,
+    "min": 0.9924,
+    "max": 1.002,
+    "median": 0.99553,
+    "lowest_venue": "okx"
+   },
+   "signals": {
+    "decote_min_bps": 76.0,
+    "decote_median_bps": 44.7,
+    "sigma_disp_bps": 95.8,
+    "divergence_bps": -33.4,
+    "divergence_defillama_bps": 31.3
+   },
+   "oracle": {
+    "price": 0.99887418,
+    "roundId": 36893488147419104436,
+    "updated_at": "2023-03-13T16:13:11Z",
+    "updatedAt": 1678723991,
+    "block": 16820408,
+    "sample_ts": 1678726800,
+    "source": "network"
+   },
+   "aave": {
+    "supply_usdc": 87147426.452366,
+    "cash_usdc": 48628310.775192,
+    "utilisation": 0.4419994628094749,
+    "block": 16820408,
+    "sample_ts": 1678726800,
+    "source": "network"
+   }
+  },
+  {
+   "utc": "2023-03-13T18:00:00Z",
+   "ts": 1678730400,
+   "venues": {
+    "binance": {
+     "low": 0.9949,
+     "high": 0.9962,
+     "last": 0.9959,
+     "volume": 37305523.0,
+     "n": 1
+    },
+    "okx": {
+     "low": 0.9948,
+     "high": 0.995,
+     "last": 0.995,
+     "volume": 6427797.5618,
+     "n": 1
+    },
+    "bitstamp": {
+     "low": 0.9974,
+     "high": 0.99863,
+     "last": 0.99851,
+     "volume": 8059.4368,
+     "n": 1
+    },
+    "defillama": {
+     "low": 1.001,
+     "high": 1.001,
+     "last": 1.001,
+     "volume": null,
+     "n": 1
+    }
+   },
+   "market": {
+    "n": 4,
+    "min": 0.9948,
+    "max": 1.001,
+    "median": 0.99615,
+    "lowest_venue": "okx"
+   },
+   "signals": {
+    "decote_min_bps": 52.0,
+    "decote_median_bps": 38.5,
+    "sigma_disp_bps": 61.9,
+    "divergence_bps": -27.2,
+    "divergence_defillama_bps": 21.3
+   },
+   "oracle": {
+    "price": 0.99887418,
+    "roundId": 36893488147419104436,
+    "updated_at": "2023-03-13T16:13:11Z",
+    "updatedAt": 1678723991,
+    "block": 16820846,
+    "sample_ts": 1678730400,
+    "source": "network"
+   },
+   "aave": {
+    "supply_usdc": 87945114.667097,
+    "cash_usdc": 48943835.523637,
+    "utilisation": 0.44347294663374404,
+    "block": 16820846,
+    "sample_ts": 1678730400,
+    "source": "network"
+   }
+  },
+  {
+   "utc": "2023-03-13T19:00:00Z",
+   "ts": 1678734000,
+   "venues": {
+    "binance": {
+     "low": 0.9949,
+     "high": 0.9964,
+     "last": 0.9953,
+     "volume": 21736492.0,
+     "n": 1
+    },
+    "okx": {
+     "low": 0.9915,
+     "high": 0.9953,
+     "last": 0.995,
+     "volume": 6975009.2438,
+     "n": 1
+    },
+    "bitstamp": {
+     "low": 0.9975,
+     "high": 0.99898,
+     "last": 0.9987,
+     "volume": 57602.0727,
+     "n": 1
+    }
+   },
+   "market": {
+    "n": 3,
+    "min": 0.9915,
+    "max": 0.9975,
+    "median": 0.9949,
+    "lowest_venue": "okx"
+   },
+   "signals": {
+    "decote_min_bps": 85.0,
+    "decote_median_bps": 51.0,
+    "sigma_disp_bps": 60.2,
+    "divergence_bps": -39.7,
+    "divergence_defillama_bps": null
+   },
+   "oracle": {
+    "price": 0.99887418,
+    "roundId": 36893488147419104436,
+    "updated_at": "2023-03-13T16:13:11Z",
+    "updatedAt": 1678723991,
+    "block": 16821007,
+    "sample_ts": 1678734000,
+    "source": "network"
+   },
+   "aave": {
+    "supply_usdc": 84414456.112254,
+    "cash_usdc": 45359133.62901,
+    "utilisation": 0.46266154260720926,
+    "block": 16821007,
+    "sample_ts": 1678734000,
+    "source": "network"
+   }
+  },
+  {
+   "utc": "2023-03-13T20:00:00Z",
+   "ts": 1678737600,
+   "venues": {
+    "binance": {
+     "low": 0.9946,
+     "high": 0.9961,
+     "last": 0.9946,
+     "volume": 18456184.0,
+     "n": 1
+    },
+    "okx": {
+     "low": 0.9949,
+     "high": 0.9951,
+     "last": 0.995,
+     "volume": 3719371.3794,
+     "n": 1
+    },
+    "bitstamp": {
+     "low": 0.997,
+     "high": 0.999,
+     "last": 0.99732,
+     "volume": 520910.8231,
+     "n": 1
+    },
+    "defillama": {
+     "low": 0.999538,
+     "high": 1.001,
+     "last": 0.999538,
+     "volume": null,
+     "n": 2
+    }
+   },
+   "market": {
+    "n": 4,
+    "min": 0.9946,
+    "max": 0.999538,
+    "median": 0.99595,
+    "lowest_venue": "binance"
+   },
+   "signals": {
+    "decote_min_bps": 54.0,
+    "decote_median_bps": 40.5,
+    "sigma_disp_bps": 49.4,
+    "divergence_bps": -29.2,
+    "divergence_defillama_bps": 6.6
+   },
+   "oracle": {
+    "price": 0.99887418,
+    "roundId": 36893488147419104436,
+    "updated_at": "2023-03-13T16:13:11Z",
+    "updatedAt": 1678723991,
+    "block": 16821302,
+    "sample_ts": 1678737600,
+    "source": "network"
+   },
+   "aave": {
+    "supply_usdc": 86475345.350099,
+    "cash_usdc": 47930946.579885,
+    "utilisation": 0.44572702906435835,
+    "block": 16821302,
+    "sample_ts": 1678737600,
+    "source": "network"
+   }
+  },
+  {
+   "utc": "2023-03-13T21:00:00Z",
+   "ts": 1678741200,
+   "venues": {
+    "binance": {
+     "low": 0.9942,
+     "high": 0.9954,
+     "last": 0.995,
+     "volume": 14739141.0,
+     "n": 1
+    },
+    "okx": {
+     "low": 0.9942,
+     "high": 0.995,
+     "last": 0.995,
+     "volume": 2338101.8297,
+     "n": 1
+    },
+    "bitstamp": {
+     "low": 0.99,
+     "high": 0.99836,
+     "last": 0.99665,
+     "volume": 563727.5194,
+     "n": 1
+    }
+   },
+   "market": {
+    "n": 3,
+    "min": 0.99,
+    "max": 0.9942,
+    "median": 0.9942,
+    "lowest_venue": "bitstamp"
+   },
+   "signals": {
+    "decote_min_bps": 100.0,
+    "decote_median_bps": 58.0,
+    "sigma_disp_bps": 42.2,
+    "divergence_bps": -46.7,
+    "divergence_defillama_bps": null
+   },
+   "oracle": {
+    "price": 0.99887418,
+    "roundId": 36893488147419104436,
+    "updated_at": "2023-03-13T16:13:11Z",
+    "updatedAt": 1678723991,
+    "block": 16821599,
+    "sample_ts": 1678741200,
+    "source": "network"
+   },
+   "aave": {
+    "supply_usdc": 85990702.662831,
+    "cash_usdc": 47161514.751876,
+    "utilisation": 0.4515510015449461,
+    "block": 16821599,
+    "sample_ts": 1678741200,
+    "source": "network"
+   }
+  },
+  {
+   "utc": "2023-03-13T22:00:00Z",
+   "ts": 1678744800,
+   "venues": {
+    "binance": {
+     "low": 0.9947,
+     "high": 0.9957,
+     "last": 0.9956,
+     "volume": 13416007.0,
+     "n": 1
+    },
+    "okx": {
+     "low": 0.994,
+     "high": 0.9951,
+     "last": 0.9947,
+     "volume": 2758861.315,
+     "n": 1
+    },
+    "bitstamp": {
+     "low": 0.98852,
+     "high": 0.99781,
+     "last": 0.99596,
+     "volume": 228011.9032,
+     "n": 1
+    },
+    "defillama": {
+     "low": 0.998959,
+     "high": 0.998959,
+     "last": 0.998959,
+     "volume": null,
+     "n": 1
+    }
+   },
+   "market": {
+    "n": 4,
+    "min": 0.98852,
+    "max": 0.998959,
+    "median": 0.99435,
+    "lowest_venue": "bitstamp"
+   },
+   "signals": {
+    "decote_min_bps": 114.8,
+    "decote_median_bps": 56.5,
+    "sigma_disp_bps": 104.5,
+    "divergence_bps": -45.2,
+    "divergence_defillama_bps": 0.8
+   },
+   "oracle": {
+    "price": 0.99887418,
+    "roundId": 36893488147419104436,
+    "updated_at": "2023-03-13T16:13:11Z",
+    "updatedAt": 1678723991,
+    "block": 16821898,
+    "sample_ts": 1678744800,
+    "source": "network"
+   },
+   "aave": {
+    "supply_usdc": 86065683.755518,
+    "cash_usdc": 47192185.060415,
+    "utilisation": 0.45167245525555555,
+    "block": 16821898,
+    "sample_ts": 1678744800,
+    "source": "network"
+   }
+  },
+  {
+   "utc": "2023-03-13T23:00:00Z",
+   "ts": 1678748400,
+   "venues": {
+    "binance": {
+     "low": 0.9945,
+     "high": 0.9958,
+     "last": 0.9949,
+     "volume": 13961388.0,
+     "n": 1
+    },
+    "okx": {
+     "low": 0.9946,
+     "high": 0.995,
+     "last": 0.9948,
+     "volume": 3657534.7346,
+     "n": 1
+    },
+    "bitstamp": {
+     "low": 0.99139,
+     "high": 0.99652,
+     "last": 0.99553,
+     "volume": 216608.2989,
+     "n": 1
+    },
+    "defillama": {
+     "low": 0.99934,
+     "high": 0.999386,
+     "last": 0.999386,
+     "volume": null,
+     "n": 2
+    }
+   },
+   "market": {
+    "n": 4,
+    "min": 0.99139,
+    "max": 0.99934,
+    "median": 0.99455,
+    "lowest_venue": "bitstamp"
+   },
+   "signals": {
+    "decote_min_bps": 86.1,
+    "decote_median_bps": 54.5,
+    "sigma_disp_bps": 79.6,
+    "divergence_bps": -43.2,
+    "divergence_defillama_bps": 4.7
+   },
+   "oracle": {
+    "price": 0.99887418,
+    "roundId": 36893488147419104436,
+    "updated_at": "2023-03-13T16:13:11Z",
+    "updatedAt": 1678723991,
+    "block": 16822194,
+    "sample_ts": 1678748400,
+    "source": "network"
+   },
+   "aave": {
+    "supply_usdc": 85557677.027618,
+    "cash_usdc": 46695769.018556,
+    "utilisation": 0.45421883060847235,
+    "block": 16822194,
+    "sample_ts": 1678748400,
+    "source": "network"
+   }
+  },
+  {
+   "utc": "2023-03-14T00:00:00Z",
+   "ts": 1678752000,
+   "venues": {
+    "binance": {
+     "low": 0.9948,
+     "high": 0.9953,
+     "last": 0.9949,
+     "volume": 6967093.0,
+     "n": 1
+    },
+    "okx": {
+     "low": 0.9947,
+     "high": 0.9951,
+     "last": 0.9947,
+     "volume": 1875071.2965,
+     "n": 1
+    },
+    "bitstamp": {
+     "low": 0.98101,
+     "high": 0.99655,
+     "last": 0.99642,
+     "volume": 863483.2855,
+     "n": 1
+    }
+   },
+   "market": {
+    "n": 3,
+    "min": 0.98101,
+    "max": 0.9948,
+    "median": 0.9947,
+    "lowest_venue": "bitstamp"
+   },
+   "signals": {
+    "decote_min_bps": 189.9,
+    "decote_median_bps": 53.0,
+    "sigma_disp_bps": 138.6,
+    "divergence_bps": -41.7,
+    "divergence_defillama_bps": null
+   },
+   "oracle": {
+    "price": 0.99887418,
+    "roundId": 36893488147419104436,
+    "updated_at": "2023-03-13T16:13:11Z",
+    "updatedAt": 1678723991,
+    "block": 16822491,
+    "sample_ts": 1678752000,
+    "source": "network"
+   },
+   "aave": {
+    "supply_usdc": 87518555.187351,
+    "cash_usdc": 48671599.600192,
+    "utilisation": 0.4438710797270282,
+    "block": 16822491,
+    "sample_ts": 1678752000,
+    "source": "network"
+   }
+  }
+ ],
+ "notes": [
+  "Prix horaire « stress » = plus bas de l'heure par venue (low), plus haut, dernier et volume inclus quand la source les publie.",
+  "Decote D(t) = 1 - prix (peg_ref = 1,00 USD), en points de base.",
+  "Dispersion sigma_disp = (max - min)/max des plus bas horaires inter-venues (convention W2-B ; reproduit les ~870 bps).",
+  "Divergence delta = prix_marche - oracle Chainlink, en points de base (positif = oracle au-dessus du marche).",
+  "Aucune valeur inventee : chaque mesure vient de l'API appelée ou du fichier de cache cite en mode from-cache."
+ ]
+}

@@ -1,0 +1,5 @@
+[200] gt_xusd_p2_bal_quote_day.json (8547 o)
+   gt_xusd_p2_bal_quote_day.json: 76 bougies de 2025-11-04T00:00:00 à 2026-06-24T00:00:00
+[404] gt_xusd_p3_uni_quote_day.json (106 o)
+[404] gt_xusd_p4_uni_quote_day.json (106 o)
+[404] gt_xusd_p5_uni_quote_day.json (106 o)
