@@ -1,6 +1,6 @@
 # VAGUE 2 — SYNTHÈSE (W2-A → W2-E)
 
-**16 octobre 2026** (rédigée de nuit, pendant que l'équipe dort). Cinq chantiers livrés :
+**15 octobre 2026** (rédigée de nuit, pendant que l'équipe dort). Cinq chantiers livrés :
 `W2A_donnees_episodes.md` (39 Ko) · `W2B_signaux_detection.md` (30 Ko) · `W2C_enveloppe_execution.md` (76 Ko) · `W2D_objectifs_mesure.md` (77 Ko) · `W2E_concurrence_agents.md` (51 Ko).
 Chaque fichier porte ses sources (URL + dates) et ses « non trouvé ». La construction correspondante est **en cours** (W3-A/B/C : couche données + épisodes probants + compléments).
 
@@ -73,7 +73,7 @@ Chaque fichier porte ses sources (URL + dates) et ses « non trouvé ». La cons
 
 ## 5. Prochaines étapes
 
-- **Fait (16/10)** : W3-A/B/C clos — couche données `src/orvyren/data/` (RPC archive avec repli drpc→blastapi, Aave, Curve, Chainlink) + **3 épisodes reconstruits et probants** (`evidence/episode_rseth_2026-04.json`, `episode_steth_2022-06.json`, `episode_usdc_2023-03.json`) ; compléments comblés : **séries xUSD (457 h) et USD0++ (635 h) trouvées**, concentration via Blockscout validée, Compound/Morpho testés, plan de calibration livré. Suite de tests : **221 verts, 2 sautés**. Commits `153b93b`, `3ac6ed3`.
+- **Fait (15/10)** : W3-A/B/C clos — couche données `src/orvyren/data/` (RPC archive avec repli drpc→blastapi, Aave, Curve, Chainlink) + **3 épisodes reconstruits et probants** (`evidence/episode_rseth_2026-04.json`, `episode_steth_2022-06.json`, `episode_usdc_2023-03.json`) ; compléments comblés : **séries xUSD (457 h) et USD0++ (635 h) trouvées**, concentration via Blockscout validée, Compound/Morpho testés, plan de calibration livré. Suite de tests : **221 verts, 2 sautés**. Commits `153b93b`, `3ac6ed3`.
 - **Pause volontaire** : W3-D (kit de démo testnet) **non lancé** — la construction du produit est la prochaine phase, à déclencher par l'équipe.
 - **Décisions à trancher (avec l'équipe)** : les 12 points de W2-D §(f), le choix définitif des jeux DEV/EVAL, le point de départ de la courbe de calibration, et les édits du cadre (§04/05/06) ci-dessous.
 - **Restes assumés** : profondeur d'exécution des stablecoins au pire de mars 2023 (non mesurée) ; archive Comet/Morpho à confirmer ; calibration à exécuter (10-20 h de collecte estimées).

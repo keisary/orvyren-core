@@ -1,6 +1,6 @@
 # ORVYREN — EXPLICATIONS : DAO, trésoreries on-chain, Ethereum+Base+LST, critère de mesure, Zodiac Roles
 
-**16 octobre 2026.** Réponses aux questions de l'équipe, avec exemples par région et chiffres sourcés (recherches U1/U2/P1 + vérifications du 16/10).
+**15 octobre 2026.** Réponses aux questions de l'équipe, avec exemples par région et chiffres sourcés (recherches U1/U2/P1 + vérifications du 15/10).
 
 ---
 
