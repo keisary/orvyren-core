@@ -35,9 +35,11 @@ Standard library only (``urllib``, ``json``, ``time``).
 
 from __future__ import annotations
 
+import http.client
 import json
 import time
 import urllib.error
+import urllib.parse
 import urllib.request
 from typing import Any, Callable, Dict, List, Optional, Sequence, Tuple
 
@@ -72,12 +74,14 @@ MAX_GET_LOGS_RANGE = 10_000
 
 #: (block, unix timestamp) pairs measured on-chain (research/W2A, research/W2B).
 #: They only seed the block<->timestamp search; every returned block is checked
-#: against the chain itself.
+#: against the chain itself.  **Block 0 is deliberately absent**: the genesis
+#: header carries ``timestamp = 0`` (only block 1 holds 2015-07-30T15:26:28Z),
+#: which would poison any linear model anchored there.
 CHAIN_ANCHORS: Tuple[Tuple[int, int], ...] = (
-    (0, 1438269988),          # genesis — 2015-07-30T15:26:28Z
-    (14720000, 1651782002),   # 2022-05-05T23:00:02Z (W2-A stETH series)
+    (1, 1438269988),          # first block with a real timestamp - 2015-07-30T15:26:28Z
+    (14720000, 1651791602),   # 2022-05-05T23:00:02Z (W2-A stETH series)
     (14970303, 1655337663),   # 2022-06-16T00:01:03Z (W2-A, stETH/Celsius)
-    (15537394, 1663224179),   # The Merge — 2022-09-15T06:42:59Z
+    (15537394, 1663224179),   # The Merge - 2022-09-15T06:42:59Z
     (16801143, 1678492799),   # 2023-03-10T23:59:59Z (W2-A, USDC/SVB)
     (24908723, 1776539039),   # 2026-04-18T19:03:59Z (W2-B, rsETH freeze block)
 )
@@ -87,6 +91,10 @@ CHAIN_ANCHORS: Tuple[Tuple[int, int], ...] = (
 Transport = Callable[[str, bytes, float], bytes]
 
 _USER_AGENT = "orvyren-core/0.1 (archive reader; python-urllib)"
+
+#: JSON-RPC errors that are contract-level answers, not endpoint failures: every
+#: endpoint (and every retry) returns the same thing, so we stop immediately.
+_TERMINAL_ERROR_MARKERS = ("execution reverted", "invalid opcode", "out of gas", "invalid argument")
 
 
 class RpcError(RuntimeError):
@@ -98,7 +106,7 @@ class RpcRangeError(RpcError):
 
 
 def _http_post(url: str, payload: bytes, timeout: float) -> bytes:
-    """Default transport: one HTTP POST, no retry (the client handles retries)."""
+    """Default one-shot transport: one HTTP POST, no retry (the client retries)."""
     request = urllib.request.Request(
         url,
         data=payload,
@@ -111,6 +119,64 @@ def _http_post(url: str, payload: bytes, timeout: float) -> bytes:
     )
     with urllib.request.urlopen(request, timeout=timeout) as response:  # noqa: S310 (fixed https endpoints)
         return response.read()
+
+
+class HttpTransport:
+    """Keep-alive POST transport -- one persistent connection per endpoint.
+
+    A cold TLS handshake costs ~0.3-0.5 s on the public archives, which would
+    dominate a few thousand ``eth_call`` reads; reusing the connection divides
+    the wall time of a reconstruction by roughly three.  A failed/stale
+    connection is closed and retried once with a fresh one.
+    """
+
+    def __init__(self, user_agent: str = _USER_AGENT) -> None:
+        self.user_agent = user_agent
+        self._conns: Dict[str, Tuple[http.client.HTTPConnection, str]] = {}
+
+    def _connect(self, url: str, timeout: float) -> Tuple[http.client.HTTPConnection, str]:
+        parts = urllib.parse.urlsplit(url)
+        if parts.scheme not in ("http", "https"):
+            raise ValueError(f"unsupported endpoint scheme in {url!r}")
+        factory = http.client.HTTPSConnection if parts.scheme == "https" else http.client.HTTPConnection
+        connection = factory(parts.netloc, timeout=timeout)
+        return connection, parts.path or "/"
+
+    def close(self) -> None:
+        """Drop every cached connection."""
+        for connection, _ in self._conns.values():
+            try:
+                connection.close()
+            except Exception:
+                pass
+        self._conns.clear()
+
+    def __call__(self, url: str, payload: bytes, timeout: float) -> bytes:
+        headers = {
+            "Content-Type": "application/json",
+            "Accept": "application/json",
+            "User-Agent": self.user_agent,
+            "Content-Length": str(len(payload)),
+        }
+        last_error: Optional[Exception] = None
+        for attempt in (0, 1):
+            connection, path = self._connect(url, timeout) if url not in self._conns else self._conns[url]
+            try:
+                connection.request("POST", path, body=payload, headers=headers)
+                response = connection.getresponse()
+                body = response.read()
+                if response.status != 200:
+                    raise RpcError(f"HTTP {response.status} from {url}: {body[:200]!r}")
+                self._conns[url] = (connection, path)
+                return body
+            except Exception as exc:  # stale keep-alive connection, timeout, TLS reset...
+                last_error = exc
+                try:
+                    connection.close()
+                except Exception:
+                    pass
+                self._conns.pop(url, None)
+        raise RpcError(f"{url}: {type(last_error).__name__}: {last_error}")
 
 
 # --------------------------------------------------------------------------- #
@@ -234,7 +300,7 @@ class ArchiveRpc:
         self.retries = int(retries)
         self.backoff = float(backoff)
         self.min_interval = float(min_interval)
-        self._transport: Transport = transport or _http_post
+        self._transport: Transport = transport or HttpTransport(user_agent or _USER_AGENT)
         self.user_agent = user_agent or _USER_AGENT
         # provenance / observability
         self.calls = 0
@@ -282,6 +348,9 @@ class ArchiveRpc:
                 error = (body or {}).get("error") if isinstance(body, dict) else body
                 self.errors += 1
                 failures.append(f"{endpoint}: {method} refused -> {error}")
+                if any(marker in str(error).lower() for marker in _TERMINAL_ERROR_MARKERS):
+                    # Contract-level answer: identical on every endpoint, stop here.
+                    raise RpcError(f"{method} refused by the contract at {endpoint}: {error}")
                 break  # node-level answer: the other endpoint may still hold archive state
         raise RpcError(
             f"{method}: no endpoint answered ({len(endpoints)} tried). "
@@ -353,7 +422,7 @@ class ArchiveRpc:
         head = self.eth_block_number() if high is None else int(high)
         lo, hi = int(low), head
         if lo >= hi:
-            raise RpcError(f"invalid block window for timestamp search: low={lo} high={hi}")
+            raise ValueError(f"invalid block window for timestamp search: low={lo} high={hi}")
 
         for anchor_block, anchor_ts in CHAIN_ANCHORS:
             if anchor_block <= lo or anchor_block >= hi:
@@ -380,6 +449,14 @@ class ArchiveRpc:
                 est = (lo + hi) // 2
             else:
                 est = lo + int((target - t_lo) * (hi - lo) / span)
+            # Bisection guard: a secant estimate that lands near a bound barely shrinks
+            # the window, and a model anchored on a bad timestamp can crawl for ever
+            # (measured: a full-range search on 2022-05-01 stalled at block 0 because
+            # block 0's timestamp is 0).  When the estimate is not comfortably inside
+            # the window, fall back to the midpoint, which halves it.
+            margin = max(1, (hi - lo) // 16)
+            if not lo + margin <= est <= hi - margin:
+                est = (lo + hi) // 2
             if est <= lo:
                 est = lo + 1
             elif est >= hi:
