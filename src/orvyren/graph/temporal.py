@@ -27,7 +27,7 @@ from typing import Iterable, Tuple, Union
 
 from orvyren.graph.record import RelationRecord, parse_ts
 
-__all__ = ["AsOf", "world_at", "known_at", "pit_at"]
+__all__ = ["AsOf", "covers", "world_at", "known_at", "pit_at"]
 
 #: An as-of moment: ISO-8601 text or datetime (naive = UTC).
 AsOf = Union[str, datetime]
@@ -49,6 +49,11 @@ def _covers(record: RelationRecord, moment: datetime) -> bool:
     if record.valid_to is not None and moment >= parse_ts(record.valid_to):
         return False
     return True
+
+
+def covers(record: RelationRecord, as_of: AsOf) -> bool:
+    """Public validity test: is ``record`` world-valid at ``as_of``."""
+    return _covers(record, _t(as_of))
 
 
 def _latest_known(records: Iterable[RelationRecord],

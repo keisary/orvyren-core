@@ -45,6 +45,7 @@ __all__ = [
     "parse_ts",
     "validate_relation_record",
     "record_as_dict",
+    "record_from_dict",
 ]
 
 
@@ -185,6 +186,41 @@ def record_as_dict(record: RelationRecord) -> Dict[str, Any]:
             value = dict(value)
         out[f.name] = value
     return out
+
+
+def record_from_dict(data: Mapping[str, Any]) -> RelationRecord:
+    """Build a record from :func:`record_as_dict` output (fixtures, exports)."""
+    chain = data.get("chain_ref")
+    return RelationRecord(
+        relation_id=data["relation_id"],
+        family=data["family"],
+        kind=data["kind"],
+        src=data.get("src", ""),
+        dst=data.get("dst", ""),
+        src_kind=data.get("src_kind", ""),
+        dst_kind=data.get("dst_kind", ""),
+        mechanism=data.get("mechanism", ""),
+        sign_prior=data.get("sign_prior", "ambigu"),
+        conditions=data.get("conditions", ""),
+        regime_scope=data.get("regime_scope", ""),
+        horizon_scope=data.get("horizon_scope", ""),
+        epistemic_status=data.get("epistemic_status", "REPORTED"),
+        lifecycle=data.get("lifecycle", "DISCOVERED"),
+        validation_status=data.get("validation_status", "PENDING"),
+        valid_from=data.get("valid_from"),
+        valid_to=data.get("valid_to"),
+        revision=int(data.get("revision", 1)),
+        inserted_at=data.get("inserted_at", ""),
+        superseded_by=data.get("superseded_by"),
+        provenance_refs=tuple(data.get("provenance_refs", ())),
+        source_family_id=data.get("source_family_id", ""),
+        extract_method=data.get("extract_method", "HUMAN"),
+        model_version=data.get("model_version", ""),
+        run_id=data.get("run_id", ""),
+        chain_ref=ChainRef(**chain) if chain else None,
+        confidence=float(data.get("confidence", 0.0)),
+        payload=dict(data.get("payload", {})),
+    )
 
 
 def validate_relation_record(record: RelationRecord) -> Tuple[str, ...]:
