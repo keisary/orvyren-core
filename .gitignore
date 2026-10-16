@@ -8,6 +8,8 @@ venv/
 
 # ---- Secrets ----
 .env
+scripts/demo/config.env
+scripts/demo/owners.env
 *.key
 *.pem
 secrets/
@@ -22,6 +24,7 @@ evidence/tmp/
 .DS_Store
 Thumbs.db
 *.log
+.vscode/
 
 # ---- Artefacts de distribution ----
 dist/

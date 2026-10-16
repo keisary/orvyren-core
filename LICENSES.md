@@ -13,6 +13,7 @@ are properly licensed ». Ce fichier recense ce qui est utilisé et sous quelles
 | Pydantic | validation des schémas | MIT | prévu |
 | psycopg | accès PostgreSQL | LGPL-3.0 | prévu |
 | pytest / unittest | tests | MIT / PSF | unittest utilisé |
+| eth-account | signature de transactions — **service signataire isolé** du kit de démo (exécution) ; jamais importé par le cœur ni par `decision`/`policy` | MIT | utilisé (kit de démo) |
 
 ## Sources de données (utilisées, jamais redistribuées en tant que telles)
 
