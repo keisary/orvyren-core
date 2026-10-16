@@ -231,6 +231,27 @@ class RejectionTest(unittest.TestCase):
         self._assert_rejects(make_record("HOLDS", relation_id="  "), "E_RELATION_ID_EMPTY")
         self._assert_rejects(make_record("HOLDS", revision=0), "E_REVISION_RANGE")
         self._assert_rejects(make_record("HOLDS", inserted_at=""), "E_INSERTED_AT_EMPTY")
+        self._assert_rejects(make_record("HOLDS", inserted_at="noon"),
+                             "E_INSERTED_AT_UNPARSABLE")
+
+    def test_clocks_are_parseable_and_ordered(self):
+        self._assert_rejects(make_record("HOLDS", valid_from="18/04/2026"),
+                             "E_VALID_FROM_UNPARSABLE")
+        self._assert_rejects(make_record("HOLDS", valid_to="yesterday"),
+                             "E_VALID_TO_UNPARSABLE")
+        self._assert_rejects(
+            make_record("HOLDS", valid_from="2026-04-18T18:00:00+00:00",
+                        valid_to="2026-04-18T17:00:00+00:00"),
+            "E_VALIDITY_ORDER")
+        # An empty interval never contains any T: refused as well.
+        self._assert_rejects(
+            make_record("HOLDS", valid_from="2026-04-18T17:00:00+00:00",
+                        valid_to="2026-04-18T17:00:00+00:00"),
+            "E_VALIDITY_ORDER")
+        self.assertEqual(
+            validate_relation_record(make_record(
+                "HOLDS", valid_from="2026-04-18T17:00:00+00:00",
+                valid_to="2026-04-18T18:00:00+00:00")), ())
 
     def test_symmetric_pairs_are_canonical(self):
         # Contradiction between two claims: stored once per unordered pair.

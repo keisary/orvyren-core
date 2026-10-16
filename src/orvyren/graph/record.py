@@ -17,6 +17,7 @@ from __future__ import annotations
 
 import re
 from dataclasses import dataclass, field, fields
+from datetime import datetime, timezone
 from typing import Any, Dict, Mapping, Optional, Tuple
 
 from orvyren.graph.catalog import (
@@ -41,9 +42,34 @@ __all__ = [
     "GRANT_PROOF_KINDS",
     "ONCHAIN_KINDS",
     "QUANTITY_KEYS",
+    "parse_ts",
     "validate_relation_record",
     "record_as_dict",
 ]
+
+
+def parse_ts(value: str) -> datetime:
+    """Parse an ISO-8601 timestamp into an aware UTC datetime.
+
+    A naive timestamp is taken as UTC (the project convention); ``Z`` is
+    accepted. Raises ``ValueError`` on anything else — no silent rounding.
+    """
+    text = value.strip()
+    if text.endswith(("Z", "z")):
+        text = text[:-1] + "+00:00"
+    moment = datetime.fromisoformat(text)
+    if moment.tzinfo is None:
+        moment = moment.replace(tzinfo=timezone.utc)
+    return moment.astimezone(timezone.utc)
+
+
+def _parse_or_none(value: Optional[str]) -> Optional[datetime]:
+    if value is None:
+        return None
+    try:
+        return parse_ts(value)
+    except (ValueError, TypeError):
+        return None
 
 
 @dataclass(frozen=True)
@@ -257,6 +283,19 @@ def validate_relation_record(record: RelationRecord) -> Tuple[str, ...]:
         reject("E_REVISION_RANGE")
     if not record.inserted_at.strip():
         reject("E_INSERTED_AT_EMPTY")
+    elif _parse_or_none(record.inserted_at) is None:
+        reject("E_INSERTED_AT_UNPARSABLE")
+
+    # -- Clocks (field 11): parseable ISO-8601 and a correctly ordered
+    #    world-validity interval (null ends = open/unknown, B2 §1.3).
+    if record.valid_from is not None and _parse_or_none(record.valid_from) is None:
+        reject("E_VALID_FROM_UNPARSABLE")
+    if record.valid_to is not None and _parse_or_none(record.valid_to) is None:
+        reject("E_VALID_TO_UNPARSABLE")
+    valid_from_ts = _parse_or_none(record.valid_from)
+    valid_to_ts = _parse_or_none(record.valid_to)
+    if valid_from_ts is not None and valid_to_ts is not None and valid_from_ts >= valid_to_ts:
+        reject("E_VALIDITY_ORDER")
 
     # -- Direction/symmetry bookkeeping (B2 §3.2 "Sens"): a symmetric kind is
     #    stored once per unordered pair — src <= dst keeps the store dedupable.
