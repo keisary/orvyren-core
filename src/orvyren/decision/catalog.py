@@ -6,18 +6,29 @@ Spec: B3_DECISION_ETUDE.md §d.2-d.4 (DOC2 §5.4.5). An action is never a free
 order — it is a **bounded intent** (asset, amount, destination, function,
 expiration) that the policy may refuse. Every action carries its template:
 epistemic trigger, economic trigger, bounds, cost, expected effect and
-on-chain applicability ("exécutable on-chain" or "simulée" — demonstration
-honesty). The catalogue is versioned and executions cite the version
-(INV-AUTH). No action opens new exposure during a stress episode (reduce /
-convert / repay / withdraw only — the bound the policy service can verify).
+applicability ("exécutable on-chain" or "simulée" — demonstration honesty).
+No action opens new exposure during a stress episode (reduce / convert /
+repay / withdraw only — the bound the policy service can verify).
+
+The catalogue DATA lives in ``config/actions_v1.yaml`` — the source of truth of
+the parameters, loaded with the strict stdlib mini-YAML reader of W4
+(``orvyren.policy.miniyaml``). This module carries the semantics: closed
+applicability enum, per-action applicability check, bounded sizing, template
+validation. The catalogue is versioned and executions cite the version
+(INV-AUTH). Fail-closed: any template violation raises — a malformed action
+never enters the catalogue.
 """
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
-from typing import Dict, List, Optional, Sequence, Tuple
+import os
+from dataclasses import dataclass
+from typing import Any, Dict, List, Mapping, Optional, Sequence, Tuple
+
+from orvyren.policy.miniyaml import load_file as _load_yaml_file
 
 CATALOG_VERSION = "catalog/v1"
+CATALOG_SCHEMA = "orvyren-actions-catalog/v1"
 
 DAO_PERSONA = "DAO"
 DESK_PERSONA = "desk"
@@ -26,6 +37,19 @@ APPLICABILITY_ON_CHAIN = "on-chain"
 APPLICABILITY_SIMULATED = "simulated"
 APPLICABILITY_ESCALATE = "escalate (pas une action de l'agent)"
 APPLICABILITY_DEFAULT = "default (état par défaut)"
+
+#: The closed applicability enum — never a free string.
+APPLICABILITY_LABELS = (APPLICABILITY_ON_CHAIN, APPLICABILITY_SIMULATED,
+                        APPLICABILITY_ESCALATE, APPLICABILITY_DEFAULT)
+
+_HERE = os.path.dirname(os.path.abspath(__file__))
+#: The parameter file (repo root / config / actions_v1.yaml).
+DEFAULT_CATALOG_PATH = os.path.normpath(
+    os.path.join(_HERE, "..", "..", "..", "config", "actions_v1.yaml"))
+
+_REQUIRED_FIELDS = ("action_id", "persona", "name", "epistemic_trigger",
+                    "economic_trigger", "bounds", "cost", "expected_effect",
+                    "applicability", "precedent")
 
 
 @dataclass(frozen=True)
@@ -45,146 +69,75 @@ class ActionRecord:
     version: str = CATALOG_VERSION
 
 
-# B3 §d.2 — catalogue trésorerie / protocole (DAO), 8 actions.
-DAO_ACTIONS: Tuple[ActionRecord, ...] = (
-    ActionRecord(
-        "A-D1", DAO_PERSONA, "Pré-positionner / convertir",
-        "H2 SUPPORTED (stress large) ou H1 SUPPORTED sans certitude de "
-        "confinement, A1-A3 levées",
-        "E[perte évitée] = P(obligation)·(L(A0)-L(a)) > coût ; sinon NO-ACTION",
-        "x <= x_max ; venue au allowlist ; <= profondeur Depth_eps",
-        "frais + slippage mesurés (get_dy) + gas",
-        "réduit l'exposition conditionnelle ; paie une prime sinon "
-        "(aller-retour ~ -4,0 % mesuré, W2-D §E.2b)",
-        APPLICABILITY_ON_CHAIN,
-        "Maker 11-13/03/2023 (PSM) ; Eco (>= 2 émetteurs) ; ENS IPS",
-    ),
-    ActionRecord(
-        "A-D2", DAO_PERSONA, "Sortir d'un LST",
-        "décote réalisable > seuil (>= 100/300/600 bps) ET non transitoire "
-        "(persistance > 12 h)",
-        "idem A-D1 ; justifiée si la décote peut se creuser ou redemption "
-        "suspendable",
-        "<= profondeur ; avant files de redemption",
-        "slippage ladder mesuré (10 000 stETH -> 7,13 bp en calme ; 755 bp "
-        "le 14/06/2022)",
-        "évite la matérialisation d'une décote croissante",
-        APPLICABILITY_ON_CHAIN,
-        "stETH mai-juin 2022 (antériorité 30 j, W3-A §3)",
-    ),
-    ActionRecord(
-        "A-D3", DAO_PERSONA, "Rembourser une dette / dé-leverer",
-        "hausse de la probabilité de gel/liquidation de la venue de dette "
-        "(isFrozen, LTV->0, utilisation ~ 100 %)",
-        "coût du remboursement < perte attendue sous gel (blocked exit)",
-        "x <= disponible + dette ; désendetter d'abord si collatéral verrouillé",
-        "frais + gas",
-        "réduit la surface de liquidation ; libère du collatéral si LTV imposé",
-        APPLICABILITY_ON_CHAIN,
-        "rsETH 18-20/04/2026 : WETH gelé, LTV -> 0 (MESURÉ)",
-    ),
-    ActionRecord(
-        "A-D4", DAO_PERSONA, "Retirer la liquidité / ne pas en ajouter",
-        "signal de gel ou saturation (cap_ratio >= 95 %, isFrozen, "
-        "utilisation-cash >= 99 %, files de redemption)",
-        "coût du retrait (gas) < valeur d'option de la sortie ; si la sortie "
-        "est déjà fermée -> ESCALATE",
-        "<= cash disponible ; priorité aux paniers les plus fermés",
-        "gas + éventuels coûts de sortie",
-        "convertit « valeur retenue » en « valeur disponible » (redeemability)",
-        APPLICABILITY_ON_CHAIN,
-        "KPK/ENS sort des positions Aave le 18/04/2026, reconstruit sans perte",
-    ),
-    ActionRecord(
-        "A-D5", DAO_PERSONA, "Rapatrier vers le module de roulage",
-        "buffer opérationnel sous cible, ou runway projeté proche du plancher",
-        "arbitrage liquidité vs coût d'opportunité déclaré",
-        "<= cible du module ; tranches standardisées (ex. 1 500/3 000 ETH)",
-        "gas + coût d'opportunité",
-        "maintient la contrainte dure (runway) ; sert la reddition de comptes",
-        APPLICABILITY_ON_CHAIN,
-        "ENS Registrar Manager + module Zodiac (~6 mois USDC)",
-    ),
-    ActionRecord(
-        "A-D6", DAO_PERSONA, "Geler / réduire des dépenses",
-        "stress prolongé, perte de valeur USD, décision de gouvernance",
-        "n/a (décision politique)",
-        "relève de la gouvernance — pas une action de l'agent",
-        "—",
-        "protège la trésorerie ; cadence longue",
-        APPLICABILITY_ESCALATE,
-        "Lido : utilisation EGG 22 % puis coupes ; Aave : buyback 50->30 M$",
-    ),
-    ActionRecord(
-        "A-D7", DAO_PERSONA, "Ne rien faire (documenté)",
-        "verdict conclusif sans action passant le seuil ; ou H1 SUPPORTED + "
-        "H2 REFUTED (perturbation locale)",
-        "coût d'une action >= gain conditionnel (friction SD2 <= 10 %)",
-        "x = 0",
-        "0 (coût d'opportunité si l'alerte se répète)",
-        "évite la prime systématique ; conserve le risque (écrit)",
-        APPLICABILITY_DEFAULT,
-        "W2-D §B.4.1 ; moteur v0 règle 2",
-    ),
-    ActionRecord(
-        "A-D8", DAO_PERSONA, "Escalader (comité / trésorier / gouvernance)",
-        "A3/A4/A5 ou intégrité en échec (B3 §c.4)",
-        "—",
-        "—",
-        "latence humaine",
-        "décision tracée et responsable ; pas de blocage silencieux",
-        APPLICABILITY_ESCALATE,
-        "W2-C (flux REQUIRE_APPROVAL) ; Chaos Labs",
-    ),
-)
+def load_catalog(path: Optional[str] = None) -> Tuple[ActionRecord, ...]:
+    """Load ``config/actions_v1.yaml`` — the parameter source of truth.
 
-# B3 §d.3 — catalogue desk (rentabilité), 4 actions.
-DESK_ACTIONS: Tuple[ActionRecord, ...] = (
-    ActionRecord(
-        "K-D1", DESK_PERSONA, "Réduire / sortir une position d'inventaire",
-        "signal de rupture (D >= 200 bps, dispersion >= 300 bps)",
-        "x·(P_T - P_exec) > k_aller-retour + financement ; coûte si le peg se "
-        "rétablit (put payé : -4,2 % sur l'exemple USDC)",
-        "x <= min(x_max, Depth_eps) ; plan de retour inclus ou déclaré",
-        "frais + slippage + financement",
-        "réduit la perte de queue",
-        APPLICABILITY_ON_CHAIN,
-        "W2-D §E.3 ; DeFi Saver (stop-loss automation 0,25-0,30 %)",
-    ),
-    ActionRecord(
-        "K-D2", DESK_PERSONA, "Hedger (short perp / option de depeg)",
-        "exposition résiduelle à un actif dont la décote est possible",
-        "coût du hedge < perte conditionnelle",
-        "notionnel <= exposition ; marge pré-financée ; venue au allowlist",
-        "funding + prime d'option",
-        "neutralise la queue sans vendre le spot",
-        APPLICABILITY_SIMULATED,
-        "depegwatch 19/09/2025 ; Ethena (delta-neutral)",
-    ),
-    ActionRecord(
-        "K-D3", DESK_PERSONA, "Dimensionner (sizing)",
-        "toujours, avant toute action",
-        "publication du slippage réalisé vs budget (ST2 <= 30 bp)",
-        "x = min(x_max, Depth_eps, x*)",
-        "—",
-        "évite d'exécuter une « perte évitée » plus petite que le coût",
-        APPLICABILITY_ON_CHAIN,
-        "W2-D §A.2.5/T4",
-    ),
-    ActionRecord(
-        "K-D4", DESK_PERSONA, "Ne rien faire / attendre",
-        "le seuil n'est pas franchi ; incertitude symétrique et coût "
-        "d'aller-retour prohibitif",
-        "le coût décide du signe (churn)",
-        "x = 0",
-        "0",
-        "évite le churn (Miller/DSR — Bailey & López de Prado 2014)",
-        APPLICABILITY_DEFAULT,
-        "W2-D §B.4",
-    ),
-)
+    Fail-closed: bad schema/version, empty template field, unknown
+    applicability, persona mismatch, duplicate id or broken 8+4 counts all
+    raise ``ValueError`` with an explicit code.
+    """
+    data = _load_yaml_file(path or DEFAULT_CATALOG_PATH)
+    if not isinstance(data, dict):
+        raise ValueError("E_CATALOG_ROOT_NOT_A_MAPPING")
+    schema = str(data.get("schema") or "")
+    if schema != CATALOG_SCHEMA:
+        raise ValueError("E_CATALOG_SCHEMA:%s" % schema)
+    version = str(data.get("catalog_version") or "").strip()
+    if version != CATALOG_VERSION:
+        raise ValueError("E_CATALOG_VERSION:%s" % version)
 
-CATALOG: Tuple[ActionRecord, ...] = DAO_ACTIONS + DESK_ACTIONS
+    records: List[ActionRecord] = []
+    seen = set()
+    for section, persona in (("persona_dao", DAO_PERSONA),
+                             ("persona_desk", DESK_PERSONA)):
+        entries = data.get(section)
+        if not isinstance(entries, list):
+            raise ValueError("E_CATALOG_SECTION:%s" % section)
+        for index, entry in enumerate(entries):
+            if not isinstance(entry, dict):
+                raise ValueError("E_CATALOG_ENTRY:%s[%d]" % (section, index))
+            missing = [field for field in _REQUIRED_FIELDS
+                       if not str(entry.get(field, "")).strip()]
+            if missing:
+                raise ValueError("E_CATALOG_FIELD_MISSING:%s[%d]:%s"
+                                 % (section, index, ",".join(missing)))
+            record = ActionRecord(
+                action_id=str(entry["action_id"]).strip(),
+                persona=str(entry["persona"]).strip(),
+                name=str(entry["name"]).strip(),
+                epistemic_trigger=str(entry["epistemic_trigger"]).strip(),
+                economic_trigger=str(entry["economic_trigger"]).strip(),
+                bounds=str(entry["bounds"]).strip(),
+                cost=str(entry["cost"]).strip(),
+                expected_effect=str(entry["expected_effect"]).strip(),
+                applicability=str(entry["applicability"]).strip(),
+                precedent=str(entry["precedent"]).strip(),
+                version=version,
+            )
+            if record.persona != persona:
+                raise ValueError("E_CATALOG_PERSONA:%s:%s"
+                                 % (record.action_id, record.persona))
+            if record.applicability not in APPLICABILITY_LABELS:
+                raise ValueError("E_CATALOG_APPLICABILITY:%s:%s"
+                                 % (record.action_id, record.applicability))
+            if record.action_id in seen:
+                raise ValueError("E_CATALOG_DUPLICATE_ID:%s" % record.action_id)
+            seen.add(record.action_id)
+            records.append(record)
+
+    dao = [r for r in records if r.persona == DAO_PERSONA]
+    desk = [r for r in records if r.persona == DESK_PERSONA]
+    if len(dao) != 8 or len(desk) != 4:
+        raise ValueError("E_CATALOG_COUNTS:dao=%d,desk=%d" % (len(dao), len(desk)))
+    return tuple(records)
+
+
+#: The versioned catalogue (loaded from ``config/actions_v1.yaml`` at import).
+CATALOG: Tuple[ActionRecord, ...] = load_catalog()
+DAO_ACTIONS: Tuple[ActionRecord, ...] = tuple(a for a in CATALOG
+                                              if a.persona == DAO_PERSONA)
+DESK_ACTIONS: Tuple[ActionRecord, ...] = tuple(a for a in CATALOG
+                                               if a.persona == DESK_PERSONA)
 
 
 def catalog_for(persona: str) -> Tuple[ActionRecord, ...]:
@@ -201,6 +154,28 @@ def bounded_size(x_max: float, depth_eps: float, x_threshold: float) -> float:
     return max(0.0, min(x_max, depth_eps, x_threshold))
 
 
+def check_applicability(record: ActionRecord,
+                        context: Optional[Mapping[str, Any]] = None) -> Dict[str, Any]:
+    """Per-action applicability check in a given context.
+
+    Returns ``{"applicable": bool, "motif": str, "action": record}`` — never
+    raises: an inapplicable action is decision information, not a system error.
+    """
+    context = context or {}
+    if record.applicability == APPLICABILITY_ESCALATE:
+        return {"applicable": False, "action": record,
+                "motif": "escalade humaine — jamais une action de l'agent (B3 §d.4)"}
+    if (record.applicability == APPLICABILITY_SIMULATED
+            and not context.get("allow_simulation")):
+        return {"applicable": False, "action": record,
+                "motif": "simulée hors enveloppe — jamais exécutée sans opt-in déclaré"}
+    if (record.applicability == APPLICABILITY_ON_CHAIN
+            and context.get("abstentions_actives")):
+        return {"applicable": False, "action": record,
+                "motif": "conditions d'abstention actives — levées d'abord (DOC2 §5.4.5)"}
+    return {"applicable": True, "action": record, "motif": "applicable"}
+
+
 def validate_catalog(catalog: Sequence[ActionRecord] = CATALOG) -> List[str]:
     """Template completeness (used by the test bench): every field present."""
     problems = []
@@ -213,6 +188,9 @@ def validate_catalog(catalog: Sequence[ActionRecord] = CATALOG) -> List[str]:
                 problems.append("%s: empty %s" % (action.action_id, field_name))
         if action.version != CATALOG_VERSION:
             problems.append("%s: version mismatch %s" % (action.action_id, action.version))
+        if action.applicability not in APPLICABILITY_LABELS:
+            problems.append("%s: unknown applicability %s"
+                            % (action.action_id, action.applicability))
     return problems
 
 
