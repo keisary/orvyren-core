@@ -1,0 +1,157 @@
+# ORVYREN-Core — catalogue d'actions bornées v1 (W3 lot L3.5) : source de vérité
+# des PARAMÈTRES. 8 actions DAO + 4 desk (B3 §d.2-d.4, DOC2 §5.4.5).
+#
+# Gabarit d'une action : déclencheur épistémique, seuil économique, bornes, coût,
+# effet attendu, applicabilité — plus le précédent mesuré qui la justifie. Une
+# action n'est jamais un ordre libre : c'est une intention bornée que la politique
+# peut refuser (P13). Aucune action n'ouvre une exposition nouvelle en stress.
+#
+# L'applicabilité est un ENUM contrôlé par le code (catalog.APPLICABILITY_*) :
+#   on-chain / simulated / escalate (pas une action de l'agent) / default (état par défaut).
+#
+# Le catalogue est versionné et l'exécution cite sa version (INV-AUTH). Chargé par
+# src/orvyren/decision/catalog.py avec le mini-YAML strict stdlib de W4
+# (orvyren.policy.miniyaml) — toute violation du gabarit lève (fail-closed).
+
+schema: "orvyren-actions-catalog/v1"
+catalog_version: "catalog/v1"
+
+# ---------------------------------------------------------------------------
+# Catalogue DAO — 8 actions.
+# ---------------------------------------------------------------------------
+persona_dao:
+  - action_id: "A-D1"
+    persona: "DAO"
+    name: "Pré-positionner / convertir"
+    epistemic_trigger: "H2 SUPPORTED (stress large) ou H1 SUPPORTED sans certitude de confinement, A1-A3 levées"
+    economic_trigger: "E[perte évitée] = P(obligation)·(L(A0)-L(a)) > coût ; sinon NO-ACTION"
+    bounds: "x <= x_max ; venue au allowlist ; <= profondeur Depth_eps"
+    cost: "frais + slippage mesurés (get_dy) + gas"
+    expected_effect: "réduit l'exposition conditionnelle ; paie une prime sinon (aller-retour ~ -4,0 % mesuré, W2-D §E.2b)"
+    applicability: "on-chain"
+    precedent: "Maker 11-13/03/2023 (PSM) ; Eco (>= 2 émetteurs) ; ENS IPS"
+
+  - action_id: "A-D2"
+    persona: "DAO"
+    name: "Sortir d'un LST"
+    epistemic_trigger: "décote réalisable > seuil (>= 100/300/600 bps) ET non transitoire (persistance > 12 h)"
+    economic_trigger: "idem A-D1 ; justifiée si la décote peut se creuser ou redemption suspendable"
+    bounds: "<= profondeur ; avant files de redemption"
+    cost: "slippage ladder mesuré (10 000 stETH -> 7,13 bp en calme ; 755 bp le 14/06/2022)"
+    expected_effect: "évite la matérialisation d'une décote croissante"
+    applicability: "on-chain"
+    precedent: "stETH mai-juin 2022 (antériorité 30 j, W3-A §3)"
+
+  - action_id: "A-D3"
+    persona: "DAO"
+    name: "Rembourser une dette / dé-leverer"
+    epistemic_trigger: "hausse de la probabilité de gel/liquidation de la venue de dette (isFrozen, LTV->0, utilisation ~ 100 %)"
+    economic_trigger: "coût du remboursement < perte attendue sous gel (blocked exit)"
+    bounds: "x <= disponible + dette ; désendetter d'abord si collatéral verrouillé"
+    cost: "frais + gas"
+    expected_effect: "réduit la surface de liquidation ; libère du collatéral si LTV imposé"
+    applicability: "on-chain"
+    precedent: "rsETH 18-20/04/2026 : WETH gelé, LTV -> 0 (MESURÉ)"
+
+  - action_id: "A-D4"
+    persona: "DAO"
+    name: "Retirer la liquidité / ne pas en ajouter"
+    epistemic_trigger: "signal de gel ou saturation (cap_ratio >= 95 %, isFrozen, utilisation-cash >= 99 %, files de redemption)"
+    economic_trigger: "coût du retrait (gas) < valeur d'option de la sortie ; si la sortie est déjà fermée -> ESCALATE"
+    bounds: "<= cash disponible ; priorité aux paniers les plus fermés"
+    cost: "gas + éventuels coûts de sortie"
+    expected_effect: "convertit « valeur retenue » en « valeur disponible » (redeemability)"
+    applicability: "on-chain"
+    precedent: "KPK/ENS sort des positions Aave le 18/04/2026, reconstruit sans perte"
+
+  - action_id: "A-D5"
+    persona: "DAO"
+    name: "Rapatrier vers le module de roulage"
+    epistemic_trigger: "buffer opérationnel sous cible, ou runway projeté proche du plancher"
+    economic_trigger: "arbitrage liquidité vs coût d'opportunité déclaré"
+    bounds: "<= cible du module ; tranches standardisées (ex. 1 500/3 000 ETH)"
+    cost: "gas + coût d'opportunité"
+    expected_effect: "maintient la contrainte dure (runway) ; sert la reddition de comptes"
+    applicability: "on-chain"
+    precedent: "ENS Registrar Manager + module Zodiac (~6 mois USDC)"
+
+  - action_id: "A-D6"
+    persona: "DAO"
+    name: "Geler / réduire des dépenses"
+    epistemic_trigger: "stress prolongé, perte de valeur USD, décision de gouvernance"
+    economic_trigger: "n/a (décision politique)"
+    bounds: "relève de la gouvernance — pas une action de l'agent"
+    cost: "—"
+    expected_effect: "protège la trésorerie ; cadence longue"
+    applicability: "escalate (pas une action de l'agent)"
+    precedent: "Lido : utilisation EGG 22 % puis coupes ; Aave : buyback 50->30 M$"
+
+  - action_id: "A-D7"
+    persona: "DAO"
+    name: "Ne rien faire (documenté)"
+    epistemic_trigger: "verdict conclusif sans action passant le seuil ; ou H1 SUPPORTED + H2 REFUTED (perturbation locale)"
+    economic_trigger: "coût d'une action >= gain conditionnel (friction SD2 <= 10 %)"
+    bounds: "x = 0"
+    cost: "0 (coût d'opportunité si l'alerte se répète)"
+    expected_effect: "évite la prime systématique ; conserve le risque (écrit)"
+    applicability: "default (état par défaut)"
+    precedent: "W2-D §B.4.1 ; moteur v0 règle 2"
+
+  - action_id: "A-D8"
+    persona: "DAO"
+    name: "Escalader (comité / trésorier / gouvernance)"
+    epistemic_trigger: "A3/A4/A5 ou intégrité en échec (B3 §c.4)"
+    economic_trigger: "—"
+    bounds: "—"
+    cost: "latence humaine"
+    expected_effect: "décision tracée et responsable ; pas de blocage silencieux"
+    applicability: "escalate (pas une action de l'agent)"
+    precedent: "W2-C (flux REQUIRE_APPROVAL) ; Chaos Labs"
+
+# ---------------------------------------------------------------------------
+# Catalogue desk — 4 actions.
+# ---------------------------------------------------------------------------
+persona_desk:
+  - action_id: "K-D1"
+    persona: "desk"
+    name: "Réduire / sortir une position d'inventaire"
+    epistemic_trigger: "signal de rupture (D >= 200 bps, dispersion >= 300 bps)"
+    economic_trigger: "x·(P_T - P_exec) > k_aller-retour + financement ; coûte si le peg se rétablit (put payé : -4,2 % sur l'exemple USDC)"
+    bounds: "x <= min(x_max, Depth_eps) ; plan de retour inclus ou déclaré"
+    cost: "frais + slippage + financement"
+    expected_effect: "réduit la perte de queue"
+    applicability: "on-chain"
+    precedent: "W2-D §E.3 ; DeFi Saver (stop-loss automation 0,25-0,30 %)"
+
+  - action_id: "K-D2"
+    persona: "desk"
+    name: "Hedger (short perp / option de depeg)"
+    epistemic_trigger: "exposition résiduelle à un actif dont la décote est possible"
+    economic_trigger: "coût du hedge < perte conditionnelle"
+    bounds: "notionnel <= exposition ; marge pré-financée ; venue au allowlist"
+    cost: "funding + prime d'option"
+    expected_effect: "neutralise la queue sans vendre le spot"
+    applicability: "simulated"
+    precedent: "depegwatch 19/09/2025 ; Ethena (delta-neutral)"
+
+  - action_id: "K-D3"
+    persona: "desk"
+    name: "Dimensionner (sizing)"
+    epistemic_trigger: "toujours, avant toute action"
+    economic_trigger: "publication du slippage réalisé vs budget (ST2 <= 30 bp)"
+    bounds: "x = min(x_max, Depth_eps, x*)"
+    cost: "—"
+    expected_effect: "évite d'exécuter une « perte évitée » plus petite que le coût"
+    applicability: "on-chain"
+    precedent: "W2-D §A.2.5/T4"
+
+  - action_id: "K-D4"
+    persona: "desk"
+    name: "Ne rien faire / attendre"
+    epistemic_trigger: "le seuil n'est pas franchi ; incertitude symétrique et coût d'aller-retour prohibitif"
+    economic_trigger: "le coût décide du signe (churn)"
+    bounds: "x = 0"
+    cost: "0"
+    expected_effect: "évite le churn (Miller/DSR — Bailey & López de Prado 2014)"
+    applicability: "default (état par défaut)"
+    precedent: "W2-D §B.4"
