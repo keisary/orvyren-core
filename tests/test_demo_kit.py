@@ -867,6 +867,43 @@ class TestWaitConfirmations(unittest.TestCase):
         self.assertEqual(result["status"], "PENDING_CONFIRMATION")
 
 
+class TestReplayRevertRetry(unittest.TestCase):
+    """Régression : nœud en retard (« block not found ») → réessais bornés, jamais un faux revert."""
+
+    def _rpc_error(self, message):
+        return common.chain_client.RpcError("eth_call", -32000, message, None)
+
+    def test_retries_then_succeeds(self):
+        from unittest import mock
+        tx = {"from": "0x" + "11" * 20, "to": "0x" + "22" * 20, "input": "0x", "value": "0x0"}
+        with mock.patch.object(verify_receipt.common, "rpc",
+                               side_effect=[tx, self._rpc_error("block not found: 0x2df556d"), "0x"]):
+            result = verify_receipt.replay_revert(rpc_url="http://unused", tx_hash="0x" + "33" * 32,
+                                                  block_number=100, attempts=3, retry_delay=0.01)
+        self.assertEqual(result["status"], "NO_REVERT")
+
+    def test_persistent_lag_is_not_a_revert_claim(self):
+        from unittest import mock
+        tx = {"from": "0x" + "11" * 20, "to": "0x" + "22" * 20, "input": "0x", "value": "0x0"}
+        with mock.patch.object(verify_receipt.common, "rpc",
+                               side_effect=[tx, self._rpc_error("block not found: 0x2df556d"),
+                                            self._rpc_error("block not found: 0x2df556d")]):
+            result = verify_receipt.replay_revert(rpc_url="http://unused", tx_hash="0x" + "33" * 32,
+                                                  block_number=100, attempts=2, retry_delay=0.01)
+        self.assertEqual(result["status"], "REPLAY_UNAVAILABLE")
+
+    def test_real_revert_selector_extracted(self):
+        from unittest import mock
+        tx = {"from": "0x" + "11" * 20, "to": "0x" + "22" * 20, "input": "0x", "value": "0x0"}
+        exc = self._rpc_error("execution reverted")
+        exc.data = "0xfd8e9f28"
+        with mock.patch.object(verify_receipt.common, "rpc", side_effect=[tx, exc]):
+            result = verify_receipt.replay_revert(rpc_url="http://unused", tx_hash="0x" + "33" * 32,
+                                                  block_number=100, attempts=2, retry_delay=0.01)
+        self.assertEqual(result["status"], "REVERT")
+        self.assertEqual(result["revert_selector"], "0xfd8e9f28")
+
+
 # =============================================================================
 # paquet d'audit
 # =============================================================================

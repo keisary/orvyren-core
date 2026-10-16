@@ -238,8 +238,15 @@ def wait_for_confirmations(*, tx_hash: str, receipt_block_number: Optional[int],
 
 
 def replay_revert(*, rpc_url: str, tx_hash: str, block_number: Optional[int],
-                  timeout: int = common.RPC_TIMEOUT_SECONDS) -> Dict[str, Any]:
-    """Rejeu ``eth_call`` au bloc du reçu pour extraire la donnée de revert (échec de 1re classe)."""
+                  timeout: int = common.RPC_TIMEOUT_SECONDS, attempts: int = 5,
+                  retry_delay: float = 2.0) -> Dict[str, Any]:
+    """Rejeu ``eth_call`` au bloc du reçu pour extraire la donnée de revert (échec de 1re classe).
+
+    **Robuste au lag de nœud** (RPC équilibré) : un « block not found » sur un bloc tout juste miné
+    est réessayé ``attempts`` fois ; si le nœud reste en retard, l'état rendu est
+    ``REPLAY_UNAVAILABLE`` — jamais un faux « revert » (mesuré le 2026-10-16).
+    """
+    import time as _time
     try:
         tx = common.rpc(rpc_url, "eth_getTransactionByHash", [tx_hash], timeout)
         if not isinstance(tx, dict):
@@ -247,14 +254,24 @@ def replay_revert(*, rpc_url: str, tx_hash: str, block_number: Optional[int],
         call = {"from": tx.get("from"), "to": tx.get("to"),
                 "data": tx.get("input"), "value": tx.get("value")}
         tag = hex(int(block_number)) if block_number is not None else "latest"
-        try:
-            output = common.rpc(rpc_url, "eth_call", [call, tag], timeout)
-            return {"status": "NO_REVERT", "output": output}
-        except common.chain_client.RpcError as exc:
-            return {"status": "REVERT", "revert_selector": common.revert_selector(exc.data),
-                    "error_message": exc.message, "data": exc.data}
+        for attempt in range(max(1, int(attempts))):
+            try:
+                output = common.rpc(rpc_url, "eth_call", [call, tag], timeout)
+                return {"status": "NO_REVERT", "output": output}
+            except common.chain_client.RpcError as exc:
+                message = getattr(exc, "message", "") or ""
+                lag = "not found" in message.lower() or "unknown block" in message.lower()
+                if lag and attempt < max(1, int(attempts)) - 1:
+                    _time.sleep(retry_delay)
+                    continue
+                if lag:
+                    return {"status": "REPLAY_UNAVAILABLE", "error": message,
+                            "note": "nœud en retard (bloc non servi) — réessayer plus tard, pas un revert"}
+                return {"status": "REVERT", "revert_selector": common.revert_selector(exc.data),
+                        "error_message": exc.message, "data": exc.data}
     except Exception as exc:
         return {"status": "REPLAY_FAILED", "error": str(exc)}
+    return {"status": "REPLAY_FAILED", "error": "réessais épuisés"}
 
 
 # --- CLI ---------------------------------------------------------------------

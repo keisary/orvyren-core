@@ -269,8 +269,9 @@ python scripts/demo/demo.py --run D --execute --case rseth --session $SESSION \
 
 **Critères :** latences (a) collecte des signatures, (b) inclusion, (c) effet
 affichées ; la tentative de l'agent rend **`status = 0x0`** avec le sélecteur
-**`0x4a0bfec1` = `NotAuthorized(address)`** (mesuré sur Base Sepolia — pas
-`NoMembership`, qui est une erreur de la doc amont) ; `members == false` vérifié
+**`0xfd8e9f28` = `NoMembership()`** — **mesuré on-chain le 2026-10-16** (l'ancienne
+valeur `0x4a0bfec1` « NotAuthorized » était une hypothèse de doc : la mesure prime,
+une fois de plus) ; `members == false` vérifié
 indépendamment ; **reset** préparé (`assignRoles(…, [true])`).
 
 ### RUN E — Journal et audit (la partie qui vend ORVYREN)
@@ -316,7 +317,7 @@ coût nul, FREEZE_V2 F3) et gardez le `sha256` du zip (`<zip>.sha256`).
 | 5 | **`--execute` avec les placeholders** | refusé volontairement : remplir le `.env` (c'est la protection contre une démo sur des adresses factices). |
 | 6 | **`eth-account` absent** | `python -m pip install eth-account` — le dry-run, lui, n'en a pas besoin. |
 | 7 | **Hash de dry-run pris pour un vrai** | tout hash simulé porte `simulated: true` et un préfixe d'avertissement ; ne jamais le montrer comme preuve. |
-| 8 | **Sélecteurs de la documentation** | `exactInputSingle` (`0x04e45aaf`, pas `0x414bf389`), `repay` déployé (`0x573ade81`), non-membre → `NotAuthorized` (`0x4a0bfec1`) : la **mesure** prime sur la doc (B5 annexe E). |
+| 8 | **Sélecteurs de la documentation** | `exactInputSingle` (`0x04e45aaf`, pas `0x414bf389`), `repay` déployé (`0x573ade81`), non-membre → `NoMembership` (`0xfd8e9f28`, **remesuré le 2026-10-16**) : la **mesure** prime sur la doc (B5 annexe E). |
 | 9 | **Rafale de frontière de période** | l'enveloppe autorise jusqu'à ≈ 2 périodes ; c'est le compteur **glissant hors chaîne** qui tranche (run C5, limite assumée). |
 | 10 | **Aucune expiration native** de l'allowance Zodiac | renseigner `revocation_scheduled_at` (contrôle D9) et programmer la révocation. |
 | 11 | **Reorg / inclusion retardée** | le kit relit le reçu (`blockHash`, profondeur 2) ; un `status = 0x0` est un **résultat**, jamais un « ok » optimiste. |

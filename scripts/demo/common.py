@@ -68,7 +68,7 @@ SELECTOR_EXEC_TX_WITH_ROLE = "0xc6fe8747"  # execTransactionWithRole(address,uin
 SELECTOR_EXEC_TX_WITH_ROLE_RET = "0x2b99e506"  # execTransactionWithRoleReturnData(...)
 SELECTOR_ASSIGN_ROLES = "0x957ed2b3"       # assignRoles(address,bytes32[],bool[])
 SELECTOR_ALLOW_TARGET = "0x7b0da5b2"       # allowTarget(bytes32,address,uint8)
-ERROR_NOT_AUTHORIZED = "0x4a0bfec1"        # NotAuthorized(address) — revert d'un non-membre (remplace NoMembership supposé)
+ERROR_NOT_AUTHORIZED = "0xfd8e9f28"        # NoMembership() — revert d'un non-membre ; MESURÉ on-chain le 2026-10-16 (l'hypothèse 0x4a0bfec1 « NotAuthorized » venait d'une note de doc — la mesure prime)
 
 #: Topic0 de l'événement ERC-20 Transfer (recalculé, égal à la constante de orvyren.execution.verify).
 TRANSFER_TOPIC = "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef"
