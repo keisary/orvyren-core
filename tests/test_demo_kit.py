@@ -803,37 +803,67 @@ class TestSignerDryRun(unittest.TestCase):
 # =============================================================================
 
 class TestWaitConfirmations(unittest.TestCase):
-    def test_waits_until_confirmed(self):
-        from unittest import mock
-        seq = [{"status": "PENDING_CONFIRMATION", "confirmations": 0},
-               {"status": "PENDING_CONFIRMATION", "confirmations": 1},
-               {"status": "CONFIRMED", "confirmations": 2}]
-        with mock.patch.object(verify_receipt, "reorg_check", side_effect=seq):
-            result = verify_receipt.wait_for_confirmations(
-                tx_hash="0x" + "11" * 32, receipt_block_number=100,
-                receipt_block_hash="0x" + "22" * 32, rpc_url="http://unused",
-                confirmation_blocks=2, timeout_seconds=5, poll_seconds=0.01)
-        self.assertEqual(result["status"], "CONFIRMED")
-        self.assertIn("waited_seconds", result)
+    """Sémantique : CONFIRMED = profondeur ≥ k ET couple (bloc, hash) stable sur deux lectures."""
 
-    def test_reorged_returns_immediately(self):
+    def setUp(self):
+        self.round = 0
+        self.receipts = []
+        self.heads = []
+
+    def _fake_rpc(self, url, method, params, timeout=None):
+        self.assertEqual(method, "eth_getTransactionReceipt")
+        return self.receipts[min(self.round, len(self.receipts) - 1)]
+
+    def _fake_head(self, url, timeout=None):
+        head = self.heads[min(self.round, len(self.heads) - 1)]
+        self.round += 1
+        return head
+
+    def _run(self, **kw):
         from unittest import mock
-        with mock.patch.object(verify_receipt, "reorg_check",
-                               return_value={"status": "REORGED", "code": "REORGED"}):
-            result = verify_receipt.wait_for_confirmations(
-                tx_hash="0x" + "11" * 32, receipt_block_number=100,
-                receipt_block_hash="0x" + "22" * 32, rpc_url="http://unused",
-                confirmation_blocks=2, timeout_seconds=5, poll_seconds=0.01)
+        with mock.patch.object(verify_receipt.common, "rpc", side_effect=self._fake_rpc), \
+             mock.patch.object(verify_receipt.common, "eth_block_number", side_effect=self._fake_head):
+            return verify_receipt.wait_for_confirmations(
+                tx_hash="0x" + "11" * 32, receipt_block_number=kw.pop("bn", 100),
+                receipt_block_hash=kw.pop("bh", "0x" + "aa" * 32), rpc_url="http://unused",
+                confirmation_blocks=2, poll_seconds=0.01, **kw)
+
+    def _receipt(self, bn, bh):
+        return {"blockNumber": hex(bn), "blockHash": bh}
+
+    def test_confirmed_after_stable_view(self):
+        r = self._receipt(100, "0x" + "aa" * 32)
+        self.receipts = [r, r]
+        self.heads = [101, 102]
+        result = self._run()
+        self.assertEqual(result["status"], "CONFIRMED")
+        self.assertNotIn("view_updated", result)
+
+    def test_view_change_annotated_not_reorged(self):
+        r = self._receipt(100, "0x" + "bb" * 32)  # hash différent du témoin consigné (aa)
+        self.receipts = [r, r]
+        self.heads = [101, 102]
+        result = self._run()
+        self.assertEqual(result["status"], "CONFIRMED")
+        self.assertIn("view_updated", result)
+
+    def test_receipt_disappears_is_reorged(self):
+        self.receipts = [None]
+        self.heads = [101]
+        result = self._run()
+        self.assertEqual(result["status"], "REORGED")
+
+    def test_block_number_change_is_reorged(self):
+        self.receipts = [self._receipt(101, "0x" + "aa" * 32)]
+        self.heads = [102]
+        result = self._run()
         self.assertEqual(result["status"], "REORGED")
 
     def test_timeout_returns_pending_never_hangs(self):
-        from unittest import mock
-        with mock.patch.object(verify_receipt, "reorg_check",
-                               return_value={"status": "PENDING_CONFIRMATION"}):
-            result = verify_receipt.wait_for_confirmations(
-                tx_hash="0x" + "11" * 32, receipt_block_number=100,
-                receipt_block_hash="0x" + "22" * 32, rpc_url="http://unused",
-                confirmation_blocks=2, timeout_seconds=0, poll_seconds=0.01)
+        r = self._receipt(100, "0x" + "aa" * 32)
+        self.receipts = [r]
+        self.heads = [100]  # profondeur 1 < 2 : jamais confirmable
+        result = self._run(timeout_seconds=0)
         self.assertEqual(result["status"], "PENDING_CONFIRMATION")
 
 

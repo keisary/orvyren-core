@@ -184,19 +184,50 @@ def reorg_check(*, tx_hash: str, receipt_block_number: Optional[int], receipt_bl
 def wait_for_confirmations(*, tx_hash: str, receipt_block_number: Optional[int], receipt_block_hash: Optional[str],
                            rpc_url: str, confirmation_blocks: int = 2, timeout_seconds: int = 45,
                            poll_seconds: float = 3.0) -> Dict[str, Any]:
-    """``reorg_check`` avec **attente bornée** jusqu'à la profondeur voulue (blocs Base ≈ 2 s).
+    """Attente bornée : **inclusion stable** = profondeur ≥ ``confirmation_blocks`` **et**
+    couple ``(bloc, hash)`` inchangé sur deux lectures consécutives.
 
-    Ne bloque jamais au-delà de ``timeout_seconds`` : au-delà, l'état ``PENDING_CONFIRMATION``
-    est rendu tel quel — jamais d'attente infinie ; un reorg avéré rend la main immédiatement.
+    Le témoin ``receipt_block_hash`` consigné peut venir d'une vue antérieure au consensus
+    (micro-fork d'un testnet, RPC équilibré) : s'il diffère mais que la relecture est stable et
+    profonde, l'état est ``CONFIRMED`` avec ``view_updated`` annoté (jamais un faux « reorg »).
+    ``REORGED`` est réservé aux vraies anomalies : reçu disparu, ou numéro de bloc différent.
+    Ne bloque jamais au-delà de ``timeout_seconds`` (blocs Base ≈ 2 s) ; au-delà, l'état
+    ``PENDING_CONFIRMATION`` est rendu tel quel.
     """
     import time as _time
     started = _time.monotonic()
     deadline = started + max(0, int(timeout_seconds))
+    previous = None
     result: Dict[str, Any] = {}
     while True:
-        result = reorg_check(tx_hash=tx_hash, receipt_block_number=receipt_block_number,
-                             receipt_block_hash=receipt_block_hash, rpc_url=rpc_url,
-                             confirmation_blocks=confirmation_blocks)
+        try:
+            fresh = common.rpc(rpc_url, "eth_getTransactionReceipt", [tx_hash])
+            head = common.eth_block_number(rpc_url)
+        except Exception as exc:
+            result = {"status": "UNRESOLVED", "code": RECEIPT_UNAVAILABLE, "error": str(exc)}
+        else:
+            if fresh is None:
+                result = {"status": "REORGED", "code": REORGED,
+                          "note": "le reçu a disparu : reorg probable — re-vérifier P4/P5 avant toute re-émission"}
+            else:
+                number = common.hex_to_int(fresh.get("blockNumber"))
+                block_hash = fresh.get("blockHash")
+                confirmations = (head - number + 1) if number is not None else None
+                result = {"tx_hash": tx_hash, "confirmation_blocks": confirmation_blocks,
+                          "block_number": number, "block_hash": block_hash,
+                          "confirmations": confirmations}
+                if receipt_block_number is not None and number != receipt_block_number:
+                    result.update({"status": "REORGED", "code": REORGED,
+                                   "note": "numéro de bloc différent de celui consigné"})
+                elif (confirmations or 0) >= int(confirmation_blocks) and previous == (number, str(block_hash).lower()):
+                    result["status"] = "CONFIRMED"
+                    if receipt_block_hash and str(block_hash).lower() != str(receipt_block_hash).lower():
+                        result["view_updated"] = {
+                            "consigned_block_hash": receipt_block_hash, "final_block_hash": block_hash,
+                            "note": "vue initiale du reçu différente (micro-fork de testnet) — relecture stabilisée"}
+                else:
+                    result["status"] = "PENDING_CONFIRMATION"
+                previous = (number, str(block_hash).lower())
         if result.get("status") in ("CONFIRMED", "REORGED"):
             break
         if _time.monotonic() >= deadline:
