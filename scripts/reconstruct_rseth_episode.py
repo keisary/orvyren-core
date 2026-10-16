@@ -22,7 +22,7 @@ Modes
 -----
 * default: read the chain through the archive RPCs (``--workers`` parallel);
 * ``--from-cache``: rebuild from the JSON already archived in
-  ``research/raw_w2a`` and ``research/raw_w2b`` -- no network at all.  The run
+  ``fixtures/raw_w2a`` and ``fixtures/raw_w2b`` -- no network at all.  The run
   falls back to that mode automatically when the very first call fails.
 
 The output file is written *progressively* (atomic replace after every point),
@@ -246,7 +246,7 @@ def collect_network(output_path: str, *, workers: int, resume: bool, log) -> Dic
     except Exception as exc:
         log(f"WARNING freeze search failed ({exc}); falling back to the archived value")
         try:
-            cached = load_raw("aave_rseth_freeze_block.json", os.path.join(os.path.dirname(__file__), "..", "research", "raw_w2b"))
+            cached = load_raw("aave_rseth_freeze_block.json", os.path.join(os.path.dirname(__file__), "..", "fixtures", "raw_w2b"))
             freeze = dict(cached, method="cache:aave_rseth_freeze_block.json")
         except FileNotFoundError:
             freeze = {"error": str(exc)}
@@ -481,7 +481,7 @@ def collect_from_cache(log) -> Dict[str, Any]:
             "reserves": dict(RESERVES),
             "scope": "Aave V3 Ethereum Core, reserves rsETH (collateral), WETH and USDC; "
                      "points are those archived by W2-A/W2-B (12 h grid + key blocks)",
-            "note": "offline rebuild from research/raw_w2a + research/raw_w2b (no network call)",
+            "note": "offline rebuild from fixtures/raw_w2a + fixtures/raw_w2b (no network call)",
             "cache_files": list(CACHE_FILES),
             "label_caveat": "the archived UTC labels are estimated for part of the grid; every row "
                             "whose label disagrees with its own block by more than 2 h is re-placed "
@@ -691,7 +691,7 @@ def summarise(payload: Dict[str, Any], output_path: str) -> str:
 def main(argv: Optional[Sequence[str]] = None) -> int:
     parser = argparse.ArgumentParser(description="Rebuild the rsETH / KelpDAO April-2026 episode into evidence JSON.")
     parser.add_argument("--out", default=DEFAULT_OUTPUT, help="output evidence file")
-    parser.add_argument("--from-cache", action="store_true", help="rebuild from research/raw_w2* without any network call")
+    parser.add_argument("--from-cache", action="store_true", help="rebuild from fixtures/raw_w2* without any network call")
     parser.add_argument("--workers", type=int, default=6, help="parallel workers for the RPC phase (default 6)")
     parser.add_argument("--no-resume", action="store_true", help="ignore points already present in the output file")
     parser.add_argument("--quiet", action="store_true", help="only print the final summary")

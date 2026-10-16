@@ -4,7 +4,7 @@
 
 Nothing here is episode-specific: it provides
 
-* repo paths (``evidence/``, ``research/raw_w2a``, ``research/raw_w2b``);
+* repo paths (``evidence/``, ``fixtures/raw_w2a``, ``fixtures/raw_w2b``);
 * JSON helpers with **atomic** writes, so a killed run never leaves a half
   written evidence file (the file is replaced by ``os.replace``);
 * :func:`resolve_blocks` -- timestamp -> block resolution over a rising grid,
@@ -14,7 +14,7 @@ Nothing here is episode-specific: it provides
   that gives every worker **its own** :class:`~orvyren.data.rpc.ArchiveRpc`
   (the client is not thread-safe) and alternates the primary endpoint, so a
   2 000-call reconstruction runs in minutes instead of tens of minutes;
-* :func:`load_raw` -- read a JSON file already archived in ``research/`` (the
+* :func:`load_raw` -- read a JSON file already archived in ``fixtures/`` (the
   ``--from-cache`` fallback, used when the network is unavailable).
 
 Standard library only.
@@ -38,9 +38,9 @@ if SRC not in sys.path:
     sys.path.insert(0, SRC)
 
 EVIDENCE_DIR = os.path.join(ROOT, "evidence")
-RESEARCH_DIR = os.path.join(ROOT, "research")
-RAW_W2A = os.path.join(RESEARCH_DIR, "raw_w2a")
-RAW_W2B = os.path.join(RESEARCH_DIR, "raw_w2b")
+FIXTURES_DIR = os.path.join(ROOT, "fixtures")
+RAW_W2A = os.path.join(FIXTURES_DIR, "raw_w2a")
+RAW_W2B = os.path.join(FIXTURES_DIR, "raw_w2b")
 
 from orvyren.data import ArchiveRpc, utc_iso  # noqa: E402  (after sys.path setup)
 
@@ -71,14 +71,14 @@ def load_raw(name: str, *directories: str) -> Any:
     candidates: List[str] = []
     for directory in (directories or (RAW_W2A, RAW_W2B)):
         candidates.append(os.path.join(directory, name))
-    candidates.append(os.path.join(RESEARCH_DIR, name))
+    candidates.append(os.path.join(FIXTURES_DIR, name))
     candidates.append(name)
     for path in candidates:
         if os.path.isfile(path):
             with open(path, "r", encoding="utf-8") as handle:
                 return json.load(handle)
     raise FileNotFoundError(
-        f"{name} not found under research/ (looked in {len(candidates)} paths, e.g. {candidates[0]})"
+        f"{name} not found under fixtures/ (looked in {len(candidates)} paths, e.g. {candidates[0]})"
     )
 
 

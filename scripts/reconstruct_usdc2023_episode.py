@@ -24,7 +24,7 @@ Contraintes (décidées par le projet, pas par commodité)
 --------------------------------------------------------
  * **stdlib uniquement** (urllib/json/datetime/... ; aucun import de `src/`) ;
  * **relançable** : `--from-cache` reconstruit tout depuis les JSON bruts déjà
-   mesurés dans `research/raw_w2b/` quand le réseau échoue ou n'est pas voulu ;
+   mesurés dans `fixtures/raw_w2b/` quand le réseau échoue ou n'est pas voulu ;
  * **déterministe** : sortie JSON triée et arrondie, aucune valeur inventée —
    chaque nombre de `evidence/episode_usdc_2023-03.json` est mesuré ici, et les
    points issus du cache sont marqués `source: cache`.
@@ -61,7 +61,7 @@ from statistics import median
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DEFAULT_OUT = os.path.join(ROOT, "evidence", "episode_usdc_2023-03.json")
-RAW_W2B = os.path.join(ROOT, "research", "raw_w2b")
+RAW_W2B = os.path.join(ROOT, "fixtures", "raw_w2b")
 
 WINDOW_START_TS = 1678406400  # 2023-03-10T00:00:00Z
 WINDOW_END_TS = 1678752000    # 2023-03-14T00:00:00Z
@@ -598,7 +598,7 @@ class BlockIndex:
     Dépendances injectables (`call`, `batch`) pour les tests hors-ligne.
     """
 
-    #: couples (bloc, ts) mesurés dans research/raw_w2b/aave_usdc_util_mar2023.json
+    #: couples (bloc, ts) mesurés dans fixtures/raw_w2b/aave_usdc_util_mar2023.json
     SEED = ((16794041, 1678406400),    # 2023-03-10 00:00:00Z
             (16820846, 1678730400))    # 2023-03-13 18:00:00Z
 
@@ -865,7 +865,7 @@ def fetch_aave(blocks_by_hour):
 
 
 # --------------------------------------------------------------------------
-# Mode cache (hors-ligne) : relire les JSON bruts de research/raw_w2b/
+# Mode cache (hors-ligne) : relire les JSON bruts de fixtures/raw_w2b/
 # --------------------------------------------------------------------------
 
 def load_cache_venues(raw_dir):
@@ -966,7 +966,7 @@ def build_evidence(from_cache=False, raw_dir=RAW_W2B, out_path=DEFAULT_OUT,
 
     if from_cache:
         mode = "from-cache"
-        say("[cache] lecture des JSON bruts research/raw_w2b/ ...")
+        say("[cache] lecture des JSON bruts fixtures/raw_w2b/ ...")
         venues = load_cache_venues(raw_dir)
         oracle_sparse = load_cache_oracle(raw_dir)
         aave_sparse = load_cache_aave(raw_dir)
@@ -974,12 +974,12 @@ def build_evidence(from_cache=False, raw_dir=RAW_W2B, out_path=DEFAULT_OUT,
         aave_by_hour = align_series_to_hours(hours, aave_sparse)
         for v in VENUES:
             sources[v] = {"mode": "cache", "points": len(venues.get(v) or []),
-                          "files": ["research/raw_w2b/venues_usdc_mar2023.json",
-                                    "research/raw_w2b/defillama_chart_usdc.json"]}
+                          "files": ["fixtures/raw_w2b/venues_usdc_mar2023.json",
+                                    "fixtures/raw_w2b/defillama_chart_usdc.json"]}
         sources["chainlink"] = {"mode": "cache", "points": len(oracle_sparse),
-                                "file": "research/raw_w2b/chainlink_usdcusd_mar2023.json"}
+                                "file": "fixtures/raw_w2b/chainlink_usdcusd_mar2023.json"}
         sources["aave"] = {"mode": "cache", "points": len(aave_sparse),
-                           "file": "research/raw_w2b/aave_usdc_util_mar2023.json"}
+                           "file": "fixtures/raw_w2b/aave_usdc_util_mar2023.json"}
     else:
         mode = "network"
         fetchers = {
@@ -1113,7 +1113,7 @@ def print_summary(document):
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("--from-cache", action="store_true",
-                        help="reconstruire hors-ligne depuis research/raw_w2b/")
+                        help="reconstruire hors-ligne depuis fixtures/raw_w2b/")
     parser.add_argument("--out", default=DEFAULT_OUT, help="fichier JSON de sortie")
     parser.add_argument("--raw-dir", default=RAW_W2B,
                         help="dossier des JSON bruts (mode cache)")

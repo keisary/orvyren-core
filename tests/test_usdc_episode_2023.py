@@ -6,7 +6,7 @@ Banc de test de `scripts/reconstruct_usdc2023_episode.py`, **entièrement
 hors-ligne** :
 
   * parseurs et signaux sur fixtures locales (valeurs réelles extraites de
-    `research/raw_w2b/` le 2026-10-15 — chaque fixture est citée) ;
+    `fixtures/raw_w2b/` le 2026-10-15 — chaque fixture est citée) ;
   * recherche dichotomique bloc <-> timestamp sur un faux RPC synthétique
     (aucun appel réseau) ;
   * reconstruction complète en mode `--from-cache` depuis les JSON bruts du
@@ -27,7 +27,7 @@ import unittest
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SCRIPT_PATH = os.path.join(ROOT, "scripts", "reconstruct_usdc2023_episode.py")
-RAW_W2B = os.path.join(ROOT, "research", "raw_w2b")
+RAW_W2B = os.path.join(ROOT, "fixtures", "raw_w2b")
 EVIDENCE_PATH = os.path.join(ROOT, "evidence", "episode_usdc_2023-03.json")
 
 _spec = importlib.util.spec_from_file_location("reconstruct_usdc2023_episode", SCRIPT_PATH)
@@ -35,7 +35,7 @@ M = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(M)
 
 # ---------------------------------------------------------------------------
-# Fixtures réelles (research/raw_w2b/, mesurées le 2026-10-15)
+# Fixtures réelles (fixtures/raw_w2b/, mesurées le 2026-10-15)
 # ---------------------------------------------------------------------------
 
 #: Bougie Binance USDCUSDT 1 h ouverte le 2023-03-11 14:00 UTC (min de W2-B).

@@ -24,16 +24,16 @@ Vérifié sur le dépôt le 15/10/2026. Étiquettes : **[FAIT]** = exécuté et 
 | Exécution bornée + vérification de receipt | `run_execution_demo.py`, `src/orvyren/execution/` | [PARTIEL] (mode démo, sans clé) |
 | Dossier 1 page + visionneuse locale | `run_audit.py` → `evidence/dossier_usdc-2023-03.{md,html}` | [FAIT] |
 | Orchestrateur de pipeline | `run_pipeline.py` → `evidence/pipeline_summary.json` | [FAIT] |
-| Suite de tests | `python -m unittest discover -s tests` → **223 OK (2 sautés)** | VERTE |
+| Suite de tests | `python -m pytest tests/ -q` → **296 verts (2 sautés)** | VERTE |
 | `src/orvyren/branches/`, `src/orvyren/research/`, `src/orvyren/agents/` | — | [ABSENT] |
 | `src/orvyren/evaluation/`, `src/orvyren/replay/` | — | [ABSENT] |
 | `python -m orvyren.verify` (vérificateur tiers T10) | — | [ABSENT] |
 | `policy_v1.yaml` + fixtures d'enveloppe + test de conformité/dérive | — | [ABSENT] |
-| Kit de démo testnet (montage Safe 2/3 + module Roles + scripts) | `research/B5` §e.6 (13 scripts listés) | [ABSENT] |
+| Kit de démo testnet (montage Safe 2/3 + module Roles + scripts) | `scripts/demo/` (14 fichiers) + `DEMO_KIT.md` | **[PRÊT — dry-run 5/5 validé ; exécution en attente du wallet équipe]** |
 | Wallet testnet financé | — | **chemin critique, côté équipe** |
-| `agent_journal` (journal privé append-only par agent) | spécifié (B1 §3) | [ABSENT] |
+| `agent_journal` (journal privé append-only par agent) | spécifié (DOC2 §5.2) | [ABSENT] |
 
-**Convention de lecture de ce document** : **[LOT]** = lot de travail démontrable par une commande ou un artefact · **[DONE]** = critère de fin testable · **[I]** = interface contractuelle entre workstreams.
+**Convention de lecture de ce document** : **[LOT]** = lot de travail démontrable par une commande ou un artefact · **[DONE]** = critère de fin testable · **[I]** = interface contractuelle entre workstreams. Les renvois courts du type « Bx §y » désignent les études de recherche d'origine (archivées hors dépôt — `README.md` §Archives), dont les conclusions sont reprises dans les DOC 1–3 et `FREEZE_V2.md`.
 
 ---
 
@@ -48,9 +48,9 @@ Vérifié sur le dépôt le 15/10/2026. Étiquettes : **[FAIT]** = exécuté et 
 - Une PR qui casse la CI n'est pas mergée ; une PR mergée qui fait rougir la CI est **revertée le jour même**.
 
 ### 1.2 Tests obligatoires par module
-- **Barre non négociable** : la suite reste verte (aujourd'hui 223 verts, 2 sautés : un test live-RPC opt-in, un test explicite). **Le total monte, il ne descend jamais** ; aucun test supprimé, aucun test désactivé pour faire passer une PR.
+- **Barre non négociable** : la suite reste verte (aujourd'hui **296 verts, 2 sautés** : deux tests live-RPC opt-in). **Le total monte, il ne descend jamais** ; aucun test supprimé, aucun test désactivé pour faire passer une PR.
 - Chaque lot apporte **ses tests dans la même PR** que le code. Les seuils par module sont en §6.
-- **Hors-ligne par défaut** : les tests lisent les fixtures archivées (`corpus/`, `evidence/`, `research/raw_*`) ; un test qui exige le réseau est `skip` par défaut et exécutable explicitement (convention des 2 sautés existants).
+- **Hors-ligne par défaut** : les tests lisent les fixtures archivées (`corpus/`, `evidence/`, `fixtures/`) ; un test qui exige le réseau est `skip` par défaut et exécutable explicitement (convention des 2 sautés existants).
 - **Test de contrat** : toute interface [I] a un test qui la consomme côté aval. Une PR qui change un contrat change **les deux côtés** et le test, sinon refus.
 
 ### 1.3 Pas d'écriture croisée entre workstreams
@@ -465,4 +465,4 @@ Principe acté par l'équipe : **intégrer ce qui existe et est éprouvé** ; ne
 
 ---
 
-*Références internes : `FREEZE_V2.md` (autorité) · `ARCHITECTURE_V1.md` §2-3 (modules et interfaces) · `research/B1…B7` et `research/B89_UI_GOUVERNANCE_ETUDE.md` (plans et estimations repris ici) · `research/W3_reconstruction_rseth_steth.md` et `W3_reconstruction_usdc2023.md` (couche données et preuves déjà produites) · `research/DECISIONS_ET_PROCHAINES_ETAPES.md` §4-5 (horizons et posture d'intégration).*
+*Références internes : `FREEZE_V2.md` (autorité) · `ARCHITECTURE_V1.md` §2-3 (modules et interfaces) · `ORVYREN_DOC2_TECHNIQUE_COMPLET.md` · `ORVYREN_DOC3_PROPOSITIONS_ET_ECARTES.md`. Les études et plans de recherche d'origine (B1→B9, W2/W3, questionnaire de gel) sont archivés hors dépôt — voir `README.md` §Archives.*

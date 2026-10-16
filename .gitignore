@@ -25,3 +25,6 @@ Thumbs.db
 
 # ---- Artefacts de distribution ----
 dist/
+
+# sorties du kit de démo (créées à l'exécution)
+demo_runs/

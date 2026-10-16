@@ -1,1 +1,0 @@
-The full third-party verifier (`python -m orvyren.verify`, test T10) is NOT built yet (research/B6_AUDIT_ETUDE.md §2 constat). This packet ships the minimal offline verifier only, which checks file digests, the journal hash chain and (with --rpc) the tx hashes. It must not be presented as T10.

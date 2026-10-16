@@ -17,7 +17,7 @@ Modules
 
 Every address, selector and limit in these modules was verified on-chain on
 2026-10-15 against the two free archives above; the raw measurements are in
-``research/raw_w2a/`` and ``research/raw_w2b/`` and the reasoning in
+``fixtures/raw_w2a/`` and ``fixtures/raw_w2b/`` and the reasoning in
 ``research/W2A_donnees_episodes.md``, ``research/W2B_signaux_detection.md`` and
 ``research/W3_reconstruction_rseth_steth.md``.
 

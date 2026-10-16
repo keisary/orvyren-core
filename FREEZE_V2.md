@@ -1,6 +1,6 @@
 # ORVYREN — GEL v2 (registre des décisions gelées)
 
-**15 octobre 2026.** Ce document remplace `FREEZE_V1.md` (périmé par les corrections successives). Il fige les décisions v1 sur la base du **questionnaire de gel** (`research/QUESTIONNAIRE_GEL_V2.md`) et des réponses d'équipe du 15/10 : **toutes les recommandations ont été acceptées**, avec deux ajustements (UI/Ops : full local, vidéo reportée ; Soumission : gérée par l'équipe) — et intègre les **confirmations des organisateurs du 14/10/2026**.
+**15 octobre 2026.** Ce document remplace `FREEZE_V1.md` (périmé par les corrections successives). Il fige les décisions v1 sur la base du **questionnaire de gel du 15/10** (archivé hors dépôt — voir `README.md` §Archives) et des réponses d'équipe : **toutes les recommandations ont été acceptées**, avec deux ajustements (UI/Ops : full local, vidéo reportée ; Soumission : gérée par l'équipe) — et intègre les **confirmations des organisateurs du 14/10/2026**.
 
 ## 0. Confirmations externes (organisateurs — 14 octobre 2026)
 1. **Preuve d'exécution** : le **testnet est pleinement accepté** — agent sur **Base Sepolia** + hashes réellement vérifiables (reçus, blocs, émetteur, destinataire) satisfont l'Appendice 2 ; **mainnet non requis**.
@@ -79,4 +79,4 @@
 ## 11. Points restants (non bloquants, défauts proposés)
 1. Plafond budget API (défaut : 20 $/mois). 2. Détenteurs clés Safe 2/3 démo (défaut : chef d'équipe + 2). 3. Signature G6 (défaut : chef d'équipe). 4. TTLs : intent 15 min, approbation 2 h. 5. Fenêtres CALME EVAL précises (à figer en G1, proposition B7).
 
-*Références internes : questionnaire `research/QUESTIONNAIRE_GEL_V2.md` ; études `research/B1_AGENTS_ETUDE.md` → `B89_UI_GOUVERNANCE_ETUDE.md` ; confirmations organisateurs du 14/10/2026.*
+*Références internes : les matériaux de recherche (questionnaire de gel, études B1→B9, matières brutes) sont archivés hors dépôt (voir README, section Archives). Confirmations organisateurs du 14/10/2026.*

@@ -1,2 +1,0 @@
-# https://docs.kuzudb.com/
-

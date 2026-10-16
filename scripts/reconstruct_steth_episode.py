@@ -19,8 +19,8 @@ by ``get_dy(1, 0, X)`` -- i.e. the ETH actually obtained for a real sale of 1,
 Modes
 -----
 * default: archive RPC reads (``--workers`` parallel, ``--from-cache`` for the
-  offline rebuild from ``research/raw_w2b/steth_juin2022.json`` (18 measured
-  points) and ``research/raw_w2a/steth_2022_serie.json`` (6 points, sizes up to
+  offline rebuild from ``fixtures/raw_w2b/steth_juin2022.json`` (18 measured
+  points) and ``fixtures/raw_w2a/steth_2022_serie.json`` (6 points, sizes up to
   100 000 stETH));
 * automatic fallback to the cache when the network is unavailable.
 
@@ -329,7 +329,7 @@ def collect_from_cache(log) -> Dict[str, Any]:
             "curve_pool": "0xDC24316b9AE028F1497c275EB9192a3Ea0f67022",
             "direction": "get_dy(1, 0, X) = sell stETH (coin 1) for ETH (coin 0)",
             "scope": "points archived by W2-A/W2-B only (18 + 6 measured blocks)",
-            "note": "offline rebuild from research/raw_w2a + research/raw_w2b (no network call)",
+            "note": "offline rebuild from fixtures/raw_w2a + fixtures/raw_w2b (no network call)",
             "cache_files": list(CACHE_FILES),
         },
     }
@@ -438,7 +438,7 @@ def summarise(payload: Dict[str, Any], output_path: str) -> str:
 def main(argv: Optional[Sequence[str]] = None) -> int:
     parser = argparse.ArgumentParser(description="Rebuild the stETH / Celsius 2022 Curve discount into evidence JSON.")
     parser.add_argument("--out", default=DEFAULT_OUTPUT, help="output evidence file")
-    parser.add_argument("--from-cache", action="store_true", help="rebuild from research/raw_w2* without any network call")
+    parser.add_argument("--from-cache", action="store_true", help="rebuild from fixtures/raw_w2* without any network call")
     parser.add_argument("--workers", type=int, default=6, help="parallel workers for the RPC phase (default 6)")
     parser.add_argument("--no-resume", action="store_true", help="ignore points already present in the output file")
     parser.add_argument("--quiet", action="store_true", help="only print the final summary")

@@ -18,8 +18,8 @@ What is covered
 * the evidence JSON in ``evidence/`` -- shape, completeness and internal
   consistency (cap_ratio = supply/cap, discount = 1 - price, ladder monotonicity).
 
-Fixtures are the archived measurements in ``research/raw_w2a`` and
-``research/raw_w2b`` plus the evidence files themselves; every expected number is
+Fixtures are the archived measurements in ``fixtures/raw_w2a`` and
+``fixtures/raw_w2b`` plus the evidence files themselves; every expected number is
 either read from those files or rebuilt here from an ABI payload.
 
 Execution: ``python -m unittest discover -s tests -v``
@@ -52,8 +52,8 @@ import recon_common  # noqa: E402
 import reconstruct_rseth_episode as rseth_script  # noqa: E402
 import reconstruct_steth_episode as steth_script  # noqa: E402
 
-RAW_W2A = os.path.join(ROOT, "research", "raw_w2a")
-RAW_W2B = os.path.join(ROOT, "research", "raw_w2b")
+RAW_W2A = os.path.join(ROOT, "fixtures", "raw_w2a")
+RAW_W2B = os.path.join(ROOT, "fixtures", "raw_w2b")
 EVIDENCE = os.path.join(ROOT, "evidence")
 
 RSETH = "0xA1290d69c65A6Fe4DF752f95823fae25cB99e5A7"

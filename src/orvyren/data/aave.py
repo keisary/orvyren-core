@@ -15,7 +15,7 @@ Reads, at any archive block, the state of an Aave V3 Ethereum Core reserve:
 
 Addresses and selectors below were verified on-chain on 2026-10-15 against
 ``https://eth.drpc.org`` and ``https://eth-mainnet.public.blastapi.io``
-(research/W2B_signaux_detection.md, research/raw_w2b/).  Measured examples:
+(research/W2B_signaux_detection.md, fixtures/raw_w2b/).  Measured examples:
 rsETH reserve frozen between block 24 908 722 and 24 908 723
 (2026-04-18T19:03:59Z), rsETH ``supplyCap`` = 530 000 with an aToken supply of
 529 993.98 at 2026-04-18T18:00Z (99.999 % of cap).
