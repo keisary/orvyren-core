@@ -18,7 +18,7 @@ montage Safe 2/3 + module Roles) sont archivées hors dépôt — voir `README.m
 **Fait (validé hors chaîne le 2026-10-15) :** les 5 runs en dry-run, le
 préflight 12 contrôles, le test de dérive 10 contrôles, la vérification du reçu,
 le journal chaîné SHA-256, l'export + le paquet d'audit, 75 tests hors chaîne
-(suite complète : 770 tests, 766 verts).
+(suite complète : 770 tests, 767 verts).
 
 **Ne fait pas :** il ne déploie rien, ne génère aucune clé à votre place, ne
 finance aucun wallet, ne remplace ni Safe{Wallet} ni l'app Roles, et **ne
