@@ -256,6 +256,16 @@ class TestQ5EpisodeTimeline(unittest.TestCase):
             self.assertIsNotNone(entry["event_time"])
             self.assertNotEqual(entry["event_time"], entry["tx_time"])
 
+    def test_published_dispersion_figure_is_reproduced(self):
+        # the W2-B published figure (USDC March 2023 inter-venue dispersion,
+        # 870.07 bps) must be readable straight off the frozen graph
+        entries = q5_episode_timeline(load_case("usdc_2023-03"),
+                                      "2023-03-11T00:00:00Z", "2023-03-12T00:00:00Z")
+        dispersion = [entry for entry in entries
+                      if entry["relation_id"] == "usdc-derived-dispersion"]
+        self.assertEqual(len(dispersion), 1)
+        self.assertEqual(dispersion[0]["payload"]["dispersion_bps"], 870.07)
+
 
 class TestQ6ProvenanceWalk(unittest.TestCase):
 
