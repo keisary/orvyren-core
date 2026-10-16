@@ -156,6 +156,12 @@ def q2_dependency_paths(records: Sequence[RelationRecord], node: str,
             if record.kind == "AFFECTS" and record.src != current:
                 continue
             dependent = record.src if record.kind == "DEPENDS_ON" else record.dst
+            if dependent in seen:
+                # Cycles (and diamond re-entries) are cut: each dependent is
+                # emitted exactly once — a cycle-closure path adds no decision
+                # value and the traversal stays bounded.
+                continue
+            seen.add(dependent)
             hop = trail + [record]
             signs = [r.sign_prior for r in hop]
             sign = _sign_product(signs)
@@ -169,9 +175,7 @@ def q2_dependency_paths(records: Sequence[RelationRecord], node: str,
                 "sign": sign,
                 "weight": decay ** len(hop),
             })
-            if dependent not in seen:
-                seen.add(dependent)
-                queue.append((dependent, hop))
+            queue.append((dependent, hop))
     paths.sort(key=lambda item: (item["dependent"], item["relations"]))
     return paths
 
