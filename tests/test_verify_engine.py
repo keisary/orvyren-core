@@ -126,6 +126,21 @@ class VerifyEngineEndToEndTest(unittest.TestCase):
                                                     "_orvyren", "__pycache__")),
                          "le lanceur ne doit pas écrire de bytecode dans le paquet")
 
+    def test_module_invocation_with_pythonpath(self):
+        env = dict(os.environ, PYTHONPATH=os.path.join(ROOT, "src"))
+        result = subprocess.run([sys.executable, "-m", "orvyren.verify", self.packet_dir],
+                                cwd=ROOT, capture_output=True, text=True, timeout=300,
+                                env=env)
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertIn("OFFLINE_PASS", result.stdout)
+
+    def test_root_runner_invocation(self):
+        result = subprocess.run([sys.executable, os.path.join(ROOT, "run_verify.py"),
+                                 self.packet_dir],
+                                cwd=ROOT, capture_output=True, text=True, timeout=300)
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertIn("OFFLINE_PASS", result.stdout)
+
 
 if __name__ == "__main__":
     unittest.main()

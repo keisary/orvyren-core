@@ -291,7 +291,7 @@ HASHES + `BUNDLE_DIGEST.txt`, mutation-test 6/6) et vérification tierce :
 
 ```bash
 python scripts/build_audit_packet.py --session $SESSION --case rseth --out-dir dist/audit_packets
-python -m orvyren.verify dist/audit_packets/<paquet_v2>.zip      # OFFLINE_PASS attendu
+python run_verify.py dist/audit_packets/<paquet_v2>.zip          # OFFLINE_PASS attendu
 ```
 
 **Critères :** chaîne de hash **recalculée OK** (aucune écriture détectée) ;
@@ -361,7 +361,7 @@ python scripts/demo/verify_receipt.py --receipt <recu.json> --intent <intent.jso
 python scripts/demo/demo.py --run E --dry-run --session evidence/demo_runs/rseth # export hors ligne
 python scripts/demo/build_audit_packet.py --session evidence/demo_runs/rseth --case rseth
 python scripts/build_audit_packet.py --session evidence/demo_runs/rseth --case rseth --out-dir dist/audit_packets_v2  # paquet v2 (T10)
-python -m orvyren.verify dist/audit_packets_v2/<paquet>.zip                                                         # vérification tierce (OFFLINE_PASS)
+python run_verify.py dist/audit_packets_v2/<paquet>.zip                                                              # vérification tierce (OFFLINE_PASS)
 ```
 
 ---

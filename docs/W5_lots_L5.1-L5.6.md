@@ -32,5 +32,7 @@ python scripts/demo/demo.py --run A --dry-run      # répétition hors chaîne (
 python scripts/build_audit_packet.py --session evidence/demo_runs/rseth --case rseth
 ```
 
-Suite W6 (vérificateur tiers T10) : `python -m orvyren.verify <paquet>` —
-voir `README_AUDIT.md` livré dans chaque paquet d'audit.
+Suite W6 (vérificateur tiers T10) : `python run_verify.py <paquet>` (ou
+`PYTHONPATH=src python -m orvyren.verify <paquet>`) — et, pour un tiers sans
+dépôt, la copie gelée embarquée : `python verify/orvyren_verify.py .` — voir
+`README_AUDIT.md` livré dans chaque paquet d'audit.
