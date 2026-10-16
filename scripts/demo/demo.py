@@ -339,6 +339,50 @@ class DemoContext:
         return {"mode": "execute", "tx_hash": tx_hash, "simulated": False, "sent": True,
                 "nonce": nonce, "gas": gas, "receipt": receipt, "raw_signed": signed["signed_transaction"]}
 
+    def execute_raw_tx(self, intent: Dict[str, Any], *, to: str, data: str,
+                       wait_receipt: bool = True, timeout: int = 90) -> Dict[str, Any]:
+        """Émission **brute** (sans l'enveloppe ``exec_with_role``) — cas C3 : l'agent tente une
+        action d'administration directe ; le contrat doit la refuser (``onlyOwner`` / ``GS*``)."""
+        nonce = 0
+        gas = GAS_LIMIT_DEFAULT
+        fees = int(preflight_mod.GAS_PRICE_BASELINE_WEI)
+        if self.mode == MODE_EXECUTE:
+            nonce = common.eth_get_transaction_count(self.rpc_url, self.addresses["agent"], "pending")
+            try:
+                gas = int(preflight_mod.GAS_LIMIT_FACTOR * common.eth_estimate_gas(
+                    self.rpc_url, self.addresses["agent"], to, data))
+            except Exception:
+                gas = GAS_LIMIT_DEFAULT
+            try:
+                fees = common.eth_gas_price(self.rpc_url)
+            except Exception:
+                fees = preflight_mod.GAS_PRICE_BASELINE_WEI
+        tx = {"chainId": self.policy.chain_id, "nonce": nonce, "to": common.normalize_address(to, "to"),
+              "value": 0, "data": data, "gas": gas, "maxFeePerGas": fees * 2,
+              "maxPriorityFeePerGas": fees, "type": 2,
+              "from": common.normalize_address(self.addresses["agent"], "agent")}
+        signed = self.signer.sign_transaction(tx, intent_id=intent["intent_id"])
+        self.journal.append("SUBMIT",
+                            payload={"tx_hash": signed["tx_hash"], "simulated": signed["simulated"],
+                                     "nonce": nonce, "gas": gas, "raw": True, "to": to,
+                                     "signatures_count": self.signatures.count(),
+                                     "key_material": "never recorded"},
+                            refs={"intent_id": intent["intent_id"]})
+        if self.mode == MODE_DRY or not signed.get("signed_transaction"):
+            return {"mode": signed["mode"], "tx_hash": signed["tx_hash"], "simulated": True,
+                    "sent": False, "nonce": nonce, "gas": gas}
+        tx_hash = self.signer.send_raw_transaction(signed["signed_transaction"])
+        receipt = None
+        if wait_receipt:
+            deadline = time.time() + timeout
+            while time.time() < deadline:
+                receipt = common.rpc(self.rpc_url, "eth_getTransactionReceipt", [tx_hash])
+                if receipt is not None:
+                    break
+                time.sleep(2)
+        return {"mode": "execute", "tx_hash": tx_hash, "simulated": False, "sent": True,
+                "nonce": nonce, "gas": gas, "receipt": receipt, "raw_signed": signed["signed_transaction"]}
+
     def journal_receipt(self, intent: Dict[str, Any], receipt: Dict[str, Any], run: str) -> Dict[str, Any]:
         """Persiste le reçu brut + l'entrée RECEIPT (receipt_sha256, règle B6 M4)."""
         enriched = dict(receipt)
@@ -783,8 +827,13 @@ def run_c(ctx: DemoContext) -> Dict[str, Any]:
                            "amount_base_units": "1", "action": "forced"}
             sends = []
             for call in (spec.get("calls") or [spec["call"]]):
-                inner = calls.decode_exec_with_role(call["data"])["inner_data"]
-                sent = ctx.execute_tx(fake_intent, inner_data=inner)
+                if case_id in ("C3a", "C3b"):
+                    # C3 : émission brute (sans enveloppe exec_with_role) — l'agent tente une
+                    # action d'administration directe ; le contrat doit la refuser.
+                    sent = ctx.execute_raw_tx(fake_intent, to=call["to"], data=call["data"])
+                else:
+                    inner = calls.decode_exec_with_role(call["data"])["inner_data"]
+                    sent = ctx.execute_tx(fake_intent, inner_data=inner)
                 outcome = {"tx_hash": sent["tx_hash"], "sent": sent["sent"],
                            "nonce": sent["nonce"]}
                 receipt = sent.get("receipt")
