@@ -4,7 +4,7 @@
 
 ORVYREN est un système d'agents qui transforme des signaux financiers publics en **décisions bornées et vérifiables** : il croise les sources, formule des hypothèses concurrentes, cherche le fait qui les départage, décide — ou s'abstient honnêtement (« il manque ceci ») —, n'exécute que dans une enveloppe autorisée (politique déterministe hors LLM + permissions on-chain), et laisse une trace qu'un tiers peut recalculer.
 
-**Statut (16/10/2026)** : v1 **gelée** (`FREEZE_V2.md`) · suite de tests : **380 verts, 3 sautés** · **démo testnet exécutée on-chain : 5 runs A→E sur Base Sepolia** — hashes vérifiables, paquet d'audit reproductible (kit + runbook : `DEMO_KIT.md`).
+**Statut (16/10/2026)** : v1 **gelée** (`FREEZE_V2.md`) · suite de tests : **473 verts, 3 sautés** · **démo testnet exécutée on-chain : 5 runs A→E sur Base Sepolia** — hashes vérifiables, paquet d'audit reproductible (kit + runbook : `DEMO_KIT.md`).
 
 ## Documentation (tout à la racine)
 
@@ -23,7 +23,7 @@ ORVYREN est un système d'agents qui transforme des signaux financiers publics e
 ## Démarrage rapide
 
 ```bash
-python -m pytest tests/ -q                                   # 380 verts attendus
+python -m pytest tests/ -q                                   # 473 verts attendus
 python run_pipeline.py                                       # pipeline complet (corpus archivé)
 python scripts/reconstruct_rseth_episode.py --from-cache     # reconstruction hors-ligne (idem steth / usdc)
 python scripts/demo/demo.py --run A --dry-run --session demo_runs/session_dry   # kit démo testnet (dry-run)
@@ -49,7 +49,7 @@ Ce qui reste **local par design** : les clés (`scripts/demo/.env`, `owners.env`
 orvyren_core/
 ├── src/orvyren/      # le système : data · quality · graph · policy · decision · execution · audit · ui
 ├── scripts/          # reconstructions d'épisodes (--from-cache) + demo/ (kit testnet)
-├── tests/            # 380 tests, hors-ligne
+├── tests/            # 476 tests, hors-ligne
 ├── fixtures/         # mesures archivées (15/10) utilisées par les tests et les modes hors-ligne
 ├── evidence/         # preuves : épisodes reconstruits (rsETH 2026, stETH 2022, USDC 2023) + dossiers
 ├── corpus/           # observations USDC/SVB mars 2023 (rejeu hors-ligne)
