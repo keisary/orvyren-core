@@ -6,7 +6,7 @@
 | --- | --- |
 | Case | usdc-2023-03 |
 | Window | 2023-03-09T00:00:00+00:00 → 2023-03-15T00:00:00+00:00 |
-| Generated (UTC) | 2026-10-14T15:47:12Z |
+| Generated (UTC) | 2026-10-16T12:40:12Z |
 | Engine | ORVYREN-Core 0.1 |
 
 ## Decision
@@ -98,42 +98,72 @@ Control signals (0):
         {
           "note": "84532",
           "result": "OK",
-          "rule": "R1-chain"
+          "rule": "P1-chain"
         },
         {
           "note": "",
           "result": "OK",
-          "rule": "R2-asset"
+          "rule": "P2-asset"
         },
         {
           "note": "",
           "result": "OK",
-          "rule": "R3-recipient"
+          "rule": "P3-recipient"
+        },
+        {
+          "note": "registre de fonctions non configuré (legacy)",
+          "result": "SKIPPED",
+          "rule": "P4-function"
         },
         {
           "note": "100.0 <= 100.0",
           "result": "OK",
-          "rule": "R4-amount"
+          "rule": "P5-amount"
         },
         {
           "note": "100.0 <= 300.0",
           "result": "OK",
-          "rule": "R5-cumulative"
+          "rule": "P6-cumulative"
+        },
+        {
+          "note": "state non fourni (appel legacy)",
+          "result": "SKIPPED",
+          "rule": "P7-exposure"
         },
         {
           "note": "2026-10-15T12:00:00+00:00",
           "result": "OK",
-          "rule": "R6-permission"
+          "rule": "P8-permission"
+        },
+        {
+          "note": "TTL d'intention non configuré (legacy)",
+          "result": "SKIPPED",
+          "rule": "P9-freshness"
         },
         {
           "note": "",
           "result": "OK",
-          "rule": "R7-idempotency"
+          "rule": "P10-idempotency"
+        },
+        {
+          "note": "state non fourni (appel legacy)",
+          "result": "SKIPPED",
+          "rule": "P11-pause"
+        },
+        {
+          "note": "state non fourni (appel legacy)",
+          "result": "SKIPPED",
+          "rule": "P12-envelope"
+        },
+        {
+          "note": "state non fourni (appel legacy)",
+          "result": "SKIPPED",
+          "rule": "P14-budget"
         },
         {
           "note": "transfer",
           "result": "OK",
-          "rule": "R8-action"
+          "rule": "P13-action"
         }
       ],
       "verdict": "ALLOW"
@@ -152,37 +182,67 @@ Control signals (0):
         {
           "note": "84532",
           "result": "OK",
-          "rule": "R1-chain"
+          "rule": "P1-chain"
         },
         {
           "note": "",
           "result": "OK",
-          "rule": "R2-asset"
+          "rule": "P2-asset"
         },
         {
           "note": "",
           "result": "OK",
-          "rule": "R3-recipient"
+          "rule": "P3-recipient"
+        },
+        {
+          "note": "registre de fonctions non configuré (legacy)",
+          "result": "SKIPPED",
+          "rule": "P4-function"
         },
         {
           "code": "AMOUNT_ABOVE_TX_CAP",
           "result": "FAIL",
-          "rule": "R4-amount"
+          "rule": "P5-amount"
         },
         {
           "code": "AMOUNT_ABOVE_PERIOD_CAP",
           "result": "FAIL",
-          "rule": "R5-cumulative"
+          "rule": "P6-cumulative"
+        },
+        {
+          "note": "state non fourni (appel legacy)",
+          "result": "SKIPPED",
+          "rule": "P7-exposure"
         },
         {
           "note": "2026-10-15T12:00:00+00:00",
           "result": "OK",
-          "rule": "R6-permission"
+          "rule": "P8-permission"
+        },
+        {
+          "note": "TTL d'intention non configuré (legacy)",
+          "result": "SKIPPED",
+          "rule": "P9-freshness"
         },
         {
           "note": "",
           "result": "OK",
-          "rule": "R7-idempotency"
+          "rule": "P10-idempotency"
+        },
+        {
+          "note": "state non fourni (appel legacy)",
+          "result": "SKIPPED",
+          "rule": "P11-pause"
+        },
+        {
+          "note": "state non fourni (appel legacy)",
+          "result": "SKIPPED",
+          "rule": "P12-envelope"
+        },
+        {
+          "note": "state non fourni (appel legacy)",
+          "result": "SKIPPED",
+          "rule": "P14-budget"
         }
       ],
       "verdict": "DENY"
@@ -200,42 +260,72 @@ Control signals (0):
         {
           "note": "84532",
           "result": "OK",
-          "rule": "R1-chain"
+          "rule": "P1-chain"
         },
         {
           "note": "",
           "result": "OK",
-          "rule": "R2-asset"
+          "rule": "P2-asset"
         },
         {
           "note": "",
           "result": "OK",
-          "rule": "R3-recipient"
+          "rule": "P3-recipient"
+        },
+        {
+          "note": "registre de fonctions non configuré (legacy)",
+          "result": "SKIPPED",
+          "rule": "P4-function"
         },
         {
           "note": "100.0 <= 100.0",
           "result": "OK",
-          "rule": "R4-amount"
+          "rule": "P5-amount"
         },
         {
           "note": "100.0 <= 300.0",
           "result": "OK",
-          "rule": "R5-cumulative"
+          "rule": "P6-cumulative"
+        },
+        {
+          "note": "state non fourni (appel legacy)",
+          "result": "SKIPPED",
+          "rule": "P7-exposure"
         },
         {
           "note": "2026-10-15T12:00:00+00:00",
           "result": "OK",
-          "rule": "R6-permission"
+          "rule": "P8-permission"
+        },
+        {
+          "note": "TTL d'intention non configuré (legacy)",
+          "result": "SKIPPED",
+          "rule": "P9-freshness"
         },
         {
           "note": "",
           "result": "OK",
-          "rule": "R7-idempotency"
+          "rule": "P10-idempotency"
+        },
+        {
+          "note": "state non fourni (appel legacy)",
+          "result": "SKIPPED",
+          "rule": "P11-pause"
+        },
+        {
+          "note": "state non fourni (appel legacy)",
+          "result": "SKIPPED",
+          "rule": "P12-envelope"
+        },
+        {
+          "note": "state non fourni (appel legacy)",
+          "result": "SKIPPED",
+          "rule": "P14-budget"
         },
         {
           "code": "ACTION_NEEDS_HUMAN_APPROVAL",
           "result": "REQUIRE_APPROVAL",
-          "rule": "R8-action"
+          "rule": "P13-action"
         }
       ],
       "verdict": "REQUIRE_APPROVAL"
@@ -254,7 +344,7 @@ Control signals (0):
     "timeout_seconds": 30,
     "treasury_address": "0x2222222222222222222222222222222222222222"
   },
-  "generated_at": "2026-10-14T15:47:12+00:00",
+  "generated_at": "2026-10-16T12:40:12+00:00",
   "guard_blocks": [
     "I2: execution blocked: policy verdict 'DENY' — the instruction is refused (reason codes: AMOUNT_ABOVE_TX_CAP, AMOUNT_ABOVE_PERIOD_CAP)",
     "I3: execution blocked: policy verdict 'REQUIRE_APPROVAL' — a human approval is required before this instruction may be prepared (reason codes: ACTION_NEEDS_HUMAN_APPROVAL)"
@@ -466,7 +556,7 @@ Control signals (0):
       "venues_present": []
     }
   ],
-  "generated_at": "2026-10-14T15:47:11.620648+00:00",
+  "generated_at": "2026-10-16T12:40:11.986695+00:00",
   "graph": {
     "claims_inserted": 4,
     "counts": {
@@ -600,12 +690,12 @@ Control signals (0):
 | --- | --- | --- |
 | decision | evidence/decision_usdc-2023-03.json | `b65c0634be924b18954258dedb93e7f8965ae2728fb129f1dd56c39c01b76bbd` |
 | baseline_report | evidence/baseline_report.json | `fa68d11f36232719f5400b5aab1d1cfab19b7808aaeb3e01297bd7bf4f868ae8` |
-| policy_execution_demo | evidence/policy_execution_demo.json | `3712a68321bb7017d786eb94cd94630afde9f77eb93293037ae3adae4a953fe1` |
-| quality_report | evidence/quality_report.json | `5478728ceb60ca0b066d65c674c398f848abce01cb57ed7630c1db842a30bed4` |
-| dossier (self, md) | evidence/dossier_usdc-2023-03.md | `73399190489fac60b061a3441be1f62a5685f867788f4dfa3e92fd1f239e8ac7` |
+| policy_execution_demo | evidence/policy_execution_demo.json | `cd55f7f71911a7b15e4bc9f4f9be7622a7db72371a034ea5205b9142ab8da5f0` |
+| quality_report | evidence/quality_report.json | `5bade796b4e1909d373aa3aaad663a4a3de2ca68c30c2affb5cc5aaff255e20a` |
+| dossier (self, md) | evidence/dossier_usdc-2023-03.md | `100747df7a36ca2b040d3fae699fd332ef43e79870775a8eabde667a0c08e4c1` |
 
 Self-hash rule: the `dossier (self, md)` row is the SHA-256 of this Markdown file computed with its own 64-hex-character self-hash field zeroed (64 `0` characters). It is reproducible with any SHA-256 tool: replace that field with zeros and hash the file. With identical inputs and build time this dossier is byte-identical.
 
 ---
 
-produced by ORVYREN-Core v0.1 — deterministic engine, no human edit · ORVYREN-Core v0.1 · generated 2026-10-14T15:47:12Z (UTC)
+produced by ORVYREN-Core v0.1 — deterministic engine, no human edit · ORVYREN-Core v0.1 · generated 2026-10-16T12:40:12Z (UTC)
