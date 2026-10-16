@@ -24,7 +24,7 @@ Vérifié sur le dépôt le 15/10/2026. Étiquettes : **[FAIT]** = exécuté et 
 | Exécution bornée + vérification de receipt | `run_execution_demo.py`, `src/orvyren/execution/` | [PARTIEL] (mode démo, sans clé) |
 | Dossier 1 page + visionneuse locale | `run_audit.py` → `evidence/dossier_usdc-2023-03.{md,html}` | [FAIT] |
 | Orchestrateur de pipeline | `run_pipeline.py` → `evidence/pipeline_summary.json` | [FAIT] |
-| Suite de tests | `python -m pytest tests/ -q` → **528 verts (3 sautés)** | VERTE |
+| Suite de tests | `python -m pytest tests/ -q` → **572 verts (3 sautés)** | VERTE |
 | `src/orvyren/branches/`, `src/orvyren/research/`, `src/orvyren/agents/` | — | [PARTIEL] (`branches/hypotheses.py`, `agents/journal.py` livrés 16/10 ; `research/` absent) |
 | `src/orvyren/evaluation/`, `src/orvyren/replay/` | — | [ABSENT] |
 | `python -m orvyren.verify` (vérificateur tiers T10) | — | [ABSENT] |
@@ -48,7 +48,7 @@ Vérifié sur le dépôt le 15/10/2026. Étiquettes : **[FAIT]** = exécuté et 
 - Une PR qui casse la CI n'est pas mergée ; une PR mergée qui fait rougir la CI est **revertée le jour même**.
 
 ### 1.2 Tests obligatoires par module
-- **Barre non négociable** : la suite reste verte (aujourd'hui **528 verts, 3 sautés** : deux tests live-RPC opt-in + un conditionnel selon la présence d'`eth-account`). **Le total monte, il ne descend jamais** ; aucun test supprimé, aucun test désactivé pour faire passer une PR.
+- **Barre non négociable** : la suite reste verte (aujourd'hui **572 verts, 3 sautés** : deux tests live-RPC opt-in + un conditionnel selon la présence d'`eth-account`). **Le total monte, il ne descend jamais** ; aucun test supprimé, aucun test désactivé pour faire passer une PR.
 - Chaque lot apporte **ses tests dans la même PR** que le code. Les seuils par module sont en §6.
 - **Hors-ligne par défaut** : les tests lisent les fixtures archivées (`corpus/`, `evidence/`, `fixtures/`) ; un test qui exige le réseau est `skip` par défaut et exécutable explicitement (convention des 2 sautés existants).
 - **Test de contrat** : toute interface [I] a un test qui la consomme côté aval. Une PR qui change un contrat change **les deux côtés** et le test, sinon refus.
@@ -271,14 +271,14 @@ Second chemin, parallèle : `journal 3 flux` (W6) → `paquet 12 pièces` → `c
 - **W2** L2.1 → L2.4 (registre d'hypothèses, boucle bornée, `agent_journal`, processus séparés) — P1.
 - **W1** L1.1 + L1.2 (record 17 champs, 34 relations, horloges, INV-PIT) — P2.
 - **W7** L7.4 + L7.7 amorce (`clock.py`, `corpus.py`) — P1/P3.
-- **Démarrage anticipé (2026-10-16)** : lots **hors-ligne d'abord** — W1 L1.1 (enum 34 relations + record 17 champs + tests de rejet) → L1.2 (horloges, INV-PIT) ; W2 L2.1 (registre d'hypothèses) + L2.3 (`agent_journal`) ; la **partie live** des agents (L2.2/L2.4 sur modèles réels) attend la clé API (§3.7, ligne « Clés API agents »). **[FAIT 16/10]** : L1.1 (`graph/catalog.py`, `graph/record.py`), L1.2 (`graph/temporal.py` + INV-PIT), L2.1 (`branches/hypotheses.py`), L2.3 (`agents/journal.py`) — 528 tests verts (après fusion `feat/policy-14-rules`) ; reste L2.2/L2.4–L2.7 (boucle/MA-B : partie live sous clé API).
+- **Démarrage anticipé (2026-10-16)** : lots **hors-ligne d'abord** — W1 L1.1 (enum 34 relations + record 17 champs + tests de rejet) → L1.2 (horloges, INV-PIT) ; W2 L2.1 (registre d'hypothèses) + L2.3 (`agent_journal`) ; la **partie live** des agents (L2.2/L2.4 sur modèles réels) attend la clé API (§3.7, ligne « Clés API agents »). **[FAIT 16/10]** : L1.1 (`graph/catalog.py`, `graph/record.py`), L1.2 (`graph/temporal.py` + INV-PIT), L2.1 (`branches/hypotheses.py`), L2.3 (`agents/journal.py`) — 528 tests verts (après fusion `feat/policy-14-rules`) ; reste L2.2/L2.4–L2.7 (boucle/MA-B : partie live sous clé API) → **livrés le 16/10 sur branche `feat/agents-ma-b`** (non fusionnée, revue en attente). **[FAIT 16/10 — W1 clos]** : L1.4 (requêtes noyau Q1–Q8 + `test_graph_queries.py`, figure publiée 870,07 bps pinnée), L1.5 (fenêtres CALME calm_a 2023-01 + calm_b 2025-09 — proposition B7 à figer en G1 — série USD0++ 635 h, `replay/corpus_v1.manifest.json` vérifiable), L1.6 (`graph_snapshot.json`/`provenance.json` hashés sous `evidence/graph_snapshots/`) ; `graph.sqlite` reconstruit hors-ligne en **0,5 s** (mesuré, critère < 60 s) ; **572 verts, 3 sautés** (242 subtests) sur `feat/graph-core-queries`.
 - **Jalon S1** : `run_agents.py --case usdc-2023-03 --replay journal` écrit un journal à deux `agent_id`, et le graphe accepte/refuse les relations selon l'enum (tests de rejet visibles).
 
 ### 3.4 Sprint 2 — 28/10 → 03/11 : RDOF + 14 règles + exécution
 
 - **W3** L3.2 → L3.5 (RDOF, test contre l'ordre fixe, abstention, catalogues) — P3.
 - **W4** L4.1 → L4.4 (14 règles, tests, `policy_v1.yaml`, conformité + dérive) — P4. **[Livré 16/10 par UnoriginalDude14 — fusionné `a35c22b`]**
-- **W1** L1.4 + L1.6 (8 requêtes noyau, export snapshot) — P2.
+- **W1** L1.4 + L1.6 (8 requêtes noyau, export snapshot) — P2. **[FAIT 16/10 — avec L1.5]**
 - **W5** L5.4 + L5.5 (préflight, confirmations, anti-reorg, vérification de receipt) — P4.
 - **Jalon S2** : une décision complète traverse `graphe → RDOF → décision → 14 règles → intent` en une commande, hors-ligne ; le test de conformité politique ↔ enveloppe attrape une dérive simulée.
 
