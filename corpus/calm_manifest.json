@@ -1,0 +1,98 @@
+{
+ "generated_at": "2026-10-16T21:58:39+00:00",
+ "note": "Manifeste SÉPARÉ (le manifeste principal est rebâti par collect_corpus.py — ne pas y écrire depuis ce script).",
+ "schema": "orvyren/corpus-calm-manifest/v1",
+ "sources": [
+  {
+   "bounds": [
+    "2023-01-16T00:00:00Z",
+    "2023-01-23T00:00:00Z"
+   ],
+   "file": "corpus/raw/defillama/usdc_prices_calm_a.json",
+   "from_cache": true,
+   "note": "proposition B7 (à figer en G1)",
+   "raw_records": 168,
+   "records": 168,
+   "source": "defillama",
+   "status": "ok",
+   "window": "calm_a"
+  },
+  {
+   "bounds": [
+    "2023-01-16T00:00:00Z",
+    "2023-01-23T00:00:00Z"
+   ],
+   "file": "corpus/raw/bitstamp/usdcusd_ohlc_calm_a.json",
+   "from_cache": true,
+   "note": "proposition B7 (à figer en G1)",
+   "raw_records": 169,
+   "records": 169,
+   "source": "bitstamp",
+   "status": "ok",
+   "window": "calm_a"
+  },
+  {
+   "bounds": [
+    "2023-01-16T00:00:00Z",
+    "2023-01-23T00:00:00Z"
+   ],
+   "note": "mesuré le 2026-10-16 : api.binance.com et data-api.binance.vision, intervalles 1h et 1d → vides sur cette période (trou du symbole USDCUSDT) ; proposition B7 (à figer en G1)",
+   "records": 0,
+   "source": "binance",
+   "status": "unavailable_measured",
+   "window": "calm_a"
+  },
+  {
+   "bounds": [
+    "2025-09-15T00:00:00Z",
+    "2025-09-22T00:00:00Z"
+   ],
+   "file": "corpus/raw/defillama/usdc_prices_calm_b.json",
+   "from_cache": true,
+   "note": "proposition B7 (à figer en G1)",
+   "raw_records": 168,
+   "records": 167,
+   "source": "defillama",
+   "status": "ok",
+   "window": "calm_b"
+  },
+  {
+   "bounds": [
+    "2025-09-15T00:00:00Z",
+    "2025-09-22T00:00:00Z"
+   ],
+   "file": "corpus/raw/bitstamp/usdcusd_ohlc_calm_b.json",
+   "from_cache": true,
+   "note": "proposition B7 (à figer en G1)",
+   "raw_records": 169,
+   "records": 169,
+   "source": "bitstamp",
+   "status": "ok",
+   "window": "calm_b"
+  },
+  {
+   "bounds": [
+    "2025-09-15T00:00:00Z",
+    "2025-09-22T00:00:00Z"
+   ],
+   "file": "corpus/raw/binance/usdcusdt_klines_calm_b.json",
+   "from_cache": true,
+   "note": "proposition B7 (à figer en G1)",
+   "raw_records": 169,
+   "records": 169,
+   "source": "binance",
+   "status": "ok",
+   "window": "calm_b"
+  }
+ ],
+ "windows": {
+  "calm_a": [
+   "2023-01-16T00:00:00Z",
+   "2023-01-23T00:00:00Z"
+  ],
+  "calm_b": [
+   "2025-09-15T00:00:00Z",
+   "2025-09-22T00:00:00Z"
+  ]
+ }
+}

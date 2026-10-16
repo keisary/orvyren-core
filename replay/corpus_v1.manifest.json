@@ -1,0 +1,132 @@
+{
+ "built_at": "2026-10-16T21:58:39+00:00",
+ "contract": "B7 §d.3 — corpus figé du rejeu (W7)",
+ "files": [
+  {
+   "bytes": 50458,
+   "path": "corpus/usdc_observations.csv",
+   "sha256": "c31088b3de428a35cad0833e323352d3fedecb251e4ccd07f168d884b4c8ea7e"
+  },
+  {
+   "bytes": 13493,
+   "path": "corpus/raw/binance/usdcusdt_klines.json",
+   "sha256": "2da9a44d430ed20540edf409d3d24c9efe65b2d868fa48bf1337d7a03580ecd2"
+  },
+  {
+   "bytes": 30296,
+   "path": "corpus/raw/binance/usdcusdt_klines_calm_b.json",
+   "sha256": "b901c5b42b594bae68338f00367c2461039e7f131a7c1e9d792001638101bff7"
+  },
+  {
+   "bytes": 24087,
+   "path": "corpus/raw/bitstamp/usdcusd_ohlc.json",
+   "sha256": "c37d268b59ff05dad45f3c304ca2d638ef962b7fed64357ebb7f67ea9ac283fd"
+  },
+  {
+   "bytes": 30433,
+   "path": "corpus/raw/bitstamp/usdcusd_ohlc_calm_a.json",
+   "sha256": "869df6e5f136180d6ffe25eac9c58eb32f8bc589566dda3d06573873ff2a4e88"
+  },
+  {
+   "bytes": 30816,
+   "path": "corpus/raw/bitstamp/usdcusd_ohlc_calm_b.json",
+   "sha256": "8d3b42496b9d17d0a88103321cb87953c2ffaded70e1f79e8c231de03d3ce23a"
+  },
+  {
+   "bytes": 569,
+   "path": "corpus/raw/circle/circle_statement_reference.json",
+   "sha256": "e61923954664964ff78832934a34d177906540268cbdb105c95ee46038f7828a"
+  },
+  {
+   "bytes": 21391,
+   "path": "corpus/raw/defillama/usdc_prices_calm_a.json",
+   "sha256": "72e5e60477a83f00d2c5e6787d459c2c5179e547c5a659e4bed6c676019df8b2"
+  },
+  {
+   "bytes": 20474,
+   "path": "corpus/raw/defillama/usdc_prices_calm_b.json",
+   "sha256": "9af77b53b59592d021045924a5ffed820c9900124e73cf4d717302621cb5e549"
+  },
+  {
+   "bytes": 9643,
+   "path": "corpus/raw/defillama/usdc_prices_control.json",
+   "sha256": "2f694db00899c9943a6b9a61114600eb7388369ab25a7042aebf9bd4cf4c9b2b"
+  },
+  {
+   "bytes": 19634,
+   "path": "corpus/raw/defillama/usdc_prices_main.json",
+   "sha256": "81f8217bc168ac84fb10b14025a90e7a4bce811f1ac31999c0df801e99bdc53d"
+  },
+  {
+   "bytes": 4440,
+   "path": "corpus/raw/supply/usdc_circulating_aggregate.json",
+   "sha256": "4cef9cf41368ea8c45c625e1b662bdd7904ce64369d3082dbb52ba9869df4985"
+  },
+  {
+   "bytes": 4440,
+   "path": "corpus/raw/supply/usdc_circulating_ethereum.json",
+   "sha256": "c35ff2e2dbb2ffd842119a5faa8a2fdbcea5a3370d97bf0df9ca1814316aaeed"
+  },
+  {
+   "bytes": 25802,
+   "path": "corpus/raw/defillama/usd0pp_hourly_jan2025.csv",
+   "sha256": "3c464996e38d2f616d7bcef181ee3171cce00c46a6011f4ae2bc82df3a789880"
+  },
+  {
+   "bytes": 162983,
+   "path": "corpus/series/calm_windows.json",
+   "sha256": "a974f507ea5bfdd2cf23b87a40fcee986e4d99174d8d0fbef035d4bc029afe7c"
+  },
+  {
+   "bytes": 57435,
+   "path": "corpus/series/usd0pp_2025-01.json",
+   "sha256": "3f10fd2659e0bdce1c46ee49823df8f758d796464a5f1752bb57e28d744a4047"
+  }
+ ],
+ "manifest_sha256": "36b4b2981c0f4c5381ddd307fb2f9e0abf6a155a84389a178c8be3200741f026",
+ "missing_declared": [
+  {
+   "piece": "série xUSD (nov 2025)",
+   "reason": "qualitatif seulement (B7 §8) — non intégré"
+  },
+  {
+   "piece": "séries stETH/rsETH horaires",
+   "reason": "vivent dans evidence/épisodes (W3) — à intégrer côté W7 si requis"
+  }
+ ],
+ "multiple_series": {
+  "note": "série USD0++ (jan 2025), 635 points horaires — importée de la sonde W3-C (archive)",
+  "path": "corpus/series/usd0pp_2025-01.json"
+ },
+ "schema": "orvyren/corpus-v1-manifest/v1",
+ "totals": {
+  "bytes": 506394,
+  "files": 16
+ },
+ "windows": {
+  "calm": {
+   "calm_a": [
+    "2023-01-16T00:00:00Z",
+    "2023-01-23T00:00:00Z"
+   ],
+   "calm_b": [
+    "2025-09-15T00:00:00Z",
+    "2025-09-22T00:00:00Z"
+   ]
+  },
+  "corpus": {
+   "control": [
+    "2023-02-15T00:00:00+00:00",
+    "2023-02-18T00:00:00+00:00"
+   ],
+   "main": [
+    "2023-03-09T00:00:00+00:00",
+    "2023-03-15T00:00:00+00:00"
+   ]
+  },
+  "usd0pp_2025-01": [
+   "2024-12-31T23:57:59Z",
+   "2025-02-02T02:58:55Z"
+  ]
+ }
+}
