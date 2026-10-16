@@ -1,0 +1,206 @@
+{
+ "as_of": "2026-04-18T18:30:00Z",
+ "case_id": "rseth_2026-04",
+ "counts": {
+  "by_family": {
+   "CONSTRAINT_PERMISSION": 1,
+   "ECONOMIC_MECHANISM": 1,
+   "PROOF_DERIVATION": 1,
+   "STRUCTURE_EXPOSURE": 2
+  },
+  "by_kind": {
+   "COLLATERALIZES": 1,
+   "CONSTRAINS": 1,
+   "DEPENDS_ON": 1,
+   "OWES": 1,
+   "SUPPORTS": 1
+  },
+  "records": 5
+ },
+ "generator": "orvyren.graph.export/1",
+ "records": [
+  {
+   "chain_ref": null,
+   "conditions": "measured",
+   "confidence": 0.9,
+   "dst": "marche:aave_v3_weth_market",
+   "dst_kind": "MARCHE",
+   "epistemic_status": "FACT",
+   "extract_method": "ONCHAIN_READ",
+   "family": "STRUCTURE_EXPOSURE",
+   "horizon_scope": "episode",
+   "inserted_at": "2026-04-18T17:35:00Z",
+   "kind": "COLLATERALIZES",
+   "lifecycle": "ACTIVE",
+   "mechanism": "LIQUIDITY",
+   "model_version": "",
+   "payload": {
+    "amount": 89567,
+    "as_of": "2026-04-18T17:35:00Z",
+    "unit": "rsETH"
+   },
+   "provenance_refs": [
+    "evidence:episode_rseth_2026-04.json#events"
+   ],
+   "regime_scope": "global",
+   "relation_id": "rseth-collateralizes-weth-market",
+   "revision": 1,
+   "run_id": "",
+   "sign_prior": "+",
+   "source_family_id": "SF-EPISODE-RECONSTRUCTION",
+   "src": "asset:rseth",
+   "src_kind": "LST",
+   "superseded_by": null,
+   "valid_from": "2026-04-18T17:35:00Z",
+   "valid_to": null,
+   "validation_status": "VALIDATED"
+  },
+  {
+   "chain_ref": null,
+   "conditions": "measured",
+   "confidence": 0.5,
+   "dst": "hypothese:h2_stress_emetteur",
+   "dst_kind": "HYPOTHESE",
+   "epistemic_status": "CAUSAL-HYPOTHESIS",
+   "extract_method": "HUMAN",
+   "family": "PROOF_DERIVATION",
+   "horizon_scope": "episode",
+   "inserted_at": "2026-04-18T17:35:00Z",
+   "kind": "SUPPORTS",
+   "lifecycle": "ACTIVE",
+   "mechanism": "GOVERNANCE",
+   "model_version": "",
+   "payload": {
+    "as_of": "2026-04-18T17:35:00Z",
+    "note": "decoy: Q2 must never propagate along SUPPORTS",
+    "unit": "none"
+   },
+   "provenance_refs": [
+    "evidence:episode_rseth_2026-04.json#events"
+   ],
+   "regime_scope": "global",
+   "relation_id": "rseth-decoy-supports",
+   "revision": 1,
+   "run_id": "",
+   "sign_prior": "ambigu",
+   "source_family_id": "SF-EPISODE-RECONSTRUCTION",
+   "src": "claim:exploit_observed",
+   "src_kind": "CLAIM",
+   "superseded_by": null,
+   "valid_from": "2026-04-18T17:35:00Z",
+   "valid_to": null,
+   "validation_status": "VALIDATED"
+  },
+  {
+   "chain_ref": null,
+   "conditions": "rseth posted as collateral",
+   "confidence": 0.9,
+   "dst": "asset:rseth",
+   "dst_kind": "LST",
+   "epistemic_status": "FACT",
+   "extract_method": "ONCHAIN_READ",
+   "family": "ECONOMIC_MECHANISM",
+   "horizon_scope": "episode",
+   "inserted_at": "2026-04-18T17:35:00Z",
+   "kind": "DEPENDS_ON",
+   "lifecycle": "ACTIVE",
+   "mechanism": "LIQUIDITY",
+   "model_version": "",
+   "payload": {
+    "as_of": "2026-04-18T17:35:00Z",
+    "channel": "collateral",
+    "unit": "ratio"
+   },
+   "provenance_refs": [
+    "evidence:episode_rseth_2026-04.json#events"
+   ],
+   "regime_scope": "global",
+   "relation_id": "rseth-market-depends-on-collateral",
+   "revision": 1,
+   "run_id": "",
+   "sign_prior": "+",
+   "source_family_id": "SF-EPISODE-RECONSTRUCTION",
+   "src": "marche:aave_v3_weth_market",
+   "src_kind": "MARCHE",
+   "superseded_by": null,
+   "valid_from": "2026-04-17T00:00:00Z",
+   "valid_to": null,
+   "validation_status": "VALIDATED"
+  },
+  {
+   "chain_ref": null,
+   "conditions": "measured",
+   "confidence": 0.7,
+   "dst": "dette:weth_borrowed",
+   "dst_kind": "DETTE",
+   "epistemic_status": "REPORTED",
+   "extract_method": "HUMAN",
+   "family": "STRUCTURE_EXPOSURE",
+   "horizon_scope": "episode",
+   "inserted_at": "2026-04-18T17:35:00Z",
+   "kind": "OWES",
+   "lifecycle": "ACTIVE",
+   "mechanism": "FUNDING",
+   "model_version": "",
+   "payload": {
+    "amount": 190000000,
+    "as_of": "2026-04-18T17:35:00Z",
+    "unit": "USD"
+   },
+   "provenance_refs": [
+    "evidence:episode_rseth_2026-04.json#events"
+   ],
+   "regime_scope": "global",
+   "relation_id": "rseth-owes-weth-borrowed",
+   "revision": 1,
+   "run_id": "",
+   "sign_prior": "-",
+   "source_family_id": "SF-EPISODE-RECONSTRUCTION",
+   "src": "position:aave_v3_weth_market",
+   "src_kind": "POSITION",
+   "superseded_by": null,
+   "valid_from": "2026-04-18T17:35:00Z",
+   "valid_to": null,
+   "validation_status": "VALIDATED"
+  },
+  {
+   "chain_ref": null,
+   "conditions": "measured",
+   "confidence": 0.9,
+   "dst": "marche:aave_v3_rseth_market",
+   "dst_kind": "MARCHE",
+   "epistemic_status": "FACT",
+   "extract_method": "ONCHAIN_READ",
+   "family": "CONSTRAINT_PERMISSION",
+   "horizon_scope": "episode",
+   "inserted_at": "2026-04-18T18:00:00Z",
+   "kind": "CONSTRAINS",
+   "lifecycle": "ACTIVE",
+   "mechanism": "LIQUIDITY",
+   "model_version": "",
+   "payload": {
+    "as_of": "2026-04-18T18:00:00Z",
+    "supply": 529993.9826991736,
+    "supply_cap": 530000,
+    "unit": "rsETH"
+   },
+   "provenance_refs": [
+    "evidence:episode_rseth_2026-04.json#headline"
+   ],
+   "regime_scope": "global",
+   "relation_id": "rseth-supply-cap",
+   "revision": 1,
+   "run_id": "",
+   "sign_prior": "-",
+   "source_family_id": "SF-EPISODE-RECONSTRUCTION",
+   "src": "parametre:supply_cap_rseth",
+   "src_kind": "PARAMETRE",
+   "superseded_by": null,
+   "valid_from": "2026-04-18T18:00:00Z",
+   "valid_to": null,
+   "validation_status": "VALIDATED"
+  }
+ ],
+ "schema": "orvyren/graph-snapshot/v1",
+ "snapshot_hash": "e39c918f0f27a3cf35ecc6d95867db32a80deb72395c7dc0b39f5a8fe6b22131"
+}

@@ -1,0 +1,10 @@
+{
+ "as_of": "2026-04-18T18:30:00Z",
+ "case_id": "rseth_2026-04",
+ "chains": [],
+ "generator": "orvyren.graph.export/1",
+ "hashes_complete": true,
+ "origins": 0,
+ "provenance_hash": "20470bdded61a2fd8d22b8a4823bd80fe467288c65985ec3d0476ec9e9be1ed3",
+ "schema": "orvyren/graph-provenance/v1"
+}

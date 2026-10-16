@@ -1,0 +1,140 @@
+{
+ "as_of": "2026-10-16T00:00:00Z",
+ "case_id": "usdc_2023-03",
+ "chains": [
+  {
+   "chain": [
+    {
+     "fingerprint": "4a4c94f6b8f8d749",
+     "from": "claim:dispersion_window",
+     "kind": "DERIVED_FROM",
+     "provenance_refs": [
+      "evidence:episode_usdc_2023-03.json#facts.signals.dispersion_window_bps"
+     ],
+     "relation_id": "usdc-derived-dispersion",
+     "source_family_id": "SF-EPISODE-RECONSTRUCTION",
+     "to": "obs:binance_low"
+    },
+    {
+     "fingerprint": "837599afecca59d4",
+     "from": "claim:dispersion_window",
+     "kind": "DERIVED_FROM",
+     "provenance_refs": [
+      "evidence:episode_usdc_2023-03.json#facts.signals.dispersion_window_bps"
+     ],
+     "relation_id": "usdc-derived-dispersion-2",
+     "source_family_id": "SF-EPISODE-RECONSTRUCTION",
+     "to": "obs:bitstamp_low"
+    },
+    {
+     "fingerprint": "c4141c9e4c9012ab",
+     "from": "obs:binance_low",
+     "kind": "OBSERVED_FROM",
+     "provenance_refs": [
+      "evidence:episode_usdc_2023-03.json#minima.binance"
+     ],
+     "relation_id": "usdc-observed-binance",
+     "source_family_id": "SF-EPISODE-RECONSTRUCTION",
+     "to": "source:binance"
+    },
+    {
+     "fingerprint": "41610a48e3f7ee57",
+     "from": "obs:bitstamp_low",
+     "kind": "OBSERVED_FROM",
+     "provenance_refs": [
+      "evidence:episode_usdc_2023-03.json#minima.bitstamp"
+     ],
+     "relation_id": "usdc-observed-bitstamp",
+     "source_family_id": "SF-EPISODE-RECONSTRUCTION",
+     "to": "source:bitstamp"
+    }
+   ],
+   "hashes_complete": true,
+   "origin": "claim:dispersion_window"
+  },
+  {
+   "chain": [
+    {
+     "fingerprint": "eea546370e1d7729",
+     "from": "claim:oracle_min_chainlink",
+     "kind": "EXTRACTED_FROM",
+     "provenance_refs": [
+      "evidence:episode_usdc_2023-03.json#w2b_comparison.oracle_min"
+     ],
+     "relation_id": "usdc-extracted-oracle-min",
+     "source_family_id": "SF-EPISODE-RECONSTRUCTION",
+     "to": "obs:chainlink_low"
+    },
+    {
+     "fingerprint": "b7a1eb448c2c91e4",
+     "from": "obs:chainlink_low",
+     "kind": "OBSERVED_FROM",
+     "provenance_refs": [
+      "evidence:episode_usdc_2023-03.json#w2b_comparison.oracle_min"
+     ],
+     "relation_id": "usdc-observed-chainlink",
+     "source_family_id": "SF-EPISODE-RECONSTRUCTION",
+     "to": "source:chainlink"
+    }
+   ],
+   "hashes_complete": true,
+   "origin": "claim:oracle_min_chainlink"
+  },
+  {
+   "chain": [
+    {
+     "fingerprint": "c4141c9e4c9012ab",
+     "from": "obs:binance_low",
+     "kind": "OBSERVED_FROM",
+     "provenance_refs": [
+      "evidence:episode_usdc_2023-03.json#minima.binance"
+     ],
+     "relation_id": "usdc-observed-binance",
+     "source_family_id": "SF-EPISODE-RECONSTRUCTION",
+     "to": "source:binance"
+    }
+   ],
+   "hashes_complete": true,
+   "origin": "obs:binance_low"
+  },
+  {
+   "chain": [
+    {
+     "fingerprint": "41610a48e3f7ee57",
+     "from": "obs:bitstamp_low",
+     "kind": "OBSERVED_FROM",
+     "provenance_refs": [
+      "evidence:episode_usdc_2023-03.json#minima.bitstamp"
+     ],
+     "relation_id": "usdc-observed-bitstamp",
+     "source_family_id": "SF-EPISODE-RECONSTRUCTION",
+     "to": "source:bitstamp"
+    }
+   ],
+   "hashes_complete": true,
+   "origin": "obs:bitstamp_low"
+  },
+  {
+   "chain": [
+    {
+     "fingerprint": "b7a1eb448c2c91e4",
+     "from": "obs:chainlink_low",
+     "kind": "OBSERVED_FROM",
+     "provenance_refs": [
+      "evidence:episode_usdc_2023-03.json#w2b_comparison.oracle_min"
+     ],
+     "relation_id": "usdc-observed-chainlink",
+     "source_family_id": "SF-EPISODE-RECONSTRUCTION",
+     "to": "source:chainlink"
+    }
+   ],
+   "hashes_complete": true,
+   "origin": "obs:chainlink_low"
+  }
+ ],
+ "generator": "orvyren.graph.export/1",
+ "hashes_complete": true,
+ "origins": 5,
+ "provenance_hash": "3436ed9438b1a879f797c9a4177a78eff35b022f60ea77b6c727cf49e7c00b15",
+ "schema": "orvyren/graph-provenance/v1"
+}

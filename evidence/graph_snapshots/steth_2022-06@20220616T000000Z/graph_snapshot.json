@@ -1,0 +1,169 @@
+{
+ "as_of": "2022-06-16T00:00:00Z",
+ "case_id": "steth_2022-06",
+ "counts": {
+  "by_family": {
+   "PROOF_DERIVATION": 3,
+   "STRUCTURE_EXPOSURE": 1
+  },
+  "by_kind": {
+   "EXTRACTED_FROM": 3,
+   "PRICED_BY": 1
+  },
+  "records": 4
+ },
+ "generator": "orvyren.graph.export/1",
+ "records": [
+  {
+   "chain_ref": null,
+   "conditions": "measured",
+   "confidence": 0.9,
+   "dst": "oracle:curve_get_dy",
+   "dst_kind": "ORACLE_FEED",
+   "epistemic_status": "FACT",
+   "extract_method": "ONCHAIN_READ",
+   "family": "STRUCTURE_EXPOSURE",
+   "horizon_scope": "episode",
+   "inserted_at": "2022-06-15T00:00:00Z",
+   "kind": "PRICED_BY",
+   "lifecycle": "ACTIVE",
+   "mechanism": "LIQUIDITY",
+   "model_version": "",
+   "payload": {
+    "as_of": "2022-06-15T00:00:00Z",
+    "block": 14964552,
+    "discount_bps_1000stETH": 482.33599262302306,
+    "discount_bps_1stETH": 478.66768944950564,
+    "unit": "bps"
+   },
+   "provenance_refs": [
+    "evidence:episode_steth_2022-06.json#headline.discount_at_2022-06-15T00:00:00Z"
+   ],
+   "regime_scope": "global",
+   "relation_id": "steth-discount-2022-06-15",
+   "revision": 1,
+   "run_id": "",
+   "sign_prior": "-",
+   "source_family_id": "SF-EPISODE-RECONSTRUCTION",
+   "src": "asset:steth",
+   "src_kind": "LST",
+   "superseded_by": null,
+   "valid_from": "2022-06-15T00:00:00Z",
+   "valid_to": null,
+   "validation_status": "VALIDATED"
+  },
+  {
+   "chain_ref": null,
+   "conditions": "published",
+   "confidence": 0.9,
+   "dst": "doc:nansen_report",
+   "dst_kind": "DOCUMENT",
+   "epistemic_status": "REPORTED",
+   "extract_method": "RULE",
+   "family": "PROOF_DERIVATION",
+   "horizon_scope": "episode",
+   "inserted_at": "2022-05-09T00:00:00Z",
+   "kind": "EXTRACTED_FROM",
+   "lifecycle": "ACTIVE",
+   "mechanism": "LIQUIDITY",
+   "model_version": "",
+   "payload": {
+    "as_of": "2022-05-09T00:00:00Z",
+    "label": "Terra/UST collapse drags the whole LST complex; stETH discount opens",
+    "source_url": "https://www.nansen.ai/research/on-chain-forensics-demystifying-steth-depeg",
+    "unit": "event"
+   },
+   "provenance_refs": [
+    "evidence:episode_steth_2022-06.json#events"
+   ],
+   "regime_scope": "global",
+   "relation_id": "steth-event-1",
+   "revision": 1,
+   "run_id": "",
+   "sign_prior": "ambigu",
+   "source_family_id": "SF-EPISODE-RECONSTRUCTION",
+   "src": "claim:event_terra",
+   "src_kind": "CLAIM",
+   "superseded_by": null,
+   "valid_from": "2022-05-09T00:00:00Z",
+   "valid_to": null,
+   "validation_status": "VALIDATED"
+  },
+  {
+   "chain_ref": null,
+   "conditions": "published",
+   "confidence": 0.9,
+   "dst": "doc:coindesk_report",
+   "dst_kind": "DOCUMENT",
+   "epistemic_status": "REPORTED",
+   "extract_method": "RULE",
+   "family": "PROOF_DERIVATION",
+   "horizon_scope": "episode",
+   "inserted_at": "2022-06-12T00:00:00Z",
+   "kind": "EXTRACTED_FROM",
+   "lifecycle": "ACTIVE",
+   "mechanism": "LIQUIDITY",
+   "model_version": "",
+   "payload": {
+    "as_of": "2022-06-12T00:00:00Z",
+    "label": "Celsius suspends withdrawals (12-13 June); exit liquidity already gone",
+    "source_url": "https://www.coindesk.com/business/2022/06/29/nansen-casts-blame-for-steth-de-peg-on-terra",
+    "unit": "event"
+   },
+   "provenance_refs": [
+    "evidence:episode_steth_2022-06.json#events"
+   ],
+   "regime_scope": "global",
+   "relation_id": "steth-event-2",
+   "revision": 1,
+   "run_id": "",
+   "sign_prior": "ambigu",
+   "source_family_id": "SF-EPISODE-RECONSTRUCTION",
+   "src": "claim:event_celsius",
+   "src_kind": "CLAIM",
+   "superseded_by": null,
+   "valid_from": "2022-06-12T00:00:00Z",
+   "valid_to": null,
+   "validation_status": "VALIDATED"
+  },
+  {
+   "chain_ref": null,
+   "conditions": "published",
+   "confidence": 0.9,
+   "dst": "doc:w2b_signal_1_4",
+   "dst_kind": "DOCUMENT",
+   "epistemic_status": "FACT",
+   "extract_method": "RULE",
+   "family": "PROOF_DERIVATION",
+   "horizon_scope": "episode",
+   "inserted_at": "2022-06-15T00:00:00Z",
+   "kind": "EXTRACTED_FROM",
+   "lifecycle": "ACTIVE",
+   "mechanism": "LIQUIDITY",
+   "model_version": "",
+   "payload": {
+    "as_of": "2022-06-15T00:00:00Z",
+    "label": "worst of the episode: 6.19 % to sell 1 stETH on Curve (block 14 970 000)",
+    "source_url": "research/W2B_signaux_detection.md (signal 1.4, measured on-chain)",
+    "unit": "event"
+   },
+   "provenance_refs": [
+    "evidence:episode_steth_2022-06.json#events"
+   ],
+   "regime_scope": "global",
+   "relation_id": "steth-event-3",
+   "revision": 1,
+   "run_id": "",
+   "sign_prior": "-",
+   "source_family_id": "SF-EPISODE-RECONSTRUCTION",
+   "src": "claim:event_worst",
+   "src_kind": "CLAIM",
+   "superseded_by": null,
+   "valid_from": "2022-06-15T00:00:00Z",
+   "valid_to": null,
+   "validation_status": "VALIDATED"
+  }
+ ],
+ "schema": "orvyren/graph-snapshot/v1",
+ "snapshot_hash": "7b0c9c676338eb013aa8f0e9b330edd09c786bbc3d45c6c52ee349f36f6a43bd"
+}

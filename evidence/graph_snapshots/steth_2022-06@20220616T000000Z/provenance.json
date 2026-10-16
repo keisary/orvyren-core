@@ -1,0 +1,62 @@
+{
+ "as_of": "2022-06-16T00:00:00Z",
+ "case_id": "steth_2022-06",
+ "chains": [
+  {
+   "chain": [
+    {
+     "fingerprint": "f1d9ff18e51e35a9",
+     "from": "claim:event_celsius",
+     "kind": "EXTRACTED_FROM",
+     "provenance_refs": [
+      "evidence:episode_steth_2022-06.json#events"
+     ],
+     "relation_id": "steth-event-2",
+     "source_family_id": "SF-EPISODE-RECONSTRUCTION",
+     "to": "doc:coindesk_report"
+    }
+   ],
+   "hashes_complete": true,
+   "origin": "claim:event_celsius"
+  },
+  {
+   "chain": [
+    {
+     "fingerprint": "6f124c990725d89e",
+     "from": "claim:event_terra",
+     "kind": "EXTRACTED_FROM",
+     "provenance_refs": [
+      "evidence:episode_steth_2022-06.json#events"
+     ],
+     "relation_id": "steth-event-1",
+     "source_family_id": "SF-EPISODE-RECONSTRUCTION",
+     "to": "doc:nansen_report"
+    }
+   ],
+   "hashes_complete": true,
+   "origin": "claim:event_terra"
+  },
+  {
+   "chain": [
+    {
+     "fingerprint": "555c8d731aa9b145",
+     "from": "claim:event_worst",
+     "kind": "EXTRACTED_FROM",
+     "provenance_refs": [
+      "evidence:episode_steth_2022-06.json#events"
+     ],
+     "relation_id": "steth-event-3",
+     "source_family_id": "SF-EPISODE-RECONSTRUCTION",
+     "to": "doc:w2b_signal_1_4"
+    }
+   ],
+   "hashes_complete": true,
+   "origin": "claim:event_worst"
+  }
+ ],
+ "generator": "orvyren.graph.export/1",
+ "hashes_complete": true,
+ "origins": 3,
+ "provenance_hash": "b9cc29beb902d908a0361e546b19e63f33e47c4b155d7b4f1f8a8db9fbf97f94",
+ "schema": "orvyren/graph-provenance/v1"
+}
