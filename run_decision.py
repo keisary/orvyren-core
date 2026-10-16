@@ -27,7 +27,9 @@ _REPO_ROOT = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, os.path.join(_REPO_ROOT, "src"))
 
 from orvyren.decision.baseline import run_baseline   # noqa: E402
+from orvyren.decision.axes import build_dossier       # noqa: E402
 from orvyren.decision.engine import run_case         # noqa: E402
+from orvyren.decision.scenarios import load_observations  # noqa: E402
 
 DEFAULT_CORPUS = "corpus/usdc_observations.csv"
 DEFAULT_OUT_DIR = "evidence"
@@ -71,6 +73,13 @@ def main(argv=None):
                              "root (default: %(default)s)")
     parser.add_argument("--case", default=DEFAULT_CASE,
                         help="case id used in the decision record and file name (default: %(default)s)")
+    parser.add_argument("--no-rdof", action="store_true",
+                        help="write the v0 record only (skip the RDOF v1 / 3-axes / "
+                             "abstention enrichment of lot L3.2-L3.5)")
+    parser.add_argument("--reserve-recipient", default=None,
+                        help="reserve wallet address used to evaluate the authorization "
+                             "axis through the policy service; omit to leave the axis "
+                             "explicitly not evaluated (keeps runs byte-identical)")
     args = parser.parse_args(argv)
 
     corpus_abs = _resolve(args.corpus)
@@ -83,6 +92,11 @@ def main(argv=None):
 
     case = run_case(corpus_ref, MAIN_WINDOW[0], MAIN_WINDOW[1],
                     case_id=args.case, window_label="main")
+    if not args.no_rdof:
+        dossier = build_dossier(args.case, load_observations(corpus_abs),
+                                MAIN_WINDOW[0], MAIN_WINDOW[1],
+                                reserve_recipient=args.reserve_recipient)
+        case.update(dossier)
     baseline = run_baseline(corpus_abs, MAIN_WINDOW, CONTROL_WINDOW)
 
     decision_path = os.path.join(out_dir, f"decision_{args.case}.json")
@@ -119,6 +133,18 @@ def main(argv=None):
     )
     if decision["missing_inputs"]:
         lines.append("Missing inputs:   " + "; ".join(decision["missing_inputs"]))
+    if not args.no_rdof:
+        axes = case["axes"]
+        rdof_payload = case["rdof"]
+        lines.append(
+            f"Axes (séparés) :  épistémique={axes['epistemic_verdict']} · "
+            f"économique={axes['economic_action']} · "
+            f"autorisation={axes['authorization_verdict']}")
+        lines.append(
+            f"RDOF v1:          {len(rdof_payload['trace'])} recherche(s), "
+            f"arrêt « {rdof_payload['stop']} », "
+            f"coût {rdof_payload['budget']['consomme']['secondes']} s "
+            f"({rdof_payload['budget']['consomme']['appels']} appel(s))")
     lines.append(
         f"Baseline A0:      signals_main={len(baseline['signals_main'])}, "
         f"signals_control={len(baseline['signals_control'])}, "
