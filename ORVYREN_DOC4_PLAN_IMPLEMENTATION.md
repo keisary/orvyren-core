@@ -18,13 +18,13 @@ Vérifié sur le dépôt le 15/10/2026. Étiquettes : **[FAIT]** = exécuté et 
 | Couche données d'archive (`src/orvyren/data/` : `rpc`, `aave`, `curve`, `chainlink`) | `scripts/reconstruct_rseth_episode.py` · `reconstruct_steth_episode.py` · `reconstruct_usdc2023_episode.py` → `evidence/episode_*.json` | [FAIT] |
 | Collecteur de corpus hors-ligne (520 observations, manifeste, contrats de fenêtre) | `collect_corpus.py` → `corpus/` ; CI : `collect_corpus.py --offline` | [FAIT] |
 | Qualité + graphe SQLite append-only (12 déclencheurs refusant UPDATE/DELETE) | `run_quality.py` → `evidence/quality_report.json`, `evidence/graph.sqlite` | [FAIT] |
-| Moteur de décision déterministe (hypothèses pré-enregistrées, NO-ACTION/INCONCLUSIVE) | `run_decision.py` → `evidence/decision_usdc-2023-03.json` | [PARTIEL] (v0) |
+| Moteur de décision déterministe (hypothèses pré-enregistrées, NO-ACTION/INCONCLUSIVE) | `run_decision.py` → `evidence/decision_usdc-2023-03.json` | [PARTIEL] (v0 + **RDOF v1/3 axes/abstention/catalogues** livrés 16/10 — `--no-rdof` pour le v0 seul) |
 | Baseline A0 (l'adversaire) | `evidence/baseline_report.json` | [FAIT] |
 | Service de politique (`ALLOW`/`DENY`/`REQUIRE_APPROVAL`) | `src/orvyren/policy/` + `policy_v1.yaml` + `scripts/run_drift_check.py` → `evidence/envelope_drift_report.json` | [FAIT] (16/10 — 14 règles P1–P14, dérive offline+live PASS ; **ADR-0002 à acter par l'équipe**) |
 | Exécution bornée + vérification de receipt | `run_execution_demo.py`, `src/orvyren/execution/` | [PARTIEL] (mode démo, sans clé) |
 | Dossier 1 page + visionneuse locale | `run_audit.py` → `evidence/dossier_usdc-2023-03.{md,html}` | [FAIT] |
 | Orchestrateur de pipeline | `run_pipeline.py` → `evidence/pipeline_summary.json` | [FAIT] |
-| Suite de tests | `python -m pytest tests/ -q` → **706 verts (3 sautés)** | VERTE |
+| Suite de tests | `python -m pytest tests/ -q` → **734 verts (3 sautés)** | VERTE |
 | `src/orvyren/branches/`, `src/orvyren/research/`, `src/orvyren/agents/` | — | [PARTIEL] (`branches/` + `agents/` MA-B livrés et **fusionnés** 16/10 — boucle, 2 processus, magasin haché ; partie live sous clé API ; `research/` absent) |
 | `src/orvyren/evaluation/`, `src/orvyren/replay/` | — | [ABSENT] |
 | `python -m orvyren.verify` (vérificateur tiers T10) | — | [ABSENT] |
@@ -48,7 +48,7 @@ Vérifié sur le dépôt le 15/10/2026. Étiquettes : **[FAIT]** = exécuté et 
 - Une PR qui casse la CI n'est pas mergée ; une PR mergée qui fait rougir la CI est **revertée le jour même**.
 
 ### 1.2 Tests obligatoires par module
-- **Barre non négociable** : la suite reste verte (aujourd'hui **706 verts, 3 sautés** : deux tests live-RPC opt-in + un conditionnel selon la présence d'`eth-account`). **Le total monte, il ne descend jamais** ; aucun test supprimé, aucun test désactivé pour faire passer une PR.
+- **Barre non négociable** : la suite reste verte (aujourd'hui **734 verts, 3 sautés** : deux tests live-RPC opt-in + un conditionnel selon la présence d'`eth-account`). **Le total monte, il ne descend jamais** ; aucun test supprimé, aucun test désactivé pour faire passer une PR.
 - Chaque lot apporte **ses tests dans la même PR** que le code. Les seuils par module sont en §6.
 - **Hors-ligne par défaut** : les tests lisent les fixtures archivées (`corpus/`, `evidence/`, `fixtures/`) ; un test qui exige le réseau est `skip` par défaut et exécutable explicitement (convention des 2 sautés existants).
 - **Test de contrat** : toute interface [I] a un test qui la consomme côté aval. Une PR qui change un contrat change **les deux côtés** et le test, sinon refus.
@@ -276,7 +276,7 @@ Second chemin, parallèle : `journal 3 flux` (W6) → `paquet 12 pièces` → `c
 
 ### 3.4 Sprint 2 — 28/10 → 03/11 : RDOF + 14 règles + exécution
 
-- **W3** L3.2 → L3.5 (RDOF, test contre l'ordre fixe, abstention, catalogues) — P3.
+- **W3** L3.2 → L3.5 (RDOF, test contre l'ordre fixe, abstention, catalogues) — P3. **[FAIT 16/10 — avec L3.6]** : RDOF v1 déterministe (`decision/rdof.py` : 5 règles, effets calculés par contre-épreuve, arrêts invariance/budget + liste de non-recherché), essai T02/HYP-02R vs ordre fixe (`compare_rdof_vs_fixed_order` : RDOF 1 achat/0 inutile vs fixe 2/1, verdicts identiques), abstention A1–A5 + format enrichi (`abstention.py`), catalogues 8+4 (`catalog.py`), 3 axes séparés (`axes.py`), double convention C5 exposée et testée ; trace USDC reproduite : **P-6.3 choisi, −7,172196 %, H2 INCONCLUSIVE→SUPPORTED, arrêt c1 à 0,65 s**.
 - **W4** L4.1 → L4.4 (14 règles, tests, `policy_v1.yaml`, conformité + dérive) — P4. **[Livré 16/10 par UnoriginalDude14 — fusionné `a35c22b`]**
 - **W1** L1.4 + L1.6 (8 requêtes noyau, export snapshot) — P2. **[FAIT 16/10 — avec L1.5]**
 - **W5** L5.4 + L5.5 (préflight, confirmations, anti-reorg, vérification de receipt) — P4.
