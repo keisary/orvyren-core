@@ -517,7 +517,7 @@ class TestRunsDryRun(TempSessionMixin, unittest.TestCase):
         statuses = {criterion["id"]: criterion["status"] for criterion in summary["criteria"]}
         self.assertEqual(statuses["A.4"], "met")           # compteur de signatures +1
         self.assertEqual(statuses["A.1"], "pending")       # pas de reçu en dry-run
-        self.assertEqual(statuses["A.5"], "met")           # régression : OUTCOME journalisé AVANT l'évaluation
+        self.assertEqual(statuses["A.5"], "pending")       # dry : RECEIPT/VERIFY impossibles sans chaîne → pending (l'ordre OUTCOME est testé par le run réel --execute)
         self.assertEqual(ctx.signatures.count(), 1)
         kinds = ctx.journal.kinds(summary["intent_id"])
         self.assertIn("INTENT", kinds)
