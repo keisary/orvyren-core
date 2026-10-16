@@ -1,0 +1,72 @@
+{
+  "schema": "orvyren/agent-case/v1",
+  "case_id": "usdc-2023-03",
+  "note": "Entrées gelées du cas de démonstration USDC/SVB mars 2023 (sous-ensemble hors-ligne). Valeurs issues des mesures archivées du projet (oracle Chainlink 0,9069 ; agrégat DeFiLlama 0,8767 ; Bitstamp 0,8053 ; dispersion 870 bps — evidence/episode_usdc_2023-03.json). Le magasin de réponses enregistrées (fixtures/agents/store_usdc-2023-03/) rend le rejeu --replay journal déterministe et hors-ligne.",
+  "pinned_created_at": "2026-10-16T18:00:00+00:00",
+  "snapshot": {
+    "ref": "graph_snapshot:usdc-2023-03@2023-03-11T12:00:00Z",
+    "as_of": "2023-03-11T12:00:00Z",
+    "note": "instant simulé point-in-time — aucun objet postérieur n'est admissible",
+    "facts": {
+      "usdc_venues_observed": "trois venues indépendantes",
+      "dispersion_bps": 870,
+      "stress_marker": "crise SVB en cours"
+    }
+  },
+  "lacunes": [
+    {"lacune_id": "L-1", "question": "la dispersion entre venues confirme-t-elle la dislocation, ou est-elle un artefact d'une seule source ?"},
+    {"lacune_id": "L-2", "question": "la source d'exchange indépendante confirme-t-elle la décote réalisable ?"}
+  ],
+  "hypotheses": [
+    {
+      "id": "HYP-001",
+      "enonce": "La dispersion inter-venues du pair USDC/USD traduit une dislocation réalisable, pas un artefact d'une seule source.",
+      "etat": "UNDER_TEST",
+      "criteres": {"S": "au moins deux venues indépendantes sous le pair", "R": "toutes les venues au pair"},
+      "p": ""
+    },
+    {
+      "id": "HYP-002",
+      "enonce": "La décote observée n'est pas réalisable aux tailles pertinentes pour une trésorerie.",
+      "etat": "UNDER_TEST",
+      "criteres": {"S": "profondeur d'exécution insuffisante mesurée", "R": "profondeur d'exécution confirmée"},
+      "p": ""
+    }
+  ],
+  "tool_fixtures": {
+    "prices": {
+      "chainlink|USDC-USD": [
+        {"venue": "chainlink", "symbol": "USDC-USD", "ts": "2023-03-11T12:00:00Z", "value": 0.9069,
+         "source_ref": "observation:chainlink/usdc-usd/2023-03-11T12:00Z"}
+      ],
+      "defillama|USDC-USD": [
+        {"venue": "defillama", "symbol": "USDC-USD", "ts": "2023-03-11T12:00:00Z", "value": 0.8767,
+         "source_ref": "observation:defillama/usdc-usd/2023-03-11T12:00Z"}
+      ],
+      "bitstamp|USDC-USD": [
+        {"venue": "bitstamp", "symbol": "USDC-USD", "ts": "2023-03-11T12:00:00Z", "value": 0.8053,
+         "source_ref": "observation:bitstamp/usdc-usd/2023-03-11T12:00Z"}
+      ]
+    },
+    "supply": {
+      "usdc": [
+        {"asset": "usdc", "ts": "2023-03-11T12:00:00Z", "value": 41000000000,
+         "source_ref": "observation:circle/supply/2023-03-11T12:00Z"}
+      ]
+    },
+    "chain": {},
+    "documents": {
+      "https://example.org/usdc-svb-note": "Note de marché (démonstration hors-ligne). Les trois sources suivies s'écartent au pic de crise ; la source d'exchange indépendante se situe sous les deux agrégateurs. Aucune instruction opérationnelle ne figure dans ce document."
+    },
+    "signals": {
+      "venue_dispersion_bps": {"value": 870, "unit": "bps", "method_ref": "compute_signal:venue_dispersion_bps/v1"}
+    },
+    "snapshot": {
+      "ref": "graph_snapshot:usdc-2023-03@2023-03-11T12:00:00Z",
+      "as_of": "2023-03-11T12:00:00Z",
+      "refs": ["observation:chainlink/usdc-usd/2023-03-11T12:00Z",
+               "observation:defillama/usdc-usd/2023-03-11T12:00Z",
+               "observation:bitstamp/usdc-usd/2023-03-11T12:00Z"]
+    }
+  }
+}

@@ -1,0 +1,1 @@
+{"claims": [{"branches_concernees": ["HYP-001"], "enonce": "la source oracle confirme une décote du pair par rapport au pair", "refs": ["observation:chainlink/usdc-usd/2023-03-11T12:00Z"], "sens": "POUR"}], "insuffisance": [], "note": "", "reflexions": ["la décote est confirmée par la première source"]}

@@ -1,0 +1,1 @@
+{"$schema": "orvyren/orch/v1", "lacune_id": "", "motif_stop": "plus aucune tâche à valeur positive dans le plan", "non_recherche": ["profondeur d'exécution réalisable non mesurée"], "stop": true, "tache": null}
