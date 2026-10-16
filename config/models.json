@@ -1,0 +1,80 @@
+{
+  "schema": "orvyren/models-config/v1",
+  "verified_at": "2026-10-15",
+  "note": "Identifiants épinglés du gel A2 : deepseek-flash (= DeepSeek-V4.1-Flash) principal, mimo-v2.6-pro (2e famille) pour le critique adversarial. Dépréciations observées au 2026-10-15 : redirection DeepSeek V4->V4.1 ; IDs MiMo V2.5 invalidés le 2026-10-21 (surveiller). Un test de fumée (tests/test_agents_llm.py) échoue si ce fichier n'est plus conforme. JSON (pas YAML) : le paquet agents ne doit jamais importer le paquet policy (test de frontière) ; le mini-YAML du projet reste réservé à policy_v1.yaml.",
+  "roles": {
+    "orchestrator": { "model_key": "deepseek-flash", "fallbacks": ["mimo-v2.6-flash", "glm-5.3-flash"] },
+    "explorer": { "model_key": "deepseek-flash", "fallbacks": ["mimo-v2.6-flash", "glm-5.3-flash"] },
+    "critic": { "model_key": "mimo-v2.6-pro", "fallbacks": ["glm-5.3-flash", "kimi-k2.6"] },
+    "canonicalizer": { "model_key": "deepseek-flash", "fallbacks": ["mimo-v2.6-flash"] }
+  },
+  "models": {
+    "deepseek-flash": {
+      "provider": "deepseek",
+      "api_model": "deepseek-flash",
+      "pinned_version": "V4.1-Flash",
+      "base_url": "https://api.deepseek.com",
+      "api_key_env": "ORVYREN_DEEPSEEK_API_KEY",
+      "temperature": 0.0,
+      "context_window": 1000000,
+      "max_output": 384000,
+      "json_mode": "json_object",
+      "prices_usd_per_mtok": { "cache_in": 0.003, "in": 0.15, "out": 0.60 },
+      "price_note": "hors pointe ; pointe x2 (01-04h et 06-10h UTC, lun-ven hors fetes CN)"
+    },
+    "mimo-v2.6-pro": {
+      "provider": "mimo",
+      "api_model": "mimo-v2.6-pro",
+      "pinned_version": "V2.6",
+      "base_url": "https://api.xiaomimimo.com/v1",
+      "api_key_env": "ORVYREN_MIMO_API_KEY",
+      "temperature": 0.0,
+      "context_window": 1000000,
+      "max_output": 128000,
+      "json_mode": "json_object",
+      "prices_usd_per_mtok": { "cache_in": 0.0036, "in": 0.435, "out": 0.87 },
+      "price_note": "tarif documente 2026-10-15 (mimo.mi.com/docs/price)"
+    },
+    "mimo-v2.6-flash": {
+      "provider": "mimo",
+      "api_model": "mimo-v2.6-flash",
+      "pinned_version": "V2.6",
+      "base_url": "https://api.xiaomimimo.com/v1",
+      "api_key_env": "ORVYREN_MIMO_API_KEY",
+      "temperature": 0.0,
+      "context_window": 1000000,
+      "max_output": 128000,
+      "json_mode": "json_object",
+      "prices_usd_per_mtok": { "cache_in": 0.0028, "in": 0.14, "out": 0.28 },
+      "price_note": "tarif documente 2026-10-15 ; aussi repli du principal (chaine de cles independantes)"
+    },
+    "glm-5.3-flash": {
+      "provider": "zhipu",
+      "api_model": "glm-5.3-flash",
+      "pinned_version": "5.3",
+      "base_url": "",
+      "base_url_note": "repli non contractuel : renseigner l'endpoint le jour J (docs.z.ai) avant tout mode live",
+      "api_key_env": "ORVYREN_ZHIPU_API_KEY",
+      "temperature": 0.0,
+      "context_window": null,
+      "max_output": null,
+      "json_mode": "json_object",
+      "prices_usd_per_mtok": { "cache_in": 0.03, "in": 0.15, "out": 0.50 },
+      "price_note": "tarif documente 2026-10-15 (docs.z.ai)"
+    },
+    "kimi-k2.6": {
+      "provider": "moonshot",
+      "api_model": "kimi-k2.6",
+      "pinned_version": "k2.6",
+      "base_url": "",
+      "base_url_note": "repli non contractuel : renseigner l'endpoint le jour J (platform.kimi.ai) avant tout mode live",
+      "api_key_env": "ORVYREN_MOONSHOT_API_KEY",
+      "temperature": 0.0,
+      "context_window": 262144,
+      "max_output": null,
+      "json_mode": "json_object",
+      "prices_usd_per_mtok": { "cache_in": 0.16, "in": 0.95, "out": 4.00 },
+      "price_note": "tarif documente 2026-10-15 (platform.kimi.ai/docs/pricing/chat)"
+    }
+  }
+}
