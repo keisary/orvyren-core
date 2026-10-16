@@ -4,7 +4,7 @@
 
 ORVYREN est un système d'agents qui transforme des signaux financiers publics en **décisions bornées et vérifiables** : il croise les sources, formule des hypothèses concurrentes, cherche le fait qui les départage, décide — ou s'abstient honnêtement (« il manque ceci ») —, n'exécute que dans une enveloppe autorisée (politique déterministe hors LLM + permissions on-chain), et laisse une trace qu'un tiers peut recalculer.
 
-**Statut (17/10/2026)** : v1 **gelée** (`FREEZE_V2.md`) · suite de tests : **751 verts, 4 sautés** · **W1 graphe clos** (8 requêtes noyau Q1–Q8, snapshots PIT hashés, corpus CALME/USD0++) · **W2 agents MA-B fusionné** (boucle bornée, 2 processus, rejeu déterministe) · **W3 décision/RDOF livré** (recherche discriminante déterministe, 3 axes séparés, abstention A1–A5, catalogue paramétré `config/actions_v1.yaml`, décision en une commande `python -m orvyren.decide`, L3.1 registre d'hypothèses W2) · **politique v1 : 14 règles** (dérive offline+live PASS — ADR-0002 à acter) · **démo testnet exécutée on-chain : 5 runs A→E sur Base Sepolia** — hashes vérifiables, paquet d'audit reproductible (kit + runbook : `DEMO_KIT.md`).
+**Statut (17/10/2026)** : v1 **gelée** (`FREEZE_V2.md`) · suite de tests : **770 tests — 766 verts, 4 sautés** · **W1 graphe clos** (8 requêtes noyau Q1–Q8, snapshots PIT hashés, corpus CALME/USD0++) · **W2 agents MA-B fusionné** (boucle bornée, 2 processus, rejeu déterministe) · **W3 décision/RDOF livré** (recherche discriminante déterministe, 3 axes séparés, abstention A1–A5, catalogue paramétré `config/actions_v1.yaml`, décision en une commande `python -m orvyren.decide`, L3.1 registre d'hypothèses W2) · **politique v1 : 14 règles** (dérive offline+live PASS — ADR-0002 à acter) · **démo testnet exécutée on-chain : 5 runs A→E sur Base Sepolia** — hashes vérifiables, paquet d'audit reproductible (kit + runbook : `DEMO_KIT.md`) · **W5 exécution/démo formalisé** (lots L5.1–L5.6 : `docs/W5_lots_L5.1-L5.6.md` ; scripts montage + hygiène ajoutés) · **W6 vérificateur tiers T10 livré** (`python run_verify.py` — contrôles A/B/C recomputés, `--mutate-test` 6/6 ; paquet v2 à vérificateur gelé versionné dans `evidence/audit_packets/`).
 
 ## Documentation (tout à la racine)
 
@@ -23,7 +23,7 @@ ORVYREN est un système d'agents qui transforme des signaux financiers publics e
 ## Démarrage rapide
 
 ```bash
-python -m pytest tests/ -q                                   # 751 verts, 4 sautés attendus
+python -m pytest tests/ -q                                   # 767 verts, 3 sautés attendus
 PYTHONPATH=src python -m orvyren.decide --case usdc-2023-03 --replay   # décision complète en une commande (3 axes, hors-ligne)
 python run_pipeline.py                                       # pipeline complet (corpus archivé)
 python scripts/reconstruct_rseth_episode.py --from-cache     # reconstruction hors-ligne (idem steth / usdc)
@@ -39,7 +39,8 @@ python -m pip install -r requirements.txt             # eth-account — seule d�
 cp scripts/demo/config.example.env scripts/demo/.env  # puis renseigner clés jetables + adresses (§5)
 python scripts/demo/setup_chain.py --self-test        # contrôles hors ligne avant tout --execute
 # séquence exacte des 5 runs (A→E, kill switch inclus) : DEMO_KIT.md §6
-python scripts/demo/build_audit_packet.py --session <session> --case rseth --out dist/audit_packets
+python scripts/build_audit_packet.py --session <session> --case rseth --out-dir dist/audit_packets  # paquet v2 : vérificateur gelé + HASHES + mutations
+python run_verify.py dist/audit_packets/<paquet>.zip         # vérification tierce (OFFLINE_PASS attendu)
 ```
 
 Ce qui reste **local par design** : les clés (`scripts/demo/.env`, `owners.env` — gitignorés) et les sessions d'exécution (`demo_runs/`, `dist/` — produites à l'exécution). Le **paquet d'audit** (`dist/audit_packets/*.zip`) est la pièce à transmettre : il ne contient que des données publiques (reçus, journal chaîné, hashes). L'exemplaire de référence des runs A→E du 16/10 est **versionné** : `evidence/audit_packets/` (zip + sha256 + mode de vérification).
@@ -50,7 +51,7 @@ Ce qui reste **local par design** : les clés (`scripts/demo/.env`, `owners.env`
 orvyren_core/
 ├── src/orvyren/      # le système : data · quality · graph · policy · decision · execution · audit · ui
 ├── scripts/          # reconstructions d'épisodes (--from-cache) + demo/ (kit testnet)
-├── tests/            # 755 tests, hors-ligne
+├── tests/            # 770 tests, hors-ligne
 ├── fixtures/         # mesures archivées (15/10) utilisées par les tests et les modes hors-ligne
 ├── evidence/         # preuves : épisodes reconstruits (rsETH 2026, stETH 2022, USDC 2023) + dossiers
 ├── corpus/           # observations USDC/SVB mars 2023 (rejeu hors-ligne)

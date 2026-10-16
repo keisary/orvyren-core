@@ -21,15 +21,15 @@ Vérifié sur le dépôt le 15/10/2026. Étiquettes : **[FAIT]** = exécuté et 
 | Moteur de décision déterministe (hypothèses pré-enregistrées, NO-ACTION/INCONCLUSIVE) | `python -m orvyren.decide` → `evidence/decision_record_usdc-2023-03.json` (+ `run_decision.py` → `evidence/decision_usdc-2023-03.json`) | [FAIT] (v0 + **RDOF v1/3 axes/abstention/catalogues** livrés 16/10 ; **fusion des deux W3 le 17/10** : commande `orvyren.decide`, `config/actions_v1.yaml`, L3.1 registre W2) |
 | Baseline A0 (l'adversaire) | `evidence/baseline_report.json` | [FAIT] |
 | Service de politique (`ALLOW`/`DENY`/`REQUIRE_APPROVAL`) | `src/orvyren/policy/` + `policy_v1.yaml` + `scripts/run_drift_check.py` → `evidence/envelope_drift_report.json` | [FAIT] (16/10 — 14 règles P1–P14, dérive offline+live PASS ; **ADR-0002 à acter par l'équipe**) |
-| Exécution bornée + vérification de receipt | `run_execution_demo.py`, `src/orvyren/execution/` | [PARTIEL] (mode démo, sans clé) |
+| Exécution bornée + vérification de receipt | `run_execution_demo.py`, `src/orvyren/execution/` | [FAIT] (16/10 — exécution bornée **on-chain** : 5 runs A→E via le kit démo ; vérification de reçu + contrôle A8 du vérificateur T10) |
 | Dossier 1 page + visionneuse locale | `run_audit.py` → `evidence/dossier_usdc-2023-03.{md,html}` | [FAIT] |
 | Orchestrateur de pipeline | `run_pipeline.py` → `evidence/pipeline_summary.json` | [FAIT] |
-| Suite de tests | `python -m unittest discover -s tests` → **755 tests — OK (751 verts, 4 sautés)** | VERTE |
+| Suite de tests | `python -m unittest discover -s tests` → **770 tests — OK (766 verts, 4 sautés)** | VERTE |
 | `src/orvyren/branches/`, `src/orvyren/research/`, `src/orvyren/agents/` | — | [PARTIEL] (`branches/` + `agents/` MA-B livrés et **fusionnés** 16/10 — boucle, 2 processus, magasin haché ; partie live sous clé API ; `research/` absent) |
 | `src/orvyren/evaluation/`, `src/orvyren/replay/` | — | [ABSENT] |
-| `python -m orvyren.verify` (vérificateur tiers T10) | — | [ABSENT] |
+| `python -m orvyren.verify` (vérificateur tiers T10) | `src/orvyren/verify/` (moteur A1–A8 + B/C) ; `scripts/build_audit_packet.py` (paquet v2) | [FAIT] (16/10 — `--mutate-test` **6/6** ; vérificateur **gelé** livré dans chaque paquet ; `README_AUDIT.md` + `VERIFY_EXPECTED.txt`) |
 | `policy_v1.yaml` + fixtures d'enveloppe + test de conformité/dérive | — | [ABSENT] |
-| Kit de démo testnet (montage Safe 2/3 + module Roles + scripts) | `scripts/demo/` (14 fichiers) + `DEMO_KIT.md` | **[PRÊT — dry-run 5/5 validé ; exécution en attente du wallet équipe]** |
+| Kit de démo testnet (montage Safe 2/3 + module Roles + scripts) | `scripts/demo/` (19 fichiers) + `DEMO_KIT.md` | **[FAIT]** (16/10 — 5 runs on-chain A→E exécutés ; scripts montage + hygiène L5.2 complétés ; bilan `docs/W5_lots_L5.1-L5.6.md`) |
 | Wallet testnet financé | — | **chemin critique, côté équipe** |
 | `agent_journal` (journal privé append-only par agent) | spécifié (DOC2 §5.2) | [ABSENT] |
 
@@ -48,7 +48,7 @@ Vérifié sur le dépôt le 15/10/2026. Étiquettes : **[FAIT]** = exécuté et 
 - Une PR qui casse la CI n'est pas mergée ; une PR mergée qui fait rougir la CI est **revertée le jour même**.
 
 ### 1.2 Tests obligatoires par module
-- **Barre non négociable** : la suite reste verte (aujourd'hui **755 tests — 751 verts, 4 sautés** : deux tests live-RPC opt-in + deux conditionnels selon la présence d'`eth-account`). **Le total monte, il ne descend jamais** ; aucun test supprimé, aucun test désactivé pour faire passer une PR.
+- **Barre non négociable** : la suite reste verte (aujourd'hui **770 tests — 766 verts, 4 sautés** : deux tests live-RPC opt-in + deux conditionnels selon la présence d'`eth-account`). **Le total monte, il ne descend jamais** ; aucun test supprimé, aucun test désactivé pour faire passer une PR.
 - Chaque lot apporte **ses tests dans la même PR** que le code. Les seuils par module sont en §6.
 - **Hors-ligne par défaut** : les tests lisent les fixtures archivées (`corpus/`, `evidence/`, `fixtures/`) ; un test qui exige le réseau est `skip` par défaut et exécutable explicitement (convention des 2 sautés existants).
 - **Test de contrat** : toute interface [I] a un test qui la consomme côté aval. Une PR qui change un contrat change **les deux côtés** et le test, sinon refus.
