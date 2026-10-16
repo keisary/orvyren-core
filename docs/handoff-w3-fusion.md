@@ -49,7 +49,8 @@ puis fusion « le meilleur des deux » sur master :
 - `python -m unittest discover -s tests` → **755 tests — OK (751 verts, 4 sautés)**
   (4 sautés : 2 live-RPC opt-in + 2 conditionnels `eth-account`).
 - `python run_pipeline.py` → vert (qualité → décision → politique → audit).
-- `PYTHONPATH=src python -m orvyren.decide --case usdc-2023-03 --replay` →
+- `PYTHONPATH=src python -m orvyren.decide --case usdc-2023-03 --replay`
+  (ou, depuis `src/`, `python -m orvyren.decide --case usdc-2023-03 --replay`) →
   exit 0 ; record : `epistemic_verdict=CONCLUANT`, `economic_action=CONVERTIR/TRANSFÉRER`,
   RDOF arrêt c1 après 1 recherche (**P-6.3**, 0,65 s), 3 hypothèses `CREATED`
   au registre.

@@ -2,8 +2,10 @@
 # -*- coding: utf-8 -*-
 """ORVYREN-Core — « une décision complète est une commande » (W3 [DONE]).
 
-    # depuis la racine du dépôt (avec PYTHONPATH=src si le paquet n'est pas installé) :
-    python -m orvyren.decide --case usdc-2023-03 --replay
+    # depuis la racine du dépôt :
+    PYTHONPATH=src python -m orvyren.decide --case usdc-2023-03 --replay
+    # ou, depuis src/ :
+    cd src && python -m orvyren.decide --case usdc-2023-03 --replay
 
 Compose la chaîne complète, hors-ligne et déterministe :
 corpus gelé -> moteur v0 (``run_case``) -> dossier 3 axes (``build_dossier`` :

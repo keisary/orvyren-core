@@ -24,6 +24,7 @@ ORVYREN est un système d'agents qui transforme des signaux financiers publics e
 
 ```bash
 python -m pytest tests/ -q                                   # 751 verts, 4 sautés attendus
+PYTHONPATH=src python -m orvyren.decide --case usdc-2023-03 --replay   # décision complète en une commande (3 axes, hors-ligne)
 python run_pipeline.py                                       # pipeline complet (corpus archivé)
 python scripts/reconstruct_rseth_episode.py --from-cache     # reconstruction hors-ligne (idem steth / usdc)
 python scripts/demo/demo.py --run A --dry-run --session demo_runs/session_dry   # kit démo testnet (dry-run)
