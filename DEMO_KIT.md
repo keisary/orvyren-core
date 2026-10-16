@@ -258,8 +258,10 @@ montrée à côté de sa preuve).
 
 1. Le kit prépare l'intent 100 USDC **sans l'envoyer** et écrit
    `<run>/revocation_instruction.json`.
-2. **La DAO exécute** `assignRoles(agent, [AGENT], [false])` (2 signatures sur 3)
-   dans Safe{Wallet} — notez l'heure et le hash de la transaction.
+2. **La DAO exécute** `assignRoles(agent, [AGENT], [false])` (2 signatures sur 3) —
+   via Safe{Wallet} ou l'outil fourni : `python scripts/demo/dao_assign_roles.py --enable false`
+   (hash dans `demo_runs/setup/dao_assign_roles_last.json` ; contrôle indépendant :
+   simulation `eth_call` de l'agent → `NoMembership`). Notez l'heure et le hash.
 3. Chronométrez puis rejouez la tentative de l'agent :
 
 ```bash
@@ -272,7 +274,8 @@ affichées ; la tentative de l'agent rend **`status = 0x0`** avec le sélecteur
 **`0xfd8e9f28` = `NoMembership()`** — **mesuré on-chain le 2026-10-16** (l'ancienne
 valeur `0x4a0bfec1` « NotAuthorized » était une hypothèse de doc : la mesure prime,
 une fois de plus) ; `members == false` vérifié
-indépendamment ; **reset** préparé (`assignRoles(…, [true])`).
+indépendamment ; **reset** exécuté (`python scripts/demo/dao_assign_roles.py --enable true` ;
+contrôle : la simulation de l'agent ne rend plus `NoMembership`).
 
 ### RUN E — Journal et audit (la partie qui vend ORVYREN)
 
