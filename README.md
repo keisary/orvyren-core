@@ -41,7 +41,7 @@ python scripts/demo/setup_chain.py --self-test        # contrôles hors ligne av
 python scripts/demo/build_audit_packet.py --session <session> --case rseth --out dist/audit_packets
 ```
 
-Ce qui reste **local par design** : les clés (`scripts/demo/.env`, `owners.env` — gitignorés) et les sessions d'exécution (`demo_runs/`, `dist/` — produites à l'exécution). Le **paquet d'audit** (`dist/audit_packets/*.zip`) est la pièce à transmettre : il ne contient que des données publiques (reçus, journal chaîné, hashes).
+Ce qui reste **local par design** : les clés (`scripts/demo/.env`, `owners.env` — gitignorés) et les sessions d'exécution (`demo_runs/`, `dist/` — produites à l'exécution). Le **paquet d'audit** (`dist/audit_packets/*.zip`) est la pièce à transmettre : il ne contient que des données publiques (reçus, journal chaîné, hashes). L'exemplaire de référence des runs A→E du 16/10 est **versionné** : `evidence/audit_packets/` (zip + sha256 + mode de vérification).
 
 ## Structure du dépôt
 
