@@ -271,6 +271,7 @@ Second chemin, parallèle : `journal 3 flux` (W6) → `paquet 12 pièces` → `c
 - **W2** L2.1 → L2.4 (registre d'hypothèses, boucle bornée, `agent_journal`, processus séparés) — P1.
 - **W1** L1.1 + L1.2 (record 17 champs, 34 relations, horloges, INV-PIT) — P2.
 - **W7** L7.4 + L7.7 amorce (`clock.py`, `corpus.py`) — P1/P3.
+- **Démarrage anticipé (2026-10-16)** : lots **hors-ligne d'abord** — W1 L1.1 (enum 34 relations + record 17 champs + tests de rejet) → L1.2 (horloges, INV-PIT) ; W2 L2.1 (registre d'hypothèses) + L2.3 (`agent_journal`) ; la **partie live** des agents (L2.2/L2.4 sur modèles réels) attend la clé API (§3.7, ligne « Clés API agents »).
 - **Jalon S1** : `run_agents.py --case usdc-2023-03 --replay journal` écrit un journal à deux `agent_id`, et le graphe accepte/refuse les relations selon l'enum (tests de rejet visibles).
 
 ### 3.4 Sprint 2 — 28/10 → 03/11 : RDOF + 14 règles + exécution
