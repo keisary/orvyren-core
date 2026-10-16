@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-10-14T15:47:12+00:00",
+  "generated_at": "2026-10-16T12:40:12+00:00",
   "chain": "Base Sepolia (84532)",
   "mode": "unsigned instruction + human execution + on-chain receipt verification",
   "agent_holds_key": false,
@@ -25,42 +25,72 @@
       "deny_codes": [],
       "rules_evaluated": [
         {
-          "rule": "R1-chain",
+          "rule": "P1-chain",
           "result": "OK",
           "note": "84532"
         },
         {
-          "rule": "R2-asset",
+          "rule": "P2-asset",
           "result": "OK",
           "note": ""
         },
         {
-          "rule": "R3-recipient",
+          "rule": "P3-recipient",
           "result": "OK",
           "note": ""
         },
         {
-          "rule": "R4-amount",
+          "rule": "P4-function",
+          "result": "SKIPPED",
+          "note": "registre de fonctions non configuré (legacy)"
+        },
+        {
+          "rule": "P5-amount",
           "result": "OK",
           "note": "100.0 <= 100.0"
         },
         {
-          "rule": "R5-cumulative",
+          "rule": "P6-cumulative",
           "result": "OK",
           "note": "100.0 <= 300.0"
         },
         {
-          "rule": "R6-permission",
+          "rule": "P7-exposure",
+          "result": "SKIPPED",
+          "note": "state non fourni (appel legacy)"
+        },
+        {
+          "rule": "P8-permission",
           "result": "OK",
           "note": "2026-10-15T12:00:00+00:00"
         },
         {
-          "rule": "R7-idempotency",
+          "rule": "P9-freshness",
+          "result": "SKIPPED",
+          "note": "TTL d'intention non configuré (legacy)"
+        },
+        {
+          "rule": "P10-idempotency",
           "result": "OK",
           "note": ""
         },
         {
-          "rule": "R8-action",
+          "rule": "P11-pause",
+          "result": "SKIPPED",
+          "note": "state non fourni (appel legacy)"
+        },
+        {
+          "rule": "P12-envelope",
+          "result": "SKIPPED",
+          "note": "state non fourni (appel legacy)"
+        },
+        {
+          "rule": "P14-budget",
+          "result": "SKIPPED",
+          "note": "state non fourni (appel legacy)"
+        },
+        {
+          "rule": "P13-action",
           "result": "OK",
           "note": "transfer"
         }
@@ -83,39 +113,69 @@
       ],
       "rules_evaluated": [
         {
-          "rule": "R1-chain",
+          "rule": "P1-chain",
           "result": "OK",
           "note": "84532"
         },
         {
-          "rule": "R2-asset",
+          "rule": "P2-asset",
           "result": "OK",
           "note": ""
         },
         {
-          "rule": "R3-recipient",
+          "rule": "P3-recipient",
           "result": "OK",
           "note": ""
         },
         {
-          "rule": "R4-amount",
+          "rule": "P4-function",
+          "result": "SKIPPED",
+          "note": "registre de fonctions non configuré (legacy)"
+        },
+        {
+          "rule": "P5-amount",
           "result": "FAIL",
           "code": "AMOUNT_ABOVE_TX_CAP"
         },
         {
-          "rule": "R5-cumulative",
+          "rule": "P6-cumulative",
           "result": "FAIL",
           "code": "AMOUNT_ABOVE_PERIOD_CAP"
         },
         {
-          "rule": "R6-permission",
+          "rule": "P7-exposure",
+          "result": "SKIPPED",
+          "note": "state non fourni (appel legacy)"
+        },
+        {
+          "rule": "P8-permission",
           "result": "OK",
           "note": "2026-10-15T12:00:00+00:00"
         },
         {
-          "rule": "R7-idempotency",
+          "rule": "P9-freshness",
+          "result": "SKIPPED",
+          "note": "TTL d'intention non configuré (legacy)"
+        },
+        {
+          "rule": "P10-idempotency",
           "result": "OK",
           "note": ""
+        },
+        {
+          "rule": "P11-pause",
+          "result": "SKIPPED",
+          "note": "state non fourni (appel legacy)"
+        },
+        {
+          "rule": "P12-envelope",
+          "result": "SKIPPED",
+          "note": "state non fourni (appel legacy)"
+        },
+        {
+          "rule": "P14-budget",
+          "result": "SKIPPED",
+          "note": "state non fourni (appel legacy)"
         }
       ],
       "instruction": null
@@ -131,42 +191,72 @@
       ],
       "rules_evaluated": [
         {
-          "rule": "R1-chain",
+          "rule": "P1-chain",
           "result": "OK",
           "note": "84532"
         },
         {
-          "rule": "R2-asset",
+          "rule": "P2-asset",
           "result": "OK",
           "note": ""
         },
         {
-          "rule": "R3-recipient",
+          "rule": "P3-recipient",
           "result": "OK",
           "note": ""
         },
         {
-          "rule": "R4-amount",
+          "rule": "P4-function",
+          "result": "SKIPPED",
+          "note": "registre de fonctions non configuré (legacy)"
+        },
+        {
+          "rule": "P5-amount",
           "result": "OK",
           "note": "100.0 <= 100.0"
         },
         {
-          "rule": "R5-cumulative",
+          "rule": "P6-cumulative",
           "result": "OK",
           "note": "100.0 <= 300.0"
         },
         {
-          "rule": "R6-permission",
+          "rule": "P7-exposure",
+          "result": "SKIPPED",
+          "note": "state non fourni (appel legacy)"
+        },
+        {
+          "rule": "P8-permission",
           "result": "OK",
           "note": "2026-10-15T12:00:00+00:00"
         },
         {
-          "rule": "R7-idempotency",
+          "rule": "P9-freshness",
+          "result": "SKIPPED",
+          "note": "TTL d'intention non configuré (legacy)"
+        },
+        {
+          "rule": "P10-idempotency",
           "result": "OK",
           "note": ""
         },
         {
-          "rule": "R8-action",
+          "rule": "P11-pause",
+          "result": "SKIPPED",
+          "note": "state non fourni (appel legacy)"
+        },
+        {
+          "rule": "P12-envelope",
+          "result": "SKIPPED",
+          "note": "state non fourni (appel legacy)"
+        },
+        {
+          "rule": "P14-budget",
+          "result": "SKIPPED",
+          "note": "state non fourni (appel legacy)"
+        },
+        {
+          "rule": "P13-action",
           "result": "REQUIRE_APPROVAL",
           "code": "ACTION_NEEDS_HUMAN_APPROVAL"
         }

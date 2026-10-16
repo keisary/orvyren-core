@@ -1,0 +1,154 @@
+{
+  "schema": "orvyren-roles-agent-config/v1",
+  "note": "Fixture d'enveloppe — configuration on-chain RÉELLE du rôle AGENT (démo Base Sepolia, montage des 15-16/10/2026). Versionnée pour (a) le test de conformité offline policy_v1.yaml ↔ enveloppe et (b) le test de dérive live scripts/run_drift_check.py. Capture par lecture seule (preflight.capture_envelope) + inputs de replay récupérés des transactions C1/C2 du paquet d'audit du 16/10. Cf. DOC2 §5.5.4 et scripts/demo/envelope.example.json (B4 §d.3).",
+  "captured_at": "2026-10-16T12:37:17Z",
+  "capture_block": 48192974,
+  "chain_id": 84532,
+  "role_key": "0x4147454e54000000000000000000000000000000000000000000000000000000",
+  "module": {
+    "address": "0x7e2b7798ab4b4db837b30107f0d2a3ffb24e95e8",
+    "kind": "proxy d'instance (45 octets) — code effectif = singleton officiel",
+    "code_size_expected": 45,
+    "code_sha256_expected": "09bfac6bbbcc2243f8768c9967697a3599bb1274d71154cca75b4cd910cf2c14",
+    "singleton": {
+      "address": "0xf2964ce6161ce0e75964fe7927ce114cb0b283d5",
+      "code_size_expected": 24409,
+      "code_sha256_expected": "89c5dc3313b5669f669232de7033734b4ee10339297cdf523bee5eb1b093cd05"
+    },
+    "version": null,
+    "advisory_clear": null
+  },
+  "avatar": {
+    "address": "0x000e11a54daadf202542a0136f974f24d7c38be0",
+    "label": "Safe de démonstration 2/3",
+    "code_size_expected": 171,
+    "code_sha256_expected": "a8a0fbd3cdf49e751346664e01b529a58322a814cf8df8d85deb20e63bd6415e"
+  },
+  "agent": {
+    "address": "0xe1039e345fa2ad9ecceab7bb160fd5e53f58f01c",
+    "label": "EOA jetable membre du rôle AGENT (clé détruite après la démo)"
+  },
+  "assets": {
+    "usdc_circle": "0x036cbd53842c5426634e7929541ec2318f3dcf7e",
+    "usdc_aave": "0xba50cd2a20f6da35d788639e581bca8d0b5d4d5f",
+    "weth_predeploy": "0x4200000000000000000000000000000000000006"
+  },
+  "contracts": {
+    "agent": {
+      "address": "0xe1039e345fa2ad9ecceab7bb160fd5e53f58f01c",
+      "code_size_bytes": 0,
+      "code_sha256": ""
+    },
+    "module": {
+      "address": "0x7e2b7798ab4b4db837b30107f0d2a3ffb24e95e8",
+      "code_size_bytes": 45,
+      "code_sha256": "09bfac6bbbcc2243f8768c9967697a3599bb1274d71154cca75b4cd910cf2c14"
+    },
+    "roles_singleton_officiel": {
+      "address": "0xf2964ce6161ce0e75964fe7927ce114cb0b283d5",
+      "code_size_bytes": 24409,
+      "code_sha256": "89c5dc3313b5669f669232de7033734b4ee10339297cdf523bee5eb1b093cd05"
+    },
+    "safe": {
+      "address": "0x000e11a54daadf202542a0136f974f24d7c38be0",
+      "code_size_bytes": 171,
+      "code_sha256": "a8a0fbd3cdf49e751346664e01b529a58322a814cf8df8d85deb20e63bd6415e"
+    },
+    "usdc_aave_base_sepolia": {
+      "address": "0xba50cd2a20f6da35d788639e581bca8d0b5d4d5f",
+      "code_size_bytes": 3981,
+      "code_sha256": "8f420989c42d99c936774330737b86eec0dccbb44b60343493a8266632d93518"
+    },
+    "usdc_circle_base_sepolia": {
+      "address": "0x036cbd53842c5426634e7929541ec2318f3dcf7e",
+      "code_size_bytes": 1798,
+      "code_sha256": "e878b99fc0c17354c86c7edeb999c70c18cfd925abb0958496f027cbad996d28"
+    },
+    "weth_predeploy": {
+      "address": "0x4200000000000000000000000000000000000006",
+      "code_size_bytes": 2041,
+      "code_sha256": "0b4867c60e2c1404e78a40ff738ebcf733152e803fed63dae9fadcf3d58e86cc"
+    }
+  },
+  "role": {
+    "targets": [
+      {
+        "address": "0x036cbd53842c5426634e7929541ec2318f3dcf7e",
+        "clearance": "Function",
+        "note": "USDC Circle uniquement — aucune cible en Clearance.Target (portée large)"
+      }
+    ],
+    "functions": [
+      {
+        "target": "0x036cbd53842c5426634e7929541ec2318f3dcf7e",
+        "selector": "0xa9059cbb",
+        "clearance": "Function",
+        "operation": "CALL",
+        "signature": "transfer(address,uint256)"
+      }
+    ],
+    "conditions": {
+      "param0": {
+        "kind": "or_equal",
+        "values": [
+          "0x37877f6ffb6656e752bf4807b9c3c7b761a953a3"
+        ],
+        "note": "Or(EqualTo(B), EqualTo(C)) — B mesuré on-chain (paquet du 16/10) ; C = 2ᵉ destinataire de démo, adresse de session au montage (non versionnée)"
+      },
+      "param1": {
+        "kind": "within_allowance",
+        "allowance_key": "usdc_daily"
+      }
+    },
+    "allowances": {
+      "usdc_daily": {
+        "refill_base_units": 300000000,
+        "max_refill_base_units": 300000000,
+        "period_seconds": 86400
+      }
+    },
+    "call_quota": {
+      "key": "calls_daily",
+      "max_per_period": 10,
+      "period_seconds": 86400
+    }
+  },
+  "revocation_scheduled_at": "2026-11-15T23:59:59Z",
+  "gas": {
+    "gas_price_baseline_wei": 6000000,
+    "note": "borne du contrôle P10 (préflight) = 10× cette valeur"
+  },
+  "probes": [
+    {
+      "id": "members.agent.behavioural",
+      "proves": [
+        "D3",
+        "D6"
+      ],
+      "from": "0xe1039e345fa2ad9ecceab7bb160fd5e53f58f01c",
+      "to": "0x7e2b7798ab4b4db837b30107f0d2a3ffb24e95e8",
+      "data": "0xc6fe8747000000000000000000000000036cbd53842c5426634e7929541ec2318f3dcf7e000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000c000000000000000000000000000000000000000000000000000000000000000004147454e5400000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000010000000000000000000000000000000000000000000000000000000000000044a9059cbb000000000000000000000000d959b95e70005208e0654b849ad635c67d3da68900000000000000000000000000000000000000000000000000000000000f424000000000000000000000000000000000000000000000000000000000",
+      "expect": {
+        "revert_selector": "0xd0a9bf58"
+      },
+      "note": "Replay du cas C2 (destinataire hors liste) : refus par condition, PAS NoMembership (0xfd8e9f28) → l'agent est membre du rôle ; mesuré on-chain le 16/10 puis à la capture."
+    },
+    {
+      "id": "condition.allowance",
+      "proves": [
+        "D7"
+      ],
+      "from": "0xe1039e345fa2ad9ecceab7bb160fd5e53f58f01c",
+      "to": "0x7e2b7798ab4b4db837b30107f0d2a3ffb24e95e8",
+      "data": "0xc6fe8747000000000000000000000000036cbd53842c5426634e7929541ec2318f3dcf7e000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000c000000000000000000000000000000000000000000000000000000000000000004147454e5400000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000010000000000000000000000000000000000000000000000000000000000000044a9059cbb00000000000000000000000037877f6ffb6656e752bf4807b9c3c7b761a953a3000000000000000000000000000000000000000000000000000000001dcd650000000000000000000000000000000000000000000000000000000000",
+      "expect": {
+        "revert_selector": "0xd0a9bf58"
+      },
+      "note": "Replay du cas C1 (500 USDC > allowance) : dépassement refusé par l'enveloppe (condition/allowance)."
+    }
+  ],
+  "pending": [
+    "Relecture directe des cibles/fonctions/conditions/allowances via getters du module — à confirmer (B4 §d.3 annexe 4) ; la conformité actuelle s'appuie sur la capture du montage.",
+    "Version/avis de sécurité du singleton : non suivis — l'empreinte du bytecode épinglée (D2) sert de garde."
+  ]
+}

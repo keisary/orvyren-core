@@ -9,3 +9,4 @@ Le paquet de gel **v1** est `FREEZE_V2.md` (racine). Les décisions qui le modif
 | # | ADR | Statut | Date |
 |---|---|---|---|
 | 0001 | [Gel G1–G6 v1 — paquet d'évaluation pré-enregistré (Sprint 0)](ADR-0001-gel-g1-g6-v1.md) | ACCEPTÉE (v1) | 2026-10-16 |
+| 0002 | [Politique v1 — set de 14 règles, `policy_v1.yaml` et test de dérive (Sprint 2 / W4)](ADR-0002-politique-v1-14-regles.md) | PROPOSÉE | 2026-10-16 |

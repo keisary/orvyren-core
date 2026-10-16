@@ -298,9 +298,9 @@ class TestExecutionDemoClock(unittest.TestCase):
         report = self._report("2026-10-14T08:00:00+00:00")
         for case in report["cases"]:
             notes = [rule.get("note") for rule in case["rules_evaluated"]
-                     if rule.get("rule") == "R6-permission"]
+                     if rule.get("rule") == "P8-permission"]
             self.assertEqual(["2026-10-15T12:00:00+00:00"], notes,
-                             "R6 expiry must be DEMO_CLOCK + 24 h, not run time")
+                             "P8 expiry must be DEMO_CLOCK + 24 h, not run time")
 
 
 if __name__ == "__main__":
