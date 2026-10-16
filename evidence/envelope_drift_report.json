@@ -1,15 +1,15 @@
 {
   "schema": "orvyren-envelope-drift-report/v1",
-  "generated_at": "2026-10-16T12:39:56Z",
+  "generated_at": "2026-10-16T21:10:12Z",
   "mode": "rpc",
   "policy": {
-    "path": "/home/unoriginaldude14/CALLY PARK/Ai/ecole/fintechathon/orvyren-core/policy_v1.yaml",
+    "path": "D:\\orvyren_core\\policy_v1.yaml",
     "version": "v1.0",
     "policy_hash": "7911f616f64e28f1eab2e33e106a3b7421686e066c818c016c8070034f87d7c5",
     "yaml_sha256": "b99ad99bc2d32184fd4e1b45fb136f0424e972f40d71cafeab622ae11acc0c03"
   },
   "fixture": {
-    "path": "/home/unoriginaldude14/CALLY PARK/Ai/ecole/fintechathon/orvyren-core/fixtures/roles_agent_config.json",
+    "path": "D:\\orvyren_core\\fixtures/roles_agent_config.json",
     "captured_at": "2026-10-16T12:37:17Z",
     "capture_block": 48192974
   },
