@@ -148,12 +148,20 @@ class Claim:
 
 @dataclass(frozen=True)
 class Relation:
-    """A directed, typed edge between two graph objects."""
+    """A directed, typed edge between two graph objects.
+
+    ``source_family_id`` and ``extract_method`` (B2 §3.0 fields 13–14, lot
+    L1.3) carry the retroactive columns: which source family produced the edge
+    (INV-DEPENDENCE) and how it was extracted (RULE / ONCHAIN_READ /
+    LLM_EXTRACT / HUMAN). Legacy rows use the empty string.
+    """
 
     id: str
     src: str
     dst: str
     kind: str
+    source_family_id: str = ""
+    extract_method: str = ""
 
 
 @dataclass(frozen=True)

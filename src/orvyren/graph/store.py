@@ -25,6 +25,7 @@ from datetime import datetime, timezone
 from typing import Dict, Iterable, List, Mapping, Optional, Sequence
 
 from orvyren.graph import models
+from orvyren.graph.catalog import EXTRACT_METHOD
 from orvyren.graph.models import (Claim, DecisionNode, Hypothesis, Observation,
                                   Relation, Source)
 from orvyren.graph.provenance import snapshot_hash
@@ -32,7 +33,10 @@ from orvyren.quality.normalize import parse_timestamp
 
 __all__ = ["GraphStore", "SCHEMA_VERSION", "GRAPH_VERSION"]
 
-SCHEMA_VERSION = 1
+#: v2 (lot L1.3): relations gain the retroactive columns ``source_family_id``
+#: and ``extract_method`` (B2 §3.0 fields 13–14). Older files are migrated
+#: additively on open.
+SCHEMA_VERSION = 2
 GRAPH_VERSION = "orvyren-graph-v1"
 
 #: (table, logical-id column) in the order used for snapshots.
@@ -88,13 +92,15 @@ CREATE TABLE IF NOT EXISTS claims (
 );
 
 CREATE TABLE IF NOT EXISTS relations (
-    row_id      INTEGER PRIMARY KEY AUTOINCREMENT,
-    relation_id TEXT NOT NULL,
-    revision    INTEGER NOT NULL,
-    src         TEXT NOT NULL,
-    dst         TEXT NOT NULL,
-    kind        TEXT NOT NULL,
-    inserted_at TEXT NOT NULL
+    row_id           INTEGER PRIMARY KEY AUTOINCREMENT,
+    relation_id      TEXT NOT NULL,
+    revision         INTEGER NOT NULL,
+    src              TEXT NOT NULL,
+    dst              TEXT NOT NULL,
+    kind             TEXT NOT NULL,
+    source_family_id TEXT NOT NULL DEFAULT '',
+    extract_method   TEXT NOT NULL DEFAULT '',
+    inserted_at      TEXT NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS hypotheses (
@@ -167,6 +173,7 @@ class GraphStore:
     def _init_schema(self) -> None:
         with self.connection:
             self.connection.executescript(_SCHEMA)
+            self._migrate_relation_columns()
             for table, _ in _TABLES:
                 self.connection.executescript(
                     _APPEND_ONLY_TRIGGERS.format(table=table))
@@ -176,6 +183,16 @@ class GraphStore:
                 self.connection.execute(
                     "INSERT INTO schema_version (version, applied_at) VALUES (?, ?)",
                     (SCHEMA_VERSION, _now_iso()))
+
+    def _migrate_relation_columns(self) -> None:
+        """Additive migration for pre-L1.3 databases (columns added in v2)."""
+        existing = {row["name"] for row in self.connection.execute(
+            "PRAGMA table_info(relations)")}
+        for column in ("source_family_id", "extract_method"):
+            if column not in existing:
+                self.connection.execute(
+                    "ALTER TABLE relations ADD COLUMN %s TEXT NOT NULL DEFAULT ''"
+                    % column)
 
     # -- internal helpers ----------------------------------------------------
 
@@ -282,13 +299,21 @@ class GraphStore:
         return int(cursor.lastrowid)
 
     def insert_relation(self, relation: Relation) -> int:
-        """Append a revision of ``relation``; returns the new row id."""
+        """Append a revision of ``relation``; returns the new row id.
+
+        ``source_family_id`` and ``extract_method`` (L1.3) are persisted; a
+        non-empty ``extract_method`` must be one of the closed vocabulary
+        (B2 §3.0 field 14).
+        """
+        if relation.extract_method and relation.extract_method not in EXTRACT_METHOD:
+            raise ValueError("unknown extract_method: %s" % relation.extract_method)
         revision = self._next_revision("relations", "relation_id", relation.id)
         cursor = self.connection.execute(
             "INSERT INTO relations (relation_id, revision, src, dst, kind, "
-            "inserted_at) VALUES (?, ?, ?, ?, ?, ?)",
+            "source_family_id, extract_method, inserted_at) "
+            "VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
             (relation.id, revision, relation.src, relation.dst, relation.kind,
-             _now_iso()))
+             relation.source_family_id, relation.extract_method, _now_iso()))
         self.connection.commit()
         return int(cursor.lastrowid)
 
@@ -317,6 +342,16 @@ class GraphStore:
         return int(cursor.lastrowid)
 
     # -- reads (current revision) --------------------------------------------
+
+    def relation_by_id(self, relation_id: str) -> Optional[Relation]:
+        """Current revision of a relation, or ``None`` (columns of L1.3 read)."""
+        row = self._latest_row("relations", "relation_id", relation_id)
+        if row is None:
+            return None
+        return Relation(id=row["relation_id"], src=row["src"], dst=row["dst"],
+                        kind=row["kind"],
+                        source_family_id=row["source_family_id"],
+                        extract_method=row["extract_method"])
 
     def claim_by_id(self, claim_id: str) -> Optional[Claim]:
         """Current revision of a claim, or ``None``."""

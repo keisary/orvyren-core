@@ -335,7 +335,8 @@ class TestStoreAppendOnly(unittest.TestCase):
         with GraphStore(":memory:") as store:
             row = store.connection.execute(
                 "SELECT version FROM schema_version ORDER BY version").fetchone()
-            self.assertEqual(row["version"], 1)
+            # v2 (L1.3): relations gain source_family_id / extract_method.
+            self.assertEqual(row["version"], 2)
 
 
 class TestProvenance(unittest.TestCase):
