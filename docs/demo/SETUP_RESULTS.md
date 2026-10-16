@@ -143,3 +143,12 @@ Aucune clé privée n'apparaît dans un artefact ou une sortie (scan des fichier
 - ABI vérifiées on-chain (Blockscout Base Sepolia), archivées dans `demo_runs/setup/abis/`.
 - Lectures/écritures : `https://sepolia.base.org` (`eth_chainId`, `eth_getCode`, `eth_call`, `eth_sendRawTransaction`,
   `eth_getTransactionByHash`, `eth_getTransactionReceipt`), 2026-10-16.
+
+
+## Addendum D10 — résolu le 2026-10-16
+
+Version du mastercopy identifiée : **Zodiac Roles Modifier v2.1.1** (version corrigée post-incident 06/2026).
+
+- Source vérifiée Blockscout du mastercopy `0xF2964CE6…83D5` : **26/26 fichiers identiques à l'artefact publié v2.1.1** (vs 24/26 pour v2.1.0) — les deux fichiers qui distinguent nos sources sont précisément les deux fichiers corrigés (`SignatureChecker.sol` : contrôle `success` du staticcall ERC-1271 ajouté ; `PermissionChecker.sol` : `payload.children`).
+- `code_sha256` du mastercopy : `89c5dc3313b5669f669232de7033734b4ee10339297cdf523bee5eb1b093cd05` (identique Ethereum / Base / Base Sepolia, 24 409 octets).
+- Enveloppe de référence mise à jour (`module.version=v2.1.1`, `advisory_clear=true`), preuve complète : `demo_runs/setup/d10_resolution.json`.

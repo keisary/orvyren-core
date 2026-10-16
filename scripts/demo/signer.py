@@ -167,6 +167,22 @@ class Signer:
             raise SignerError(
                 "{} absente ou mal formée — la signature réelle est refusée".format(KEY_ENV_NAME))
         local = account.from_key(key)
+        if "from" in tx:
+            # eth-account exige l'adresse EIP-55 exacte dans 'from' (les builders stdlib
+            # normalisent les adresses en minuscules) : vérifier puis réécrire avec la casse de la clé.
+            if str(tx["from"]).strip().lower() != str(local.address).lower():
+                raise SignerError(
+                    "champ 'from' incohérent avec l'adresse de la clé — signature refusée")
+            tx = {**tx, "from": local.address}
+        if tx.get("to"):
+            # eth-account refuse aussi un 'to' non-checksummé : normaliser en EIP-55
+            # (la casse ne change pas les octets signés) — incident mesuré le 2026-10-16.
+            try:
+                from eth_utils import to_checksum_address  # dépendance d'eth-account
+                tx = {**tx, "to": to_checksum_address(str(tx["to"]).strip())}
+            except Exception as exc:
+                raise SignerError(
+                    "champ 'to' non convertible en adresse EIP-55 — signature refusée") from exc
         signed = local.sign_transaction(tx)
         # ``signed.hash`` (eth-account) est le keccak de la transaction signée.
         tx_hash = str(getattr(signed, "hash", b"").hex()) if hasattr(signed, "hash") else ""

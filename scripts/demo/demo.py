@@ -469,7 +469,7 @@ def run_a(ctx: DemoContext, amount: str = RUN_A_AMOUNT) -> Dict[str, Any]:
                                                   module=ctx.addresses["module"], agent=ctx.addresses["agent"],
                                                   chain_id=ctx.policy.chain_id,
                                                   decimals=ctx.policy.asset_decimals)
-        reorg = verify_receipt.reorg_check(
+        reorg = verify_receipt.wait_for_confirmations(
             tx_hash=str(enriched.get("transactionHash")), receipt_block_number=verification["block_number"],
             receipt_block_hash=verification["block_hash"], rpc_url=ctx.rpc_url,
             confirmation_blocks=2)
@@ -488,6 +488,21 @@ def run_a(ctx: DemoContext, amount: str = RUN_A_AMOUNT) -> Dict[str, Any]:
         delta_ok = (balances_before["safe"] - balances_after["safe"] == amount
                     and balances_after["B"] - balances_before["B"] == amount)
     signatures_after = ctx.signatures.count()
+
+    # L'OUTCOME est journalisé AVANT l'évaluation des critères : A.5 compte les 7 kind,
+    # OUTCOME compris — l'ancien ordre (OUTCOME après l'évaluation) le manquait
+    # systématiquement en --execute (mesuré le 2026-10-16).
+    if ctx.mode == MODE_DRY:
+        ctx.journal_outcome(run="A", intent=intent, outcome="DRY_RUN_SIMULATED",
+                            detail={"note": "aucune transaction envoyée — hash factice ; "
+                                            "les critères 1/2/3/6 seront mesurés en --execute"})
+        summary["status"] = "DRY_RUN_OK"
+    else:
+        outcome = "VERIFIED_OK" if (verification and verification["ok"]) else "EXECUTION_FAILED"
+        ctx.journal_outcome(run="A", intent=intent, outcome=outcome,
+                            detail={"ok": bool(verification and verification["ok"])})
+        summary["status"] = outcome
+
     kinds = ctx.journal.kinds(intent["intent_id"])
     required_kinds = ["INTENT", "POLICY", "SIMULATION", "SUBMIT", "RECEIPT", "VERIFY", "OUTCOME"]
 
@@ -511,16 +526,6 @@ def run_a(ctx: DemoContext, amount: str = RUN_A_AMOUNT) -> Dict[str, Any]:
                    "met" if (reorg and reorg.get("status") == "CONFIRMED") else "pending",
                    reorg),
     ]
-    if ctx.mode == MODE_DRY:
-        ctx.journal_outcome(run="A", intent=intent, outcome="DRY_RUN_SIMULATED",
-                            detail={"note": "aucune transaction envoyée — hash factice ; "
-                                            "les critères 1/2/3/6 seront mesurés en --execute"})
-        summary["status"] = "DRY_RUN_OK"
-    else:
-        outcome = "VERIFIED_OK" if (verification and verification["ok"]) else "EXECUTION_FAILED"
-        ctx.journal_outcome(run="A", intent=intent, outcome=outcome,
-                            detail={"ok": bool(verification and verification["ok"])})
-        summary["status"] = outcome
     _write_run_artifacts(ctx, "A", summary, criteria)
     summary["criteria"] = criteria
     return summary
@@ -842,7 +847,9 @@ def run_c(ctx: DemoContext) -> Dict[str, Any]:
                    ("met" if all(entry.get("sends") and all(str(s.get("status")) in ("0x0", "0") for s in entry["sends"])
                                  for entry in results if entry["case"] in ("C1", "C2")) else "failed")),
         _criterion("C.3", "C3 : l'agent n'a aucun droit d'administration (revert des deux appels)",
-                   "pending" if ctx.mode == MODE_DRY else "failed"),
+                   "pending" if ctx.mode == MODE_DRY else
+                   ("met" if all(entry.get("sends") and all(str(s.get("status")) in ("0x0", "0") for s in entry["sends"])
+                                 for entry in results if entry["case"] in ("C3a", "C3b")) else "failed")),
         _criterion("C.4", "C5 : 2 exécutions chaîne + 1 refus hors chaîne démontrés",
                    "met" if boundary["ok"] else "failed", boundary),
     ]

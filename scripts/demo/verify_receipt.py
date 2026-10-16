@@ -181,6 +181,31 @@ def reorg_check(*, tx_hash: str, receipt_block_number: Optional[int], receipt_bl
     return result
 
 
+def wait_for_confirmations(*, tx_hash: str, receipt_block_number: Optional[int], receipt_block_hash: Optional[str],
+                           rpc_url: str, confirmation_blocks: int = 2, timeout_seconds: int = 45,
+                           poll_seconds: float = 3.0) -> Dict[str, Any]:
+    """``reorg_check`` avec **attente bornée** jusqu'à la profondeur voulue (blocs Base ≈ 2 s).
+
+    Ne bloque jamais au-delà de ``timeout_seconds`` : au-delà, l'état ``PENDING_CONFIRMATION``
+    est rendu tel quel — jamais d'attente infinie ; un reorg avéré rend la main immédiatement.
+    """
+    import time as _time
+    started = _time.monotonic()
+    deadline = started + max(0, int(timeout_seconds))
+    result: Dict[str, Any] = {}
+    while True:
+        result = reorg_check(tx_hash=tx_hash, receipt_block_number=receipt_block_number,
+                             receipt_block_hash=receipt_block_hash, rpc_url=rpc_url,
+                             confirmation_blocks=confirmation_blocks)
+        if result.get("status") in ("CONFIRMED", "REORGED"):
+            break
+        if _time.monotonic() >= deadline:
+            break
+        _time.sleep(min(poll_seconds, max(0.1, deadline - _time.monotonic())))
+    result["waited_seconds"] = round(_time.monotonic() - started, 2)
+    return result
+
+
 def replay_revert(*, rpc_url: str, tx_hash: str, block_number: Optional[int],
                   timeout: int = common.RPC_TIMEOUT_SECONDS) -> Dict[str, Any]:
     """Rejeu ``eth_call`` au bloc du reçu pour extraire la donnée de revert (échec de 1re classe)."""

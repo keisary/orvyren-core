@@ -517,6 +517,7 @@ class TestRunsDryRun(TempSessionMixin, unittest.TestCase):
         statuses = {criterion["id"]: criterion["status"] for criterion in summary["criteria"]}
         self.assertEqual(statuses["A.4"], "met")           # compteur de signatures +1
         self.assertEqual(statuses["A.1"], "pending")       # pas de reçu en dry-run
+        self.assertEqual(statuses["A.5"], "met")           # régression : OUTCOME journalisé AVANT l'évaluation
         self.assertEqual(ctx.signatures.count(), 1)
         kinds = ctx.journal.kinds(summary["intent_id"])
         self.assertIn("INTENT", kinds)
@@ -769,6 +770,71 @@ class TestSignerDryRun(unittest.TestCase):
         self.assertFalse(signer_mod.Signer(dry_run=True, env={"ORVYREN_PRIVATE_KEY": "abc"}).key_present())
         self.assertTrue(signer_mod.Signer(dry_run=True,
                                           env={"ORVYREN_PRIVATE_KEY": "11" * 32}).key_present())
+
+    # --- régression : casse EIP-55 du champ 'from' (rencontré le 2026-10-16 en exécution réelle) ---
+
+    def test_execute_normalizes_from_to_eip55(self):
+        signer = signer_mod.Signer(dry_run=False, env={"ORVYREN_PRIVATE_KEY": "0x" + "22" * 32})
+        if not signer.library_available():
+            self.skipTest("eth-account absent")
+        address = signer.address()
+        tx = {"chainId": 84532, "nonce": 0, "to": MODULE.lower(), "value": 0, "data": "0x",
+              "gas": 21000, "maxFeePerGas": 10 ** 9, "maxPriorityFeePerGas": 10 ** 9,
+              "type": 2, "from": address.lower()}
+        result = signer.sign_transaction(tx, intent_id="I-FROM")
+        self.assertFalse(result["simulated"])
+        self.assertTrue(result["tx_hash"].startswith("0x"))
+        self.assertEqual(tx["from"], address.lower())      # le dict appelant n'est pas muté
+        self.assertNotIn("22" * 32, json.dumps(result))    # jamais de clé dans la sortie
+
+    def test_execute_refuses_from_mismatch(self):
+        signer = signer_mod.Signer(dry_run=False, env={"ORVYREN_PRIVATE_KEY": "0x" + "22" * 32})
+        if not signer.library_available():
+            self.skipTest("eth-account absent")
+        tx = {"chainId": 84532, "nonce": 0, "to": MODULE, "value": 0, "data": "0x",
+              "gas": 21000, "maxFeePerGas": 10 ** 9, "maxPriorityFeePerGas": 10 ** 9,
+              "type": 2, "from": "0x" + "33" * 20}
+        with self.assertRaises(signer_mod.SignerError):
+            signer.sign_transaction(tx, intent_id="I-BAD")
+
+
+# =============================================================================
+# attente de confirmations (anti-reorg bornée)
+# =============================================================================
+
+class TestWaitConfirmations(unittest.TestCase):
+    def test_waits_until_confirmed(self):
+        from unittest import mock
+        seq = [{"status": "PENDING_CONFIRMATION", "confirmations": 0},
+               {"status": "PENDING_CONFIRMATION", "confirmations": 1},
+               {"status": "CONFIRMED", "confirmations": 2}]
+        with mock.patch.object(verify_receipt, "reorg_check", side_effect=seq):
+            result = verify_receipt.wait_for_confirmations(
+                tx_hash="0x" + "11" * 32, receipt_block_number=100,
+                receipt_block_hash="0x" + "22" * 32, rpc_url="http://unused",
+                confirmation_blocks=2, timeout_seconds=5, poll_seconds=0.01)
+        self.assertEqual(result["status"], "CONFIRMED")
+        self.assertIn("waited_seconds", result)
+
+    def test_reorged_returns_immediately(self):
+        from unittest import mock
+        with mock.patch.object(verify_receipt, "reorg_check",
+                               return_value={"status": "REORGED", "code": "REORGED"}):
+            result = verify_receipt.wait_for_confirmations(
+                tx_hash="0x" + "11" * 32, receipt_block_number=100,
+                receipt_block_hash="0x" + "22" * 32, rpc_url="http://unused",
+                confirmation_blocks=2, timeout_seconds=5, poll_seconds=0.01)
+        self.assertEqual(result["status"], "REORGED")
+
+    def test_timeout_returns_pending_never_hangs(self):
+        from unittest import mock
+        with mock.patch.object(verify_receipt, "reorg_check",
+                               return_value={"status": "PENDING_CONFIRMATION"}):
+            result = verify_receipt.wait_for_confirmations(
+                tx_hash="0x" + "11" * 32, receipt_block_number=100,
+                receipt_block_hash="0x" + "22" * 32, rpc_url="http://unused",
+                confirmation_blocks=2, timeout_seconds=0, poll_seconds=0.01)
+        self.assertEqual(result["status"], "PENDING_CONFIRMATION")
 
 
 # =============================================================================

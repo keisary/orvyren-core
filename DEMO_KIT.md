@@ -381,3 +381,13 @@ et `https://docs.cdp.coinbase.com/faucets/introduction/welcome` (plafonds CDP :
 **Internes** : `FREEZE_V2.md` · `ORVYREN_DOC2_TECHNIQUE_COMPLET.md` ·
 `demo_runs/` (sorties d'exécution du kit : captures, préflight en ligne, dry-runs —
 créé au premier lancement ; les sondes d'origine sont archivées hors dépôt).
+
+---
+
+## 12. FAQ — « Mais alors, un agent ne peut jamais tout faire seul ? » (captchas)
+
+Les captchas rencontrés pendant la préparation appartiennent aux **robinets** (obtention gratuite de jetons de test) — des services web anti-abus pensés pour des humains. Ils ne sont **jamais** dans la boucle ORVYREN : données → décision → politique → exécution on-chain → audit ne contient **aucune étape humaine**, et les 5 runs de cette démo sont exécutés par le code (signataire isolé + module Roles).
+
+Le financement est une entrée **exogène** : une trésorerie réelle est financée par des dépôts de la DAO, jamais par un robinet. Le captcha n'est qu'un artefact du **testnet** (argent sans valeur → robinets anti-bot). En production : trésorerie financée, zéro captcha.
+
+Les deux seuls points de contact humains du dispositif sont **intentionnels** : (1) le financement initial ; (2) le **kill switch** par la DAO — c'est le second verrou du design « deux serrures » : l'agent exécute seul, dans les bornes ; la DAO peut couper.
