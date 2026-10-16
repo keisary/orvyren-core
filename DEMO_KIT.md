@@ -18,7 +18,7 @@ montage Safe 2/3 + module Roles) sont archivées hors dépôt — voir `README.m
 **Fait (validé hors chaîne le 2026-10-15) :** les 5 runs en dry-run, le
 préflight 12 contrôles, le test de dérive 10 contrôles, la vérification du reçu,
 le journal chaîné SHA-256, l'export + le paquet d'audit, 75 tests hors chaîne
-(suite complète : 734 verts).
+(suite complète : 747 verts).
 
 **Ne fait pas :** il ne déploie rien, ne génère aucune clé à votre place, ne
 finance aucun wallet, ne remplace ni Safe{Wallet} ni l'app Roles, et **ne
@@ -286,12 +286,21 @@ python scripts/demo/build_audit_packet.py --session $SESSION --case rseth \
     --evidence evidence --out dist/audit_packets
 ```
 
+Paquet **v2 complet** (W6 — flux multiples + LINK/SEAL, vérificateur gelé,
+HASHES + `BUNDLE_DIGEST.txt`, mutation-test 6/6) et vérification tierce :
+
+```bash
+python scripts/build_audit_packet.py --session $SESSION --case rseth --out-dir dist/audit_packets
+python -m orvyren.verify dist/audit_packets/<paquet_v2>.zip      # OFFLINE_PASS attendu
+```
+
 **Critères :** chaîne de hash **recalculée OK** (aucune écriture détectée) ;
 **écart journal ↔ chaîne = 0** (chaque `tx_hash` relu, transferts recalculés
 depuis les logs) ; le rapport affiche « **N exécutions conformes, M refus hors
 chaîne, K tentatives forcées refusées par la chaîne** » ; refus et échecs listés
-(première classe). Publiez ensuite le `bundle_digest` (ancrage « option ii »,
-coût nul, FREEZE_V2 F3) et gardez le `sha256` du zip (`<zip>.sha256`).
+(première classe). Publiez ensuite le `bundle_digest` du paquet v2 (fichier
+`BUNDLE_DIGEST.txt` — ancrage « option ii », coût nul, FREEZE_V2 F3) et gardez
+le `sha256` du zip (`<zip>.sha256`).
 
 ---
 
@@ -351,6 +360,8 @@ python scripts/demo/verify_receipt.py --receipt <recu.json> --intent <intent.jso
     --safe 0x… --module 0x… --agent 0x… --rpc                                  # reçu + anti-reorg
 python scripts/demo/demo.py --run E --dry-run --session evidence/demo_runs/rseth # export hors ligne
 python scripts/demo/build_audit_packet.py --session evidence/demo_runs/rseth --case rseth
+python scripts/build_audit_packet.py --session evidence/demo_runs/rseth --case rseth --out-dir dist/audit_packets_v2  # paquet v2 (T10)
+python -m orvyren.verify dist/audit_packets_v2/<paquet>.zip                                                         # vérification tierce (OFFLINE_PASS)
 ```
 
 ---

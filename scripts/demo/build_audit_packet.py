@@ -2,6 +2,11 @@
 # -*- coding: utf-8 -*-
 """ORVYREN — kit de démo testnet : **assemblage du paquet d'audit** (B6 §5).
 
+NOTE (W6) : builder **v1 historique du kit** (layout simple). Le paquet complet
+T10 — flux multiples + LINK/SEAL, vérificateur gelé embarqué, HASHES +
+BUNDLE_DIGEST, mutation-test — est construit par ``scripts/build_audit_packet.py``
+(v2, racine du dépôt). Le vérificateur T10 lit les deux layouts.
+
 Assemble le dossier livrable au jury/relecteur :
 
     1  README_AUDIT.md (EN — vérification en 3 commandes, « ce que ça prouve / pas »)
