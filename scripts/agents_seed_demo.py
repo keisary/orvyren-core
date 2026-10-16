@@ -100,7 +100,8 @@ _CRITIC = [
 
 
 def _write_json(path: str, payload) -> None:
-    with open(path, "w", encoding="utf-8") as handle:
+    # newline="\n": LF-stable on Windows (this writes a committed fixture)
+    with open(path, "w", encoding="utf-8", newline="\n") as handle:
         json.dump(payload, handle, ensure_ascii=False, indent=1, sort_keys=True)
 
 

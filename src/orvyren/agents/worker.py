@@ -115,7 +115,7 @@ def _read_json(path: str) -> Dict[str, Any]:
 
 def _write_json(path: str, payload: Any) -> None:
     tmp = path + ".tmp"
-    with open(tmp, "w", encoding="utf-8") as handle:
+    with open(tmp, "w", encoding="utf-8", newline="\n") as handle:
         json.dump(payload, handle, ensure_ascii=False, indent=1, sort_keys=True)
     os.replace(tmp, path)
 
@@ -142,7 +142,7 @@ def _entry_to_dict(entry: JournalEntry) -> Dict[str, Any]:
 def export_journal(journal: AgentJournal, path: str) -> str:
     """Export a journal as append-only JSONL; returns the chain head hash."""
     head = "0" * 64
-    with open(path, "w", encoding="utf-8") as handle:
+    with open(path, "w", encoding="utf-8", newline="\n") as handle:
         for entry in journal.entries():
             handle.write(json.dumps(_entry_to_dict(entry), ensure_ascii=False,
                                     sort_keys=True) + "\n")
