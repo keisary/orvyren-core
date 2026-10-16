@@ -1,0 +1,4 @@
+# ORVYREN — dépendance de la démonstration testnet.
+# Unique composant tiers du chemin signataire (scripts/demo/signer.py --execute) ;
+# jamais importé par le cœur du système (voir LICENSES.md). Version testée le 2026-10-16.
+eth-account==0.14.0

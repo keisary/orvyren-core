@@ -4,7 +4,7 @@
 
 ORVYREN est un système d'agents qui transforme des signaux financiers publics en **décisions bornées et vérifiables** : il croise les sources, formule des hypothèses concurrentes, cherche le fait qui les départage, décide — ou s'abstient honnêtement (« il manque ceci ») —, n'exécute que dans une enveloppe autorisée (politique déterministe hors LLM + permissions on-chain), et laisse une trace qu'un tiers peut recalculer.
 
-**Statut (15/10/2026)** : v1 **gelée** (`FREEZE_V2.md`) · suite de tests : **296 verts, 2 sautés** · kit de démo testnet prêt à exécuter (dry-run validé).
+**Statut (16/10/2026)** : v1 **gelée** (`FREEZE_V2.md`) · suite de tests : **380 verts, 3 sautés** · **démo testnet exécutée on-chain : 5 runs A→E sur Base Sepolia** — hashes vérifiables, paquet d'audit reproductible (kit + runbook : `DEMO_KIT.md`).
 
 ## Documentation (tout à la racine)
 
@@ -23,11 +23,25 @@ ORVYREN est un système d'agents qui transforme des signaux financiers publics e
 ## Démarrage rapide
 
 ```bash
-python -m pytest tests/ -q                                   # 296 verts attendus
+python -m pytest tests/ -q                                   # 380 verts attendus
 python run_pipeline.py                                       # pipeline complet (corpus archivé)
 python scripts/reconstruct_rseth_episode.py --from-cache     # reconstruction hors-ligne (idem steth / usdc)
 python scripts/demo/demo.py --run A --dry-run --session demo_runs/session_dry   # kit démo testnet (dry-run)
 ```
+
+## Reproduire la démo testnet (équipe)
+
+Aucune clé et aucun résultat local ne voyagent dans git : chaque personne crée **son** wallet jetable (`DEMO_KIT.md` §2 — une commande), le finance par les robinets gratuits (§3 — captcha humain une fois), puis rejoue la séquence (§4 → §6, commandes copiables telles quelles).
+
+```bash
+python -m pip install -r requirements.txt             # eth-account — seule dépendance du signataire
+cp scripts/demo/config.example.env scripts/demo/.env  # puis renseigner clés jetables + adresses (§5)
+python scripts/demo/setup_chain.py --self-test        # contrôles hors ligne avant tout --execute
+# séquence exacte des 5 runs (A→E, kill switch inclus) : DEMO_KIT.md §6
+python scripts/demo/build_audit_packet.py --session <session> --case rseth --out dist/audit_packets
+```
+
+Ce qui reste **local par design** : les clés (`scripts/demo/.env`, `owners.env` — gitignorés) et les sessions d'exécution (`demo_runs/`, `dist/` — produites à l'exécution). Le **paquet d'audit** (`dist/audit_packets/*.zip`) est la pièce à transmettre : il ne contient que des données publiques (reçus, journal chaîné, hashes).
 
 ## Structure du dépôt
 
@@ -35,7 +49,7 @@ python scripts/demo/demo.py --run A --dry-run --session demo_runs/session_dry   
 orvyren_core/
 ├── src/orvyren/      # le système : data · quality · graph · policy · decision · execution · audit · ui
 ├── scripts/          # reconstructions d'épisodes (--from-cache) + demo/ (kit testnet)
-├── tests/            # 296 tests, hors-ligne
+├── tests/            # 380 tests, hors-ligne
 ├── fixtures/         # mesures archivées (15/10) utilisées par les tests et les modes hors-ligne
 ├── evidence/         # preuves : épisodes reconstruits (rsETH 2026, stETH 2022, USDC 2023) + dossiers
 ├── corpus/           # observations USDC/SVB mars 2023 (rejeu hors-ligne)
