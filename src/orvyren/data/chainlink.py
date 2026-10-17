@@ -139,7 +139,11 @@ class ChainlinkFeed:
         if self._decimals is not None:
             return self._decimals
         value = decode_uint(self.rpc.eth_call(self.address, SEL_DECIMALS, block))
-        self._decimals = value
+        if block == "latest":
+            # Only a ``latest`` read may be cached: pinning the value read at a
+            # historical block would silently answer every later call (at any
+            # other block) with that first reading — same rule as description().
+            self._decimals = value
         return value
 
     # -- answers ------------------------------------------------------------ #
@@ -192,12 +196,18 @@ class ChainlinkFeed:
             round_data = self.latest_round_data(block)
         except FeedError:
             decimals = self.decimals(block)
+            # Same tolerance as latest_round_data(): a feed without
+            # description() must not lose its price because the label failed.
+            try:
+                label: Optional[str] = self.description(block)
+            except (RpcError, ValueError):
+                label = None
             payload.update(
                 {
                     "price": self.latest_answer(block) / 10 ** decimals,
                     "method": "latestAnswer",
                     "decimals": decimals,
-                    "description": self.description(block),
+                    "description": label,
                     "updated_at": None,
                     "age_seconds": None,
                 }

@@ -92,6 +92,36 @@ Transport = Callable[[str, bytes, float], bytes]
 
 _USER_AGENT = "orvyren-core/0.1 (archive reader; python-urllib)"
 
+#: Masked placeholder for credential-bearing URL parts (same convention and
+#: deny-by-default rule as ``orvyren.execution.guard.mask_rpc_url`` — F08: a
+#: credential may sit at the FRONT of the path, so only version-like tokens
+#: such as ``v2`` stay visible).  Kept local so the data layer stays
+#: standalone; see tests/test_execution_review.py for both implementations.
+_MASK = "***"
+
+
+def _mask_endpoint(url: str) -> str:
+    """Host kept readable, credentials masked; never raises (malformed -> full mask)."""
+    if not url:
+        return ""
+    try:
+        parts = urllib.parse.urlsplit(str(url))
+        if not parts.scheme or not parts.hostname:
+            return _MASK
+        netloc = parts.hostname
+        if parts.port:
+            netloc += f":{parts.port}"
+        if parts.username or parts.password:
+            netloc = f"{_MASK}@{netloc}"
+        segments = [segment for segment in (parts.path or "").split("/") if segment]
+    except ValueError:
+        return _MASK
+    if not segments:
+        return f"{parts.scheme}://{netloc}"
+    shown = [segment if segment[:1] == "v" and segment[1:].isdigit() else _MASK
+             for segment in segments]
+    return f"{parts.scheme}://{netloc}/" + "/".join(shown)
+
 #: JSON-RPC errors that are contract-level answers, not endpoint failures: every
 #: endpoint (and every retry) returns the same thing, so we stop immediately.
 _TERMINAL_ERROR_MARKERS = ("execution reverted", "invalid opcode", "out of gas", "invalid argument")
@@ -166,7 +196,7 @@ class HttpTransport:
                 response = connection.getresponse()
                 body = response.read()
                 if response.status != 200:
-                    raise RpcError(f"HTTP {response.status} from {url}: {body[:200]!r}")
+                    raise RpcError(f"HTTP {response.status} from {_mask_endpoint(url)}: {body[:200]!r}")
                 self._conns[url] = (connection, path)
                 return body
             except Exception as exc:  # stale keep-alive connection, timeout, TLS reset...
@@ -176,7 +206,7 @@ class HttpTransport:
                 except Exception:
                     pass
                 self._conns.pop(url, None)
-        raise RpcError(f"{url}: {type(last_error).__name__}: {last_error}")
+        raise RpcError(f"{_mask_endpoint(url)}: {type(last_error).__name__}: {last_error}")
 
 
 # --------------------------------------------------------------------------- #
@@ -198,8 +228,15 @@ def is_address(value: str) -> bool:
 
 
 def encode_uint(value: int) -> str:
-    """Encode a non-negative integer as one 32-byte word (no ``0x``)."""
-    number = int(value)
+    """Encode a non-negative integer as one 32-byte word (no ``0x``).
+
+    Strictly integral: ``int()`` coercion would silently truncate a float
+    (``encode_uint(1.5)`` -> 1) or accept ``True`` as 1 — a corrupted amount
+    must fail loudly, never encode.
+    """
+    if isinstance(value, bool) or not isinstance(value, int):
+        raise ValueError(f"encode_uint expects an int, got {value!r}")
+    number = value
     if number < 0:
         raise ValueError(f"encode_uint expects a non-negative integer, got {value!r}")
     if number >= 1 << 256:
@@ -209,7 +246,9 @@ def encode_uint(value: int) -> str:
 
 def encode_int(value: int) -> str:
     """Encode a signed integer (e.g. Curve ``int128`` index) as one 32-byte word."""
-    number = int(value)
+    if isinstance(value, bool) or not isinstance(value, int):
+        raise ValueError(f"encode_int expects an int, got {value!r}")
+    number = value
     if number < 0:
         if number < -(1 << 255):
             raise ValueError("encode_int underflow: value does not fit in int256")
@@ -270,6 +309,11 @@ def decode_string(data: str) -> str:
     if len(words) < 128:
         return ""
     offset = int(words[0:64], 16) * 2
+    if offset + 64 > len(words):
+        raise ValueError(
+            f"ABI string offset out of range: {offset // 2} bytes into a "
+            f"{len(words) // 2}-byte payload"
+        )
     length = int(words[offset:offset + 64], 16)
     payload = words[offset + 64:offset + 64 + length * 2]
     if len(payload) != length * 2:
@@ -337,7 +381,7 @@ class ArchiveRpc:
                     raw = self._post(endpoint, payload)
                 except Exception as exc:  # transport-level: retry the same endpoint
                     self.errors += 1
-                    failures.append(f"{endpoint}: {type(exc).__name__}: {exc}")
+                    failures.append(f"{_mask_endpoint(endpoint)}: {type(exc).__name__}: {exc}")
                     if attempt < self.retries:
                         time.sleep(self.backoff * (attempt + 1))
                     continue
@@ -345,7 +389,7 @@ class ArchiveRpc:
                     body = json.loads(raw.decode("utf-8", "replace"))
                 except Exception as exc:
                     self.errors += 1
-                    failures.append(f"{endpoint}: invalid JSON response ({exc})")
+                    failures.append(f"{_mask_endpoint(endpoint)}: invalid JSON response ({exc})")
                     break
                 # A JSON-RPC success carries "result" (possibly null: an unknown
                 # block/receipt is a valid *answer*, not an endpoint failure).
@@ -355,10 +399,11 @@ class ArchiveRpc:
                     return body["result"]
                 error = (body or {}).get("error") if isinstance(body, dict) else body
                 self.errors += 1
-                failures.append(f"{endpoint}: {method} refused -> {error}")
+                failures.append(f"{_mask_endpoint(endpoint)}: {method} refused -> {error}")
                 if any(marker in str(error).lower() for marker in _TERMINAL_ERROR_MARKERS):
                     # Contract-level answer: identical on every endpoint, stop here.
-                    raise RpcError(f"{method} refused by the contract at {endpoint}: {error}")
+                    raise RpcError(
+                        f"{method} refused by the contract at {_mask_endpoint(endpoint)}: {error}")
                 break  # node-level answer: the other endpoint may still hold archive state
         raise RpcError(
             f"{method}: no endpoint answered ({len(endpoints)} tried). "
@@ -527,13 +572,18 @@ class ArchiveRpc:
 
     # -- provenance --------------------------------------------------------- #
     def provenance(self) -> Dict[str, Any]:
-        """What this client actually did (sources, call counts, calls per endpoint)."""
+        """What this client actually did (sources, call counts, calls per endpoint).
+
+        Endpoint URLs are masked (F08) so a credential-bearing URL can never
+        land in an evidence file through this payload.
+        """
         return {
-            "endpoints": list(self.urls),
+            "endpoints": [_mask_endpoint(url) for url in self.urls],
             "calls": self.calls,
             "errors": self.errors,
-            "hits": dict(sorted(self.url_hits.items())),
-            "last_url": self.last_url,
+            "hits": {_mask_endpoint(url): count
+                     for url, count in sorted(self.url_hits.items())},
+            "last_url": _mask_endpoint(self.last_url) if self.last_url else None,
         }
 
     def close(self) -> None:

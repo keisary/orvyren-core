@@ -26,7 +26,8 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any, Dict, Iterable, List, Optional, Sequence, Tuple
 
-from orvyren.data.rpc import ArchiveRpc, decode_address, decode_uint, encode_int
+from orvyren.data.rpc import (ArchiveRpc, decode_address, decode_uint,
+                              encode_int, encode_uint)
 
 __all__ = [
     "CURVE_STETH_POOL",
@@ -146,7 +147,10 @@ class CurvePool:
     # -- pricing ------------------------------------------------------------ #
     def get_dy_raw(self, index_in: int, index_out: int, amount_in_raw: int, block: Any = "latest") -> int:
         """``get_dy(i, j, dx)`` as a raw integer (reverts if the pool cannot fill it)."""
-        data = SEL_GET_DY + encode_int(index_in) + encode_int(index_out) + f"{int(amount_in_raw):064x}"
+        # encode_uint() rejects negatives and out-of-range values: a negative
+        # amount formatted with ``f"{n:064x}"`` produces a signed 65-character
+        # "hex" word (malformed calldata sent silently instead of an error).
+        data = SEL_GET_DY + encode_int(index_in) + encode_int(index_out) + encode_uint(amount_in_raw)
         return decode_uint(self.rpc.eth_call(self.address, data, block))
 
     def get_dy(self, index_in: int, index_out: int, amount_in: float, block: Any = "latest") -> float:

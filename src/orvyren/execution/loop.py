@@ -250,6 +250,20 @@ class PeriodLedger:
             raise LedgerError("ledger: invalid JSON: {} ({})".format(self.path, exc)) from exc
         if not isinstance(payload, dict):
             raise LedgerError("ledger: JSON object expected ({})".format(self.path))
+        declared_window = payload.get("window_hours")
+        if declared_window is not None:
+            # The persisted window is part of the spending contract: loading a
+            # 24 h ledger under a shorter window would silently WEAKEN the
+            # cumulative cap (less spent counted). Refuse the mismatch instead.
+            try:
+                window_hours = float(str(declared_window).strip())
+            except (TypeError, ValueError) as exc:
+                raise LedgerError("ledger: window_hours unreadable ({})".format(self.path)) from exc
+            expected = self.window.total_seconds() / 3600.0
+            if not math.isfinite(window_hours) or abs(window_hours - expected) > 1e-9:
+                raise LedgerError(
+                    "ledger: window mismatch ({} declares {} h, this run uses {} h)".format(
+                        self.path, declared_window, expected))
         entries = payload.get("entries")
         if entries is None:
             entries = []
