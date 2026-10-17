@@ -39,6 +39,15 @@ def _node_id(value: str, prefix: str = "addr") -> str:
     return f"{prefix}:eip155:{CHAIN_ID}:{value.lower()}"
 
 
+def _any_node(value: str) -> str:
+    """Resolve a raw address or a canonical node id (graph_path input)."""
+    if ":" in value:
+        return value
+    if value.startswith("0x"):
+        return _node_id(value, "addr")
+    return _node_id(value, "asset")
+
+
 def _validity(alias: str, as_of: Optional[str], as_of_block: Optional[int]) -> Tuple[List[str], List[Any]]:
     clauses: List[str] = []
     params: List[Any] = []
@@ -102,6 +111,76 @@ def exposure(db: Optional[str] = None, holder: str = "", *,
         con.close()
     return {"query": "Q1", "holder": holder_id, "as_of": as_of,
             "as_of_block": as_of_block, "rows": rows, "count": len(rows),
+            "latency_ms": round((time.perf_counter() - started) * 1000, 2),
+            "mode": os.environ.get("ORVYREN_MODE", "LIVE")}
+
+
+def dependency_paths(db: Optional[str] = None, src: str = "", dst: str = "",
+                     *, kinds: Sequence[str] = (),
+                     max_depth: int = 4,
+                     as_of: Optional[str] = None,
+                     as_of_block: Optional[int] = None) -> Dict[str, Any]:
+    """Q2 — bounded dependency paths from ``src`` to ``dst`` with sign.
+
+    Only ``DEPENDS_ON`` and ``AFFECTS`` are traversed: correlations never
+    propagate, and a cycle is impossible because the path string is checked.
+    ``rows`` is empty when the graph has no such edges; that is an honest
+    answer, not an unavailable tool.
+    """
+    src_id, dst_id = _any_node(src), _any_node(dst)
+    allowed = ("DEPENDS_ON", "AFFECTS")
+    requested = tuple(k for k in kinds if k in allowed)
+    if kinds and not requested:
+        return {"query": "Q2", "src": src_id, "dst": dst_id, "rows": [],
+                "count": 0, "status": "INVALID_KINDS",
+                "latency_ms": 0.0,
+                "mode": os.environ.get("ORVYREN_MODE", "LIVE")}
+    selected = requested or allowed
+    depth = max(1, min(int(max_depth), 8))
+    started = time.perf_counter()
+    valid, vparams = _validity("r", as_of, as_of_block)
+    kind_clause = "r.kind IN (%s)" % ",".join("?" for _ in selected)
+    initial = (["r.src = ?", kind_clause] + _active("r") + valid)
+    recursive = (["w.depth < ?", kind_clause] + _active("r") + valid +
+                 ["instr(w.path, '/' || r.dst || '/') = 0"])
+    sql = f"""
+        WITH RECURSIVE walk(node, depth, negative, ambiguous, path) AS (
+            SELECT r.dst, 1,
+                   CASE WHEN r.sign_prior = '-' THEN 1 ELSE 0 END,
+                   CASE WHEN r.sign_prior = 'ambigu' THEN 1 ELSE 0 END,
+                   '/' || r.src || '/' || r.dst || '/'
+            FROM relations r
+            WHERE {' AND '.join(initial)}
+            UNION ALL
+            SELECT r.dst, w.depth + 1,
+                   (w.negative + CASE WHEN r.sign_prior = '-' THEN 1 ELSE 0 END) % 2,
+                   CASE WHEN w.ambiguous = 1 OR r.sign_prior = 'ambigu'
+                        THEN 1 ELSE 0 END,
+                   w.path || r.dst || '/'
+            FROM walk w
+            JOIN relations r ON r.src = w.node
+            WHERE {' AND '.join(recursive)}
+        )
+        SELECT node, depth, negative, ambiguous, path
+        FROM walk
+        WHERE node = ?
+        ORDER BY depth, path
+        LIMIT 50
+    """
+    params: List[Any] = ([src_id] + list(selected) + vparams +
+                         [depth] + list(selected) + vparams + [dst_id])
+    con = _connect(db)
+    try:
+        rows = []
+        for row in con.execute(sql, params).fetchall():
+            item = dict(row)
+            item["sign"] = "ambigu" if item.pop("ambiguous") else (
+                "-" if item.pop("negative") else "+")
+            rows.append(item)
+    finally:
+        con.close()
+    return {"query": "Q2", "src": src_id, "dst": dst_id, "rows": rows,
+            "count": len(rows), "status": "OK",
             "latency_ms": round((time.perf_counter() - started) * 1000, 2),
             "mode": os.environ.get("ORVYREN_MODE", "LIVE")}
 
@@ -264,6 +343,13 @@ def _main(argv: Optional[Sequence[str]] = None) -> int:
     p4.add_argument("--block", type=int, default=None)
     p6 = sub.add_parser("q6")
     p6.add_argument("--relation-id", required=True)
+    p2 = sub.add_parser("q2")
+    p2.add_argument("--src", required=True)
+    p2.add_argument("--dst", required=True)
+    p2.add_argument("--kinds", nargs="*", default=None)
+    p2.add_argument("--depth", type=int, default=4)
+    p2.add_argument("--as-of", default=None)
+    p2.add_argument("--block", type=int, default=None)
     p5 = sub.add_parser("q5")
     p5.add_argument("--as-of", default=None)
     p5.add_argument("--block", type=int, default=None)
@@ -287,6 +373,10 @@ def _main(argv: Optional[Sequence[str]] = None) -> int:
         result = pit(args.db, as_of=args.as_of, as_of_block=args.block)
     elif args.command == "q6":
         result = provenance(args.db, args.relation_id)
+    elif args.command == "q2":
+        result = dependency_paths(
+            args.db, args.src, args.dst, kinds=tuple(args.kinds or ()),
+            max_depth=args.depth, as_of=args.as_of, as_of_block=args.block)
     elif args.command == "q5":
         result = timeline(args.db, as_of=args.as_of, as_of_block=args.block,
                           limit=args.limit)

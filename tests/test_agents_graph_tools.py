@@ -46,7 +46,8 @@ SCHEMA = [
     "CREATE TABLE relations (relation_id TEXT, revision INTEGER, kind TEXT, "
     "src TEXT, dst TEXT, payload TEXT, lifecycle TEXT, validation_status TEXT, "
     "valid_from TEXT, valid_to TEXT, valid_from_block INTEGER, "
-    "valid_to_block INTEGER, epistemic_status TEXT, source_family_id TEXT)",
+    "valid_to_block INTEGER, epistemic_status TEXT, source_family_id TEXT, "
+    "sign_prior TEXT)",
     "CREATE TABLE relation_provenance (relation_id TEXT, revision INTEGER, "
     "ref_id TEXT, ref_kind TEXT, source_family_id TEXT, extract_method TEXT, "
     "run_id TEXT)",
@@ -78,10 +79,10 @@ def build_db(path):
             con.execute(statement)
         for relation_id, kind, src, dst, payload, lifecycle, valid_from, vfb in RELATIONS:
             con.execute(
-                "INSERT INTO relations VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+                "INSERT INTO relations VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
                 (relation_id, 1, kind, src, dst, json.dumps(payload), lifecycle,
                  "VALIDATED", valid_from, None, vfb, None, "FACT",
-                 "SF-TEST"))
+                 "SF-TEST", "+"))
         con.execute(
             "INSERT INTO relation_provenance VALUES (?,?,?,?,?,?,?)",
             (REL_1, 1, "event:eip155:8453:0xeee:1", "EVENT", "SF-TEST",
@@ -196,8 +197,18 @@ class TestGraphQueryTool(GraphToolsFixture):
 
 
 class TestGraphPathTool(GraphToolsFixture):
-    def test_q2_unavailable_is_honest(self):
+    def test_q2_empty_paths_are_ok(self):
         tool = self.tool(GraphPathTool)
+        result = tool.run({"src": ADDR_A, "dst": ASSET_X})
+        self.assertTrue(result.ok)
+        self.assertEqual(result.observations[0]["count"], 0)
+        self.assertEqual(result.observations[0]["status"], "OK")
+
+    def test_q2_unavailable_when_injected_api_lacks_it(self):
+        class NoQ2:
+            pass
+
+        tool = GraphPathTool(db=self.db, api=NoQ2())
         result = tool.run({"src": ADDR_A, "dst": ASSET_X})
         self.assertFalse(result.ok)
         self.assertEqual(result.status, "UNAVAILABLE")

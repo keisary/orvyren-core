@@ -10,9 +10,7 @@ is no frozen snapshot behind them. The registry stays an allow-list and
 CONTRACT.md (§ Outils agent):
 
 - ``graph_query(query, holder|asset, as_of)`` → the API response (Q1/Q4/Q6/Q7/Q8);
-- ``graph_path(src, dst, kinds, max_depth)`` → dependency paths + sign —
-  **Q2 is not exposed by the published API yet**, so the tool answers
-  ``UNAVAILABLE`` with ``E_TOOL_NO_API:Q2`` instead of inventing paths;
+- ``graph_path(src, dst, kinds, max_depth)`` → Q2 dependency paths + sign;
 - ``graph_snapshot(as_of)`` → hash + counts.
 
 Rules enforced here: strict args (unknown key refused, required key checked
@@ -146,11 +144,7 @@ class GraphQueryTool:
 
 
 class GraphPathTool:
-    """``graph_path`` — dependency paths (Q2), honest until A publishes Q2.
-
-    The published H2 API answers Q1/Q4/Q6/Q7/Q8 only. Until A ships a Q2
-    endpoint, this tool reports ``UNAVAILABLE`` — it never fabricates a path.
-    """
+    """``graph_path`` — bounded dependency paths (Q2)."""
 
     name = "graph_path"
 
@@ -176,12 +170,16 @@ class GraphPathTool:
         if self._q2 is None:
             return contracts.ToolResult(
                 ok=False, status="UNAVAILABLE",
-                error="%s:Q2 (absent de graph/api.py, H2)" % NO_API_CODE)
+                error="%s:Q2 (injected API lacks dependency_paths)" % NO_API_CODE)
         try:
             response = self._q2(
                 self.db, str(args["src"]), str(args["dst"]),
                 kinds=tuple(args.get("kinds") or ()),
                 max_depth=int(args.get("max_depth", 4) or 4))
+        except FileNotFoundError as exc:
+            return contracts.ToolResult(
+                ok=False, status="UNAVAILABLE",
+                error="E_TOOL_DB_UNAVAILABLE:%s" % exc)
         except Exception as exc:
             return contracts.ToolResult(
                 ok=False, status="FAILED",
@@ -244,8 +242,7 @@ def graph_tool_specs() -> Tuple[Dict[str, Any], ...]:
             ["query"]),
         tool_spec(
             "graph_path",
-            "Chemins de dépendance src→dst (Q2) + signe. UNAVAILABLE tant que "
-            "l'API publiée n'expose pas Q2.",
+            "Chemins de dépendance src→dst (Q2) bornés, avec signe.",
             {"src": {"type": "string"}, "dst": {"type": "string"},
              "kinds": {"type": "array", "items": {"type": "string"}},
              "max_depth": {"type": "integer"}},

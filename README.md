@@ -4,7 +4,15 @@
 
 ORVYREN est un système d'agents qui transforme des signaux financiers publics en **décisions bornées et vérifiables** : il croise les sources, formule des hypothèses concurrentes, cherche le fait qui les départage, décide — ou s'abstient honnêtement (« il manque ceci ») —, n'exécute que dans une enveloppe autorisée (politique déterministe hors LLM + permissions on-chain), et laisse une trace qu'un tiers peut recalculer.
 
-**Statut (17/10/2026)** : v1 **gelée** (`FREEZE_V2.md`) · suite de tests : **811 tests — 808 verts, 3 sautés** · **W1 graphe clos** (8 requêtes noyau Q1–Q8, snapshots PIT hashés, corpus CALME/USD0++) · **W2 agents MA-B fusionné** (boucle bornée, 2 processus, rejeu déterministe) · **W3 décision/RDOF livré** (recherche discriminante déterministe, 3 axes séparés, abstention A1–A5, catalogue paramétré `config/actions_v1.yaml`, décision en une commande `python -m orvyren.decide`, L3.1 registre d'hypothèses W2) · **politique v1 : 14 règles** (dérive offline+live PASS — ADR-0002 actée le 17/10) · **démo testnet exécutée on-chain : 5 runs A→E sur Base Sepolia** — hashes vérifiables, paquet d'audit reproductible (kit + runbook : `DEMO_KIT.md`) · **W5 exécution/démo formalisé** (lots L5.1–L5.6 : `docs/W5_lots_L5.1-L5.6.md` ; scripts montage + hygiène ajoutés) · **W6 vérificateur tiers T10 livré** (`python run_verify.py` — contrôles A/B/C recomputés, `--mutate-test` 6/6 ; paquet v2 à vérificateur gelé versionné dans `evidence/audit_packets/`) · **W7 rejeu & évaluation livrés** (`run_replay.py` : REPLAY-JOURNAL bit-à-bit — k=10 → hash identique — et REPLAY-ARCHIVE (clé requise, refus explicite sinon) ; harnais DEV A0/A1/AX0/A2/B0 + portes de gel/verrou/embargo ; `run_evaluation.py`, `run_calibration.py` ; artefacts `evidence/evaluation/` & `evidence/calibration_report.*`). · **W8 livré** (UI locale hors-ligne : `/ui` — 12 écrans bandeau mode + horloge ; registre ADR + contrôle CI ; build `dist/docs/` ; règle 0 testée) · **ADR-0002 actée le 17/10** · **ADR-0003** (recherche sémantique/ML-1 → V2) · **F3 : empreintes du paquet publiées** (`evidence/audit_packets/README.md`) · **Agents LIVE exécutés** (17/10 — boucle MA-B réelle : DeepSeek V4.1-Flash + MiMo V2.6-Pro, processus séparés ; `DONE/ARRET-2`, critique FRAGILE → `REQUIRE_APPROVAL`, 0,0192 $ — session scellée `evidence/agents_live/`) · **REPLAY-ARCHIVE k=3 exécuté** (distribution publiée telle quelle : 2× `ARRET-2`, 1× `ARRET-3` fail-closed — `evidence/replay/`) · **prompt `orch-p1.1.0`** (évaluation désambiguïsée pour les modèles live ; re-scellement visible : magasin scripté re-seedé + dossier de rejeu régénéré).
+**Statut (17/10/2026)** : v1 **gelée** (`FREEZE_V2.md`) · suite de tests : **935 tests — 932 verts, 3 sautés** · **W1 graphe clos** (8 requêtes noyau Q1–Q8, snapshots PIT hashés, corpus CALME/USD0++) · **W2 agents MA-B fusionné** (boucle bornée, 2 processus, rejeu déterministe) · **W3 décision/RDOF livré** (recherche discriminante déterministe, 3 axes séparés, abstention A1–A5, catalogue paramétré `config/actions_v1.yaml`, décision en une commande `python -m orvyren.decide`, L3.1 registre d'hypothèses W2) · **politique v1 : 14 règles** (dérive offline+live PASS — ADR-0002 actée le 17/10) · **démo testnet exécutée on-chain : 5 runs A→E sur Base Sepolia** — hashes vérifiables, paquet d'audit reproductible (kit + runbook : `DEMO_KIT.md`) · **W5 exécution/démo formalisé** (lots L5.1–L5.6 : `docs/W5_lots_L5.1-L5.6.md` ; scripts montage + hygiène ajoutés) · **W6 vérificateur tiers T10 livré** (`python run_verify.py` — contrôles A/B/C recomputés, `--mutate-test` 6/6 ; paquet v2 à vérificateur gelé versionné dans `evidence/audit_packets/`) · **W7 rejeu & évaluation livrés** (`run_replay.py` : REPLAY-JOURNAL bit-à-bit — k=10 → hash identique — et REPLAY-ARCHIVE (clé requise, refus explicite sinon) ; harnais DEV A0/A1/AX0/A2/B0 + portes de gel/verrou/embargo ; `run_evaluation.py`, `run_calibration.py` ; artefacts `evidence/evaluation/` & `evidence/calibration_report.*`). · **W8 livré** (UI locale hors-ligne : `/ui` — 12 écrans bandeau mode + horloge ; registre ADR + contrôle CI ; build `dist/docs/` ; règle 0 testée) · **ADR-0002 actée le 17/10** · **ADR-0003** (recherche sémantique/ML-1 → V2) · **F3 : empreintes du paquet publiées** (`evidence/audit_packets/README.md`) · **Agents LIVE exécutés** (17/10 — boucle MA-B réelle : DeepSeek V4.1-Flash + MiMo V2.6-Pro, processus séparés ; `DONE/ARRET-2`, critique FRAGILE → `REQUIRE_APPROVAL`, 0,0192 $ — session scellée `evidence/agents_live/`) · **REPLAY-ARCHIVE k=3 exécuté** (distribution publiée telle quelle : 2× `ARRET-2`, 1× `ARRET-3` fail-closed — `evidence/replay/`) · **prompt `orch-p1.1.0`** (évaluation désambiguïsée pour les modèles live ; re-scellement visible : magasin scripté re-seedé + dossier de rejeu régénéré).
+
+## Résultats du slice 10 h
+
+- **Graphe v3** : Aave v3 Base, **15 000 événements**, **12 937 relations**, **16 174 nœuds**, **8 types de relations** ; base SQLite de 50 Mo hors dépôt, snapshot versionné `evidence/ui_snapshot.json`.
+- **API SQL read-only** : Q1/Q2/Q4/Q5/Q6/Q7/Q8 + snapshot ; Q1 **81,6 ms p50** sur 12,9k relations.
+- **Agents** : tool calling natif + fallback JSON strict ; outils `graph_query`, `graph_path`, `graph_snapshot` ; mémoire working/episodic/semantic.
+- **UI** : trois panneaux Situation / Graphe / Décision, modes `LIVE` / `REPLAY`, source explicite.
+- **Limites** : EVAL **N=0**, Q8 **NOT_INGESTED**, Q2 sans arête dans ce slice, aucun `LIQUIDATED_IN`, pas de 10⁵ événements, pas de SQL/PGQ ni de base graphe externe.
 
 ## Documentation (tout à la racine)
 
@@ -20,16 +28,21 @@ ORVYREN est un système d'agents qui transforme des signaux financiers publics e
 | `SECURITY_SELF_ASSESSMENT.md` | auto-évaluation sécurité (niveaux de permission, risques connus) |
 | `LICENSES.md` | composants tiers et licences |
 | `AUDIT_PROMPT.md` | prompt d'audit externe (outil interne — pas une pièce de soumission) |
+| `docs/GRAPH_A_V3_RESULTS_2026-10-17.md` | mesures du slice graphe |
+| `docs/RAPPORT_10H_2026-10-17.md` | rapport d'exécution de la session 10 h |
 
 ## Démarrage rapide
 
 ```bash
-python -m pytest tests/ -q                                   # 808 verts, 3 sautés attendus
+python -m pytest tests/ -q                                   # 935 tests : 932 verts, 3 sautés
 PYTHONPATH=src python -m orvyren.decide --case usdc-2023-03 --replay   # décision complète en une commande (3 axes, hors-ligne)
 python run_pipeline.py                                       # pipeline complet (corpus archivé)
 python scripts/reconstruct_rseth_episode.py --from-cache     # reconstruction hors-ligne (idem steth / usdc)
 python scripts/demo/demo.py --run A --dry-run --session demo_runs/session_dry   # kit démo testnet (dry-run)
-python run_audit.py --serve                                  # UI locale hors-ligne — /ui : 12 écrans (mode + horloge), /screen/1..12
+python run_audit.py --serve                                  # UI locale : /ui (12 écrans), /panels (3 panneaux), /api/panels
+PYTHONPATH=src python -m orvyren.graph.api --db D:/orvyren_10h_2026-10-17/graph_v3.sqlite \
+  q1 --holder 0xbe00a0de23a02a85d7fb7451ab9b69d84fd61fe3 \
+  --as-of 2026-10-17T11:12:57+00:00 --block 52723115
 python run_replay.py journal --case usdc-2023-03             # REPLAY-JOURNAL bit-à-bit (k=10 → hash identique)
 python scripts/adr_index.py --check                          # registre ADR : numérotation sans trou + README à jour
 ```
@@ -53,9 +66,9 @@ Ce qui reste **local par design** : les clés (`scripts/demo/.env`, `owners.env`
 
 ```
 orvyren_core/
-├── src/orvyren/      # le système : data · quality · graph · policy · decision · execution · audit · ui
-├── scripts/          # reconstructions d'épisodes (--from-cache) + demo/ (kit testnet)
-├── tests/            # 811 tests, hors-ligne
+├── src/orvyren/      # le système : data · quality · graph · policy · decision · execution · agents · audit · ui
+├── scripts/          # reconstructions d'épisodes (--from-cache), ingestion Aave + demo/ (kit testnet)
+├── tests/            # 935 tests, hors-ligne
 ├── fixtures/         # mesures archivées (15/10) utilisées par les tests et les modes hors-ligne
 ├── evidence/         # preuves : épisodes reconstruits (rsETH 2026, stETH 2022, USDC 2023) + dossiers
 ├── corpus/           # observations USDC/SVB mars 2023 (rejeu hors-ligne)

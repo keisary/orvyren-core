@@ -41,6 +41,26 @@ def rec(relation_id: str, kind: str, src: str, src_kind: str, dst: str,
     )
 
 
+def dep(relation_id: str, src: str, src_kind: str, dst: str,
+        dst_kind: str, sign: str = "+") -> RelationRecord:
+    """A conform DEPENDS_ON record (mechanism family needs conditions/horizon)."""
+    return RelationRecord(
+        relation_id=relation_id, family="ECONOMIC_MECHANISM", kind="DEPENDS_ON",
+        src=src, dst=dst, src_kind=src_kind, dst_kind=dst_kind,
+        mechanism="LIQUIDITY", sign_prior=sign,
+        conditions="market open", regime_scope="test", horizon_scope="1d",
+        epistemic_status="FACT", lifecycle="ACTIVE", validation_status="VALIDATED",
+        valid_from="2026-01-01T00:00:00+00:00", valid_to=None,
+        valid_from_block=100, valid_to_block=None,
+        revision=1, inserted_at="2026-01-01T00:00:01+00:00",
+        provenance_refs=("event:eip155:8453:0xdead:2",),
+        source_family_id="SF-TEST", extract_method="ONCHAIN_READ",
+        chain_ref=ChainRef(chain_id=8453, block=100, tx_hash="0xdead"),
+        confidence=1.0,
+        payload={"as_of": AS_OF},
+    )
+
+
 class GraphApiTest(unittest.TestCase):
     def setUp(self):
         self.tmp = tempfile.TemporaryDirectory()
@@ -81,6 +101,28 @@ class GraphApiTest(unittest.TestCase):
         result = api.concentration(self.db, DEBT, as_of=AS_OF, as_of_block=BLOCK)
         self.assertEqual(result["counterparties"], 1)
         self.assertAlmostEqual(result["hhi"], 1.0)
+
+    def test_q2_dependency_path(self):
+        with GraphStore(self.db) as store:
+            store.insert_relation_record(dep("rel-dep-1", USER, "ADRESSE", ASSET, "STABLECOIN"))
+            store.insert_relation_record(dep("rel-dep-2", ASSET, "STABLECOIN", MARKET, "MARCHE"))
+        result = api.dependency_paths(
+            self.db, USER, MARKET, as_of=AS_OF, as_of_block=BLOCK, max_depth=3)
+        self.assertEqual(result["status"], "OK")
+        self.assertEqual(result["count"], 1)
+        self.assertEqual(result["rows"][0]["depth"], 2)
+        self.assertEqual(result["rows"][0]["sign"], "+")
+
+    def test_q2_sign_is_multiplied(self):
+        with GraphStore(self.db) as store:
+            store.insert_relation_record(
+                dep("rel-dep-neg", USER, "ADRESSE", ASSET, "STABLECOIN", sign="-"))
+            store.insert_relation_record(
+                dep("rel-dep-pos", ASSET, "STABLECOIN", MARKET, "MARCHE", sign="+"))
+        result = api.dependency_paths(
+            self.db, USER, MARKET, as_of=AS_OF, as_of_block=BLOCK, max_depth=3)
+        self.assertEqual(result["count"], 1)
+        self.assertEqual(result["rows"][0]["sign"], "-")
 
     def test_q8_permissions_not_ingested(self):
         result = api.permissions(self.db, USER, as_of=AS_OF, as_of_block=BLOCK)
