@@ -10,8 +10,8 @@ function that answers the only question the engine asks.
 These are DOCUMENTATION-LEVEL DEMONSTRATION PARAMETERS, not a real portfolio:
 no wallet, no bank balance, no market impact and no counterparty are modelled.
 The 100 USDC action size comes from the frozen decision D8 of FREEZE_V1.md
-("Transfert de 100 USDC de test ... du wallet « tresorerie » vers le wallet
-« reserve »").
+("transfer of 100 test USDC ... from the "treasury" wallet to the "reserve"
+wallet").
 """
 
 from dataclasses import dataclass

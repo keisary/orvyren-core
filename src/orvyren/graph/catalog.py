@@ -23,8 +23,8 @@ accepts a kind when the token is the kind itself, its class, a wildcard
 (``ENTITE``, ``SUJET``, ``CIBLE``) or a declared role set (``AUTORITE``,
 ``DROIT``). Rendering choices for the few catalogue cells that name things
 absent from the B2 node table are marked ``# mapping note`` below:
-``"Token"`` → ``ACTIF``, ``"Protocole"`` → its own kind ``PROTOCOLE``,
-``"Configuration vérificateurs"`` → ``CONFIG_VERIF``,
+``"Token"`` → ``ACTIF``, ``"Protocol"`` → its own kind ``PROTOCOLE``,
+``"Verifier configuration"`` → ``CONFIG_VERIF``,
 ``"Institution"`` → ``INSTITUTION``.
 
 Standard library only.
@@ -62,10 +62,10 @@ __all__ = [
 # --------------------------------------------------------------------------
 # Families (B2 §3.1) — four golden-rule families.
 # --------------------------------------------------------------------------
-FAMILY_PROOF = "PROOF_DERIVATION"          # 1. Preuve et dérivation (8)
-FAMILY_STRUCTURE = "STRUCTURE_EXPOSURE"    # 2. Structure et exposition (15)
-FAMILY_MECHANISM = "ECONOMIC_MECHANISM"    # 3. Mécanisme économique (3)
-FAMILY_CONSTRAINT = "CONSTRAINT_PERMISSION"  # 4. Contrainte et permission (8)
+FAMILY_PROOF = "PROOF_DERIVATION"          # 1. Proof and derivation (8)
+FAMILY_STRUCTURE = "STRUCTURE_EXPOSURE"    # 2. Structure and exposure (15)
+FAMILY_MECHANISM = "ECONOMIC_MECHANISM"    # 3. Economic mechanism (3)
+FAMILY_CONSTRAINT = "CONSTRAINT_PERMISSION"  # 4. Constraint and permission (8)
 
 FAMILIES: Tuple[str, ...] = (
     FAMILY_PROOF,
@@ -81,72 +81,72 @@ class NodeKind:
     """String constants for node kinds (plain strings: records serialise)."""
 
     # Classes (B2 §3.0).
-    ORGANISATION = "ORGANISATION"   # émetteur, DAO, société, dépositaire, régulateur
-    ACTIF = "ACTIF"                 # stablecoin, LST, token de prêt, LP, part
-    CONTRAT = "CONTRAT"             # marché, pool, pont/OApp, oracle, module, Safe
-    ADRESSE = "ADRESSE"             # trésorerie, EOA, multisig
+    ORGANISATION = "ORGANISATION"   # issuer, DAO, company, custodian, regulator
+    ACTIF = "ACTIF"                 # stablecoin, LST, lending token, LP, share
+    CONTRAT = "CONTRAT"             # market, pool, bridge/OApp, oracle, module, Safe
+    ADRESSE = "ADRESSE"             # treasury, EOA, multisig
     CHAINE = "CHAINE"
-    UNITE = "UNITE"                 # USD, ETH, indice
+    UNITE = "UNITE"                 # USD, ETH, index
     PREUVE = "PREUVE"               # Source, Observation, Claim, Document, ExtractionRun
-    DECISION = "DECISION"           # Hypothèse, Branche, Décision, Intent, Exécution, Outcome
-    GOUVERNANCE = "GOUVERNANCE"     # Rôle, Permission, Timelock
+    DECISION = "DECISION"           # Hypothesis, Branch, Decision, Intent, Execution, Outcome
+    GOUVERNANCE = "GOUVERNANCE"     # Role, Permission, Timelock
     # Organisation members.
     EMETTEUR = "EMETTEUR"
     DAO = "DAO"
     SOCIETE = "SOCIETE"
     DEPOSITAIRE = "DEPOSITAIRE"
     REGULATEUR = "REGULATEUR"
-    # Actif members.
+    # Asset members.
     STABLECOIN = "STABLECOIN"
     LST = "LST"
     TOKEN_PRET = "TOKEN_PRET"
     LP = "LP"
     PART = "PART"
-    # Contrat members.
-    MARCHE = "MARCHE"               # ex. réserve Aave
+    # Contract members.
+    MARCHE = "MARCHE"               # e.g. Aave reserve
     POOL = "POOL"
     PONT_OAPP = "PONT_OAPP"
     ORACLE_FEED = "ORACLE_FEED"
     MODULE = "MODULE"
     SAFE = "SAFE"
-    FACILITE = "FACILITE"           # mapping note: "Facilité" (2.6)
-    PROTOCOLE = "PROTOCOLE"         # mapping note: "Protocole" (2.12, 4.7)
-    # Adresse members.
+    FACILITE = "FACILITE"           # mapping note: "Facility" (2.6)
+    PROTOCOLE = "PROTOCOLE"         # mapping note: "Protocol" (2.12, 4.7)
+    # Address members.
     TRESORERIE = "TRESORERIE"
     EOA = "EOA"
     MULTISIG = "MULTISIG"
-    # Preuve members.
+    # Proof members.
     SOURCE = "SOURCE"
     OBSERVATION = "OBSERVATION"
     CLAIM = "CLAIM"
     DOCUMENT = "DOCUMENT"
     EXTRACTION_RUN = "EXTRACTION_RUN"
-    # Décision members.
+    # Decision members.
     HYPOTHESE = "HYPOTHESE"
     BRANCHE = "BRANCHE"
     DECISION_NODE = "DECISION_NODE"
     INTENT = "INTENT"
     EXECUTION = "EXECUTION"
     OUTCOME = "OUTCOME"
-    # Gouvernance members.
+    # Governance members.
     ROLE = "ROLE"
     PERMISSION = "PERMISSION"
     TIMELOCK = "TIMELOCK"
     # Structural kinds named by catalogue cells.
-    RELATION = "RELATION"           # sujet de EXTRACTED_FROM / DERIVED_FROM
-    CLASSE = "CLASSE"               # objet de IS_A
-    DETTE = "DETTE"                 # objet de OWES / COLLATERALIZES
-    POSITION = "POSITION"           # sujet de OWES
-    PARAMETRE = "PARAMETRE"         # sujet de CONSTRAINS
-    REGLE = "REGLE"                 # sujet de CONSTRAINS
+    RELATION = "RELATION"           # subject of EXTRACTED_FROM / DERIVED_FROM
+    CLASSE = "CLASSE"               # object of IS_A
+    DETTE = "DETTE"                 # object of OWES / COLLATERALIZES
+    POSITION = "POSITION"           # subject of OWES
+    PARAMETRE = "PARAMETRE"         # subject of CONSTRAINS
+    REGLE = "REGLE"                 # subject of CONSTRAINS
     INSTITUTION = "INSTITUTION"     # mapping note: "Institution" (4.1)
-    ACTION = "ACTION"               # objet de CONSTRAINS
-    VARIABLE = "VARIABLE"           # cause/effet de AFFECTS
-    INSTRUMENT = "INSTRUMENT"       # cause/effet de AFFECTS
-    DROIT = "DROIT"                 # objet de REVOKES
-    FONCTION = "FONCTION"           # objet de ALLOWS
-    CONFIG_VERIF = "CONFIG_VERIF"   # mapping note: "Configuration vérificateurs" (2.14)
-    REGIME_LICENCE = "REGIME_LICENCE"  # objet de REGULATED_BY
+    ACTION = "ACTION"               # object of CONSTRAINS
+    VARIABLE = "VARIABLE"           # cause/effect of AFFECTS
+    INSTRUMENT = "INSTRUMENT"       # cause/effect of AFFECTS
+    DROIT = "DROIT"                 # object of REVOKES
+    FONCTION = "FONCTION"           # object of ALLOWS
+    CONFIG_VERIF = "CONFIG_VERIF"   # mapping note: "Verifier configuration" (2.14)
+    REGIME_LICENCE = "REGIME_LICENCE"  # object of REGULATED_BY
 
 
 #: Every declared node kind.
@@ -193,13 +193,13 @@ KIND_CLASS: Dict[str, str] = {
 for _kind in NODE_KINDS:
     KIND_CLASS.setdefault(_kind, _kind)
 
-#: Wildcard tokens: any node kind is accepted ("toute entité" of B2 §3.0 for
-#: SUPERSEDES/SAME_AS, and the generic placeholders "Sujet", "Cible").
+#: Wildcard tokens: any node kind is accepted ("any entity" of B2 §3.0 for
+#: SUPERSEDES/SAME_AS, and the generic placeholders "Subject", "Target").
 WILDCARDS: FrozenSet[str] = frozenset({"TOUT", "SUJET", "CIBLE"})
 
 #: Role tokens: a kind matches when it plays that role. ``ENTITE`` is an
-#: *economic* entity of the world layer (B2 §3.0: organisation, actif, contrat,
-#: adresse, chaîne) — a claim or a hypothesis is NOT an entity here; the
+#: *economic* entity of the world layer (B2 §3.0: organisation, asset, contract,
+#: address, chain) — a claim or a hypothesis is NOT an entity here; the
 #: revision/alias rules that apply to any object use the ``TOUT`` wildcard.
 #: Authority = an organisation or a control/governance address.
 _ECONOMIC_CLASSES = frozenset({
@@ -254,9 +254,9 @@ class RelationSpec:
     objects: FrozenSet[str]   # allowed object tokens
     direction: str           # DIRECTED | SYMMETRIC
     transitivity: str        # N | T | Q
-    semantics: str           # one-line semantics (French, from B2 §3.2)
+    semantics: str           # one-line semantics (English rendering of B2 §3.2)
     origin: str              # "M" MIMIR/RC, "D" DeFi/on-chain, "N" new (B2 §3.3)
-    origin_detail: str       # verbatim origin cell of B2 §3.2
+    origin_detail: str       # origin cell of B2 §3.2 (English rendering)
 
 
 def _spec(ref: str, kind: str, family: str, subjects: Tuple[str, ...],
@@ -270,141 +270,141 @@ def _spec(ref: str, kind: str, family: str, subjects: Tuple[str, ...],
 
 
 _SPECS: Tuple[RelationSpec, ...] = (
-    # ---- Famille 1 — Preuve et dérivation (8) -----------------------------
+    # ---- Family 1 — Proof and derivation (8) ------------------------------
     _spec("1.1", "OBSERVED_FROM", FAMILY_PROOF, ("OBSERVATION",), ("SOURCE",),
           DIRECTED, TRANSITIVITY_N,
-          "La mesure provient de cette source (endpoint, horodatage de récupération, limites).",
-          "M", "M (chaîne MIMIR §10.5)"),
+          "The measurement comes from this source (endpoint, retrieval timestamp, limits).",
+          "M", "M (MIMIR chain §10.5)"),
     _spec("1.2", "EXTRACTED_FROM", FAMILY_PROOF, ("CLAIM", "RELATION"),
           ("DOCUMENT", "OBSERVATION"), DIRECTED, TRANSITIVITY_N,
-          "L'élément a été extrait de ce document/passage (offsets + run d'extraction versionné).",
+          "The element was extracted from this document/passage (offsets + versioned extraction run).",
           "M", "M (§10.5, Extraction)"),
     _spec("1.3", "DERIVED_FROM", FAMILY_PROOF, ("CLAIM", "RELATION"),
           ("OBSERVATION", "CLAIM"), DIRECTED, TRANSITIVITY_N,
-          "Fait calculé à partir de parents, via une recette versionnée.",
+          "Fact computed from parents through a versioned recipe.",
           "M", "M (RC DERIVED_FROM)"),
     _spec("1.4", "SUPPORTS", FAMILY_PROOF, ("CLAIM",), ("HYPOTHESE",),
           DIRECTED, TRANSITIVITY_N,
-          "Ce constat soutient cette hypothèse — sans aucune transmission économique.",
+          "This finding supports this hypothesis — with no economic transmission whatsoever.",
           "M", "M (RC ; code `supports`)"),
     _spec("1.5", "REFUTES", FAMILY_PROOF, ("CLAIM",), ("HYPOTHESE",),
           DIRECTED, TRANSITIVITY_N,
-          "Ce constat réfute cette hypothèse selon un critère pré-déclaré.",
-          "N", "M (falsification) / N (kind explicite)"),
+          "This finding refutes this hypothesis under a pre-declared criterion.",
+          "N", "M (falsification) / N (explicit kind)"),
     _spec("1.6", "CONTRADICTS", FAMILY_PROOF, ("CLAIM",), ("CLAIM",),
           SYMMETRIC, TRANSITIVITY_N,
-          "Deux constats incompatibles coexistent (jamais fusionnés) — signal de recherche.",
-          "N", "M (§REQ-KNOW-003) / N (kind explicite)"),
+          "Two incompatible findings coexist (never merged) — a research signal.",
+          "N", "M (§REQ-KNOW-003) / N (explicit kind)"),
     _spec("1.7", "SUPERSEDES", FAMILY_PROOF, ("TOUT",), ("TOUT",),
           DIRECTED, TRANSITIVITY_T,
-          "La révision remplace l'ancienne sans l'effacer (reconstruibilité).",
-          "M", "M (§13.4) / code (révisions)"),
+          "The revision replaces the previous one without erasing it (reconstructibility).",
+          "M", "M (§13.4) / code (revisions)"),
     _spec("1.8", "SAME_AS", FAMILY_PROOF, ("TOUT",), ("TOUT",),
           SYMMETRIC, TRANSITIVITY_N,
-          "Alias résolu : deux références = une identité canonique (décision datée, révisable).",
-          "N", "M (§10.4) / N (kind explicite)"),
-    # ---- Famille 2 — Structure et exposition (15) ------------------------
+          "Resolved alias: two references = one canonical identity (dated, revisable decision).",
+          "N", "M (§10.4) / N (explicit kind)"),
+    # ---- Family 2 — Structure and exposure (15) --------------------------
     _spec("2.1", "IS_A", FAMILY_STRUCTURE, ("ENTITE", "ACTIF"), ("CLASSE",),
           DIRECTED, TRANSITIVITY_T,
-          "Taxonomie (USDC IS_A stablecoin ; rsETH IS_A LST) — sert les requêtes par classe.",
+          "Taxonomy (USDC IS_A stablecoin; rsETH IS_A LST) — serves class-based queries.",
           "N", "N"),
     _spec("2.2", "PART_OF", FAMILY_STRUCTURE, ("ENTITE", "CONTRAT"), ("ENTITE",),
           DIRECTED, TRANSITIVITY_T,
-          "Appartenance structurelle (aEthUSDC PART_OF Aave V3 ; réserve PART_OF pool).",
+          "Structural membership (aEthUSDC PART_OF Aave V3; reserve PART_OF pool).",
           "N", "N"),
     _spec("2.3", "DEPLOYED_ON", FAMILY_STRUCTURE, ("CONTRAT", "ACTIF"), ("CHAINE",),
           DIRECTED, TRANSITIVITY_N,
-          "Présence d'un contrat/émission sur cette chaîne (multi-chaînes explicite).",
+          "Presence of a contract/issuance on this chain (multi-chain made explicit).",
           "D", "D"),
     _spec("2.4", "ISSUED_BY", FAMILY_STRUCTURE, ("ACTIF",), ("ORGANISATION",),
           DIRECTED, TRANSITIVITY_N,
-          "L'actif est émis par cette entité.", "M", "M (RC)"),
+          "The asset is issued by this entity.", "M", "M (RC)"),
     _spec("2.5", "TARGETS_PEG", FAMILY_STRUCTURE, ("ACTIF",), ("UNITE", "ACTIF"),
           DIRECTED, TRANSITIVITY_N,
-          "Parité visée (1 USD, 1 ETH) — une cible, pas une garantie.", "D", "D"),
+          "Target parity (1 USD, 1 ETH) — a target, not a guarantee.", "D", "D"),
     _spec("2.6", "REDEEMABLE_VIA", FAMILY_STRUCTURE, ("ACTIF",),
           ("FACILITE", "CONTRAT"), DIRECTED, TRANSITIVITY_N,
-          "Redemption/time-lock auprès de cette facilité (délais, conditions en payload).",
+          "Redemption/time-lock through this facility (delays and conditions in the payload).",
           "M", "M (RC)"),
     _spec("2.7", "CUSTODIED_AT", FAMILY_STRUCTURE, ("ACTIF",),
           ("DEPOSITAIRE", "CONTRAT"), DIRECTED, TRANSITIVITY_N,
-          "L'actif repose chez ce dépositaire (wrapping, PSM, escrow).", "M", "M (RC)"),
+          "The asset rests with this custodian (wrapping, PSM, escrow).", "M", "M (RC)"),
     _spec("2.8", "HOLDS", FAMILY_STRUCTURE, ("ADRESSE", "ENTITE"), ("ACTIF",),
           DIRECTED, TRANSITIVITY_N,
-          "Détient N unités à (chaîne, bloc) ; rôle : trésorerie / liquidité / collatéral / custody.",
+          "Holds N units at (chain, block); role: treasury / liquidity / collateral / custody.",
           "M", "M (RC)"),
     _spec("2.9", "OWES", FAMILY_STRUCTURE, ("POSITION", "ENTITE"), ("DETTE",),
           DIRECTED, TRANSITIVITY_N,
-          "Doit N unités sur ce marché (exposition au passif, taux, échéance).",
+          "Owes N units on this market (liability exposure, rate, maturity).",
           "M", "M (RC)"),
     _spec("2.10", "DEPOSITED_IN", FAMILY_STRUCTURE, ("ACTIF",), ("MARCHE", "POOL"),
           DIRECTED, TRANSITIVITY_N,
-          "Dépôt dans un marché/protocole (réserve Aave, pool Curve) — chemin d'exposition.",
+          "Deposit into a market/protocol (Aave reserve, Curve pool) — an exposure path.",
           "D", "D"),
     _spec("2.11", "COLLATERALIZES", FAMILY_STRUCTURE, ("ACTIF",), ("DETTE", "MARCHE"),
           DIRECTED, TRANSITIVITY_N,
-          "Sert de collatéral à cette dette sur ce marché (paramètres LTV/LT en payload).",
+          "Serves as collateral for this debt on this market (LTV/LT parameters in the payload).",
           "D", "D"),
     _spec("2.12", "REHYPOTHECATED_TO", FAMILY_STRUCTURE, ("ACTIF",), ("PROTOCOLE",),
           DIRECTED, TRANSITIVITY_N,
-          "L'actif reçu est réengagé/ré-hypothéqué vers ce protocole (chaîne des droits).",
+          "The asset received is re-pledged/re-hypothecated to this protocol (chain of rights).",
           "D", "D"),
     _spec("2.13", "BRIDGED_VIA", FAMILY_STRUCTURE, ("ACTIF",), ("PONT_OAPP",),
           DIRECTED, TRANSITIVITY_N,
-          "L'émission sur cette chaîne dépend de ce pont (mint/burn, invariant inter-chaînes).",
+          "The issuance on this chain depends on this bridge (mint/burn, cross-chain invariant).",
           "D", "D"),
     _spec("2.14", "VERIFIED_BY", FAMILY_STRUCTURE, ("PONT_OAPP",), ("CONFIG_VERIF",),
           DIRECTED, TRANSITIVITY_N,
-          "La sécurité du pont repose sur ces vérificateurs (nombre, type de DVN).",
-          "D", "D (cas KelpDAO)"),
+          "The bridge's security rests on these verifiers (count, DVN type).",
+          "D", "D (KelpDAO case)"),
     _spec("2.15", "PRICED_BY", FAMILY_STRUCTURE, ("MARCHE", "ACTIF"), ("ORACLE_FEED",),
           DIRECTED, TRANSITIVITY_N,
-          "Valorisation adossée à ce feed (type, `description()`, heartbeat, plafond).",
+          "Valuation backed by this feed (type, `description()`, heartbeat, cap).",
           "D", "D (W2B 1.3/4.1)"),
-    # ---- Famille 3 — Mécanisme économique (3) ----------------------------
+    # ---- Family 3 — Economic mechanism (3) -------------------------------
     _spec("3.1", "AFFECTS", FAMILY_MECHANISM, ("VARIABLE", "ENTITE", "INSTRUMENT"),
           ("VARIABLE", "ENTITE", "INSTRUMENT"), DIRECTED, TRANSITIVITY_Q,
-          "Le mécanisme M transmet une variation de Cause vers Effet (signe, horizon, "
-          "conditions, statut épistémique).", "M", "M (§11.2 ; RC)"),
+          "Mechanism M transmits a change from Cause to Effect (sign, horizon, "
+          "conditions, epistemic status).", "M", "M (§11.2 ; RC)"),
     _spec("3.2", "DEPENDS_ON", FAMILY_MECHANISM, ("ENTITE",), ("ENTITE",),
           DIRECTED, TRANSITIVITY_Q,
-          "X dépend économiquement de Y (canal + sensibilité en payload).",
-          "N", "M (§6.3 conditionnel) / N (kind explicite)"),
+          "X depends economically on Y (channel + sensitivity in the payload).",
+          "N", "M (§6.3 conditional) / N (explicit kind)"),
     _spec("3.3", "CORRELATES_WITH", FAMILY_MECHANISM, ("ENTITE",), ("ENTITE",),
           SYMMETRIC, TRANSITIVITY_N,
-          "Lien statistique constaté — statut STATISTICAL obligatoire, jamais causal, jamais chaîné.",
-          "N", "M (§0.3 labels) / N (kind explicite)"),
-    # ---- Famille 4 — Contrainte et permission (8) ------------------------
+          "Observed statistical link — STATISTICAL status mandatory, never causal, never chained.",
+          "N", "M (§0.3 labels) / N (explicit kind)"),
+    # ---- Family 4 — Constraint and permission (8) ------------------------
     _spec("4.1", "CONSTRAINS", FAMILY_CONSTRAINT, ("PARAMETRE", "REGLE", "INSTITUTION"),
           ("MARCHE", "ACTIF", "ACTION"), DIRECTED, TRANSITIVITY_N,
-          "Limite le comportement (supplyCap, LTV=0, gel, timelock) — état ou paramètre daté.",
+          "Limits behaviour (supplyCap, LTV=0, freeze, timelock) — a dated state or parameter.",
           "M", "M (RC)"),
     _spec("4.2", "AUTHORIZES", FAMILY_CONSTRAINT, ("AUTORITE",), ("SUJET",),
           DIRECTED, TRANSITIVITY_N,
-          "Accorde un droit à ce sujet (périmètre, instruments, dates, preuve d'octroi).",
+          "Grants a right to this subject (scope, instruments, dates, grant proof).",
           "M", "M (RC)"),
     _spec("4.3", "REVOKES", FAMILY_CONSTRAINT, ("AUTORITE",), ("DROIT", "SUJET"),
           DIRECTED, TRANSITIVITY_N,
-          "Révoque un droit (événement daté : tx on-chain ou décision).", "M", "M (RC)"),
+          "Revokes a right (dated event: on-chain tx or decision).", "M", "M (RC)"),
     _spec("4.4", "MEMBER_OF", FAMILY_CONSTRAINT, ("ADRESSE",), ("ROLE",),
           DIRECTED, TRANSITIVITY_N,
-          "Est membre de ce rôle à (chaîne, bloc) — fait on-chain `AssignRoles`.",
+          "Is a member of this role at (chain, block) — on-chain fact `AssignRoles`.",
           "D", "D (Zodiac ; W2C)"),
     _spec("4.5", "ALLOWS", FAMILY_CONSTRAINT, ("ROLE",), ("CIBLE", "FONCTION"),
           DIRECTED, TRANSITIVITY_N,
-          "Le rôle autorise cette cible/fonction (allowlist, allowances période).",
+          "The role allows this target/function (allowlist, period allowances).",
           "D", "D (Zodiac)"),
     _spec("4.6", "ADMINISTERED_BY", FAMILY_CONSTRAINT, ("CONTRAT", "MODULE"),
           ("SAFE", "MULTISIG"), DIRECTED, TRANSITIVITY_N,
-          "L'admin/propriétaire du contrat est cette adresse (`owner()`, module enabled).",
+          "The contract's admin/owner is this address (`owner()`, module enabled).",
           "D", "D"),
     _spec("4.7", "GOVERNED_BY", FAMILY_CONSTRAINT, ("PROTOCOLE", "CONTRAT"),
           ("DAO", "TIMELOCK"), DIRECTED, TRANSITIVITY_N,
-          "Les paramètres sont gouvernés par cette instance (seuils, délais).", "D", "D"),
+          "Parameters are governed by this instance (thresholds, delays).", "D", "D"),
     _spec("4.8", "REGULATED_BY", FAMILY_CONSTRAINT, ("ENTITE", "ACTIF"),
           ("REGIME_LICENCE",), DIRECTED, TRANSITIVITY_N,
-          "Encadrement réglementaire (phase banques, hors démo — table conservée pour la vision).",
-          "D", "D (optionnel)"),
+          "Regulatory oversight (banks phase, out of the demo — table kept for the vision).",
+          "D", "D (optional)"),
 )
 
 #: kind -> spec. The machine-verifiable catalogue.

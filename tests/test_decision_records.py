@@ -1,12 +1,12 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-"""Test bench — enregistrement des hypothèses falsifiables (W3 lot L3.1).
+"""Test bench — registration of the falsifiable hypotheses (W3 lot L3.1).
 
-Contrat (DOC4 W3 [DONE]) : toute hypothèse enregistrée porte des critères
-**S/R obligatoires** (pas de ``p∅`` silencieux) ; un nombre produit par un
-agent ne déclenche jamais un critère — chaque critère référence un **prédicat
-instrumenté**, et toute preuve citée par les verdicts pointe une ligne du
-corpus gelé.
+Contract (DOC4 W3 [DONE]): every registered hypothesis carries **mandatory
+S/R criteria** (no silent ``p∅``); a number produced by an agent never
+triggers a criterion — every criterion references an **instrumented
+predicate**, and every piece of evidence cited by the verdicts points at a row
+of the frozen corpus.
 
 Execution: ``python -m pytest tests/test_decision_records.py -q``.
 """
@@ -76,11 +76,11 @@ class TestHypothesisRegistration(unittest.TestCase):
         self.assertIn("E_SPEC_NO_REFUTATION_CRITERION", str(caught.exception))
 
     def test_no_agent_number_can_trigger_a_criterion(self):
-        """Aucun nombre produit par un agent ne déclenche un critère.
+        """No number produced by an agent can trigger a criterion.
 
-        Un critère doit être évaluable par un **prédicat instrumenté** : un
-        « nombre rapporté par un agent » n'est pas un prédicat du catalogue et
-        est refusé à l'enregistrement (fail-closed).
+        A criterion must be evaluable by an **instrumented predicate**: a
+        "number reported by an agent" is not a catalogue predicate and is
+        refused at registration time (fail-closed).
         """
         bad_map = dict(CRITERION_PREDICATES)
         bad_map["H2"] = {
@@ -94,7 +94,7 @@ class TestHypothesisRegistration(unittest.TestCase):
         self.assertIn("AGENT-REPORTED-SUPPLY", str(caught.exception))
 
     def test_verdict_evidence_points_at_frozen_corpus_rows_only(self):
-        """Toute preuve citée par les verdicts vient du corpus gelé — pas d'un agent."""
+        """Every piece of evidence cited by the verdicts comes from the frozen corpus."""
         observations = load_observations(CORPUS_ABS)
         corpus_keys = {(observation.venue, observation.timestamp_utc)
                        for observation in observations}

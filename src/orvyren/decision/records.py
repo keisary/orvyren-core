@@ -1,19 +1,18 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-"""ORVYREN-Core — enregistrement des hypothèses falsifiables (W3 lot L3.1).
+"""ORVYREN-Core — registration of the falsifiable hypotheses (W3 lot L3.1).
 
-Branchement de la décision sur le **registre d'hypothèses de W2**
-(``orvyren.branches.hypotheses``) : chaque hypothèse du cas est enregistrée
-avec des critères **S (soutien)** et **R (réfutation) obligatoires** — jamais de
-``p∅`` silencieux — et chaque critère pointe vers un **prédicat instrumenté**
-du catalogue (``predicates.BY_ID``). Un nombre produit par un agent ne
-déclenche donc jamais un critère : un critère qui ne référence pas un prédicat
-instrumenté est **refusé** (fail-closed, code ``E_SPEC_UNREGISTERED_PREDICATE``).
+Wires the decision onto the **W2 hypothesis registry**
+(``orvyren.branches.hypotheses``): every case hypothesis is registered with
+**mandatory S (support)** and **R (refutation)** criteria — never a silent
+``p∅`` — and every criterion points at an **instrumented predicate** of the
+catalogue (``predicates.BY_ID``). A number produced by an agent therefore never
+triggers a criterion: a criterion that references no instrumented predicate is
+**refused** (fail-closed, code ``E_SPEC_UNREGISTERED_PREDICATE``).
 
-``p`` reste une **étiquette ordinale** gelée (jamais un nombre) ; elle vaut
-``None`` tant qu'aucun gel ne l'a fixée. La date de provenance est la date de
-gel du cas (FREEZE_V2, 15/10/2026) — constante, pour que le rejeu reste
-déterministe à l'octet près.
+``p`` stays a frozen **ordinal label** (never a number); it is ``None`` until a
+freeze has fixed it. The provenance date is the case freeze date (FREEZE_V2,
+2026-10-15) — a constant, so the replay stays deterministic to the byte.
 
 Standard library only.
 """
@@ -41,29 +40,29 @@ __all__ = [
 #: Frozen hypothesis order of the case (dominance walk order, B3 §b.2).
 FROZEN_HYPOTHESIS_ORDER = ("H1", "H2", "H3")
 
-#: Date de gel du cas (FREEZE_V2, 15/10/2026) — constante pour la rejouabilité.
+#: Case freeze date (FREEZE_V2, 2026-10-15) — constant for replayability.
 REGISTRATION_DATE = "2026-10-15T00:00:00Z"
 
 E_REG_NO_SUPPORT = "E_SPEC_NO_SUPPORT_CRITERION"
 E_REG_NO_REFUTATION = "E_SPEC_NO_REFUTATION_CRITERION"
 E_REG_UNREGISTERED_PREDICATE = "E_SPEC_UNREGISTERED_PREDICATE"
 
-#: Mapping gelé critère -> prédicats instrumentés du cas USDC (B3 §b.2,
-#: DOC2 §5.4.3) : dispersion inter-places, persistance, baisse d'offre 24 h,
-#: divergence oracle/marché (deux sources de nature distincte).
+#: Frozen criterion -> instrumented predicate mapping of the USDC case (B3 §b.2,
+#: DOC2 §5.4.3): inter-venue dispersion, persistence, 24 h supply drop,
+#: oracle/market divergence (two sources of distinct nature).
 CRITERION_PREDICATES: Dict[str, Dict[str, Tuple[str, ...]]] = {
     "H1": {"soutien": ("P-1.2", "P-PERS"), "refutation": ("P-PERS", "P-1.2")},
     "H2": {"soutien": ("P-1.2", "P-6.3"), "refutation": ("P-6.3", "P-1.2")},
     "H3": {"soutien": ("P-1.3",), "refutation": ("P-1.2",)},
 }
 
-_FENETRE = "fenêtre du cas (D1) ; pas horaire 1 h, H_class=6h (C6)"
+_FENETRE = "case window (D1); 1 h step, H_class=6h (C6)"
 
 
 def _resolve_predicates(hypothesis_id: str, side: str,
                         criteria_map: Mapping[str, Mapping[str, Sequence[str]]],
                         registered_predicates: Sequence[str]) -> Tuple[str, ...]:
-    """Tous les prédicats d'un critère doivent être instrumentés (registre)."""
+    """Every predicate of a criterion must be instrumented (registry)."""
     ids = tuple(criteria_map.get(hypothesis_id, {}).get(side, ()))
     if not ids:
         raise ValueError("%s:%s" % (
@@ -104,7 +103,7 @@ def build_hypothesis_record(verdict: Mapping[str, Any], case_id: str,
                                   registered_predicates)
         sources = tuple(BY_ID[p].source for p in ids if p in BY_ID)
         criteres.append(Criterion(nom=side, predicat=", ".join(ids), seuil=spec,
-                                  sources=sources or ("prédicats instrumentés",),
+                                  sources=sources or ("instrumented predicates",),
                                   fenetre=_FENETRE))
     record = HypothesisRecord(
         id="HYP-%s-%s" % (case_id.upper(), hypothesis_id),

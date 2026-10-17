@@ -10,8 +10,8 @@ Two roles run in **separate processes** (FREEZE_V2 A1, DOC2 §5.2.1):
   :class:`CritiqueReport`.
 
 Communication is file-based and strictly serializable (JSON in the run
-directory) — never shared memory, per the frozen rule « la communication entre
-rôles passe par des objets sérialisables ». Each process stamps its own
+directory) — never shared memory, per the frozen rule "communication between
+roles travels as serializable objects". Each process stamps its own
 ``agent_id`` on every journal line; the journals are exported as append-only
 JSONL files (``journal_<role>.jsonl``) verifiable by chain recomputation.
 
@@ -252,7 +252,7 @@ def run_orchestrator(run_dir: str) -> int:
         packet_id="%s-packet" % spec["run_id"],
         snapshot_ref=str(spec["snapshot"].get("ref", "")),
         refs=tuple(refs), claims=tuple(claims),
-        summary="paquet de preuves du tour borné (%d réflexions)" % len(claims))
+        summary="evidence packet of the bounded run (%d reflections)" % len(claims))
     exchanges = os.path.join(run_dir, "exchanges")
     os.makedirs(exchanges, exist_ok=True)
     _write_json(os.path.join(exchanges, "001_evidence_packet.json"), packet.to_dict())
@@ -261,7 +261,7 @@ def run_orchestrator(run_dir: str) -> int:
     _write_json(os.path.join(run_dir, "worker_done_orchestrator.json"),
                 {"agent_id": "orchestrator", "pid": os.getpid(), "chain_head": head,
                  "lines": len(journal), "at": datetime.now(timezone.utc).isoformat()})
-    print("[orchestrator] terminé — %d lignes de journal, état %s/%s"
+    print("[orchestrator] done — %d journal lines, state %s/%s"
           % (len(journal), outcome.state, outcome.stop_condition or "-"))
     return 0
 
@@ -286,7 +286,7 @@ def run_critic(run_dir: str, wait_s: float = 120.0) -> int:
     deadline = time.monotonic() + wait_s
     while not os.path.exists(packet_path):
         if time.monotonic() > deadline:
-            print("[critic] E_CRITIC_NO_PACKET: aucun paquet après %.0fs" % wait_s)
+            print("[critic] E_CRITIC_NO_PACKET: no packet after %.0fs" % wait_s)
             return 3
         time.sleep(POLL_SECONDS)
     packet = contracts.EvidencePacket.from_dict(_read_json(packet_path))
@@ -339,7 +339,7 @@ def run_critic(run_dir: str, wait_s: float = 120.0) -> int:
             "cost_usd": result.cost_usd, "latency_ms": result.latency_ms})
         _write_json(os.path.join(run_dir, "exchanges", "002_critique_report.json"),
                     report.to_dict())
-        print("[critic] rapport écrit — verdict %s, %d objection(s)"
+        print("[critic] report written — verdict %s, %d objection(s)"
               % (report.verdict_lecture, len(report.findings)))
     else:
         journal.append_dict({
@@ -347,14 +347,14 @@ def run_critic(run_dir: str, wait_s: float = 120.0) -> int:
             "run_id": spec["run_id"], "episode_id": spec["case_id"],
             "agent_id": "critic", "role_version": role_version, "step_index": 0,
             "ts_utc": clock.now_iso(), "kind": "ERROR",
-            "content": "sortie critique non conforme — quarantaine",
+            "content": "non-conforming critique output — quarantined",
             "llm": llm_fields, "prompt_hash": result.prompt_hash,
             "response_hash": result.response_hash, "tokens_in": result.tokens_in,
             "tokens_out": result.tokens_out, "cached_in": result.cached_in,
             "cost_usd": result.cost_usd, "latency_ms": result.latency_ms})
         _write_json(os.path.join(run_dir, "exchanges", "002_critique_report.json"),
                     {"$status": "QUARANTINED", "errors": errors})
-        print("[critic] sortie non conforme — quarantaine (%s)" % "; ".join(errors[:2]))
+        print("[critic] non-conforming output — quarantined (%s)" % "; ".join(errors[:2]))
 
     head = export_journal(journal, os.path.join(run_dir, "journal_critic.jsonl"))
     _write_json(os.path.join(run_dir, "worker_done_critic.json"),
@@ -368,11 +368,11 @@ def run_critic(run_dir: str, wait_s: float = 120.0) -> int:
 # ---------------------------------------------------------------------------
 def main(argv: Optional[List[str]] = None) -> int:
     parser = argparse.ArgumentParser(prog="worker.py",
-                                     description="ORVYREN — worker MA-B (un processus, un rôle)")
+                                     description="ORVYREN — MA-B worker (one process, one role)")
     parser.add_argument("--role", required=True, choices=("orchestrator", "critic"))
     parser.add_argument("--run-dir", required=True)
     parser.add_argument("--wait-s", type=float, default=120.0,
-                        help="attente maximale du paquet (critique)")
+                        help="maximum wait for the packet (critic)")
     args = parser.parse_args(argv)
     run_dir = os.path.abspath(args.run_dir)
     try:

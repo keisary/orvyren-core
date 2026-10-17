@@ -2,7 +2,7 @@
 
 Each query is a pure function over ``Sequence[RelationRecord]`` (the
 17-field record of B2 §3.0), deterministic and offline. They are written as
-**contrats de test du store** (DOC4 lot L1.4): the fixtures under
+**the store's test contracts** (DOC4 lot L1.4): the fixtures under
 ``fixtures/graphs/`` carry the measured values of the three episodes (USDC
 2023-03, stETH 2022-06, rsETH 2026-04) and the tests assert the queries
 reproduce the published figures of W2-B/W3.
@@ -10,7 +10,7 @@ reproduce the published figures of W2-B/W3.
 Query map (B2 §6.1):
 - Q1 :func:`q1_consolidated_exposure` — treasury exposure, direct + indirect,
   bounded closure on HOLDS / DEPOSITED_IN / COLLATERALIZES. Transitive HOLDS
-  is **never** closed (B2 §6.3: détenir ≠ contrôler).
+  is **never** closed (B2 §6.3: holding ≠ controlling).
 - Q2 :func:`q2_dependency_paths` — who depends on a node, with channel, sign
   and per-hop decay; only DEPENDS_ON / AFFECTS are traversed (never bare
   closure), and SUPPORTS / REFUTES / CONTRADICTS / CORRELATES_WITH are
@@ -63,7 +63,7 @@ FORBIDDEN_PROPAGATION_KINDS = frozenset(
 _Q1_EXPANSION_KINDS = frozenset(
     {"DEPOSITED_IN", "COLLATERALIZES", "REHYPOTHECATED_TO"})
 
-#: Q6 provenance edges (B2 §3.2 familles 1).
+#: Q6 provenance edges (B2 §3.2 family 1).
 _PROVENANCE_KINDS = frozenset({"EXTRACTED_FROM", "DERIVED_FROM", "OBSERVED_FROM"})
 
 
@@ -93,7 +93,7 @@ def q1_consolidated_exposure(records: Sequence[RelationRecord], holder: str,
 
     Depth 0: ``HOLDS`` edges of the holder. Deeper hops expand only along
     ``DEPOSITED_IN`` / ``COLLATERALIZES`` / ``REHYPOTHECATED_TO`` — a second
-    ``HOLDS`` edge is **never** traversed (détenir ≠ contrôler).
+    ``HOLDS`` edge is **never** traversed (holding ≠ controlling).
     """
     visible = _visible(records, as_of)
     direct: List[Dict[str, Any]] = []
@@ -137,7 +137,7 @@ def q2_dependency_paths(records: Sequence[RelationRecord], node: str,
     """Who depends on ``node``, through which channel, with sign and decay.
 
     ``DEPENDS_ON`` edges are read incoming (X depends on Y = edge X→Y), and
-    ``AFFECTS`` edges outgoing (Cause→Effet). Weight decays per hop; depth is
+    ``AFFECTS`` edges outgoing (Cause→Effect). Weight decays per hop; depth is
     bounded and cycles are cut. Only DEPENDS_ON / AFFECTS are traversed.
     """
     visible = _visible(records, as_of)
@@ -360,14 +360,14 @@ def q8_permission_state(records: Sequence[RelationRecord], subject: str,
                           "block": record.chain_ref.block if record.chain_ref else None,
                           "payload": dict(record.payload)})
     role_names = {item["role"] for item in roles}
-    # Pass 2 — allowances granted to those roles (B2 §3.2: Rôle → Cible/Fonction).
+    # Pass 2 — allowances granted to those roles (B2 §3.2: Role → Target/Function).
     for record in visible:
         if record.kind == "ALLOWS" and record.src in role_names:
             allowances.append({"role": record.src, "target": record.dst,
                                "relation_id": record.relation_id,
                                "payload": dict(record.payload)})
     # Pass 3 — revocations touching the subject or one of its roles
-    # (REVOKES: Autorité → Droit/Sujet, B2 §3.2 4.3).
+    # (REVOKES: Authority → Right/Subject, B2 §3.2 4.3).
     for record in visible:
         if record.kind != "REVOKES":
             continue

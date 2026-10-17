@@ -107,7 +107,7 @@ class CatalogStructureTest(unittest.TestCase):
         self.assertTrue(token_matches("AUTORITE", NodeKind.DAO))
         self.assertTrue(token_matches("AUTORITE", NodeKind.MULTISIG))
         self.assertTrue(token_matches("DROIT", NodeKind.PERMISSION))
-        # Strictness: a stablecoin is not a contract, a role is not a droit,
+        # Strictness: a stablecoin is not a contract, a role is not a right,
         # a claim is not an economic entity.
         self.assertFalse(token_matches(NodeKind.CONTRAT, NodeKind.STABLECOIN))
         self.assertFalse(token_matches("DROIT", NodeKind.TIMELOCK))

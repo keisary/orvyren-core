@@ -9,10 +9,10 @@ that partition its outcomes into classes, a temporal step, a **measured cost**
 chooses among these; the effects of their outcomes are computed by
 re-classification (``rdof.py``), never hard-coded here.
 
-Costs are the measured values of B3 §b.2 ("Coûts" paragraph): ~0.4-0.7 s per
+Costs are the measured values of B3 §b.2 ("Costs" paragraph): ~0.4-0.7 s per
 sequential ``eth_call`` on ``eth.drpc.org``, ~0.36 s on blastapi; corpus-backed
 predicates cost 0 s of network (they read the frozen corpus) but may carry a
-*décision delay* — the time until their verdict is actually obtainable
+*decision delay* — the time until their verdict is actually obtainable
 (e.g. persistence can only be read once the window has run its course).
 
 Offline discipline: predicates that need chain reads are declared with
@@ -47,7 +47,7 @@ from orvyren.decision.scenarios import (  # noqa: F401  (reuse of frozen helpers
 
 PREDICATE_CATALOG_V1 = "predicates/v1"
 
-# Measured costs (B3 §b.2 "Coûts", W3-A run of 2026-10-15).
+# Measured costs (B3 §b.2 "Costs", W3-A run of 2026-10-15).
 ETH_CALL_SECONDS = 0.65          # sequential eth_call ~0.4-0.7 s on eth.drpc.org
 ETH_CALL_SECONDS_BLASTAPI = 0.36  # ~0.36 s on blastapi
 
@@ -113,9 +113,9 @@ CATALOG_V1: Tuple[Predicate, ...] = (
        offline_reason="needs archive eth_call; the frozen corpus carries no "
                       "Chainlink venue (series live in evidence/episode_*.json)"),
     _p("P-1.4", "W2-B 1.4-1.5 / B3 §b.2", "realizable discount ladder",
-       "decote realisable par paliers de taille (get_dy)",
+       "realizable discount by size step (get_dy)",
        "rpc: Curve/Aave quoters (archive)", "per size step",
-       4, ETH_CALL_SECONDS, (), ("decote par palier",),
+       4, ETH_CALL_SECONDS, (), ("discount per step",),
        ("steth-2022-06", "rseth-2026-04"), False,
        offline_reason="needs archive eth_call to the pool quoter"),
     _p("P-2.2", "W2-B 2.2 / B3 §b.2", "supply-cap saturation ratio",
@@ -132,7 +132,7 @@ CATALOG_V1: Tuple[Predicate, ...] = (
                       "24 908 723) lives in evidence/episode_rseth_2026-04.json"),
     _p("P-5.1", "W2-B 5.1-5.2 / B3 §b.2", "cross-chain mint invariant",
        "locked(ETH) >= minted(remote chains)", "rpc: multi-chain reads (archive)",
-       "per block", 6, ETH_CALL_SECONDS, (), ("respecte", "viole"),
+       "per block", 6, ETH_CALL_SECONDS, (), ("holds", "violated"),
        ("rseth-2026-04",), False,
        offline_reason="needs multi-chain archive reads"),
     _p("P-6.3", "W2-B 6.3 / B3 §b.2", "24 h circulating supply drop",
@@ -238,7 +238,7 @@ def evaluate_predicate(predicate_id, observations, window_start, window_end,
 
 
 # ---------------------------------------------------------------------------
-# Counterfactual injectors ("si l'issue était celle-là" — B3 §b.2, step 2)
+# Counterfactual injectors ("if the outcome were this one" — B3 §b.2, step 2)
 # ---------------------------------------------------------------------------
 
 def inject_outcome(predicate_id, class_label, observations, window_start,
