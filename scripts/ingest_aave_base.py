@@ -181,8 +181,15 @@ def block_times(rpc: ArchiveRpc, blocks: Sequence[int],
     try:
         start_ts = rpc.block_timestamp(from_block)
         end_ts = rpc.block_timestamp(to_block)
-    except Exception:
-        start_ts = end_ts = int(time.time())
+    except Exception as exc:
+        # Never substitute wall-clock time for a block timestamp: a fabricated
+        # event time would silently corrupt PIT and provenance. Stop instead.
+        raise RuntimeError(
+            "block timestamp unavailable for chunk %s..%s: %s"
+            % (from_block, to_block, exc)) from exc
+    if int(start_ts) <= 0 or int(end_ts) <= 0:
+        raise RuntimeError(
+            "non-positive block timestamp for chunk %s..%s" % (from_block, to_block))
     span_blocks = max(1, int(to_block) - int(from_block))
     span_ts = int(end_ts) - int(start_ts)
     for block in unique:
@@ -346,7 +353,11 @@ def decode_and_write(
         last_seen_block = block
         if not tx:
             continue
-        timestamp = int(timestamps.get(block, 0)) or int(time.time())
+        timestamp = int(timestamps.get(block, 0))
+        if timestamp <= 0:
+            # A missing timestamp is a provenance failure, not a reason to
+            # stamp the event with the ingestion wall clock.
+            raise RuntimeError("missing block timestamp for block %s" % block)
         eid = event_id(tx, log_index)
         decoded = decode_log(log, timestamp)
         event_type = decoded["event_type"]
