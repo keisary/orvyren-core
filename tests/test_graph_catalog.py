@@ -3,8 +3,8 @@
 """Test bench: relation catalogue enum (ORVYREN-Core).
 
 Covers B2_GRAPHE_ETUDE.md §3.1–§3.3 (archive 2026-10-15): the machine-verifiable
-catalogue — 34 kinds in 4 families, allowed subject/object tokens, direction,
-transitivity, origins 14 M / 13 D / 7 N — and the golden rules of the four
+catalogue — 35 kinds in 4 families, allowed subject/object tokens, direction,
+transitivity, origins 14 M / 14 D / 7 N — and the golden rules of the four
 families as far as they are expressible on the enum itself.
 
 Execution: ``python -m unittest discover -s tests -v``
@@ -38,31 +38,31 @@ from orvyren.graph.catalog import (  # noqa: E402
 class CatalogStructureTest(unittest.TestCase):
     """The enum itself is machine-verifiable (B2 §3.2 counts and columns)."""
 
-    def test_catalogue_has_exactly_34_kinds(self):
-        self.assertEqual(len(RELATION_CATALOG), 34, msg=f"measured {len(RELATION_CATALOG)}")
+    def test_catalogue_has_exactly_35_kinds(self):
+        self.assertEqual(len(RELATION_CATALOG), 35, msg=f"measured {len(RELATION_CATALOG)}")
 
     def test_family_counts_match_the_catalogue(self):
         measured = catalog_stats()
         self.assertEqual(measured[FAMILY_PROOF], 8, msg=f"measured {measured}")
-        self.assertEqual(measured[FAMILY_STRUCTURE], 15, msg=f"measured {measured}")
+        self.assertEqual(measured[FAMILY_STRUCTURE], 16, msg=f"measured {measured}")
         self.assertEqual(measured[FAMILY_MECHANISM], 3, msg=f"measured {measured}")
         self.assertEqual(measured[FAMILY_CONSTRAINT], 8, msg=f"measured {measured}")
-        self.assertEqual(sum(measured.values()), 34)
+        self.assertEqual(sum(measured.values()), 35)
 
     def test_refs_cover_the_catalogue_rows(self):
         refs = [spec.ref for spec in RELATION_CATALOG.values()]
         expected = ([f"1.{i}" for i in range(1, 9)] +
-                    [f"2.{i}" for i in range(1, 16)] +
+                    [f"2.{i}" for i in range(1, 17)] +
                     [f"3.{i}" for i in range(1, 4)] +
                     [f"4.{i}" for i in range(1, 9)])
-        self.assertEqual(len(refs), 34, msg=f"measured {len(refs)}")
+        self.assertEqual(len(refs), 35, msg=f"measured {len(refs)}")
         self.assertEqual(set(refs), set(expected))
 
-    def test_origins_split_is_14_13_7(self):
+    def test_origins_split_is_14_14_7(self):
         counts = {"M": 0, "D": 0, "N": 0}
         for spec in RELATION_CATALOG.values():
             counts[spec.origin] += 1
-        self.assertEqual(counts, {"M": 14, "D": 13, "N": 7}, msg=f"measured {counts}")
+        self.assertEqual(counts, {"M": 14, "D": 14, "N": 7}, msg=f"measured {counts}")
 
     def test_every_spec_is_well_formed(self):
         for kind, spec in RELATION_CATALOG.items():
@@ -75,6 +75,12 @@ class CatalogStructureTest(unittest.TestCase):
                 self.assertTrue(spec.semantics.strip(), "empty semantics")
                 self.assertTrue(spec.origin_detail.strip(), "empty origin cell")
                 self.assertEqual(kind, kind.upper())
+
+    def test_event_layer_kinds_exist(self):
+        self.assertIn(NodeKind.EVENEMENT, NODE_KINDS)
+        self.assertIn(NodeKind.ETAT_PARAMETRE, NODE_KINDS)
+        self.assertIn("LIQUIDATED_IN", RELATION_CATALOG)
+        self.assertEqual(RELATION_CATALOG["LIQUIDATED_IN"].ref, "2.16")
 
     def test_every_token_resolves(self):
         known = NODE_KINDS | WILDCARDS | frozenset(ROLE_SETS)

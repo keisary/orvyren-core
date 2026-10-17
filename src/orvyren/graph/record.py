@@ -115,6 +115,9 @@ class RelationRecord:
     # 11 — world validity (nullable = open/unknown).
     valid_from: Optional[str] = None
     valid_to: Optional[str] = None
+    # 11b — block-native PIT bounds (first-class so the filter is indexable).
+    valid_from_block: Optional[int] = None
+    valid_to_block: Optional[int] = None
     # 12 — system time (append-only store).
     revision: int = 1
     inserted_at: str = ""
@@ -146,7 +149,7 @@ RELATION_RECORD_FIELD_GROUPS: Tuple[Tuple[str, ...], ...] = (
     ("epistemic_status",),                                   # 8
     ("lifecycle",),                                          # 9
     ("validation_status",),                                  # 10
-    ("valid_from", "valid_to"),                              # 11
+    ("valid_from", "valid_to", "valid_from_block", "valid_to_block"),  # 11
     ("revision", "inserted_at", "superseded_by"),            # 12
     ("provenance_refs", "source_family_id"),                 # 13
     ("extract_method", "model_version", "run_id"),           # 14
@@ -209,6 +212,8 @@ def record_from_dict(data: Mapping[str, Any]) -> RelationRecord:
         validation_status=data.get("validation_status", "PENDING"),
         valid_from=data.get("valid_from"),
         valid_to=data.get("valid_to"),
+        valid_from_block=data.get("valid_from_block"),
+        valid_to_block=data.get("valid_to_block"),
         revision=int(data.get("revision", 1)),
         inserted_at=data.get("inserted_at", ""),
         superseded_by=data.get("superseded_by"),
@@ -332,6 +337,17 @@ def validate_relation_record(record: RelationRecord) -> Tuple[str, ...]:
     valid_to_ts = _parse_or_none(record.valid_to)
     if valid_from_ts is not None and valid_to_ts is not None and valid_from_ts >= valid_to_ts:
         reject("E_VALIDITY_ORDER")
+
+    # -- Block-native PIT bounds (first-class): non-negative integers and an
+    #    ordered interval when both ends are present. ``None`` = open/unknown.
+    for name, value in (("valid_from_block", record.valid_from_block),
+                        ("valid_to_block", record.valid_to_block)):
+        if value is not None and (isinstance(value, bool) or
+                                  not isinstance(value, int) or value < 0):
+            reject("E_BLOCK_RANGE")
+    if (record.valid_from_block is not None and record.valid_to_block is not None
+            and record.valid_from_block >= record.valid_to_block):
+        reject("E_BLOCK_ORDER")
 
     # -- Direction/symmetry bookkeeping (B2 §3.2 "Sens"): a symmetric kind is
     #    stored once per unordered pair — src <= dst keeps the store dedupable.

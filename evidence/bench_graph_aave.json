@@ -1,0 +1,46 @@
+{
+  "schema": "orvyren-graph-bench/v1",
+  "measured_at": "2026-10-17T12:37:57.394391+00:00",
+  "db": "D:/orvyren_10h_2026-10-17/graph_v3.sqlite",
+  "as_of": "2026-10-17T11:12:57+00:00",
+  "as_of_block": 52723115,
+  "counts": {
+    "relations": 12937,
+    "nodes": 16174,
+    "events": 15000,
+    "relation_provenance": 12937
+  },
+  "kinds": [
+    "HOLDS",
+    "DEPOSITED_IN",
+    "OWES",
+    "COLLATERALIZES",
+    "PART_OF",
+    "DEPLOYED_ON",
+    "IS_A",
+    "CONSTRAINS"
+  ],
+  "latency_ms": {
+    "Q1": {
+      "p50": 81.6,
+      "p95": 87.7
+    },
+    "Q4": {
+      "p50": 25.3,
+      "p95": 26.1
+    },
+    "Q7": {
+      "p50": 10.6,
+      "p95": 11.0
+    },
+    "snapshot": {
+      "p50": 125.3,
+      "p95": 135.5
+    }
+  },
+  "notes": [
+    "synthetic-free: Aave v3 Base Pool logs, 15k events, 30k blocks",
+    "API opens SQLite read-only; per-call connection",
+    "event timestamps interpolated between exact chunk endpoints"
+  ]
+}
