@@ -869,11 +869,16 @@ class ToolTurnRunner:
             first_motif = propose.error or "E_TOOLCALL_PROPOSE_FAILED"
             errors.append(first_motif)
 
-        # Fallback: strict JSON, no tools offered (journaled).
+        # Fallback: strict JSON, no tools offered (journaled). The payload
+        # carries the fallback marker: the retry MUST hash differently from
+        # the failed propose call (same schema/prompt otherwise), or a replay
+        # could not tell the two calls apart (E_LLM_NOT_RECORDED / wrong blob).
+        retry_payload = dict(payload_tools)
+        retry_payload["reprise_fallback"] = first_motif
         retry = self.backend.complete(
             role=role, role_version=role_version,
             schema_id=contracts.TOOLCALL_SCHEMA_ID, system_prompt=system,
-            payload=payload_tools)
+            payload=retry_payload)
         llm_lines.append(retry.to_dict())
         if retry.ok and isinstance(retry.data, Mapping):
             ok, envelope_errors = contracts.validate_toolcall_output(retry.data)

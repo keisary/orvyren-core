@@ -347,6 +347,27 @@ class TestStrictJsonFallback(unittest.TestCase):
         self.assertEqual(turn2.to_dict(), turn.to_dict())
         self.assertEqual(turn2.fallback_motif, "no_native_tool_calls")
 
+    def test_bad_json_fallback_turn_also_replays(self):
+        """The failed propose and the retry MUST hash differently, or the
+        replay cannot tell them apart (they share schema, prompt and payload
+        except for the fallback marker)."""
+        http = FakeHTTP([
+            chat_content("ceci n'est pas du json"),
+            chat_content(json.dumps(
+                envelope(("graph_query", {"query": "Q1"})))),
+            chat_content(FINAL),
+        ])
+        live = LiveBackend(config=self.config, store=self.store,
+                           env=ENV, http_post=http)
+        turn = run_turn(live, build_registry())
+        self.assertEqual(turn.fallback_motif, "E_LLM_BAD_JSON")
+        self.assertEqual(len(turn.llm), 3)
+        turn2 = run_turn(RecordedBackend(self.store, config=self.config),
+                         build_registry())
+        self.assertEqual(turn2.to_dict(), turn.to_dict())
+        self.assertEqual(turn2.fallback_motif, "E_LLM_BAD_JSON")
+        self.assertEqual(len(turn2.llm), 3)
+
 
 class TestArgValidation(unittest.TestCase):
     """Closed objects: the tool NEVER runs on a non-conforming call."""
