@@ -38,6 +38,7 @@ POLICY = os.path.join(ROOT, "policy_v1.yaml")
 LOOP_SOURCE = os.path.join(ROOT, "src", "orvyren", "execution", "loop.py")
 RESERVE = "0x1111111111111111111111111111111111111111"
 OTHER = "0x" + "bb" * 20
+BASE_ENV = {"ORVYREN_AGENT_MEMBER": "true", "ORVYREN_AVAILABLE_BALANCE": "1000"}
 NOW = datetime(2026, 10, 16, 12, 0, tzinfo=timezone.utc)
 
 
@@ -85,7 +86,9 @@ class ExecutorTestCase(unittest.TestCase):
         self.journal = os.path.join(self.tmp, "journal.jsonl")
         self.ledger = os.path.join(self.tmp, "ledger.json")
 
-    def run_loop(self, **overrides):
+    def run_loop(self, base=True, **overrides):
+        env = dict(BASE_ENV) if base else {}
+        env.update(overrides.pop("env", {}) or {})
         params = dict(
             bundle=make_bundle(),
             case="usdc-2023-03",
@@ -96,7 +99,7 @@ class ExecutorTestCase(unittest.TestCase):
             dry_run=True,
             decision_provider=make_provider(),
             policy_path=POLICY,
-            env={},
+            env=env,
             clock=lambda: NOW,
             sleep=lambda seconds: None,
         )
@@ -253,6 +256,17 @@ class TestKillSwitch(ExecutorTestCase):
         self.assertIn("PAUSED", summary["records"][1]["reasons"])
 
 
+class TestFailClosedDefaults(ExecutorTestCase):
+    def test_missing_membership_and_balance_are_denied(self):
+        summary = self.run_loop(ticks=1, base=False)
+        record = summary["records"][0]
+        self.assertEqual("DENY", record["verdict"])
+        self.assertIn("AGENT_NOT_MEMBER", record["reasons"])
+        self.assertIn("BALANCE_UNREADABLE", record["reasons"])
+        self.assertEqual(0, summary["counts"]["dry_run"])
+        self.assertEqual(0, summary["counts"]["allow"])
+
+
 class TestRecipientFailClosed(ExecutorTestCase):
     def call_main(self, argv, env=None):
         code, _, _ = invoke_cli(argv + ["--journal", self.journal, "--ledger", self.ledger],
@@ -281,6 +295,19 @@ class TestRecipientFailClosed(ExecutorTestCase):
         missing = os.path.join(self.tmp, "absent.yaml")
         code, _, _ = invoke_cli(["--policy", missing])
         self.assertEqual(executor.EXIT_USAGE, code)
+
+    def test_cli_without_state_fails_closed(self):
+        code, out, err = invoke_cli(["--ticks", "1",
+                                     "--journal", self.journal, "--ledger", self.ledger])
+        self.assertEqual(executor.EXIT_OK, code)
+        self.assertIn("DENY", out)
+        self.assertIn("fail closed", err)
+
+    def test_demo_defaults_flag_is_explicit(self):
+        code, out, _ = invoke_cli(["--ticks", "1", "--demo-defaults",
+                                   "--journal", self.journal, "--ledger", self.ledger])
+        self.assertEqual(executor.EXIT_OK, code)
+        self.assertIn("demo defaults", out.lower())
 
 
 class TestPeriodCapPersistence(ExecutorTestCase):

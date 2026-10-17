@@ -55,6 +55,7 @@ from orvyren.execution.intents import (  # noqa: E402
     build_demo_intents,
 )
 from orvyren.execution.loop import (  # noqa: E402
+    DEFAULT_AVAILABLE_BALANCE,
     PeriodLedger,
     apply_permission_window,
     build_policy_state as make_policy_state,
@@ -102,8 +103,18 @@ def build_demo_policy(config, env=None):
 
 
 def build_state(bundle, clock, env=None):
-    """Real PolicyState: pause, membership, envelope, balance, budget (P14)."""
-    environment = os.environ if env is None else env
+    """Real PolicyState: pause, membership, envelope, balance, budget (P14).
+
+    This is an **explicit offline demo**: when the membership/balance variables
+    are unset it opts into the demo values (member=true, 1000 USDC) and records
+    that fact in the report. Production callers (``run_executor.py``) have no
+    such default: missing values fail closed.
+    """
+    environment = dict(os.environ if env is None else env)
+    if not str(environment.get("ORVYREN_AGENT_MEMBER") or "").strip():
+        environment["ORVYREN_AGENT_MEMBER"] = "true"
+    if not str(environment.get("ORVYREN_AVAILABLE_BALANCE") or "").strip():
+        environment["ORVYREN_AVAILABLE_BALANCE"] = str(DEFAULT_AVAILABLE_BALANCE)
     envelope = resolve_envelope(bundle, POLICY_PATH, None, environment)
     state = make_policy_state(
         paused=resolve_pause(environment),
@@ -207,6 +218,10 @@ def build_report(config, now, tx_hash=None, clock=DEMO_CLOCK, env=None):
     evaluate against the wall clock instead.
     """
     environment = os.environ if env is None else env
+    demo_defaults = {
+        "agent_member": not str(environment.get("ORVYREN_AGENT_MEMBER") or "").strip(),
+        "available_balance": not str(environment.get("ORVYREN_AVAILABLE_BALANCE") or "").strip(),
+    }
     bundle, recipient, recipients = build_demo_policy(config, environment)
     apply_permission_window(bundle, clock, default_hours=config.permission_ttl_hours)
     state, envelope = build_state(bundle, clock, environment)
@@ -284,6 +299,7 @@ def build_report(config, now, tx_hash=None, clock=DEMO_CLOCK, env=None):
             "budget_cap_usd": state.budget_cap,
             "cumulative_spent_24h": session.spent(clock),
         },
+        "demo_defaults": demo_defaults,
         "execution_config": config.safe_dict(),
         "cases": cases,
         "guard_blocks": guard_blocks,
@@ -309,6 +325,10 @@ def print_summary(report, out_path=None):
     print("state : paused={} agent_member={} envelope={} balance={} budget_cap={}".format(
         state["paused"], state["agent_member"], state["envelope_status"],
         state["available_balance"], state["budget_cap_usd"]))
+    defaults = report.get("demo_defaults") or {}
+    if any(defaults.values()):
+        print("demo defaults: ENABLED (member=true, balance=1000 USDC when env unset) "
+              "— explicit offline demo, never implicit in production")
     print("limits: max_per_tx={} max_cumulative_24h={} ttl={}h dry_run={} rpc={}".format(
         config_view["max_per_tx"], config_view["max_cumulative"],
         config_view["permission_ttl_hours"], config_view["dry_run"],

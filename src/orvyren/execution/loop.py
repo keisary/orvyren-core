@@ -451,23 +451,29 @@ def resolve_pause(env: Optional[Mapping[str, str]] = None,
 
 
 def resolve_agent_member(env: Optional[Mapping[str, str]] = None) -> Optional[bool]:
-    """AGENT role membership (P11). Demo default: member; unreadable -> None."""
+    """AGENT role membership (P11). No implicit default: missing -> ``None``.
+
+    P11 treats ``None`` as unreadable and **denies** (AGENT_NOT_MEMBER). A demo
+    that wants ``member=true`` must opt in explicitly (``--demo-defaults``);
+    a permissive default here would turn the kill switch into decoration.
+    """
     environment = _env(env)
     raw = environment.get("ORVYREN_AGENT_MEMBER")
     if raw is None or str(raw).strip() == "":
-        return True
+        return None
     return parse_bool(raw)
 
 
 def resolve_available_balance(env: Optional[Mapping[str, str]] = None) -> Optional[float]:
-    """Available balance (P7): ``ORVYREN_AVAILABLE_BALANCE``, demo default 1000 USDC.
+    """Available balance (P7): ``ORVYREN_AVAILABLE_BALANCE``. Missing -> ``None``.
 
-    An unreadable value yields ``None`` -> P7 denies (BALANCE_UNREADABLE).
+    P7 treats ``None`` as unreadable and **denies** (BALANCE_UNREADABLE). No
+    implicit 1000 USDC default: a demo must opt in explicitly.
     """
     environment = _env(env)
     raw = environment.get("ORVYREN_AVAILABLE_BALANCE")
     if raw is None or str(raw).strip() == "":
-        return DEFAULT_AVAILABLE_BALANCE
+        return None
     try:
         value = float(str(raw).strip())
     except (TypeError, ValueError):

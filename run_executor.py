@@ -69,6 +69,10 @@ def build_parser() -> argparse.ArgumentParser:
                         help="chained JSONL journal (default: demo_runs/executor/<case>/journal.jsonl)")
     parser.add_argument("--json", action="store_true",
                         help="machine output (one JSON object on stdout)")
+    parser.add_argument("--demo-defaults", action="store_true",
+                        help="explicit offline-demo defaults: AGENT member=true and "
+                             "available balance=1000 USDC when the variables are unset "
+                             "(never enabled implicitly)")
     mode = parser.add_mutually_exclusive_group()
     mode.add_argument("--dry-run", action="store_true", default=None,
                       help="no signature, no key read (default)")
@@ -110,13 +114,28 @@ def _human(summary: Mapping[str, Any]) -> None:
     print("  spent 24 h after the run : {:.2f} USDC".format(summary["ledger"]["spent_24h_after"]))
     if summary["paused"]:
         print("  PAUSE / kill switch ENGAGED — no autonomous transfer was authorised.")
+    if summary.get("demo_defaults"):
+        print("  demo defaults : ENABLED (member=true, balance=1000 USDC) — explicit, never implicit")
 
 
 def main(argv: Optional[list] = None, env: Optional[Mapping[str, str]] = None,
          clock: Optional[Callable[[], datetime]] = None) -> int:
     parser = build_parser()
     args = parser.parse_args(argv)
-    environment = os.environ if env is None else env
+    environment = dict(os.environ if env is None else env)
+    effective_env = dict(environment)
+    if args.demo_defaults:
+        if not str(effective_env.get("ORVYREN_AGENT_MEMBER") or "").strip():
+            effective_env["ORVYREN_AGENT_MEMBER"] = "true"
+        if not str(effective_env.get("ORVYREN_AVAILABLE_BALANCE") or "").strip():
+            effective_env["ORVYREN_AVAILABLE_BALANCE"] = str(executor.DEFAULT_AVAILABLE_BALANCE)
+    else:
+        missing = [name for name in ("ORVYREN_AGENT_MEMBER", "ORVYREN_AVAILABLE_BALANCE")
+                   if not str(environment.get(name) or "").strip()]
+        if missing:
+            print("NOTE: {} unset — P11/P7 fail closed (DENY). "
+                  "Pass --demo-defaults for the offline demo.".format(", ".join(missing)),
+                  file=sys.stderr)
     now_fn = clock or executor.utcnow
 
     if args.ticks < 0:
@@ -138,7 +157,7 @@ def main(argv: Optional[list] = None, env: Optional[Mapping[str, str]] = None,
         return executor.EXIT_USAGE
 
     try:
-        recipient, recipients = executor.collect_recipients(args.recipient, environment)
+        recipient, recipients = executor.collect_recipients(args.recipient, effective_env)
     except executor.RecipientError as exc:
         print("ERROR recipient: {}".format(exc), file=sys.stderr)
         return executor.EXIT_USAGE
@@ -165,7 +184,7 @@ def main(argv: Optional[list] = None, env: Optional[Mapping[str, str]] = None,
     signer = None
     if args.execute:
         try:
-            signer = executor.preflight_signer(env=environment)
+            signer = executor.preflight_signer(env=effective_env)
         except executor.ExecuteUnavailable as exc:
             print("ERROR --execute: {}".format(exc), file=sys.stderr)
             return executor.EXIT_EXECUTE
@@ -187,10 +206,10 @@ def main(argv: Optional[list] = None, env: Optional[Mapping[str, str]] = None,
             max_usd=args.max_usd,
             policy_path=policy_path,
             fixture_path=args.fixture,
-            env=environment,
+            env=effective_env,
             clock=now_fn,
             signer=signer,
-            rpc_url=str(environment.get("ORVYREN_RPC_URL_BASE_SEPOLIA") or "") or None,
+            rpc_url=str(effective_env.get("ORVYREN_RPC_URL_BASE_SEPOLIA") or "") or None,
         )
     except (executor.LedgerError, executor.JournalError, executor.PolicyLoadError) as exc:
         print("ERROR execution: {}".format(exc), file=sys.stderr)
@@ -199,6 +218,7 @@ def main(argv: Optional[list] = None, env: Optional[Mapping[str, str]] = None,
         print("ERROR network: {}".format(exc), file=sys.stderr)
         return executor.EXIT_RUNTIME
 
+    summary["demo_defaults"] = bool(args.demo_defaults)
     if args.json:
         print(json.dumps(summary, ensure_ascii=False, indent=2))
     else:
