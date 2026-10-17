@@ -74,6 +74,7 @@ def build(db: str, *, holder: Optional[str] = None,
     q4 = api.pit(db, as_of=as_of, as_of_block=as_of_block, limit=50)
     q7 = api.concentration(db, q7_asset, as_of=as_of, as_of_block=as_of_block) if q7_asset else None
     q6 = api.provenance(db, latest["relation_id"]) if latest["relation_id"] else None
+    q5 = api.timeline(db, as_of=as_of, as_of_block=as_of_block, limit=20)
     return {
         "schema": "orvyren-ui-snapshot/v1",
         "generated_at": datetime.now(timezone.utc).isoformat(),
@@ -90,6 +91,7 @@ def build(db: str, *, holder: Optional[str] = None,
         "q4": q4,
         "q6": q6,
         "q7": q7,
+        "q5": q5,
         "limits": [
             "event times are interpolated between two exact block timestamps",
             "Q8 is NOT_INGESTED unless Safe/Zodiac permissions were ingested",

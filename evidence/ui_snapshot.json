@@ -1,6 +1,6 @@
 {
   "schema": "orvyren-ui-snapshot/v1",
-  "generated_at": "2026-10-17T12:41:44.026694+00:00",
+  "generated_at": "2026-10-17T12:42:30.301686+00:00",
   "mode": "LIVE",
   "db": "D:/orvyren_10h_2026-10-17/graph_v3.sqlite",
   "as_of": "2026-10-17T11:12:57+00:00",
@@ -47,7 +47,7 @@
       }
     ],
     "count": 4,
-    "latency_ms": 82.77,
+    "latency_ms": 83.07,
     "mode": "LIVE"
   },
   "q4": {
@@ -657,7 +657,7 @@
         "source_family_id": "SF-AAVE-BASE-RPC"
       }
     ],
-    "latency_ms": 28.71,
+    "latency_ms": 23.87,
     "mode": "LIVE"
   },
   "q6": {
@@ -675,7 +675,7 @@
       }
     ],
     "count": 1,
-    "latency_ms": 1.12,
+    "latency_ms": 0.94,
     "mode": "LIVE"
   },
   "q7": {
@@ -864,7 +864,257 @@
         "amount": 1.179727769539e-06
       }
     ],
-    "latency_ms": 9.3,
+    "latency_ms": 10.18,
+    "mode": "LIVE"
+  },
+  "q5": {
+    "query": "Q5",
+    "as_of": "2026-10-17T11:12:57+00:00",
+    "as_of_block": 52723115,
+    "rows": [
+      {
+        "event_id": "event:eip155:8453:0xeaee4f4d45d55f211cd038dcfae44e8e961f2607d122d36901b240cf484fe07f:124",
+        "event_type": "WITHDRAW",
+        "chain_id": 8453,
+        "block_number": 52723115,
+        "tx_hash": "0xeaee4f4d45d55f211cd038dcfae44e8e961f2607d122d36901b240cf484fe07f",
+        "log_index": 124,
+        "event_time": "2026-10-17T11:12:57+00:00",
+        "status": "CONFIRMED",
+        "actors": "[\"0xcff32c4990f3bb94ddab6929b5f9d54c9215e044\"]",
+        "targets": "[\"0xA238Dd80C259a72e81d7e4664a9801593F98d1c5\"]"
+      },
+      {
+        "event_id": "event:eip155:8453:0xeaee4f4d45d55f211cd038dcfae44e8e961f2607d122d36901b240cf484fe07f:120",
+        "event_type": "RESERVE_DATA_UPDATED",
+        "chain_id": 8453,
+        "block_number": 52723115,
+        "tx_hash": "0xeaee4f4d45d55f211cd038dcfae44e8e961f2607d122d36901b240cf484fe07f",
+        "log_index": 120,
+        "event_time": "2026-10-17T11:12:57+00:00",
+        "status": "CONFIRMED",
+        "actors": "[]",
+        "targets": "[\"0xA238Dd80C259a72e81d7e4664a9801593F98d1c5\"]"
+      },
+      {
+        "event_id": "event:eip155:8453:0x567628e5ad58da8b300fb7631a64fb3b30206cd17cd02eefe9d5e6cc64469e7f:59",
+        "event_type": "BORROW",
+        "chain_id": 8453,
+        "block_number": 52723113,
+        "tx_hash": "0x567628e5ad58da8b300fb7631a64fb3b30206cd17cd02eefe9d5e6cc64469e7f",
+        "log_index": 59,
+        "event_time": "2026-10-17T11:12:53+00:00",
+        "status": "CONFIRMED",
+        "actors": "[\"0x4cff826ed74ecf74374f691fe454c2c847645f75\"]",
+        "targets": "[\"0xA238Dd80C259a72e81d7e4664a9801593F98d1c5\"]"
+      },
+      {
+        "event_id": "event:eip155:8453:0x567628e5ad58da8b300fb7631a64fb3b30206cd17cd02eefe9d5e6cc64469e7f:57",
+        "event_type": "RESERVE_DATA_UPDATED",
+        "chain_id": 8453,
+        "block_number": 52723113,
+        "tx_hash": "0x567628e5ad58da8b300fb7631a64fb3b30206cd17cd02eefe9d5e6cc64469e7f",
+        "log_index": 57,
+        "event_time": "2026-10-17T11:12:53+00:00",
+        "status": "CONFIRMED",
+        "actors": "[]",
+        "targets": "[\"0xA238Dd80C259a72e81d7e4664a9801593F98d1c5\"]"
+      },
+      {
+        "event_id": "event:eip155:8453:0x567628e5ad58da8b300fb7631a64fb3b30206cd17cd02eefe9d5e6cc64469e7f:53",
+        "event_type": "SUPPLY",
+        "chain_id": 8453,
+        "block_number": 52723113,
+        "tx_hash": "0x567628e5ad58da8b300fb7631a64fb3b30206cd17cd02eefe9d5e6cc64469e7f",
+        "log_index": 53,
+        "event_time": "2026-10-17T11:12:53+00:00",
+        "status": "CONFIRMED",
+        "actors": "[\"0x4cff826ed74ecf74374f691fe454c2c847645f75\"]",
+        "targets": "[\"0xA238Dd80C259a72e81d7e4664a9801593F98d1c5\"]"
+      },
+      {
+        "event_id": "event:eip155:8453:0x567628e5ad58da8b300fb7631a64fb3b30206cd17cd02eefe9d5e6cc64469e7f:48",
+        "event_type": "RESERVE_DATA_UPDATED",
+        "chain_id": 8453,
+        "block_number": 52723113,
+        "tx_hash": "0x567628e5ad58da8b300fb7631a64fb3b30206cd17cd02eefe9d5e6cc64469e7f",
+        "log_index": 48,
+        "event_time": "2026-10-17T11:12:53+00:00",
+        "status": "CONFIRMED",
+        "actors": "[]",
+        "targets": "[\"0xA238Dd80C259a72e81d7e4664a9801593F98d1c5\"]"
+      },
+      {
+        "event_id": "event:eip155:8453:0x2e9ba320c5acc8c0b247e116af4a099df8fc2e1f7a1581f68edecfcf2d17465e:355",
+        "event_type": "SUPPLY",
+        "chain_id": 8453,
+        "block_number": 52723112,
+        "tx_hash": "0x2e9ba320c5acc8c0b247e116af4a099df8fc2e1f7a1581f68edecfcf2d17465e",
+        "log_index": 355,
+        "event_time": "2026-10-17T11:12:51+00:00",
+        "status": "CONFIRMED",
+        "actors": "[\"0xcff32c4990f3bb94ddab6929b5f9d54c9215e044\"]",
+        "targets": "[\"0xA238Dd80C259a72e81d7e4664a9801593F98d1c5\"]"
+      },
+      {
+        "event_id": "event:eip155:8453:0x2e9ba320c5acc8c0b247e116af4a099df8fc2e1f7a1581f68edecfcf2d17465e:351",
+        "event_type": "RESERVE_DATA_UPDATED",
+        "chain_id": 8453,
+        "block_number": 52723112,
+        "tx_hash": "0x2e9ba320c5acc8c0b247e116af4a099df8fc2e1f7a1581f68edecfcf2d17465e",
+        "log_index": 351,
+        "event_time": "2026-10-17T11:12:51+00:00",
+        "status": "CONFIRMED",
+        "actors": "[]",
+        "targets": "[\"0xA238Dd80C259a72e81d7e4664a9801593F98d1c5\"]"
+      },
+      {
+        "event_id": "event:eip155:8453:0x72a49f5f8e379d6b7488a104a3a7ed4c24900bc5884c1bdd28227525cbfd3f80:332",
+        "event_type": "REPAY",
+        "chain_id": 8453,
+        "block_number": 52723104,
+        "tx_hash": "0x72a49f5f8e379d6b7488a104a3a7ed4c24900bc5884c1bdd28227525cbfd3f80",
+        "log_index": 332,
+        "event_time": "2026-10-17T11:12:35+00:00",
+        "status": "CONFIRMED",
+        "actors": "[\"0x23400c1155475025889d3431a610bffe44f2d60b\"]",
+        "targets": "[\"0xA238Dd80C259a72e81d7e4664a9801593F98d1c5\"]"
+      },
+      {
+        "event_id": "event:eip155:8453:0x72a49f5f8e379d6b7488a104a3a7ed4c24900bc5884c1bdd28227525cbfd3f80:330",
+        "event_type": "RESERVE_DATA_UPDATED",
+        "chain_id": 8453,
+        "block_number": 52723104,
+        "tx_hash": "0x72a49f5f8e379d6b7488a104a3a7ed4c24900bc5884c1bdd28227525cbfd3f80",
+        "log_index": 330,
+        "event_time": "2026-10-17T11:12:35+00:00",
+        "status": "CONFIRMED",
+        "actors": "[]",
+        "targets": "[\"0xA238Dd80C259a72e81d7e4664a9801593F98d1c5\"]"
+      },
+      {
+        "event_id": "event:eip155:8453:0x90345f4030a6251dda73044022ba4d37f97744081985130e253f0dbfe812ed34:262",
+        "event_type": "SUPPLY",
+        "chain_id": 8453,
+        "block_number": 52723086,
+        "tx_hash": "0x90345f4030a6251dda73044022ba4d37f97744081985130e253f0dbfe812ed34",
+        "log_index": 262,
+        "event_time": "2026-10-17T11:11:59+00:00",
+        "status": "CONFIRMED",
+        "actors": "[\"0xc265c091434070fe34547d41c0fb33448c2480f6\"]",
+        "targets": "[\"0xA238Dd80C259a72e81d7e4664a9801593F98d1c5\"]"
+      },
+      {
+        "event_id": "event:eip155:8453:0x90345f4030a6251dda73044022ba4d37f97744081985130e253f0dbfe812ed34:258",
+        "event_type": "RESERVE_DATA_UPDATED",
+        "chain_id": 8453,
+        "block_number": 52723086,
+        "tx_hash": "0x90345f4030a6251dda73044022ba4d37f97744081985130e253f0dbfe812ed34",
+        "log_index": 258,
+        "event_time": "2026-10-17T11:11:59+00:00",
+        "status": "CONFIRMED",
+        "actors": "[]",
+        "targets": "[\"0xA238Dd80C259a72e81d7e4664a9801593F98d1c5\"]"
+      },
+      {
+        "event_id": "event:eip155:8453:0x64e492c53f9d712a7ba59558feb83ea5591b91499ed729e142463dd6eef46674:439",
+        "event_type": "SUPPLY",
+        "chain_id": 8453,
+        "block_number": 52723078,
+        "tx_hash": "0x64e492c53f9d712a7ba59558feb83ea5591b91499ed729e142463dd6eef46674",
+        "log_index": 439,
+        "event_time": "2026-10-17T11:11:43+00:00",
+        "status": "CONFIRMED",
+        "actors": "[\"0xbe00a0de23a02a85d7fb7451ab9b69d84fd61fe3\"]",
+        "targets": "[\"0xA238Dd80C259a72e81d7e4664a9801593F98d1c5\"]"
+      },
+      {
+        "event_id": "event:eip155:8453:0x64e492c53f9d712a7ba59558feb83ea5591b91499ed729e142463dd6eef46674:435",
+        "event_type": "RESERVE_DATA_UPDATED",
+        "chain_id": 8453,
+        "block_number": 52723078,
+        "tx_hash": "0x64e492c53f9d712a7ba59558feb83ea5591b91499ed729e142463dd6eef46674",
+        "log_index": 435,
+        "event_time": "2026-10-17T11:11:43+00:00",
+        "status": "CONFIRMED",
+        "actors": "[]",
+        "targets": "[\"0xA238Dd80C259a72e81d7e4664a9801593F98d1c5\"]"
+      },
+      {
+        "event_id": "event:eip155:8453:0x64e492c53f9d712a7ba59558feb83ea5591b91499ed729e142463dd6eef46674:434",
+        "event_type": "REPAY",
+        "chain_id": 8453,
+        "block_number": 52723078,
+        "tx_hash": "0x64e492c53f9d712a7ba59558feb83ea5591b91499ed729e142463dd6eef46674",
+        "log_index": 434,
+        "event_time": "2026-10-17T11:11:43+00:00",
+        "status": "CONFIRMED",
+        "actors": "[\"0xbe00a0de23a02a85d7fb7451ab9b69d84fd61fe3\"]",
+        "targets": "[\"0xA238Dd80C259a72e81d7e4664a9801593F98d1c5\"]"
+      },
+      {
+        "event_id": "event:eip155:8453:0x64e492c53f9d712a7ba59558feb83ea5591b91499ed729e142463dd6eef46674:432",
+        "event_type": "RESERVE_DATA_UPDATED",
+        "chain_id": 8453,
+        "block_number": 52723078,
+        "tx_hash": "0x64e492c53f9d712a7ba59558feb83ea5591b91499ed729e142463dd6eef46674",
+        "log_index": 432,
+        "event_time": "2026-10-17T11:11:43+00:00",
+        "status": "CONFIRMED",
+        "actors": "[]",
+        "targets": "[\"0xA238Dd80C259a72e81d7e4664a9801593F98d1c5\"]"
+      },
+      {
+        "event_id": "event:eip155:8453:0x64e492c53f9d712a7ba59558feb83ea5591b91499ed729e142463dd6eef46674:415",
+        "event_type": "WITHDRAW",
+        "chain_id": 8453,
+        "block_number": 52723078,
+        "tx_hash": "0x64e492c53f9d712a7ba59558feb83ea5591b91499ed729e142463dd6eef46674",
+        "log_index": 415,
+        "event_time": "2026-10-17T11:11:43+00:00",
+        "status": "CONFIRMED",
+        "actors": "[\"0xbe00a0de23a02a85d7fb7451ab9b69d84fd61fe3\"]",
+        "targets": "[\"0xA238Dd80C259a72e81d7e4664a9801593F98d1c5\"]"
+      },
+      {
+        "event_id": "event:eip155:8453:0x64e492c53f9d712a7ba59558feb83ea5591b91499ed729e142463dd6eef46674:411",
+        "event_type": "RESERVE_DATA_UPDATED",
+        "chain_id": 8453,
+        "block_number": 52723078,
+        "tx_hash": "0x64e492c53f9d712a7ba59558feb83ea5591b91499ed729e142463dd6eef46674",
+        "log_index": 411,
+        "event_time": "2026-10-17T11:11:43+00:00",
+        "status": "CONFIRMED",
+        "actors": "[]",
+        "targets": "[\"0xA238Dd80C259a72e81d7e4664a9801593F98d1c5\"]"
+      },
+      {
+        "event_id": "event:eip155:8453:0x64e492c53f9d712a7ba59558feb83ea5591b91499ed729e142463dd6eef46674:409",
+        "event_type": "BORROW",
+        "chain_id": 8453,
+        "block_number": 52723078,
+        "tx_hash": "0x64e492c53f9d712a7ba59558feb83ea5591b91499ed729e142463dd6eef46674",
+        "log_index": 409,
+        "event_time": "2026-10-17T11:11:43+00:00",
+        "status": "CONFIRMED",
+        "actors": "[\"0xbe00a0de23a02a85d7fb7451ab9b69d84fd61fe3\"]",
+        "targets": "[\"0xA238Dd80C259a72e81d7e4664a9801593F98d1c5\"]"
+      },
+      {
+        "event_id": "event:eip155:8453:0x64e492c53f9d712a7ba59558feb83ea5591b91499ed729e142463dd6eef46674:407",
+        "event_type": "RESERVE_DATA_UPDATED",
+        "chain_id": 8453,
+        "block_number": 52723078,
+        "tx_hash": "0x64e492c53f9d712a7ba59558feb83ea5591b91499ed729e142463dd6eef46674",
+        "log_index": 407,
+        "event_time": "2026-10-17T11:11:43+00:00",
+        "status": "CONFIRMED",
+        "actors": "[]",
+        "targets": "[\"0xA238Dd80C259a72e81d7e4664a9801593F98d1c5\"]"
+      }
+    ],
+    "count": 20,
+    "latency_ms": 33.61,
     "mode": "LIVE"
   },
   "limits": [

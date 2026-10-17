@@ -147,6 +147,34 @@ def provenance(db: Optional[str] = None, relation_id: str = "") -> Dict[str, Any
             "mode": os.environ.get("ORVYREN_MODE", "LIVE")}
 
 
+def timeline(db: Optional[str] = None, *, as_of: Optional[str] = None,
+             as_of_block: Optional[int] = None, limit: int = 50) -> Dict[str, Any]:
+    """Q5 — recent first-class events, newest block first."""
+    started = time.perf_counter()
+    clauses: List[str] = []
+    params: List[Any] = []
+    if as_of:
+        clauses.append("(event_time IS NULL OR event_time <= ?)")
+        params.append(as_of)
+    if as_of_block is not None:
+        clauses.append("(block_number IS NULL OR block_number <= ?)")
+        params.append(int(as_of_block))
+    where = (" WHERE " + " AND ".join(clauses)) if clauses else ""
+    con = _connect(db)
+    try:
+        rows = [dict(row) for row in con.execute(
+            "SELECT event_id, event_type, chain_id, block_number, tx_hash, "
+            "log_index, event_time, status, actors, targets FROM events" + where +
+            " ORDER BY block_number DESC, log_index DESC LIMIT ?",
+            params + [int(limit)]).fetchall()]
+    finally:
+        con.close()
+    return {"query": "Q5", "as_of": as_of, "as_of_block": as_of_block,
+            "rows": rows, "count": len(rows),
+            "latency_ms": round((time.perf_counter() - started) * 1000, 2),
+            "mode": os.environ.get("ORVYREN_MODE", "LIVE")}
+
+
 def concentration(db: Optional[str] = None, asset: str = "", *,
                   as_of: Optional[str] = None,
                   as_of_block: Optional[int] = None) -> Dict[str, Any]:
@@ -236,6 +264,10 @@ def _main(argv: Optional[Sequence[str]] = None) -> int:
     p4.add_argument("--block", type=int, default=None)
     p6 = sub.add_parser("q6")
     p6.add_argument("--relation-id", required=True)
+    p5 = sub.add_parser("q5")
+    p5.add_argument("--as-of", default=None)
+    p5.add_argument("--block", type=int, default=None)
+    p5.add_argument("--limit", type=int, default=50)
     p7 = sub.add_parser("q7")
     p7.add_argument("--asset", required=True)
     p7.add_argument("--as-of", default=None)
@@ -255,6 +287,9 @@ def _main(argv: Optional[Sequence[str]] = None) -> int:
         result = pit(args.db, as_of=args.as_of, as_of_block=args.block)
     elif args.command == "q6":
         result = provenance(args.db, args.relation_id)
+    elif args.command == "q5":
+        result = timeline(args.db, as_of=args.as_of, as_of_block=args.block,
+                          limit=args.limit)
     elif args.command == "q7":
         result = concentration(args.db, args.asset, as_of=args.as_of,
                                as_of_block=args.block)
