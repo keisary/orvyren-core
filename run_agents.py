@@ -1,33 +1,33 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-"""ORVYREN — ``run_agents.py`` : coordinateur MA-B binaire (W2 lot L2.7).
+"""ORVYREN — ``run_agents.py``: binary MA-B coordinator (W2 lot L2.7).
 
-Lance **deux processus séparés** (orchestrateur puis critique — voir
-``src/orvyren/agents/worker.py``), collecte leurs sorties sérialisables,
-applique la règle de fragilité (B1 §5.3 : un verdict ``FRAGILE``/``INCOHERENTE``
-ne s'annule pas — il pousse vers ``REQUIRE_APPROVAL`` / abstention), vérifie
-les chaînes de hash des deux journaux et affiche le bilan (dont le **coût LLM
-cumulé**).
+Spawns **two separate processes** (orchestrator then critic — see
+``src/orvyren/agents/worker.py``), collects their serialisable outputs,
+applies the fragility rule (B1 §5.3: a ``FRAGILE``/``INCOHERENTE`` verdict is
+never cancelled — it pushes towards ``REQUIRE_APPROVAL`` / abstention), checks
+the hash chains of both journals and prints the run summary (including the
+**cumulative LLM cost**).
 
-Modes :
-- ``--replay journal`` : rejeu hors-ligne depuis le magasin de réponses
-  enregistrées (déterministe — la démo ne dépend jamais du réseau, B1 §6.3) ;
-- ``--replay live`` : appels réels (exige les clés en variables
-  d'environnement — jamais dans le dépôt ; ``config/models.json`` fige les IDs).
+Modes:
+- ``--replay journal``: offline replay from the recorded response store
+  (deterministic — the demo never depends on the network, B1 §6.3);
+- ``--replay live``: real calls (requires keys in environment variables —
+  never in the repository; ``config/models.json`` pins the IDs).
 
-Note : le budget fait partie du PROMPT enregistré (clé ``budget_restant``) —
-un rejeu avec un budget différent des enregistrements échoue proprement
-(``E_LLM_NOT_RECORDED`` → abstention ``ARRET-3``), jamais d'improvisation.
+Note: the budget is part of the RECORDED PROMPT (``budget_restant`` key) —
+a replay with a budget different from the recordings fails cleanly
+(``E_LLM_NOT_RECORDED`` → ``ARRET-3`` abstention), never improvisation.
 
-Exemples ::
+Examples::
 
     python run_agents.py --case usdc-2023-03 --replay journal
     python run_agents.py --case usdc-2023-03 --replay journal --budget-llm 10
-    python run_agents.py --case usdc-2023-03 --replay live   # clés requises
+    python run_agents.py --case usdc-2023-03 --replay live   # keys required
 
-Sorties : ``demo_runs/agents/<case>/<run_id>/`` (spec, journaux JSONL, échanges,
-``run_outcome.json``). Stdlib uniquement ; ce script n'importe ni policy ni
-execution (règle de frontière W2).
+Outputs: ``demo_runs/agents/<case>/<run_id>/`` (spec, JSONL journals, exchanges,
+``run_outcome.json``). Stdlib only; this script imports neither policy nor
+execution (W2 boundary rule).
 """
 
 from __future__ import annotations
@@ -50,12 +50,25 @@ from orvyren.agents import worker as worker_mod  # noqa: E402
 __all__ = ["main", "prepare_run", "collect_and_finish", "apply_fragility_rule"]
 
 
+def _configure_stdio() -> None:
+    """Force UTF-8 on stdout/stderr: a Windows cp1252 console must never
+    make the orchestrator fail on a non-representable character."""
+    for stream in (sys.stdout, sys.stderr):
+        reconfigure = getattr(stream, "reconfigure", None)
+        if reconfigure is None:
+            continue
+        try:
+            reconfigure(encoding="utf-8", errors="replace")
+        except (ValueError, OSError):  # stream cannot be reconfigured (test capture, pipe)
+            pass
+
+
 def _utc_stamp() -> str:
     return datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
 
 
 def _write_json(path: str, payload) -> None:
-    with open(path, "w", encoding="utf-8") as handle:
+    with open(path, "w", encoding="utf-8", newline="\n") as handle:
         json.dump(payload, handle, ensure_ascii=False, indent=1, sort_keys=True)
 
 
@@ -64,7 +77,7 @@ def load_case_inputs(case_id: str) -> dict:
     path = os.path.join(REPO_ROOT, "fixtures", "agents", case_id, "run_inputs.json")
     if not os.path.exists(path):
         raise SystemExit(
-            "E_CASE_UNKNOWN: %s absent — enregistrer d'abord le cas "
+            "E_CASE_UNKNOWN: %s missing — record the case first "
             "(python scripts/agents_seed_demo.py --case %s)" % (path, case_id))
     with open(path, "r", encoding="utf-8") as handle:
         return json.load(handle)
@@ -110,7 +123,10 @@ def _spawn(role: str, run_dir: str, timeout_s: float) -> int:
     """Spawn one worker process; echo its output; return its exit code."""
     env = dict(os.environ)
     env["PYTHONPATH"] = SRC_DIR + os.pathsep + env.get("PYTHONPATH", "")
-    env.setdefault("PYTHONIOENCODING", "utf-8")
+    # The parent decodes worker output as UTF-8: force it even when the outer
+    # console declares cp1252 (Windows), otherwise a non-cp1252 dash becomes
+    # U+FFFD in the captured output.
+    env["PYTHONIOENCODING"] = "utf-8"
     cmd = [sys.executable, "-m", "orvyren.agents.worker",
            "--role", role, "--run-dir", run_dir]
     completed = subprocess.run(cmd, cwd=REPO_ROOT, env=env, capture_output=True,
@@ -148,7 +164,7 @@ def collect_and_finish(*, run_dir: str, case_id: str, mode: str) -> dict:
     for role in ("orchestrator", "critic"):
         path = os.path.join(run_dir, "journal_%s.jsonl" % role)
         if not os.path.exists(path):
-            raise SystemExit("E_RUN_INCOMPLETE: journal %s manquant" % role)
+            raise SystemExit("E_RUN_INCOMPLETE: journal %s missing" % role)
         entries = worker_mod.load_journal(path)
         ok, message = worker_mod.verify_exported_chain(entries)
         if not ok:
@@ -181,60 +197,61 @@ def _print_summary(final: dict) -> None:
     outcome = final["outcome"]
     budgets = outcome.get("budget_used", {})
     print()
-    print("  ════ bilan du run %s (%s) ════" % (final["case_id"], final["mode"]))
+    print("  ==== run summary %s (%s) ====" % (final["case_id"], final["mode"]))
     for role, info in final["journals"].items():
-        print("    %-13s %3d lignes — agent_id:%s — chaîne %s"
+        print("    %-13s %3d lines — agent_id:%s — chain %s"
               % (role, info["lines"], ",".join(info["agent_ids"]) or "-", "OK"))
-    print("    arrêt          : %s %s" % (outcome.get("stop_condition") or "-",
+    print("    stop           : %s %s" % (outcome.get("stop_condition") or "-",
                                          ("(abstention)" if outcome.get("inconclusive") else "")))
-    print("    budget         : llm %.0f/30 · outils %.0f/12 · %.0fs/600 · $%.4f/0.10"
+    print("    budget         : llm %.0f/30 · tools %.0f/12 · %.0fs/600 · $%.4f/0.10"
           % (budgets.get("llm_calls", 0), budgets.get("tool_calls", 0),
              budgets.get("wall_seconds", 0), budgets.get("cost_usd", 0.0)))
     verdict = (final.get("critique") or {}).get("verdict_lecture", "—")
     print("    critique       : %s" % verdict)
     if final.get("escalation"):
-        print("    escalade       : %s (le critique n'annule pas — il freine)" % final["escalation"])
+        print("    escalation     : %s (the critic never cancels — it brakes)" % final["escalation"])
     if outcome.get("non_recherche"):
-        print("    non recherché  : %s" % " · ".join(outcome["non_recherche"][:4]))
-    print("    coût LLM cumulé: $%.4f" % budgets.get("cost_usd", 0.0))
-    print("    artefacts      : %s" % final["run_dir"])
+        print("    not searched   : %s" % " · ".join(outcome["non_recherche"][:4]))
+    print("    cumulative LLM cost: $%.4f" % budgets.get("cost_usd", 0.0))
+    print("    artifacts      : %s" % final["run_dir"])
 
 
 def main(argv=None) -> int:
+    _configure_stdio()
     parser = argparse.ArgumentParser(
         prog="run_agents.py",
-        description="ORVYREN — coordinateur MA-B : orchestrateur + critique en processus séparés "
-                    "(rejeu journal hors-ligne par défaut, coût affiché)")
-    parser.add_argument("--case", required=True, help="cas (ex. usdc-2023-03)")
+        description="ORVYREN — MA-B coordinator: orchestrator + critic in separate processes "
+                    "(offline journal replay by default, cost displayed)")
+    parser.add_argument("--case", required=True, help="case (e.g. usdc-2023-03)")
     parser.add_argument("--replay", choices=("journal", "live"), default="journal")
     parser.add_argument("--session", default=None,
-                        help="répertoire de session (défaut : demo_runs/agents/<case>)")
+                        help="session directory (default: demo_runs/agents/<case>)")
     parser.add_argument("--store", default=None,
-                        help="magasin de réponses (défaut : fixtures/agents/store_<case>)")
+                        help="response store (default: fixtures/agents/store_<case>)")
     parser.add_argument("--record-live", action="store_true",
-                        help="enregistre les réponses LIVE dans <run_dir>/store_live "
-                             "(scellées par hash ; rejeu bit-à-bit ultérieur via --store)")
+                        help="record LIVE responses under <run_dir>/store_live "
+                             "(sealed by hash; later bit-for-bit replay via --store)")
     parser.add_argument("--budget-llm", type=float, default=30)
     parser.add_argument("--budget-tools", type=float, default=12)
     parser.add_argument("--budget-wall", type=float, default=600)
     parser.add_argument("--budget-usd", type=float, default=0.10)
     parser.add_argument("--timeout-s", type=float, default=300.0,
-                        help="attente maximale par processus worker")
+                        help="maximum wait per worker process")
     args = parser.parse_args(argv)
 
     for name, value, ceiling in (("llm", args.budget_llm, 30), ("tools", args.budget_tools, 12),
                                  ("wall", args.budget_wall, 600), ("usd", args.budget_usd, 0.10)):
         if value <= 0 or value > ceiling:
-            raise SystemExit("E_BUDGET: --budget-%s doit être dans ]0, %s] (plafonds gelés A5)"
+            raise SystemExit("E_BUDGET: --budget-%s must be within ]0, %s] (A5 frozen ceilings)"
                              % (name, ceiling))
 
     if args.replay == "live":
         keys = [var for var in ("ORVYREN_DEEPSEEK_API_KEY", "ORVYREN_MIMO_API_KEY")
                 if os.environ.get(var)]
         if not keys:
-            raise SystemExit("E_LLM_NO_KEY: mode live sans clé — poser ORVYREN_DEEPSEEK_API_KEY / "
-                             "ORVYREN_MIMO_API_KEY dans l'environnement (jamais dans le dépôt) ; "
-                             "sans clé, utiliser --replay journal (déterministe, hors-ligne).")
+            raise SystemExit("E_LLM_NO_KEY: live mode without a key — set ORVYREN_DEEPSEEK_API_KEY / "
+                             "ORVYREN_MIMO_API_KEY in the environment (never in the repository); "
+                             "without a key, use --replay journal (deterministic, offline).")
 
     inputs = load_case_inputs(args.case)
     session = args.session or os.path.join(REPO_ROOT, "demo_runs", "agents", args.case)
@@ -250,10 +267,10 @@ def main(argv=None) -> int:
         print("  store live: %s" % os.path.join(run_dir, "store_live"))
 
     for role in ("orchestrator", "critic"):
-        print("  [%s] processus lancé…" % role)
+        print("  [%s] process started…" % role)
         code = _spawn(role, run_dir, args.timeout_s)
         if code != 0:
-            raise SystemExit("E_WORKER_%s: code %d — voir la sortie ci-dessus" % (role.upper(), code))
+            raise SystemExit("E_WORKER_%s: code %d — see the output above" % (role.upper(), code))
 
     final = collect_and_finish(run_dir=run_dir, case_id=args.case, mode=args.replay)
     _print_summary(final)

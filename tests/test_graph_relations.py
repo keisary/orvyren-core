@@ -152,7 +152,7 @@ class RejectionTest(unittest.TestCase):
                              "E_DST_KIND_UNKNOWN")
 
     def test_disallowed_endpoint_kinds(self):
-        # HOLDS: Adresse/Entité -> Actif ; a claim is neither.
+        # HOLDS: address/entity -> asset; a claim is neither.
         self._assert_rejects(make_record("HOLDS", src_kind=NodeKind.CLAIM),
                              "E_SRC_KIND_NOT_ALLOWED")
         self._assert_rejects(make_record("HOLDS", dst_kind=NodeKind.POOL),

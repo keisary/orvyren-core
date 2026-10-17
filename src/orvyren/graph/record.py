@@ -157,12 +157,12 @@ RELATION_RECORD_FIELD_GROUPS: Tuple[Tuple[str, ...], ...] = (
 
 FIELD_GROUP_COUNT = 17
 
-#: Family 4 kinds that must carry a grant proof (B2 §3.1: "toujours porter la
-#: preuve d'octroi (event/ref)").
+#: Family 4 kinds that must carry a grant proof (B2 §3.1: "always carry the
+#: grant proof (event/ref)").
 GRANT_PROOF_KINDS = frozenset({"AUTHORIZES", "REVOKES", "MEMBER_OF", "ALLOWS"})
 
 #: Kinds whose facts are on-chain by construction (need chain_ref).
-ONCHAIN_KINDS = frozenset({"MEMBER_OF"})  # B2 §3.2: "fait on-chain `AssignRoles`"
+ONCHAIN_KINDS = frozenset({"MEMBER_OF"})  # B2 §3.2: "on-chain fact `AssignRoles`"
 
 #: Payload keys that denote a quantity (family 2 golden rule: a quantity
 #: without unit/date is invalid).
@@ -250,7 +250,7 @@ def validate_relation_record(record: RelationRecord) -> Tuple[str, ...]:
             reject("E_DST_KIND_UNKNOWN")
         elif not any(token_matches(token, record.dst_kind) for token in spec.objects):
             reject("E_DST_KIND_NOT_ALLOWED")
-        # SUPERSEDES: "toute entité → même type (révision précédente)".
+        # SUPERSEDES: "any entity → same kind (previous revision)".
         if record.kind == "SUPERSEDES" and record.src_kind != record.dst_kind:
             reject("E_SUPERSEDES_KIND_MISMATCH")
 
@@ -281,7 +281,7 @@ def validate_relation_record(record: RelationRecord) -> Tuple[str, ...]:
         if not record.horizon_scope.strip():
             reject("E_MECHANISM_HORIZON_MISSING")
 
-    # -- CORRELATES_WITH: "statut STATISTICAL obligatoire, jamais causal".
+    # -- CORRELATES_WITH: "STATISTICAL status mandatory, never causal".
     if record.kind == "CORRELATES_WITH" and record.epistemic_status != "STATISTICAL":
         reject("E_CORRELATION_NOT_STATISTICAL")
 

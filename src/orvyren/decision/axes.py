@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-"""ORVYREN-Core — three axes + double price convention (W3: règle généralisée, L3.6).
+"""ORVYREN-Core — three axes + double price convention (W3: generalized rule, L3.6).
 
 Spec: B3_DECISION_ETUDE.md §e.1 (DOC2 §5.4.6, FREEZE_V2 C5). The three output
 axes are **separate and never fused**:
@@ -8,7 +8,7 @@ axes are **separate and never fused**:
 - ``epistemic_verdict``    in {CONCLUANT, INCONCLUSIVE} + what is missing;
 - ``economic_action``      in the bounded-action enum, or null;
 - ``authorization_verdict`` in {ALLOW, DENY, REQUIRE_APPROVAL} — independent
-  of the other two ("DENY de politique" != "échec épistémique").
+  of the other two ("policy DENY" != "epistemic failure").
 
 Double price convention (frozen, FREEZE_V2 C5): **alert on the low; decision
 on close + low** — exposed here as ONE parameter (``PRICE_CONVENTION``) and
@@ -39,7 +39,7 @@ PRICE_CONVENTION_VERSION = "convention/v1"
 PRICE_CONVENTION = {
     "alert_reading": "low",
     "decision_readings": ("close", "low"),
-    "ref": "FREEZE_V2 C5 / DOC2 §5.4.6 — alerte sur le low ; décision sur close + low",
+    "ref": "FREEZE_V2 C5 / DOC2 §5.4.6 — alert on the low; decision on close + low",
 }
 
 #: FREEZE_V2 C5 froze the convention: when two admissible readings would give
@@ -218,8 +218,8 @@ def build_dossier(case_id, observations, window_start, window_end,
             verdicts, conditions,
             what_would_change_entries(candidates, verdicts),
             decision_delta={
-                "si_H2_soutenue": "candidat A-D1 (convertir/transférer, x* borné)",
-                "si_H2_refutee": "NO_ACTION documenté (A-D7) — ne rien faire est alors optimal",
+                "si_H2_soutenue": "A-D1 candidate (convert/transfer, bounded x*)",
+                "si_H2_refutee": "documented NO_ACTION (A-D7) — doing nothing is then optimal",
             },
             budget={"consomme": rdof["budget"]["consomme"],
                     "limites": rdof["budget"]["limites"],
@@ -237,8 +237,8 @@ def build_dossier(case_id, observations, window_start, window_end,
         "supported_hypotheses": supported,
         "authorization_detail": authorization,
         "conditions_declenchees": conditions["conditions"],
-        "separation_note": ("3 axes never fused: DENY de politique != échec "
-                            "épistémique ; INCONCLUSIVE != NO-ACTION (B3 §c.2)"),
+        "separation_note": ("3 axes never fused: policy DENY != epistemic "
+                            "failure; INCONCLUSIVE != NO-ACTION (B3 §c.2)"),
     }
     return {
         "axes": axes,

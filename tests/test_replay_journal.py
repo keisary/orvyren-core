@@ -1,15 +1,15 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-"""ORVYREN-Core — tests du rejeu journal + des dossiers de rejeu (W7).
+"""ORVYREN-Core — journal replay + replay dossier tests (W7).
 
-Couverture :
+Coverage:
 
-* mode 1 : deux journaux rejoués, chaînes vérifiées, têtes stables ;
-* altération d'une ligne exportée ⇒ ``ReplayJournalError`` (chaîne cassée) ;
-* ``verify_run`` : verdict OK, puis MISMATCH si l'hash attendu diffère ;
-* dossier : bannière REPLAY obligatoire (``require_banner``), hash recalculable,
-  nom de fichier suffixé ``_replay_<mode>_<replay_id>``, journal ``runs.jsonl`` ;
-* l'horodatage double : ``t_wall`` présent, ``ts_sim`` porté par la bannière.
+* mode 1: two journals replayed, chains verified, stable heads;
+* tampering with an exported line ⇒ ``ReplayJournalError`` (broken chain);
+* ``verify_run``: verdict OK, then MISMATCH if the expected hash differs;
+* dossier: mandatory REPLAY banner (``require_banner``), recomputable hash,
+  file name suffixed ``_replay_<mode>_<replay_id>``, ``runs.jsonl`` log;
+* the dual timestamp: ``t_wall`` present, ``ts_sim`` carried by the banner.
 
 Run: python -m pytest tests/test_replay_journal.py -q
 """
@@ -17,6 +17,7 @@ Run: python -m pytest tests/test_replay_journal.py -q
 import json
 import os
 import shutil
+import subprocess
 import sys
 import tempfile
 import unittest
@@ -40,7 +41,7 @@ class _TempDirMixin(unittest.TestCase):
         self.addCleanup(shutil.rmtree, self.tmp, True)
 
 
-@unittest.skipUnless(INPUTS_PRESENT, "fixtures agents absentes")
+@unittest.skipUnless(INPUTS_PRESENT, "agent fixtures absent")
 class ReplayJournalTest(_TempDirMixin):
     @classmethod
     def setUpClass(cls):
@@ -119,12 +120,49 @@ class ReplayJournalTest(_TempDirMixin):
             runs_log=os.path.join(self.tmp, "runs2.jsonl"))
         with open(result["json_path"], "r", encoding="utf-8") as handle:
             document = json.load(handle)
-        document["run_id"] = "modifié"
+        document["run_id"] = "modified"
         with open(result["json_path"], "w", encoding="utf-8", newline="\n") as handle:
             json.dump(document, handle, ensure_ascii=False, indent=1, sort_keys=True)
         verdict = dossier_mod.verify_replay_dossier(result["json_path"],
                                                     runs_log=os.path.join(self.tmp, "runs2.jsonl"))
         self.assertEqual(verdict["verdict"], "MISMATCH")
+
+    def test_dossier_absent_from_the_journal_is_not_registered(self):
+        """An isolated dossier proves nothing: absent from runs.jsonl => NOT_REGISTERED."""
+        manifest = corpus_mod.load_manifest()
+        result = dossier_mod.build_replay_dossier(
+            episode=CASE, mode="REPLAY-JOURNAL", mode_slug="journal",
+            run_id=self.transcript["run_id"],
+            t_sim_start_utc="2023-03-10T00:00:00Z", t_sim_end_utc="2023-03-14T00:00:00Z",
+            corpus_manifest=manifest, clock_audit={"valid": True, "violations": []},
+            transcript=self.transcript, out_dir=os.path.join(self.tmp, "out3"),
+            runs_log=os.path.join(self.tmp, "runs3.jsonl"))
+        verdict = dossier_mod.verify_replay_dossier(
+            result["json_path"], runs_log=os.path.join(self.tmp, "unrelated_runs.jsonl"))
+        self.assertEqual(verdict["verdict"], "NOT_REGISTERED")
+        self.assertFalse(verdict["registered"])
+        self.assertIsNone(verdict["logged"])
+        self.assertIn("absent", verdict["error"])
+
+        # A divergent logged hash is a MISMATCH, never an OK.
+        forged_log = os.path.join(self.tmp, "runs_forged.jsonl")
+        with open(forged_log, "w", encoding="utf-8", newline="\n") as handle:
+            handle.write(json.dumps({"replay_id": result["replay_id"],
+                                     "content_sha256": "0" * 64}) + "\n")
+        forged = dossier_mod.verify_replay_dossier(result["json_path"], runs_log=forged_log)
+        self.assertEqual(forged["verdict"], "MISMATCH")
+        self.assertTrue(forged["registered"])
+
+
+class ReplayVerifyCliTest(unittest.TestCase):
+    """``run_replay.py verify`` without a target: explicit refusal (never a silent rc=0)."""
+
+    def test_verify_without_target_is_a_usage_error(self):
+        result = subprocess.run([sys.executable, os.path.join(ROOT, "run_replay.py"), "verify"],
+                                cwd=ROOT, capture_output=True, text=True, timeout=120)
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("--run-dir", result.stderr)
+        self.assertIn("verify", result.stderr.lower())
 
 
 if __name__ == "__main__":

@@ -1,14 +1,14 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-"""ORVYREN-Core — dossier de rejeu : provenance, bannière, hash (W7, B7 §c.5).
+"""ORVYREN-Core — replay dossier: provenance, banner, hash (W7, B7 §c.5).
 
-Tout artefact de rejeu porte : (1) un bloc de provenance ``{mode, replay_id,
-t_sim_start, t_sim_end, corpus_hash, code_hash, alias?}`` ; (2) une **bannière
-obligatoire** ``REPLAY — données archivées — <mode> — <épisode> — t_sim=<…>``
-(toute sortie sans bannière est un bug) ; (3) un nom de fichier suffixé
-``_replay_<mode>_<replay_id>`` ; (4) un journal append-only
-``replay/runs.jsonl`` (échecs inclus). Le hash du dossier est recalculable par
-un tiers (T10) — champs d'exécution réels exclus.
+Every replay artifact carries: (1) a provenance block ``{mode, replay_id,
+t_sim_start, t_sim_end, corpus_hash, code_hash, alias?}``; (2) a **mandatory
+banner** ``REPLAY — données archivées — <mode> — <épisode> — t_sim=<…>``
+(any output without a banner is a bug); (3) a file name suffixed with
+``_replay_<mode>_<replay_id>``; (4) an append-only log
+``replay/runs.jsonl`` (failures included). The dossier hash can be recomputed
+by a third party (T10) — real execution fields excluded.
 """
 
 from __future__ import annotations
@@ -25,12 +25,12 @@ DEFAULT_OUT_DIR = os.path.join(REPO_ROOT, "evidence", "replay")
 
 BANNER_TEMPLATE = "REPLAY — données archivées — {mode} — {episode} — t_sim={t0}→{t1}"
 
-#: Champs d'exécution réels exclus du hash de contenu (audit vs contenu).
+#: Real execution fields excluded from the content hash (audit vs content).
 WALL_KEYS = ("ts_wall_utc", "duration_s", "generated_at", "run_dirs", "work_root")
 
 
 class DossierError(RuntimeError):
-    """Dossier de rejeu invalide (bannière absente, hash non concordant)."""
+    """Invalid replay dossier (missing banner, hash mismatch)."""
 
 
 def canonical_json(payload: Any) -> str:
@@ -47,7 +47,7 @@ def _strip_wall(payload: Any) -> Any:
 
 
 def code_hash(extra_files: Optional[List[str]] = None) -> str:
-    """Empreinte du code du moteur de rejeu (``src/orvyren/replay/`` + CLI)."""
+    """Fingerprint of the replay engine code (``src/orvyren/replay/`` + CLI)."""
     files: List[str] = []
     package_dir = os.path.join(REPO_ROOT, "src", "orvyren", "replay")
     for name in sorted(os.listdir(package_dir)):
@@ -78,7 +78,7 @@ def build_replay_dossier(*, episode: str, mode: str, mode_slug: str, run_id: str
                          out_dir: str = DEFAULT_OUT_DIR,
                          runs_log: str = DEFAULT_RUNS_LOG,
                          duration_s: Optional[float] = None) -> Dict[str, Any]:
-    """Assemble le dossier de rejeu (JSON + MD), hash, et journalise le run."""
+    """Assemble the replay dossier (JSON + MD), hash it, and log the run."""
     replay_id = replay_id or new_replay_id(episode, mode_slug)
     banner = BANNER_TEMPLATE.format(mode=mode, episode=episode,
                                     t0=t_sim_start_utc, t1=t_sim_end_utc)
@@ -159,16 +159,22 @@ def _append_runs_log(runs_log: str, entry: dict) -> None:
 
 
 def require_banner(document: dict) -> str:
-    """Toute sortie de rejeu sans bannière est un bug (B7 §c.5-2)."""
+    """Any replay output without a banner is a bug (B7 §c.5-2)."""
     banner = str(document.get("banner") or "")
     if "REPLAY" not in banner:
-        raise DossierError("marquage REPLAY obligatoire absent : toute sortie de rejeu "
-                           "doit porter sa bannière (B7 §c.5)")
+        raise DossierError("mandatory REPLAY marking absent: every replay output "
+                           "must carry its banner (B7 §c.5)")
     return banner
 
 
 def verify_replay_dossier(path: str, *, runs_log: str = DEFAULT_RUNS_LOG) -> Dict[str, Any]:
-    """T10 : recalcule le hash de contenu et compare au journal des rejeux."""
+    """T10: recompute the content hash and compare it with the replay log.
+
+    Fail-closed: a dossier whose ``replay_id`` does **not** appear in
+    ``runs.jsonl`` is declared ``NOT_REGISTERED`` with an explicit error —
+    never ``OK``. An isolated dossier does not prove that a replay happened;
+    only the append-only log attests its existence.
+    """
     with open(path, "r", encoding="utf-8") as handle:
         document = json.load(handle)
     banner = require_banner(document)
@@ -176,7 +182,9 @@ def verify_replay_dossier(path: str, *, runs_log: str = DEFAULT_RUNS_LOG) -> Dic
     stripped = {key: value for key, value in document.items()
                 if key not in ("content_sha256", "ts_wall_utc", "duration_s")}
     computed = hashlib.sha256(canonical_json(_strip_wall(stripped)).encode("utf-8")).hexdigest()
+    replay_id = document.get("provenance", {}).get("replay_id")
     logged = None
+    registered = False
     if os.path.isfile(runs_log):
         with open(runs_log, "r", encoding="utf-8") as handle:
             for line in handle:
@@ -184,8 +192,23 @@ def verify_replay_dossier(path: str, *, runs_log: str = DEFAULT_RUNS_LOG) -> Dic
                 if not line:
                     continue
                 entry = json.loads(line)
-                if entry.get("replay_id") == document.get("provenance", {}).get("replay_id"):
+                if entry.get("replay_id") == replay_id:
+                    registered = True
                     logged = entry.get("content_sha256")
+                    break
+    error = None
+    if not registered:
+        verdict = "NOT_REGISTERED"
+        error = ("replay_id %r absent from %s — dossier not registered: no replay "
+                 "attests it" % (replay_id, runs_log))
+    elif computed != stored:
+        verdict = "MISMATCH"
+        error = "recomputed content_sha256 != stored content_sha256"
+    elif logged != stored:
+        verdict = "MISMATCH"
+        error = "logged content_sha256 != stored content_sha256"
+    else:
+        verdict = "OK"
     return {"banner": banner, "stored": stored, "computed": computed,
-            "logged": logged,
-            "verdict": "OK" if computed == stored and (logged in (None, stored)) else "MISMATCH"}
+            "logged": logged, "registered": registered,
+            "verdict": verdict, "error": error}

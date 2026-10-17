@@ -278,7 +278,7 @@ def main() -> int:
             "claims": [claim.id for claim in linked_claims],
         }],
     }
-    with open(REPORT_PATH, "w", encoding="utf-8") as handle:
+    with open(REPORT_PATH, "w", encoding="utf-8", newline="\n") as handle:
         json.dump(report, handle, indent=2, ensure_ascii=False)
         handle.write("\n")
 

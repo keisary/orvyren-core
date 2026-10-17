@@ -1,10 +1,10 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-"""Tests du registre des fenêtres et des embargos G3 (B7 §d.2, DOC2 §5.8.4).
+"""G3 window registry and embargo tests (B7 §d.2, DOC2 §5.8.4).
 
-Contrats testés : détection de chevauchement, refus d'écriture EVAL sans gel,
-embargo de données (bande de 24 h), embargo de calibration croisée, et
-validité du paquet de gel réellement présent dans ``frozen/``.
+Tested contracts: overlap detection, refusal to write EVAL without a freeze,
+data embargo (24 h band), cross-calibration embargo, and validity of the freeze
+package actually present in ``frozen/``.
 """
 
 import os
@@ -22,31 +22,31 @@ from orvyren.evaluation import windows as W  # noqa: E402
 def make_window(window_id, set_label, start, end, kind=W.KIND_STRESS):
     return W.Window(
         window_id=window_id,
-        episode_id="synthetique",
+        episode_id="synthetic",
         set_label=set_label,
         kind=kind,
         start_utc=start,
         end_utc=end,
         sources=("test",),
-        role="fenêtre synthétique de test",
+        role="synthetic test window",
     )
 
 
 class TestRegistre(unittest.TestCase):
     def test_registre_dev_sans_chevauchement(self):
-        W.check_no_overlap(W.DEV_WINDOWS)  # ne lève pas
+        W.check_no_overlap(W.DEV_WINDOWS)  # does not raise
         W.check_no_overlap(W.EVAL_WINDOWS)
 
     def test_fenetres_enregistrees_tracees(self):
         for window in W.DEV_WINDOWS + W.EVAL_WINDOWS:
-            self.assertTrue(window.sources, f"{window.window_id} sans source")
+            self.assertTrue(window.sources, f"{window.window_id} without source")
             self.assertGreater(window.duration_hours(), 0.0)
 
     def test_fenetres_non_derivables_ecrites_not_done(self):
         statuses = {entry["status"] for entry in W.PENDING_WINDOWS}
         self.assertIn("NOT DONE", statuses)
         for entry in W.PENDING_WINDOWS:
-            self.assertTrue(entry["reason"].strip(), "un NOT DONE sans motif n'est pas acceptable")
+            self.assertTrue(entry["reason"].strip(), "a NOT DONE without a reason is not acceptable")
 
     def test_fenetre_invalide_refusee(self):
         with self.assertRaises(W.WindowError):
@@ -112,22 +112,22 @@ class TestPorteDeGel(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             target = os.path.join(tmp, "G1_fonction_de_perte.md")
             with open(target, "w", encoding="utf-8", newline="\n") as handle:
-                handle.write("contenu\n")
+                handle.write("content\n")
             with open(os.path.join(tmp, "G1.sha256"), "w", encoding="utf-8", newline="\n") as handle:
                 handle.write(f"{W.sha256_file(target)}  G1_fonction_de_perte.md\n")
-            # paquet incomplet (G2..G6 absents) → refus
+            # incomplete package (G2..G6 absent) → refusal
             with self.assertRaises(W.FreezeGateError):
                 W.verify_frozen_package(tmp)
             for name in ("G2", "G3", "G4", "G5", "G6"):
                 document = os.path.join(tmp, f"{name}_doc.md")
                 with open(document, "w", encoding="utf-8", newline="\n") as handle:
-                    handle.write("contenu\n")
+                    handle.write("content\n")
                 with open(os.path.join(tmp, f"{name}.sha256"), "w", encoding="utf-8", newline="\n") as handle:
                     handle.write(f"{W.sha256_file(document)}  {name}_doc.md\n")
             self.assertEqual(len(W.verify_frozen_package(tmp)), 6)
-            # fichier modifié après coup → refus
+            # file modified afterwards → refusal
             with open(target, "a", encoding="utf-8", newline="\n") as handle:
-                handle.write("ligne ajoutée\n")
+                handle.write("appended line\n")
             with self.assertRaises(W.FreezeGateError):
                 W.verify_frozen_package(tmp)
 
@@ -135,13 +135,13 @@ class TestPorteDeGel(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             lock = os.path.join(tmp, "eval_run.lock")
             with open(lock, "w", encoding="utf-8", newline="\n") as handle:
-                handle.write("premiere execution\n")
+                handle.write("first execution\n")
             with self.assertRaises(W.FreezeGateError):
                 W.eval_run_gate(os.path.join(REPO_ROOT, "frozen"), lock_path=lock, force=False)
             mention = W.eval_run_gate(os.path.join(REPO_ROOT, "frozen"), lock_path=lock, force=True)
             self.assertEqual(mention, W.FORCED_RERUN_MENTION)
             self.assertIn("invalide pour la revendication", mention)
-            # sans verrou ni forcage : première exécution permise (None)
+            # without lock and without forcing: first execution allowed (None)
             self.assertIsNone(W.eval_run_gate(os.path.join(REPO_ROOT, "frozen"), lock_path=os.path.join(tmp, "absent.lock")))
 
 

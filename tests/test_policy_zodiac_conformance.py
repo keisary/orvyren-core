@@ -1,16 +1,16 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-"""Conformité politique ↔ enveloppe (L4.4) : la politique hors chaîne est la
-borne INFÉRIEURE de l'enveloppe on-chain (DOC2 §5.5.3/§5.5.4).
+"""Policy ↔ envelope conformance (L4.4): the off-chain policy is the
+LOWER bound of the on-chain envelope (DOC2 §5.5.3/§5.5.4).
 
-Volet 1 — le test de conformité **offline** (CI) : `policy_v1.yaml` ↔ fixture
-versionnée `fixtures/roles_agent_config.json` ; toute dérive introduite d'un
-côté ou de l'autre est détectée, y compris une dérive simulée (fixture
-modifiée => SAFE MODE).
-Volet 2 — le script `scripts/run_drift_check.py` : fonctions, rapport et codes
-de sortie en mode `--offline`.
+Part 1 — the **offline** conformance test (CI): `policy_v1.yaml` ↔ versioned
+fixture `fixtures/roles_agent_config.json`; any drift introduced on one
+side or the other is detected, including a simulated drift (modified
+fixture => SAFE MODE).
+Part 2 — the `scripts/run_drift_check.py` script: functions, report and exit
+codes in `--offline` mode.
 
-Exécution : python -m unittest discover -s tests -v
+Run: python -m unittest discover -s tests -v
 """
 
 import copy
@@ -33,8 +33,8 @@ import run_drift_check as drift  # noqa: E402
 
 POLICY = os.path.join(ROOT, "policy_v1.yaml")
 FIXTURE = os.path.join(ROOT, "fixtures", "roles_agent_config.json")
-# Seul B est résolu ici (adresse mesurée on-chain) ; C reste un label de
-# session non versionné — listé en « pending » par le contrôle D6.
+# Only B is resolved here (address measured on-chain); C stays an unversioned
+# session label — listed as "pending" by the D6 check.
 RECIPIENTS = {"B": "0x37877f6ffb6656e752bf4807b9c3c7b761a953a3"}
 
 
@@ -80,12 +80,12 @@ class TestOfflineConformance(unittest.TestCase):
         def swap_role_key(fixture):
             fixture["role_key"] = "0xdeadbeef" + "0" * 56
 
-        for name, mutate in (("allowance réduite", drop_allowance),
-                             ("cible à portée large", widen_target),
-                             ("quota modifié", change_quota),
-                             ("destinataires vides", empty_recipients),
-                             ("révocation retirée", drop_revocation),
-                             ("clé de rôle changée", swap_role_key)):
+        for name, mutate in (("reduced allowance", drop_allowance),
+                             ("broad-scope target", widen_target),
+                             ("modified quota", change_quota),
+                             ("empty recipients", empty_recipients),
+                             ("revocation removed", drop_revocation),
+                             ("role key changed", swap_role_key)):
             with self.subTest(name=name):
                 fixture = copy.deepcopy(load_fixture())
                 mutate(fixture)
@@ -162,7 +162,7 @@ class TestFixtureContent(unittest.TestCase):
         self.assertIn("D3", probes[0]["proves"])
         numbers = {probe["id"]: probe["expect"]["revert_selector"] for probe in probes}
         self.assertNotIn("0xfd8e9f28", numbers["members.agent.behavioural"],
-                         "pas NoMembership : l'agent doit être membre à la capture")
+                         "not NoMembership: the agent must be a member at capture time")
 
     def test_la_fixture_nomme_ses_zones_incertaines(self):
         fixture = load_fixture()

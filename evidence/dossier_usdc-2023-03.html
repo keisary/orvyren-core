@@ -40,7 +40,7 @@ pre{background:var(--soft);border:1px solid var(--line);padding:8px;overflow:aut
 <tbody>
 <tr><td>Case</td><td>usdc-2023-03</td></tr>
 <tr><td>Window</td><td>2023-03-09T00:00:00+00:00 → 2023-03-15T00:00:00+00:00</td></tr>
-<tr><td>Generated (UTC)</td><td>2026-10-16T12:40:12Z</td></tr>
+<tr><td>Generated (UTC)</td><td>2026-10-17T04:34:02Z</td></tr>
 <tr><td>Engine</td><td>ORVYREN-Core 0.1</td></tr>
 </tbody>
 </table>
@@ -136,6 +136,8 @@ pre{background:var(--soft);border:1px solid var(--line);padding:8px;overflow:aut
         &quot;to&quot;: &quot;0x036cbd53842c5426634e7929541eC2318f3dCF7e&quot;
       },
       &quot;intent_id&quot;: &quot;I1&quot;,
+      &quot;policy_hash&quot;: &quot;b8d2e92e2d9233010c392b553df63f9014b25b36891307e4178f1b4d6ac580ad&quot;,
+      &quot;policy_version&quot;: &quot;v1.0&quot;,
       &quot;recipient&quot;: &quot;0x1111111111111111111111111111111111111111&quot;,
       &quot;rules_evaluated&quot;: [
         {
@@ -154,8 +156,8 @@ pre{background:var(--soft);border:1px solid var(--line);padding:8px;overflow:aut
           &quot;rule&quot;: &quot;P3-recipient&quot;
         },
         {
-          &quot;note&quot;: &quot;registre de fonctions non configuré (legacy)&quot;,
-          &quot;result&quot;: &quot;SKIPPED&quot;,
+          &quot;note&quot;: &quot;transfer -&gt; (0x036cbd53842c5426634e7929541ec2318f3dcf7e, 0xa9059cbb)&quot;,
+          &quot;result&quot;: &quot;OK&quot;,
           &quot;rule&quot;: &quot;P4-function&quot;
         },
         {
@@ -169,8 +171,8 @@ pre{background:var(--soft);border:1px solid var(--line);padding:8px;overflow:aut
           &quot;rule&quot;: &quot;P6-cumulative&quot;
         },
         {
-          &quot;note&quot;: &quot;state non fourni (appel legacy)&quot;,
-          &quot;result&quot;: &quot;SKIPPED&quot;,
+          &quot;note&quot;: &quot;balance 1000.0 (floor/exposure not configured)&quot;,
+          &quot;result&quot;: &quot;OK&quot;,
           &quot;rule&quot;: &quot;P7-exposure&quot;
         },
         {
@@ -179,8 +181,8 @@ pre{background:var(--soft);border:1px solid var(--line);padding:8px;overflow:aut
           &quot;rule&quot;: &quot;P8-permission&quot;
         },
         {
-          &quot;note&quot;: &quot;TTL d&#x27;intention non configuré (legacy)&quot;,
-          &quot;result&quot;: &quot;SKIPPED&quot;,
+          &quot;note&quot;: &quot;age 0:00:00&quot;,
+          &quot;result&quot;: &quot;OK&quot;,
           &quot;rule&quot;: &quot;P9-freshness&quot;
         },
         {
@@ -189,18 +191,18 @@ pre{background:var(--soft);border:1px solid var(--line);padding:8px;overflow:aut
           &quot;rule&quot;: &quot;P10-idempotency&quot;
         },
         {
-          &quot;note&quot;: &quot;state non fourni (appel legacy)&quot;,
-          &quot;result&quot;: &quot;SKIPPED&quot;,
+          &quot;note&quot;: &quot;&quot;,
+          &quot;result&quot;: &quot;OK&quot;,
           &quot;rule&quot;: &quot;P11-pause&quot;
         },
         {
-          &quot;note&quot;: &quot;state non fourni (appel legacy)&quot;,
-          &quot;result&quot;: &quot;SKIPPED&quot;,
+          &quot;note&quot;: &quot;&quot;,
+          &quot;result&quot;: &quot;OK&quot;,
           &quot;rule&quot;: &quot;P12-envelope&quot;
         },
         {
-          &quot;note&quot;: &quot;state non fourni (appel legacy)&quot;,
-          &quot;result&quot;: &quot;SKIPPED&quot;,
+          &quot;note&quot;: &quot;0.0 &lt; 0.1&quot;,
+          &quot;result&quot;: &quot;OK&quot;,
           &quot;rule&quot;: &quot;P14-budget&quot;
         },
         {
@@ -209,6 +211,7 @@ pre{background:var(--soft);border:1px solid var(--line);padding:8px;overflow:aut
           &quot;rule&quot;: &quot;P13-action&quot;
         }
       ],
+      &quot;skipped_rules&quot;: [],
       &quot;verdict&quot;: &quot;ALLOW&quot;
     },
     {
@@ -220,6 +223,8 @@ pre{background:var(--soft);border:1px solid var(--line);padding:8px;overflow:aut
       ],
       &quot;instruction&quot;: null,
       &quot;intent_id&quot;: &quot;I2&quot;,
+      &quot;policy_hash&quot;: &quot;b8d2e92e2d9233010c392b553df63f9014b25b36891307e4178f1b4d6ac580ad&quot;,
+      &quot;policy_version&quot;: &quot;v1.0&quot;,
       &quot;recipient&quot;: &quot;0x1111111111111111111111111111111111111111&quot;,
       &quot;rules_evaluated&quot;: [
         {
@@ -238,8 +243,8 @@ pre{background:var(--soft);border:1px solid var(--line);padding:8px;overflow:aut
           &quot;rule&quot;: &quot;P3-recipient&quot;
         },
         {
-          &quot;note&quot;: &quot;registre de fonctions non configuré (legacy)&quot;,
-          &quot;result&quot;: &quot;SKIPPED&quot;,
+          &quot;note&quot;: &quot;transfer -&gt; (0x036cbd53842c5426634e7929541ec2318f3dcf7e, 0xa9059cbb)&quot;,
+          &quot;result&quot;: &quot;OK&quot;,
           &quot;rule&quot;: &quot;P4-function&quot;
         },
         {
@@ -253,8 +258,8 @@ pre{background:var(--soft);border:1px solid var(--line);padding:8px;overflow:aut
           &quot;rule&quot;: &quot;P6-cumulative&quot;
         },
         {
-          &quot;note&quot;: &quot;state non fourni (appel legacy)&quot;,
-          &quot;result&quot;: &quot;SKIPPED&quot;,
+          &quot;note&quot;: &quot;balance 1000.0 (floor/exposure not configured)&quot;,
+          &quot;result&quot;: &quot;OK&quot;,
           &quot;rule&quot;: &quot;P7-exposure&quot;
         },
         {
@@ -263,8 +268,8 @@ pre{background:var(--soft);border:1px solid var(--line);padding:8px;overflow:aut
           &quot;rule&quot;: &quot;P8-permission&quot;
         },
         {
-          &quot;note&quot;: &quot;TTL d&#x27;intention non configuré (legacy)&quot;,
-          &quot;result&quot;: &quot;SKIPPED&quot;,
+          &quot;note&quot;: &quot;age 0:00:00&quot;,
+          &quot;result&quot;: &quot;OK&quot;,
           &quot;rule&quot;: &quot;P9-freshness&quot;
         },
         {
@@ -273,21 +278,22 @@ pre{background:var(--soft);border:1px solid var(--line);padding:8px;overflow:aut
           &quot;rule&quot;: &quot;P10-idempotency&quot;
         },
         {
-          &quot;note&quot;: &quot;state non fourni (appel legacy)&quot;,
-          &quot;result&quot;: &quot;SKIPPED&quot;,
+          &quot;note&quot;: &quot;&quot;,
+          &quot;result&quot;: &quot;OK&quot;,
           &quot;rule&quot;: &quot;P11-pause&quot;
         },
         {
-          &quot;note&quot;: &quot;state non fourni (appel legacy)&quot;,
-          &quot;result&quot;: &quot;SKIPPED&quot;,
+          &quot;note&quot;: &quot;&quot;,
+          &quot;result&quot;: &quot;OK&quot;,
           &quot;rule&quot;: &quot;P12-envelope&quot;
         },
         {
-          &quot;note&quot;: &quot;state non fourni (appel legacy)&quot;,
-          &quot;result&quot;: &quot;SKIPPED&quot;,
+          &quot;note&quot;: &quot;0.0 &lt; 0.1&quot;,
+          &quot;result&quot;: &quot;OK&quot;,
           &quot;rule&quot;: &quot;P14-budget&quot;
         }
       ],
+      &quot;skipped_rules&quot;: [],
       &quot;verdict&quot;: &quot;DENY&quot;
     },
     {
@@ -298,6 +304,8 @@ pre{background:var(--soft);border:1px solid var(--line);padding:8px;overflow:aut
       ],
       &quot;instruction&quot;: null,
       &quot;intent_id&quot;: &quot;I3&quot;,
+      &quot;policy_hash&quot;: &quot;b8d2e92e2d9233010c392b553df63f9014b25b36891307e4178f1b4d6ac580ad&quot;,
+      &quot;policy_version&quot;: &quot;v1.0&quot;,
       &quot;recipient&quot;: &quot;0x1111111111111111111111111111111111111111&quot;,
       &quot;rules_evaluated&quot;: [
         {
@@ -316,7 +324,7 @@ pre{background:var(--soft);border:1px solid var(--line);padding:8px;overflow:aut
           &quot;rule&quot;: &quot;P3-recipient&quot;
         },
         {
-          &quot;note&quot;: &quot;registre de fonctions non configuré (legacy)&quot;,
+          &quot;note&quot;: &quot;approval-only action — no direct call in v1&quot;,
           &quot;result&quot;: &quot;SKIPPED&quot;,
           &quot;rule&quot;: &quot;P4-function&quot;
         },
@@ -326,13 +334,13 @@ pre{background:var(--soft);border:1px solid var(--line);padding:8px;overflow:aut
           &quot;rule&quot;: &quot;P5-amount&quot;
         },
         {
-          &quot;note&quot;: &quot;100.0 &lt;= 300.0&quot;,
+          &quot;note&quot;: &quot;200.0 &lt;= 300.0&quot;,
           &quot;result&quot;: &quot;OK&quot;,
           &quot;rule&quot;: &quot;P6-cumulative&quot;
         },
         {
-          &quot;note&quot;: &quot;state non fourni (appel legacy)&quot;,
-          &quot;result&quot;: &quot;SKIPPED&quot;,
+          &quot;note&quot;: &quot;balance 1000.0 (floor/exposure not configured)&quot;,
+          &quot;result&quot;: &quot;OK&quot;,
           &quot;rule&quot;: &quot;P7-exposure&quot;
         },
         {
@@ -341,8 +349,8 @@ pre{background:var(--soft);border:1px solid var(--line);padding:8px;overflow:aut
           &quot;rule&quot;: &quot;P8-permission&quot;
         },
         {
-          &quot;note&quot;: &quot;TTL d&#x27;intention non configuré (legacy)&quot;,
-          &quot;result&quot;: &quot;SKIPPED&quot;,
+          &quot;note&quot;: &quot;age 0:00:00&quot;,
+          &quot;result&quot;: &quot;OK&quot;,
           &quot;rule&quot;: &quot;P9-freshness&quot;
         },
         {
@@ -351,18 +359,18 @@ pre{background:var(--soft);border:1px solid var(--line);padding:8px;overflow:aut
           &quot;rule&quot;: &quot;P10-idempotency&quot;
         },
         {
-          &quot;note&quot;: &quot;state non fourni (appel legacy)&quot;,
-          &quot;result&quot;: &quot;SKIPPED&quot;,
+          &quot;note&quot;: &quot;&quot;,
+          &quot;result&quot;: &quot;OK&quot;,
           &quot;rule&quot;: &quot;P11-pause&quot;
         },
         {
-          &quot;note&quot;: &quot;state non fourni (appel legacy)&quot;,
-          &quot;result&quot;: &quot;SKIPPED&quot;,
+          &quot;note&quot;: &quot;&quot;,
+          &quot;result&quot;: &quot;OK&quot;,
           &quot;rule&quot;: &quot;P12-envelope&quot;
         },
         {
-          &quot;note&quot;: &quot;state non fourni (appel legacy)&quot;,
-          &quot;result&quot;: &quot;SKIPPED&quot;,
+          &quot;note&quot;: &quot;0.0 &lt; 0.1&quot;,
+          &quot;result&quot;: &quot;OK&quot;,
           &quot;rule&quot;: &quot;P14-budget&quot;
         },
         {
@@ -371,10 +379,17 @@ pre{background:var(--soft);border:1px solid var(--line);padding:8px;overflow:aut
           &quot;rule&quot;: &quot;P13-action&quot;
         }
       ],
+      &quot;skipped_rules&quot;: [
+        &quot;P4-function&quot;
+      ],
       &quot;verdict&quot;: &quot;REQUIRE_APPROVAL&quot;
     }
   ],
   &quot;chain&quot;: &quot;Base Sepolia (84532)&quot;,
+  &quot;demo_defaults&quot;: {
+    &quot;agent_member&quot;: true,
+    &quot;available_balance&quot;: true
+  },
   &quot;execution_config&quot;: {
     &quot;agent_holds_key&quot;: false,
     &quot;dry_run&quot;: true,
@@ -387,12 +402,143 @@ pre{background:var(--soft);border:1px solid var(--line);padding:8px;overflow:aut
     &quot;timeout_seconds&quot;: 30,
     &quot;treasury_address&quot;: &quot;0x2222222222222222222222222222222222222222&quot;
   },
-  &quot;generated_at&quot;: &quot;2026-10-16T12:40:12+00:00&quot;,
+  &quot;generated_at&quot;: &quot;2026-10-17T04:34:02+00:00&quot;,
   &quot;guard_blocks&quot;: [
     &quot;I2: execution blocked: policy verdict &#x27;DENY&#x27; — the instruction is refused (reason codes: AMOUNT_ABOVE_TX_CAP, AMOUNT_ABOVE_PERIOD_CAP)&quot;,
     &quot;I3: execution blocked: policy verdict &#x27;REQUIRE_APPROVAL&#x27; — a human approval is required before this instruction may be prepared (reason codes: ACTION_NEEDS_HUMAN_APPROVAL)&quot;
   ],
   &quot;mode&quot;: &quot;unsigned instruction + human execution + on-chain receipt verification&quot;,
+  &quot;period_cap_check&quot;: {
+    &quot;amount_usdc&quot;: 100.0,
+    &quot;fourth_deny_codes&quot;: [
+      &quot;AMOUNT_ABOVE_PERIOD_CAP&quot;
+    ],
+    &quot;fourth_verdict&quot;: &quot;DENY&quot;,
+    &quot;ledger_entries_after_restart&quot;: 3,
+    &quot;max_cumulative_24h&quot;: 300.0,
+    &quot;restart_simulated&quot;: true,
+    &quot;spent_24h_after_restart&quot;: 300.0,
+    &quot;verdicts&quot;: [
+      {
+        &quot;attempt&quot;: 1,
+        &quot;deny_codes&quot;: [],
+        &quot;intent_id&quot;: &quot;period-cap-demo-1&quot;,
+        &quot;verdict&quot;: &quot;ALLOW&quot;
+      },
+      {
+        &quot;attempt&quot;: 2,
+        &quot;deny_codes&quot;: [],
+        &quot;intent_id&quot;: &quot;period-cap-demo-2&quot;,
+        &quot;verdict&quot;: &quot;ALLOW&quot;
+      },
+      {
+        &quot;attempt&quot;: 3,
+        &quot;deny_codes&quot;: [],
+        &quot;intent_id&quot;: &quot;period-cap-demo-3&quot;,
+        &quot;verdict&quot;: &quot;ALLOW&quot;
+      },
+      {
+        &quot;attempt&quot;: 4,
+        &quot;deny_codes&quot;: [
+          &quot;AMOUNT_ABOVE_PERIOD_CAP&quot;
+        ],
+        &quot;intent_id&quot;: &quot;period-cap-demo-4&quot;,
+        &quot;verdict&quot;: &quot;DENY&quot;
+      }
+    ]
+  },
+  &quot;policy&quot;: {
+    &quot;path&quot;: &quot;policy_v1.yaml&quot;,
+    &quot;policy_hash&quot;: &quot;b8d2e92e2d9233010c392b553df63f9014b25b36891307e4178f1b4d6ac580ad&quot;,
+    &quot;recipients_resolved&quot;: [
+      &quot;B&quot;
+    ],
+    &quot;unresolved_recipients&quot;: [
+      &quot;C&quot;
+    ],
+    &quot;version&quot;: &quot;v1.0&quot;,
+    &quot;yaml_sha256&quot;: &quot;b99ad99bc2d32184fd4e1b45fb136f0424e972f40d71cafeab622ae11acc0c03&quot;
+  },
+  &quot;policy_state&quot;: {
+    &quot;agent_member&quot;: true,
+    &quot;available_balance&quot;: 1000.0,
+    &quot;budget_cap_usd&quot;: 0.1,
+    &quot;cumulative_spent_24h&quot;: 100.0,
+    &quot;envelope_checks&quot;: [
+      {
+        &quot;detail&quot;: {
+          &quot;chain_id&quot;: 84532
+        },
+        &quot;id&quot;: &quot;D1&quot;,
+        &quot;name&quot;: &quot;chain&quot;,
+        &quot;status&quot;: &quot;PASS&quot;
+      },
+      {
+        &quot;detail&quot;: {},
+        &quot;id&quot;: &quot;D3&quot;,
+        &quot;name&quot;: &quot;role key&quot;,
+        &quot;status&quot;: &quot;PASS&quot;
+      },
+      {
+        &quot;detail&quot;: {
+          &quot;targets&quot;: [
+            &quot;0x036cbd53842c5426634e7929541ec2318f3dcf7e&quot;
+          ]
+        },
+        &quot;id&quot;: &quot;D4&quot;,
+        &quot;name&quot;: &quot;role targets&quot;,
+        &quot;status&quot;: &quot;PASS&quot;
+      },
+      {
+        &quot;detail&quot;: {
+          &quot;functions&quot;: [
+            [
+              &quot;0x036cbd53842c5426634e7929541ec2318f3dcf7e&quot;,
+              &quot;0xa9059cbb&quot;
+            ]
+          ]
+        },
+        &quot;id&quot;: &quot;D5&quot;,
+        &quot;name&quot;: &quot;role functions&quot;,
+        &quot;status&quot;: &quot;PASS&quot;
+      },
+      {
+        &quot;detail&quot;: {
+          &quot;fixture&quot;: 300000000,
+          &quot;mismatches&quot;: [],
+          &quot;policy&quot;: 300000000
+        },
+        &quot;id&quot;: &quot;D7&quot;,
+        &quot;name&quot;: &quot;allowance&quot;,
+        &quot;status&quot;: &quot;PASS&quot;
+      },
+      {
+        &quot;detail&quot;: {
+          &quot;fixture&quot;: 10,
+          &quot;policy&quot;: 10
+        },
+        &quot;id&quot;: &quot;D8&quot;,
+        &quot;name&quot;: &quot;call quota&quot;,
+        &quot;status&quot;: &quot;PASS&quot;
+      },
+      {
+        &quot;detail&quot;: {},
+        &quot;id&quot;: &quot;D9&quot;,
+        &quot;name&quot;: &quot;scheduled revocation&quot;,
+        &quot;status&quot;: &quot;PASS&quot;
+      },
+      {
+        &quot;detail&quot;: {},
+        &quot;id&quot;: &quot;D10&quot;,
+        &quot;name&quot;: &quot;asset&quot;,
+        &quot;status&quot;: &quot;PASS&quot;
+      }
+    ],
+    &quot;envelope_fixture&quot;: &quot;fixtures/roles_agent_config.json&quot;,
+    &quot;envelope_source&quot;: &quot;fixture&quot;,
+    &quot;envelope_status&quot;: &quot;PASS&quot;,
+    &quot;paused&quot;: false
+  },
   &quot;receipt_verification&quot;: {
     &quot;status&quot;: &quot;no transaction hash provided yet (pending human execution)&quot;
   },
@@ -597,7 +743,7 @@ pre{background:var(--soft);border:1px solid var(--line);padding:8px;overflow:aut
       &quot;venues_present&quot;: []
     }
   ],
-  &quot;generated_at&quot;: &quot;2026-10-16T12:40:11.986695+00:00&quot;,
+  &quot;generated_at&quot;: &quot;2026-10-17T04:34:01.272554+00:00&quot;,
   &quot;graph&quot;: {
     &quot;claims_inserted&quot;: 4,
     &quot;counts&quot;: {
@@ -621,7 +767,7 @@ pre{background:var(--soft);border:1px solid var(--line);padding:8px;overflow:aut
         &quot;sources&quot;: 4
       },
       &quot;graph_version&quot;: &quot;orvyren-graph-v1&quot;,
-      &quot;hash&quot;: &quot;6c02b63403aad46942c46060b9fa643f9e7683a7138164eeac7c712ab50f7294&quot;,
+      &quot;hash&quot;: &quot;f21556f58dc8de0663dfa009f7810622ab0128eb59b61e27e01a5d914c8e2d66&quot;,
       &quot;rows_total&quot;: {
         &quot;claims&quot;: 4,
         &quot;decision_nodes&quot;: 0,
@@ -630,7 +776,7 @@ pre{background:var(--soft);border:1px solid var(--line);padding:8px;overflow:aut
         &quot;relations&quot;: 4,
         &quot;sources&quot;: 4
       },
-      &quot;schema_version&quot;: 1
+      &quot;schema_version&quot;: 2
     },
     &quot;sources&quot;: [
       &quot;binance&quot;,
@@ -731,16 +877,16 @@ pre{background:var(--soft);border:1px solid var(--line);padding:8px;overflow:aut
 <table>
 <thead><tr><th>Input</th><th>Path</th><th>SHA-256</th></tr></thead>
 <tbody>
-<tr><td>decision</td><td><code>evidence/decision_usdc-2023-03.json</code></td><td><code>b65c0634be924b18954258dedb93e7f8965ae2728fb129f1dd56c39c01b76bbd</code></td></tr>
+<tr><td>decision</td><td><code>evidence/decision_usdc-2023-03.json</code></td><td><code>acd3f227018f396f6c92873cf3c4c48df74ac6e98428c64974033f27f2ebf49c</code></td></tr>
 <tr><td>baseline_report</td><td><code>evidence/baseline_report.json</code></td><td><code>fa68d11f36232719f5400b5aab1d1cfab19b7808aaeb3e01297bd7bf4f868ae8</code></td></tr>
-<tr><td>policy_execution_demo</td><td><code>evidence/policy_execution_demo.json</code></td><td><code>cd55f7f71911a7b15e4bc9f4f9be7622a7db72371a034ea5205b9142ab8da5f0</code></td></tr>
-<tr><td>quality_report</td><td><code>evidence/quality_report.json</code></td><td><code>5bade796b4e1909d373aa3aaad663a4a3de2ca68c30c2affb5cc5aaff255e20a</code></td></tr>
-<tr><td>dossier (self, html)</td><td><code>evidence/dossier_usdc-2023-03.html</code></td><td><code>21a9af8721c86a387bdd67c348765225aeb3f3cc02b01279fd16e1068030312b</code></td></tr>
+<tr><td>policy_execution_demo</td><td><code>evidence/policy_execution_demo.json</code></td><td><code>5d6b64e04a04056acdb8dd7ab1f57368328677b82b73f8bd6b55e29bda14ffae</code></td></tr>
+<tr><td>quality_report</td><td><code>evidence/quality_report.json</code></td><td><code>3422567ea2de3ee1ac54fa7a72b84c3f7fbd94eca76b72fb11b7ba19bff82730</code></td></tr>
+<tr><td>dossier (self, html)</td><td><code>evidence/dossier_usdc-2023-03.html</code></td><td><code>442950ee3be51aa7cd5bf875a82c184bf1d22ee9767c97d05b46d83dbdcd4111</code></td></tr>
 </tbody>
 </table>
 <p class="note">Self-hash rule: the <code>dossier (self, html)</code> row is the SHA-256 of this HTML file computed with its own 64-hex-character self-hash field zeroed (64 <code>0</code> characters). It is reproducible with any SHA-256 tool: replace that field with zeros and hash the file. With identical inputs and build time this dossier is byte-identical.</p>
 </section>
-<footer class="foot">produced by ORVYREN-Core v0.1 — deterministic engine, no human edit · ORVYREN-Core v0.1 · generated 2026-10-16T12:40:12Z (UTC)</footer>
+<footer class="foot">produced by ORVYREN-Core v0.1 — deterministic engine, no human edit · ORVYREN-Core v0.1 · generated 2026-10-17T04:34:02Z (UTC)</footer>
 </main>
 </body>
 </html>

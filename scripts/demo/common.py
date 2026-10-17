@@ -1,27 +1,27 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-"""ORVYREN — kit de démo testnet : helpers partagés (**stdlib uniquement**).
+"""ORVYREN — testnet demo kit: shared helpers (**stdlib only**).
 
-Ce module ne lit ni n'écrit **jamais** de clé privée : la clé ne vit que dans
-l'environnement du processus de signature et n'est lue que par
-:mod:`scripts.demo.signer`. Les noms de variables sensibles sont rapportés par
-``orvyren.execution.guard.present_secret_env_names`` (par NOM seulement).
+This module never reads or writes a private key: the key lives only in the
+signing process environment and is read only by
+:mod:`scripts.demo.signer`. Sensitive variable names are reported by
+``orvyren.execution.guard.present_secret_env_names`` (by NAME only).
 
-Contenu :
+Contents:
 
-* chemins du dépôt + import du code existant ``src/orvyren`` (style maison,
-  comme ``scripts/recon_common.py``) ;
-* hachages : SHA-256 (stdlib, standard du journal B6 R-2) et **Keccak-256 en
-  Python pur** (validé sur les vecteurs ``keccak256("")`` / ``keccak256("abc")``,
-  repris de ``research/raw_b5/keccak_selectors.py``) — nécessaire au calcul de
-  ``idempotency_key`` (B5 §b.1) et des sélecteurs ;
-* encodage ABI minimal (mots de 32 octets, ``bytes`` dynamiques) ;
-* client JSON-RPC **lecture seule** (réutilise ``orvyren.execution.chain.rpc``,
-  User-Agent inclus : le RPC public Base Sepolia refuse les requêtes sans UA) ;
-* journal append-only chaîné SHA-256 (format B6 §1.3), registre d'idempotence,
-  journal des signatures, drapeau de pause K0 ;
-* chargement de la configuration de session (``.env`` de démo, jamais
-  versionné) et de la politique de démonstration (``policy.demo.json``).
+* repository paths + import of the existing ``src/orvyren`` code (house style,
+  like ``scripts/recon_common.py``);
+* hashes: SHA-256 (stdlib, the journal standard B6 R-2) and **pure-Python
+  Keccak-256** (validated on the vectors ``keccak256("")`` / ``keccak256("abc")``,
+  taken from ``research/raw_b5/keccak_selectors.py``) — required to compute
+  ``idempotency_key`` (B5 §b.1) and the selectors;
+* minimal ABI encoding (32-byte words, dynamic ``bytes``);
+* **read-only** JSON-RPC client (reuses ``orvyren.execution.chain.rpc``,
+  User-Agent included: the public Base Sepolia RPC rejects requests without a UA);
+* SHA-256 chained append-only journal (format B6 §1.3), idempotency registry,
+  signature log, K0 pause flag;
+* loading of the session configuration (demo ``.env``, never
+  versioned) and of the demo policy (``policy.demo.json``).
 """
 
 from __future__ import annotations
@@ -39,7 +39,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 SCRIPTS_DIR = os.path.dirname(HERE)
 ROOT = os.path.dirname(SCRIPTS_DIR)
 SRC = os.path.join(ROOT, "src")
-if SRC not in sys.path:  # pragma: no cover - dépend du mode d'exécution
+if SRC not in sys.path:  # pragma: no cover - depends on the execution mode
     sys.path.insert(0, SRC)
 
 from orvyren.execution import chain as chain_client  # noqa: E402
@@ -51,16 +51,16 @@ from orvyren.policy import (  # noqa: E402
     evaluate,
 )
 
-# --- constantes du plan de démo (W2C §g, B5 §b, vérifiées 2026-10-15) --------
+# --- demo plan constants (W2C §g, B5 §b, verified 2026-10-15) --------------
 
-CHAIN_ID_DEMO = 84532                     # Base Sepolia (FREEZE_V2 : testnet accepté)
+CHAIN_ID_DEMO = 84532                     # Base Sepolia (FREEZE_V2: testnet accepted)
 DEFAULT_RPC_URL = "https://sepolia.base.org"
 RPC_TIMEOUT_SECONDS = 30
 
-#: Rôle Zodiac « AGENT » : étiquette ASCII (<= 32 octets, a-z 0-9 _), complétée à droite par des zéros (W2C §g.0).
+#: Zodiac role "AGENT": ASCII label (<= 32 bytes, a-z 0-9 _), right-padded with zeros (W2C §g.0).
 ROLE_KEY_AGENT = "0x" + b"AGENT".hex() + "00" * 27
 
-#: Sélecteurs **vérifiés** sur Base Sepolia le 2026-10-15 (research/raw_b5/SELECTEURS_VERIFIES.md).
+#: Selectors **verified** on Base Sepolia on 2026-10-15 (research/raw_b5/SELECTEURS_VERIFIES.md).
 SELECTOR_TRANSFER = "0xa9059cbb"           # transfer(address,uint256)
 SELECTOR_BALANCE_OF = "0x70a08231"         # balanceOf(address)
 SELECTOR_ALLOWANCE = "0xdd62ed3e"          # allowance(address,address)
@@ -68,14 +68,14 @@ SELECTOR_EXEC_TX_WITH_ROLE = "0xc6fe8747"  # execTransactionWithRole(address,uin
 SELECTOR_EXEC_TX_WITH_ROLE_RET = "0x2b99e506"  # execTransactionWithRoleReturnData(...)
 SELECTOR_ASSIGN_ROLES = "0x957ed2b3"       # assignRoles(address,bytes32[],bool[])
 SELECTOR_ALLOW_TARGET = "0x7b0da5b2"       # allowTarget(bytes32,address,uint8)
-ERROR_NOT_AUTHORIZED = "0xfd8e9f28"        # NoMembership() — revert d'un non-membre ; MESURÉ on-chain le 2026-10-16 (l'hypothèse 0x4a0bfec1 « NotAuthorized » venait d'une note de doc — la mesure prime)
+ERROR_NOT_AUTHORIZED = "0xfd8e9f28"        # NoMembership() — revert of a non-member; MEASURED on-chain on 2026-10-16 (the 0x4a0bfec1 "NotAuthorized" hypothesis came from a doc note — measurement wins)
 
-#: Topic0 de l'événement ERC-20 Transfer (recalculé, égal à la constante de orvyren.execution.verify).
+#: Topic0 of the ERC-20 Transfer event (recomputed, equal to the orvyren.execution.verify constant).
 TRANSFER_TOPIC = "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef"
 
-#: Adresses de plan (à re-vérifier le jour J par eth_getCode — protocole B5 §e.7).
+#: Plan addresses (to be re-verified on demo day with eth_getCode — protocol B5 §e.7).
 KNOWN_ADDRESSES = {
-    "module_roles_officiel": "0xF2964CE6161ce0e75964Fe7927cE114cb0B283D5",  # instance propre requise pour la Safe de démo
+    "module_roles_officiel": "0xF2964CE6161ce0e75964Fe7927cE114cb0B283D5",  # clean instance required for the demo Safe
     "usdc_circle_base_sepolia": "0x036CbD53842c5426634e7929541eC2318f3dCF7e",
     "usdc_aave_base_sepolia": "0xba50Cd2A20f6DA35D788639E581bca8d0B5d4D5f",
     "weth_predeploy": "0x4200000000000000000000000000000000000006",
@@ -91,11 +91,11 @@ KNOWN_ADDRESSES = {
 
 TRANSFER_SIGNATURE = "transfer(address,uint256)"
 
-# --- temps -------------------------------------------------------------------
+# --- time --------------------------------------------------------------------
 
 
 def utc_now() -> str:
-    """Horodatage RFC 3339 UTC à la seconde (``2026-10-15T12:00:00Z``)."""
+    """RFC 3339 UTC timestamp to the second (``2026-10-15T12:00:00Z``)."""
     return datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
 
 
@@ -104,7 +104,7 @@ def utc_now_dt() -> datetime:
 
 
 def parse_rfc3339(text: str) -> datetime:
-    """Parse un horodatage RFC 3339 (tolère le suffixe ``Z``) en datetime UTC."""
+    """Parses an RFC 3339 timestamp (tolerates the ``Z`` suffix) into a UTC datetime."""
     if not isinstance(text, str):
         raise ValueError("not an RFC 3339 timestamp: {!r}".format(text))
     value = text.strip()
@@ -116,11 +116,11 @@ def parse_rfc3339(text: str) -> datetime:
     return parsed.astimezone(timezone.utc)
 
 
-# --- sérialisation canonique -------------------------------------------------
+# --- canonical serialization ------------------------------------------------
 
 
 def canonical_json(obj: Any) -> str:
-    """JSON canonique du projet : clés triées, séparateurs serrés, UTF-8 (B6 §1.2)."""
+    """Project canonical JSON: sorted keys, tight separators, UTF-8 (B6 §1.2)."""
     return json.dumps(obj, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
 
 
@@ -129,7 +129,7 @@ def sha256_hex(data: bytes) -> str:
 
 
 def load_json(path: str, default: Any = None) -> Any:
-    """Lit un fichier JSON ; renvoie ``default`` si absent, lève si invalide."""
+    """Reads a JSON file; returns ``default`` if absent, raises if invalid."""
     if not os.path.isfile(path):
         return default
     with open(path, "r", encoding="utf-8") as handle:
@@ -137,10 +137,10 @@ def load_json(path: str, default: Any = None) -> Any:
 
 
 def display_path(path: Any, root: Optional[str] = None) -> str:
-    """Chemin lisible : relatif au dépôt quand c'est possible, absolu sinon.
+    """Readable path: repo-relative when possible, absolute otherwise.
 
-    Ne lève jamais (contrairement à ``os.path.relpath`` qui échoue entre deux
-    lecteurs Windows) : un artefact hashé ne doit pas dépendre du poste.
+    Never raises (unlike ``os.path.relpath``, which fails across two
+    Windows drives): a hashed artifact must not depend on the machine.
     """
     text = str(path)
     try:
@@ -153,7 +153,7 @@ def display_path(path: Any, root: Optional[str] = None) -> str:
 
 
 def write_json(path: str, payload: Any) -> None:
-    """Écrit un JSON indenté, remplacement atomique (jamais de fichier tronqué)."""
+    """Writes indented JSON, atomic replacement (never a truncated file)."""
     directory = os.path.dirname(os.path.abspath(path))
     if directory:
         os.makedirs(directory, exist_ok=True)
@@ -167,7 +167,7 @@ def write_json(path: str, payload: Any) -> None:
 
 
 def append_jsonl(path: str, payload: Any) -> None:
-    """Append d'une ligne JSON (le seul mode d'écriture du journal : append-only)."""
+    """Appends one JSON line (the journal's only write mode: append-only)."""
     directory = os.path.dirname(os.path.abspath(path))
     if directory:
         os.makedirs(directory, exist_ok=True)
@@ -177,7 +177,7 @@ def append_jsonl(path: str, payload: Any) -> None:
 
 
 def read_jsonl(path: str) -> List[Any]:
-    """Lit un JSONL ; une ligne illisible est rapportée (jamais silencieuse)."""
+    """Reads a JSONL file; an unreadable line is reported (never silently)."""
     records: List[Any] = []
     if not os.path.isfile(path):
         return records
@@ -189,13 +189,13 @@ def read_jsonl(path: str) -> List[Any]:
             try:
                 records.append(json.loads(text))
             except ValueError as exc:
-                raise ValueError("{}: ligne {} illisible: {}".format(path, number, exc))
+                raise ValueError("{}: unreadable line {}: {}".format(path, number, exc))
     return records
 
 
 # --- Keccak-256 (Python pur, stdlib) -----------------------------------------
-# Implémentation reprise de research/raw_b5/keccak_selectors.py (validée sur les
-# vecteurs connus) : nécessaire car hashlib ne fournit pas Keccak-256.
+# Implementation taken from research/raw_b5/keccak_selectors.py (validated on the
+# known vectors): required because hashlib does not provide Keccak-256.
 
 _RC = [
     0x0000000000000001, 0x0000000000008082, 0x800000000000808A, 0x8000000080008000,
@@ -246,7 +246,7 @@ _keccak_lock = threading.Lock()
 
 
 def keccak256(data: bytes) -> bytes:
-    """Keccak-256 (version Ethereum, padding 0x01) en Python pur."""
+    """Keccak-256 (Ethereum variant, 0x01 padding) in pure Python."""
     rate = 136
     padlen = rate - (len(data) % rate)
     if padlen == 1:
@@ -277,7 +277,7 @@ def keccak256_hex(data: bytes) -> str:
 
 
 def selector(signature: str) -> str:
-    """Sélecteur 4 octets d'une signature canonique ASCII (``0xa9059cbb``)."""
+    """4-byte selector of a canonical ASCII signature (``0xa9059cbb``)."""
     return "0x" + keccak256(signature.encode("ascii"))[:4].hex()
 
 
@@ -287,7 +287,7 @@ def selector(signature: str) -> str:
 def enc_uint(value: int) -> str:
     number = int(value)
     if number < 0 or number >= 1 << 256:
-        raise ValueError("enc_uint: valeur hors 256 bits: {!r}".format(value))
+        raise ValueError("enc_uint: value outside 256 bits: {!r}".format(value))
     return "{:064x}".format(number)
 
 
@@ -298,15 +298,15 @@ def enc_address(address: str) -> str:
 def enc_bytes32(value: str) -> str:
     body = value[2:] if value.startswith("0x") else value
     if len(body) != 64 or not all(c in "0123456789abcdefABCDEF" for c in body):
-        raise ValueError("enc_bytes32: attendu 32 octets hex: {!r}".format(value))
+        raise ValueError("enc_bytes32: expected 32 hex bytes: {!r}".format(value))
     return body.lower()
 
 
 def enc_bytes_dynamic(data_hex: str) -> str:
-    """Encodage d'un ``bytes`` dynamique (longueur + données complétées à 32 octets)."""
+    """Encoding of a dynamic ``bytes`` (length + data padded to 32 bytes)."""
     body = data_hex[2:] if data_hex.startswith("0x") else data_hex
     if len(body) % 2:
-        raise ValueError("enc_bytes_dynamic: hex impair: {!r}".format(data_hex[:20]))
+        raise ValueError("enc_bytes_dynamic: odd hex length: {!r}".format(data_hex[:20]))
     padded = body + "0" * ((64 - len(body) % 64) % 64)
     return enc_uint(len(body) // 2) + padded
 
@@ -318,7 +318,7 @@ def enc_bool(value: bool) -> str:
 def decode_word_uint(payload: str, index: int = 0) -> int:
     body = payload[2:] if payload.startswith("0x") else payload
     if len(body) < (index + 1) * 64:
-        raise ValueError("decode_word_uint: payload trop court")
+        raise ValueError("decode_word_uint: payload too short")
     return int(body[index * 64:(index + 1) * 64], 16)
 
 
@@ -342,7 +342,7 @@ def hex_to_int(value: Any) -> int:
     return int(text, 16)
 
 
-# --- adresses ----------------------------------------------------------------
+# --- addresses ---------------------------------------------------------------
 
 
 def is_address(value: Any) -> bool:
@@ -355,9 +355,9 @@ def is_address(value: Any) -> bool:
 
 
 def normalize_address(address: Any, context: str = "address") -> str:
-    """Adresse normalisée en minuscules — **aucune réparation** (refus si malformée)."""
+    """Address normalized to lowercase — **no repair** (refused if malformed)."""
     if not is_address(address):
-        raise ValueError("invalid {}: {!r} (attendu 0x + 40 hex)".format(context, address))
+        raise ValueError("invalid {}: {!r} (expected 0x + 40 hex)".format(context, address))
     return "0x" + str(address).strip()[2:].lower()
 
 
@@ -377,7 +377,7 @@ _ulid_last_random = 0
 
 
 def ulid() -> str:
-    """ULID (26 caractères Crockford base32, trié par temps) — stdlib pur."""
+    """ULID (26 Crockford base32 characters, time-sorted) — pure stdlib."""
     global _ulid_last_ms, _ulid_last_random
     with _ulid_lock:
         now_ms = int(time.time() * 1000)
@@ -394,12 +394,12 @@ def ulid() -> str:
     return "".join(chars)
 
 
-# --- client JSON-RPC (lecture seule) -----------------------------------------
+# --- JSON-RPC client (read-only) --------------------------------------------
 
 
 def rpc(url: str, method: str, params: Optional[Sequence[Any]] = None,
         timeout: int = RPC_TIMEOUT_SECONDS) -> Any:
-    """Appel JSON-RPC unique — délègue à ``orvyren.execution.chain.rpc`` (UA inclus, URL masquée)."""
+    """Single JSON-RPC call — delegates to ``orvyren.execution.chain.rpc`` (UA included, URL masked)."""
     return chain_client.rpc(url or DEFAULT_RPC_URL, method, list(params or []), timeout)
 
 
@@ -433,7 +433,7 @@ def eth_get_balance(url: str, address: str, block: str = "latest",
 def eth_get_block(url: str, tag: str = "latest", timeout: int = RPC_TIMEOUT_SECONDS) -> Dict[str, Any]:
     block = rpc(url, "eth_getBlockByNumber", [tag, False], timeout)
     if not isinstance(block, dict):
-        raise chain_client.ChainError("eth_getBlockByNumber({}) a renvoyé {}".format(tag, type(block).__name__))
+        raise chain_client.ChainError("eth_getBlockByNumber({}) returned {}".format(tag, type(block).__name__))
     return block
 
 
@@ -451,27 +451,27 @@ def eth_estimate_gas(url: str, from_address: str, to: str, data: str,
 
 def rpc_call_raw(url: str, method: str, params: Optional[Sequence[Any]] = None,
                  timeout: int = RPC_TIMEOUT_SECONDS) -> Any:
-    """Alias public (les tests injectent un transport factice via ``rpc``)."""
+    """Public alias (tests inject a fake transport through ``rpc``)."""
     return rpc(url, method, params, timeout)
 
 
 def revert_selector(data: Any) -> str:
-    """Sélecteur d'un revert (4 premiers octets du retour brut), ou '0x' si vide."""
+    """Selector of a revert (first 4 bytes of the raw return), or '0x' if empty."""
     if not isinstance(data, str):
         return "0x"
     body = data[2:] if data.startswith("0x") else data
     return "0x" + body[:8].lower()
 
 
-# --- configuration de session (.env) ----------------------------------------
+# --- session configuration (.env) -------------------------------------------
 
 
 class ConfigurationError(Exception):
-    """Configuration de démo incomplète ou invalide."""
+    """Incomplete or invalid demo configuration."""
 
 
 def read_env_file(path: str) -> Dict[str, str]:
-    """Lit un fichier ``.env`` (KEY=VALUE) ; **les valeurs ne sont jamais imprimées**."""
+    """Reads a ``.env`` file (KEY=VALUE); **values are never printed**."""
     values: Dict[str, str] = {}
     if not os.path.isfile(path):
         return values
@@ -490,10 +490,10 @@ def read_env_file(path: str) -> Dict[str, str]:
 
 
 def load_session_env(env_file: Optional[str] = None, environ: Optional[Dict[str, str]] = None) -> Dict[str, str]:
-    """Session de démo : fichier ``.env`` puis variables d'environnement (prioritaires).
+    """Demo session: ``.env`` file then environment variables (which take precedence).
 
-    Le fichier ``.env`` n'est jamais versionné (``.gitignore``) et n'est jamais
-    écrit par le kit. Les valeurs sensibles ne sortent pas de cette fonction.
+    The ``.env`` file is never versioned (``.gitignore``) and never
+    written by the kit. Sensitive values do not leave this function.
     """
     environ = os.environ if environ is None else environ
     merged: Dict[str, str] = {}
@@ -506,12 +506,12 @@ def load_session_env(env_file: Optional[str] = None, environ: Optional[Dict[str,
 
 
 def safe_env_view(env: Dict[str, str]) -> Dict[str, Any]:
-    """Vue imprimable d'une configuration : noms + présence, jamais de valeur sensible."""
+    """Printable view of a configuration: names + presence, never a sensitive value."""
     view: Dict[str, Any] = {"secret_env_names_present": list(present_secret_env_names(env))}
     for key in sorted(env):
         if key in ("ORVYREN_PRIVATE_KEY", "ORVYREN_SIGNER_KEY", "ORVYREN_SIGNER_KEYFILE",
                    "ORVYREN_MNEMONIC", "ORVYREN_SEED"):
-            view[key] = "<présente — jamais lue ni affichée>" if env[key] else ""
+            view[key] = "<present — never read or displayed>" if env[key] else ""
         elif "RPC" in key.upper():
             view[key] = mask_rpc_url(env[key])
         else:
@@ -520,15 +520,15 @@ def safe_env_view(env: Dict[str, str]) -> Dict[str, Any]:
 
 
 class SessionConfig:
-    """Configuration d'une session de démo (adresses, RPC, chemins)."""
+    """Configuration of a demo session (addresses, RPC, paths)."""
 
     REQUIRED_ADDRESS_KEYS = (
-        "ORVYREN_SAFE_ADDRESS",         # la Safe (avatar) — détenteur des fonds
-        "ORVYREN_AGENT_ADDRESS",        # l'EOA jetable membre du rôle AGENT
-        "ORVYREN_MODULE_ADDRESS",       # module Roles déployé POUR cette Safe
-        "ORVYREN_USDC_ADDRESS",         # USDC de test Circle (transferts)
-        "ORVYREN_RECIPIENT_B",          # destinataire allowlisté B
-        "ORVYREN_RECIPIENT_C",          # destinataire allowlisté C
+        "ORVYREN_SAFE_ADDRESS",         # the Safe (avatar) — holder of the funds
+        "ORVYREN_AGENT_ADDRESS",        # the throwaway EOA member of the AGENT role
+        "ORVYREN_MODULE_ADDRESS",       # Roles module deployed FOR this Safe
+        "ORVYREN_USDC_ADDRESS",         # Circle test USDC (transfers)
+        "ORVYREN_RECIPIENT_B",          # allowlisted recipient B
+        "ORVYREN_RECIPIENT_C",          # allowlisted recipient C
     )
 
     def __init__(self, env: Dict[str, str]):
@@ -548,7 +548,7 @@ class SessionConfig:
         return cls(load_session_env(env_file, environ))
 
     def require_addresses(self, keys: Optional[Iterable[str]] = None) -> Dict[str, str]:
-        """Retourne les adresses requises ou lève une erreur lisible (liste des manquantes)."""
+        """Returns the required addresses or raises a readable error (list of the missing ones)."""
         keys = tuple(keys or self.REQUIRED_ADDRESS_KEYS)
         addresses: Dict[str, str] = {}
         missing: List[str] = []
@@ -560,18 +560,18 @@ class SessionConfig:
             addresses[key] = normalize_address(value, key)
         if missing:
             raise ConfigurationError(
-                "configuration incomplète — renseigner dans .env : {}".format(", ".join(missing)))
+                "incomplete configuration — fill in .env: {}".format(", ".join(missing)))
         return addresses
 
     def safe_view(self) -> Dict[str, Any]:
         return safe_env_view(self.env)
 
 
-# --- politique de démonstration ----------------------------------------------
+# --- demo policy -------------------------------------------------------------
 
 
 class PolicyReference:
-    """Politique hors chaîne de démonstration, chargée de ``policy.demo.json``."""
+    """Demo off-chain policy, loaded from ``policy.demo.json``."""
 
     def __init__(self, data: Dict[str, Any], recipients: Dict[str, str]):
         self.data = dict(data or {})
@@ -597,14 +597,14 @@ class PolicyReference:
     def recipient(self, label: str) -> str:
         address = self.recipients.get(label) or ""
         if not address:
-            raise ConfigurationError("destinataire {} absent de la configuration (.env)".format(label))
+            raise ConfigurationError("recipient {} missing from the configuration (.env)".format(label))
         return address
 
     def allowed_recipients(self) -> frozenset:
         return frozenset(self.recipient(label) for label in self.recipient_labels if self.recipients.get(label))
 
     def as_policy_config(self, now: datetime, cumulative_spent: float = 0.0) -> PolicyConfig:
-        """Configuration acceptée par ``orvyren.policy.evaluate`` (règles R1-R8)."""
+        """Configuration accepted by ``orvyren.policy.evaluate`` (rules R1-R8)."""
         return PolicyConfig(
             allowed_chain_ids=frozenset({self.chain_id}),
             allowed_assets=frozenset({self.asset}),
@@ -615,7 +615,7 @@ class PolicyReference:
         )
 
     def to_policy_intent(self, intent: Dict[str, Any]) -> Intent:
-        """Convertit un intent v1 (montant en chaîne) en ``orvyren.policy.Intent``."""
+        """Converts a v1 intent (amount as a string) into ``orvyren.policy.Intent``."""
         return Intent(
             intent_id=str(intent.get("intent_id")),
             action=str(intent.get("action")),
@@ -636,7 +636,7 @@ def timedelta_hours(hours: int):
 def evaluate_policy(intent: Dict[str, Any], policy: PolicyReference, *,
                     now: Optional[datetime] = None, seen_intent_ids: Iterable[str] = (),
                     cumulative_spent: float = 0.0):
-    """Verdict déterministe du code existant (``orvyren.policy.evaluate``) sur un intent v1."""
+    """Deterministic verdict from the existing code (``orvyren.policy.evaluate``) on a v1 intent."""
     moment = now or utc_now_dt()
     decision = evaluate(
         policy.to_policy_intent(intent),
@@ -652,13 +652,13 @@ def decision_as_dict(decision, *, intent: Optional[Dict[str, Any]] = None,
                      policy: Optional[PolicyReference] = None,
                      now: Optional[datetime] = None,
                      context: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
-    """Verdict enrichi (champs additifs B4 §f.2) — jamais un secret."""
+    """Enriched verdict (additive fields B4 §f.2) — never a secret."""
     payload: Dict[str, Any] = {
         "decision_id": ulid(),
         "verdict": decision.verdict,
         "reasons": list(decision.reasons),
         "rules_evaluated": decision.rules_evaluated,
-        "evaluator": "orvyren-policy v0.1 (déterministe, hors LLM)",
+        "evaluator": "orvyren-policy v0.1 (deterministic, off-LLM)",
         "decided_at": (now or utc_now_dt()).strftime("%Y-%m-%dT%H:%M:%SZ"),
     }
     if intent is not None:
@@ -672,7 +672,7 @@ def decision_as_dict(decision, *, intent: Optional[Dict[str, Any]] = None,
     return payload
 
 
-# --- journal append-only chaîné SHA-256 (B6 §1.3) ----------------------------
+# --- SHA-256 chained append-only journal (B6 §1.3) ---------------------------
 
 GENESIS_HASH = "0" * 64
 JOURNAL_MODE_LIVE = "LIVE"
@@ -680,12 +680,12 @@ JOURNAL_MODE_DRY_RUN = "DRY_RUN"
 
 
 class Journal:
-    """Journal JSONL append-only, chaîné par flux.
+    """Append-only JSONL journal, chained per stream.
 
-    ``record_hash = sha256(canonical_json(record sans record_hash))`` et
-    ``prev_hash = record_hash`` de l'enregistrement précédent **du même flux**
-    (genèse ``0``×64). Le format suit B6 §1.3 ; le mode ``DRY_RUN`` est un ajout
-    du kit (une répétition ne doit jamais se faire passer pour ``LIVE``).
+    ``record_hash = sha256(canonical_json(record without record_hash))`` and
+    ``prev_hash = record_hash`` of the preceding record **of the same stream**
+    (genesis ``0``×64). The format follows B6 §1.3; the ``DRY_RUN`` mode is a kit
+    addition (a rehearsal must never pass for ``LIVE``).
     """
 
     def __init__(self, path: str, *, run_id: str, episode: str = "rseth",
@@ -755,7 +755,7 @@ class Journal:
         return self.append("RUN_START", payload=payload, refs={"run": run})
 
     def verify(self) -> Dict[str, Any]:
-        """Recalcule la chaîne complète : ``{ok, records, errors, heads, counts}``."""
+        """Recomputes the whole chain: ``{ok, records, errors, heads, counts}``."""
         records = self._records()
         errors: List[Dict[str, Any]] = []
         heads: Dict[str, str] = {}
@@ -783,11 +783,11 @@ class Journal:
         }
 
 
-# --- registre d'idempotence --------------------------------------------------
+# --- idempotency registry ----------------------------------------------------
 
 
 class Registry:
-    """Registre persistant append-only des intentions (idempotency_key + intent_id)."""
+    """Persistent append-only registry of intents (idempotency_key + intent_id)."""
 
     def __init__(self, path: str):
         self.path = path
@@ -823,11 +823,11 @@ class Registry:
                 "entries": len(data["entries"])}
 
 
-# --- journal des signatures (compteur, jamais de clé) ------------------------
+# --- signature log (counter, never a key) ------------------------------------
 
 
 class SignatureLog:
-    """Compteur de signatures du service de signature (jamais une clé, jamais un nonce)."""
+    """Signature counter of the signing service (never a key, never a nonce)."""
 
     def __init__(self, path: str):
         self.path = path
@@ -843,7 +843,7 @@ class SignatureLog:
 
 
 class PauseFlag:
-    """Pause K0 (kill switch hors chaîne) : un drapeau de fichier, jamais levé par l'agent."""
+    """K0 pause (off-chain kill switch): a file flag, never cleared by the agent."""
 
     def __init__(self, path: str, env: Optional[Dict[str, str]] = None):
         self.path = path
@@ -856,7 +856,7 @@ class PauseFlag:
 
     def set(self, reason: str) -> None:
         write_json(self.path, {"paused": True, "reason": reason, "ts_utc": utc_now(),
-                               "note": "levée par un humain uniquement (B4 P11)"})
+                               "note": "cleared by a human only (B4 P11)"})
 
     def clear(self, reason: str = "") -> None:
         if os.path.isfile(self.path):
@@ -864,12 +864,12 @@ class PauseFlag:
         _ = reason
 
 
-# --- paquets de sortie --------------------------------------------------------
+# --- output packets ----------------------------------------------------------
 
 
 def ensure_session_dir(path: str, *, episode: str = "rseth", mode: str = JOURNAL_MODE_DRY_RUN,
                        policy: Optional[PolicyReference] = None) -> Dict[str, Any]:
-    """Crée/récupère le répertoire de session et son ``session.json``."""
+    """Creates/retrieves the session directory and its ``session.json``."""
     os.makedirs(path, exist_ok=True)
     session_path = os.path.join(path, "session.json")
     session = load_json(session_path, default=None)
@@ -881,7 +881,7 @@ def ensure_session_dir(path: str, *, episode: str = "rseth", mode: str = JOURNAL
             "mode": mode,
             "created_at": utc_now(),
             "chain_id": CHAIN_ID_DEMO,
-            "danger": "clé jetable uniquement — aucun argent réel (FREEZE_V2 J2)",
+            "danger": "throwaway key only — no real money (FREEZE_V2 J2)",
         }
         write_json(session_path, session)
     if policy is not None:
@@ -890,15 +890,15 @@ def ensure_session_dir(path: str, *, episode: str = "rseth", mode: str = JOURNAL
 
 
 def load_policy_reference(policy_path: Optional[str], recipients: Dict[str, str]) -> PolicyReference:
-    """Charge ``policy.demo.json`` (ou le fichier fourni) ; refuse un fichier illisible."""
+    """Loads ``policy.demo.json`` (or the supplied file); refuses an unreadable file."""
     path = policy_path or os.path.join(HERE, "policy.demo.json")
     data = load_json(path)
     if not isinstance(data, dict):
-        raise ConfigurationError("politique illisible ou absente: {}".format(path))
+        raise ConfigurationError("policy unreadable or missing: {}".format(path))
     return PolicyReference(data, recipients)
 
 
 def abi_encode_call(selector_hex: str, head_words: Sequence[str], tail: str = "") -> str:
-    """Concatène un sélecteur et des mots ABI déjà encodés (utilitaire des builders)."""
+    """Concatenates a selector and already-encoded ABI words (builder utility)."""
     body = "".join(head_words)
     return selector_hex + body + tail

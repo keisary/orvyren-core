@@ -3,8 +3,8 @@
 
 The registry is an **allow-list**, never a deny-list: only explicitly
 registered names are callable, and ``execute_intent`` — the action tool of the
-policy layer — can never be registered (DOC2 §5.2.5: « jamais exposé aux agents
-de recherche »; boundary rule of DOC4 W2). Research agents read, they never
+policy layer — can never be registered (DOC2 §5.2.5: "never exposed to
+research agents"; boundary rule of DOC4 W2). Research agents read, they never
 act.
 
 The seven v1 tools are **offline and deterministic**: each one answers from
@@ -353,8 +353,8 @@ class JournalWriteTool:
         refs = supplied.pop("refs", ())
         self._counter += 1
         # Unknown keys are NOT dropped here: the journal quarantines them, so
-        # the refusal stays visible (« jamais un filtre qui supprime en
-        # silence », B1 §5.6) — the tool never edits a line into validity.
+        # the refusal stays visible ("never a filter that deletes silently",
+        # B1 §5.6) — the tool never edits a line into validity.
         data = dict(supplied)
         data.setdefault("journal_id", "%s-%s" % (
             self._prefix,
@@ -385,7 +385,7 @@ _TOOL_CLASSES: Tuple[Tuple[str, type], ...] = (
 
 
 class FailingTool:
-    """Test double: a source that is down (B1 §4.4, « outil en panne »).
+    """Test double: a source that is down (B1 §4.4, "failed tool").
 
     ``fail_times=None`` fails on every call; ``fail_times=n`` fails the first
     ``n`` calls then answers once (used to script retry-then-recover paths).

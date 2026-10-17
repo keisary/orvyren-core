@@ -1,0 +1,12 @@
+# Development / CI tooling.
+#
+# Not to be confused with requirements.txt: the only RUNTIME dependency is
+# eth-account==0.14.0 (signer kit, pinned). The core stays stdlib-only and
+# imports none of these tools.
+#
+# Loose bounds (major bounded, minor free): these tools are not part of the
+# bit-for-bit reproducibility contract (replay does not depend on them); a
+# strict pin would only add maintenance.
+pytest>=8.0,<10
+pytest-subtests>=0.12,<1
+ruff>=0.6,<1

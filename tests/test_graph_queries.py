@@ -7,7 +7,7 @@ the frozen episode fixtures (``fixtures/graphs/``: USDC 2023-03, stETH
 2022-06, rsETH 2026-04) they must reproduce the published figures and uphold
 the structural invariants:
 
-- Q1: transitive HOLDS is **never** closed (détenir ≠ contrôler);
+- Q1: transitive HOLDS is **never** closed (holding ≠ controlling);
 - Q2: only DEPENDS_ON / AFFECTS are traversed — SUPPORTS / REFUTES /
   CONTRADICTS / CORRELATES_WITH are structurally untraversable;
 - Q4: point-in-time = world validity ∩ knowledge clock (the 18:30 rsETH state
@@ -118,7 +118,7 @@ class TestQ1ConsolidatedExposure(unittest.TestCase):
         result = q1_consolidated_exposure(records, "treasury:t")
         self.assertEqual([i["asset"] for i in result["direct"]], ["asset:wrapper"])
         self.assertEqual([i["protocol"] for i in result["indirect"]], ["protocol:p1"])
-        # the HOLDS edge wrapper -> deep must NOT appear anywhere (détenir ≠ contrôler)
+        # the HOLDS edge wrapper -> deep must NOT appear anywhere (holding ≠ controlling)
         flat = [i["asset"] for i in result["direct"]] \
             + [i["asset"] for i in result["indirect"]] \
             + [i["protocol"] for i in result["indirect"]]
@@ -233,7 +233,7 @@ class TestQ4PitState(unittest.TestCase):
         self.assertEqual(len(before), 5)
         ids = {r.relation_id for r in before}
         self.assertNotIn("rseth-freeze-constrains-market", ids,
-                         "le gel (19:03:59) ne doit PAS être visible à 18:30")
+                         "the freeze (19:03:59) must NOT be visible at 18:30")
         self.assertNotIn("rseth-saturation-affects-freeze", ids)
         after = q4_pit_state(records, "2026-04-18T19:04:30Z")
         self.assertEqual(len(after), 6)

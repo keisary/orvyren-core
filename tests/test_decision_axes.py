@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-"""Test bench of the three separated axes + double price convention (W3: règle
-généralisée, L3.6).
+"""Test bench of the three separated axes + double price convention (W3:
+generalized rule, L3.6).
 
 Contract (DOC4 W3 [DONE]): 3 separate axes (epistemic != economic !=
 authorization), INCONCLUSIVE on missing input, and the double price convention

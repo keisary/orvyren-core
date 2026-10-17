@@ -1,19 +1,19 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-"""ORVYREN-Core — bench du kit de démo testnet (W3-D) : tests **hors chaîne**.
+"""ORVYREN-Core — testnet demo kit bench (W3-D): **off-chain** tests.
 
-Aucun réseau, aucune clé, aucune transaction : tout tourne sur des fixtures
-locales (répertoires temporaires). Couverture :
+No network, no key, no transaction: everything runs on local fixtures
+(temporary directories). Coverage:
 
-* hachages et sélecteurs vérifiés (Keccak-256 Python pur, vecteurs connus) ;
-* encodage/décodage ABI des calldatas du kit (aller-retour) ;
-* schéma d'intent v1 (montants décimaux, champs inconnus, échéances, clé d'idempotence) ;
-* journal append-only chaîné SHA-256 (détection d'altération) ;
-* préflight 12 contrôles + test de dérive 10 contrôles sur configuration factice ;
-* dry-run des runs A, B, C, D, E (orchestrateur), y compris l'absence de secret ;
-* vérification de reçu (règle d'unicité, enveloppe, échec de première classe) ;
-* signataire en mode simulé ;
-* paquet d'audit (HASHES.txt, bundle_digest, vérificateur embarqué).
+* verified hashes and selectors (pure-Python Keccak-256, known vectors);
+* ABI encoding/decoding of the kit calldata (round-trip);
+* v1 intent schema (decimal amounts, unknown fields, expiries, idempotency key);
+* SHA-256 chained append-only journal (tamper detection);
+* 12-check preflight + 10-check drift test on a fake configuration;
+* dry-run of runs A, B, C, D, E (orchestrator), including the absence of a secret;
+* receipt verification (uniqueness rule, envelope, first-class failure);
+* signer in simulated mode;
+* audit packet (HASHES.txt, bundle_digest, embedded verifier).
 
 Run: python -m pytest tests/test_demo_kit.py -q
 """
@@ -39,6 +39,12 @@ from demo import signer as signer_mod  # noqa: E402
 from demo import verify_receipt  # noqa: E402
 
 from orvyren.execution import verify as base_verify  # noqa: E402
+
+try:  # optional signer dependency (isolated to the signer module)
+    import eth_account  # noqa: F401
+    HAVE_ETH_ACCOUNT = True
+except ImportError:  # pragma: no cover - environment without the optional dependency
+    HAVE_ETH_ACCOUNT = False
 
 DEMO_DIR = os.path.join(ROOT, "scripts", "demo")
 ENVELOPE_EXAMPLE = os.path.join(DEMO_DIR, "envelope.example.json")
@@ -117,7 +123,7 @@ class TempSessionMixin(unittest.TestCase):
 
 
 # =============================================================================
-# hachages, sélecteurs, ABI
+# hashes, selectors, ABI
 # =============================================================================
 
 class TestHashesAndSelectors(unittest.TestCase):
@@ -167,7 +173,7 @@ class TestAbiRoundTrips(unittest.TestCase):
         self.assertEqual(decoded["role_key"], common.ROLE_KEY_AGENT)
         self.assertTrue(decoded["should_revert"])
         self.assertEqual(decoded["inner_data"], inner)
-        # 6 mots d'en-tête + longueur + données (alignées sur 32 octets)
+        # 6 header words + length + data (padded to 32 bytes)
         inner_chars = len(inner) - 2
         padded = ((inner_chars + 63) // 64) * 64
         self.assertEqual(len(data), 10 + 6 * 64 + 64 + padded)
@@ -247,7 +253,7 @@ class TestIntents(unittest.TestCase):
     def test_idempotency_key_deterministic(self):
         intent = self.build()
         self.assertEqual(intent["idempotency_key"], intents.compute_idempotency_key(intent))
-        # elle ne dépend NI de intent_id NI de created_at
+        # it depends on NEITHER intent_id NOR created_at
         other = dict(intent, intent_id="01ZZZZZZZZZZZZZZZZZZZZZZZZ", created_at="2026-10-15T00:00:00Z")
         self.assertEqual(intents.compute_idempotency_key(other), intent["idempotency_key"])
 
@@ -259,7 +265,7 @@ class TestIntents(unittest.TestCase):
         self.assertIn("SCHEMA_UNKNOWN_FIELD", [error["code"] for error in errors])
 
     def test_unrepaired_address_refused(self):
-        """Une adresse en casse mixte (checksum) n'est pas réparée : elle est refusée."""
+        """A mixed-case (checksum) address is not repaired: it is refused."""
         intent = self.build()
         intent["recipient"] = "0x036CbD53842c5426634e7929541eC2318f3dCF7e"
         ok, errors = intents.validate_intent(intent)
@@ -295,7 +301,7 @@ class TestIntents(unittest.TestCase):
 
 
 # =============================================================================
-# journal, registre, pause, signatures
+# journal, registry, pause, signatures
 # =============================================================================
 
 class TestJournal(unittest.TestCase):
@@ -327,7 +333,7 @@ class TestJournal(unittest.TestCase):
         self.assertIn("RECORD_HASH_MISMATCH", codes)
 
     def test_smart_tamper_breaks_the_chain(self):
-        """Un faussaire qui recalcule le hash de la ligne modifiée casse la ligne suivante."""
+        """A forger who recomputes the hash of the modified line breaks the next line."""
         journal = common.Journal(self.path, run_id="01RUN", episode="rseth")
         journal.append("INTENT", payload={"amount": "50.0"})
         journal.append("POLICY", payload={"verdict": "ALLOW"})
@@ -387,7 +393,7 @@ class TestRegistryPauseSignatures(unittest.TestCase):
 
 
 # =============================================================================
-# préflight + test de dérive
+# preflight + drift test
 # =============================================================================
 
 class TestPreflight(TempSessionMixin, unittest.TestCase):
@@ -397,7 +403,7 @@ class TestPreflight(TempSessionMixin, unittest.TestCase):
         if intent is None:
             intent = intents.build_transfer_intent(
                 chain_id=84532, account=SAFE, asset=USDC, amount="50.0", recipient=B,
-                expiry_minutes=15, justification="préflight de test")
+                expiry_minutes=15, justification="test preflight")
         return preflight_mod.PreflightRunner(
             policy=policy, intent=intent, envelope=envelope or fake_envelope(), mode=mode,
             registry=registry, pause=pause, recorded_decision=recorded,
@@ -427,7 +433,7 @@ class TestPreflight(TempSessionMixin, unittest.TestCase):
 
     def test_p4_fails_on_replay(self):
         intent = intents.build_transfer_intent(chain_id=84532, account=SAFE, asset=USDC, amount="50.0",
-                                               recipient=B, expiry_minutes=15, justification="rejeu")
+                                               recipient=B, expiry_minutes=15, justification="replay")
         registry = common.Registry(os.path.join(self.tmp, "registry.json"))
         registry.record(intent_id=intent["intent_id"], idempotency_key=intent["idempotency_key"],
                         status="RESERVED")
@@ -477,23 +483,23 @@ class TestPreflight(TempSessionMixin, unittest.TestCase):
 
     def test_drift_unverified_when_live(self):
         runner = self.make_runner(mode=preflight_mod.MODE_RPC)
-        runner._live_mode = lambda: True        # pas de réseau : on simule le mode en ligne
+        runner._live_mode = lambda: True        # no network: the live mode is simulated
         runner._live = {"gas_price": 6_000_000}
         report = runner.run()
-        # D2/D3/D10 sans codehash épinglé ni probes ⇒ UNKNOWN ⇒ SAFE MODE en mode en ligne
+        # D2/D3/D10 without pinned codehash or probes ⇒ UNKNOWN ⇒ SAFE MODE in live mode
         self.assertTrue(report["safe_mode"])
         self.assertTrue(any("ENVELOPE_UNVERIFIED" in reason for reason in report["safe_mode_reasons"]))
 
     def test_chain_id_mismatch(self):
         intent = intents.build_transfer_intent(chain_id=1, account=SAFE, asset=USDC, amount="50.0",
-                                               recipient=B, expiry_minutes=15, justification="mauvaise chaîne")
+                                               recipient=B, expiry_minutes=15, justification="wrong chain")
         report = self.make_runner(intent=intent).run()
         statuses = {check["id"]: check["status"] for check in report["checks"]}
         self.assertEqual(statuses["P2"], "FAIL")
 
 
 # =============================================================================
-# runs A-E en dry-run (orchestrateur)
+# runs A-E in dry-run (orchestrator)
 # =============================================================================
 
 class TestRunsDryRun(TempSessionMixin, unittest.TestCase):
@@ -501,10 +507,20 @@ class TestRunsDryRun(TempSessionMixin, unittest.TestCase):
         ctx = self.make_context()
         for run in ("A", "B", "C", "D", "E"):
             summary = demo.execute_run(run, ctx)
-            self.assertTrue(demo._criteria_ok(summary["criteria"]),
-                            "run {} : {}".format(run, summary["criteria"]))
+            statuses = [criterion["status"] for criterion in summary["criteria"]]
+            self.assertNotIn("failed", statuses,
+                             "run {} : {}".format(run, summary["criteria"]))
+            if run == "B":  # the 4 B criteria are fully evaluable off-chain
+                self.assertNotIn("pending", statuses, summary["criteria"])
+                self.assertTrue(demo._criteria_ok(summary["criteria"]),
+                                "run B : {}".format(summary["criteria"]))
+            else:
+                self.assertIn("pending", statuses,
+                              "run {}: a dry-run must declare its unevaluated criteria".format(run))
+                self.assertFalse(demo._criteria_ok(summary["criteria"]),
+                                 "run {}: pending does not count as \"criteria OK\"".format(run))
             self.assertEqual(summary["status"], "DRY_RUN_OK")
-        # journal : chaîne recalculée OK et aucune clé
+        # journal: recomputed chain OK and no key
         report = ctx.journal.verify()
         self.assertTrue(report["ok"], report["errors"])
         raw = open(os.path.join(ctx.session_dir, "audit.jsonl"), "r", encoding="utf-8").read()
@@ -515,9 +531,12 @@ class TestRunsDryRun(TempSessionMixin, unittest.TestCase):
         ctx = self.make_context()
         summary = demo.run_a(ctx)
         statuses = {criterion["id"]: criterion["status"] for criterion in summary["criteria"]}
-        self.assertEqual(statuses["A.4"], "met")           # compteur de signatures +1
-        self.assertEqual(statuses["A.1"], "pending")       # pas de reçu en dry-run
-        self.assertEqual(statuses["A.5"], "pending")       # dry : RECEIPT/VERIFY impossibles sans chaîne → pending (l'ordre OUTCOME est testé par le run réel --execute)
+        self.assertEqual(statuses["A.4"], "met")           # signature counter +1
+        self.assertEqual(statuses["A.1"], "pending")       # no receipt in dry-run
+        self.assertEqual(statuses["A.5"], "pending")       # dry: RECEIPT/VERIFY impossible without a chain → pending (OUTCOME order is tested by the real --execute run)
+        self.assertFalse(demo._criteria_ok(summary["criteria"]),
+                         "5 pending criteria do not count as \"criteria OK\"")
+        self.assertEqual(demo._criteria_label(summary["criteria"]), "DRY_RUN_PENDING")
         self.assertEqual(ctx.signatures.count(), 1)
         kinds = ctx.journal.kinds(summary["intent_id"])
         self.assertIn("INTENT", kinds)
@@ -528,6 +547,19 @@ class TestRunsDryRun(TempSessionMixin, unittest.TestCase):
                   if record["kind"] == "SUBMIT"][0]
         self.assertTrue(submit["payload"]["simulated"])
         self.assertEqual(submit["payload"]["signatures_count"], 1)
+
+    def test_criteria_statuses_are_not_flattened(self):
+        """E1: pending is never a success; only 'met' makes OK."""
+        self.assertFalse(demo._criteria_ok([]))
+        self.assertFalse(demo._criteria_ok([{"status": "pending"}]))
+        self.assertFalse(demo._criteria_ok([{"status": "met"}, {"status": "pending"}]))
+        self.assertFalse(demo._criteria_ok([{"status": "failed"}]))
+        self.assertTrue(demo._criteria_ok([{"status": "met"}, {"status": "met"}]))
+        self.assertEqual(demo._criteria_label([{"status": "met"}, {"status": "pending"}]),
+                         "DRY_RUN_PENDING")
+        self.assertEqual(demo._criteria_label([{"status": "met"}]), "criteria OK")
+        self.assertEqual(demo._criteria_label([{"status": "failed"}]),
+                         "CRITERIA NOT MET")
 
     def test_run_b_zero_signatures(self):
         ctx = self.make_context()
@@ -596,7 +628,7 @@ class TestRunsDryRun(TempSessionMixin, unittest.TestCase):
 
 
 # =============================================================================
-# vérification de reçu
+# receipt verification
 # =============================================================================
 
 def synthetic_receipt(*, logs, status="0x1", chain_id="0x14a34", to=MODULE, sender=AGENT):
@@ -627,7 +659,7 @@ def transfer_log(*, token, sender, recipient, value, address=None):
 class TestReceiptVerification(TempSessionMixin, unittest.TestCase):
     def intent(self):
         return intents.build_transfer_intent(chain_id=84532, account=SAFE, asset=USDC, amount="50.0",
-                                             recipient=B, expiry_minutes=15, justification="reçu")
+                                             recipient=B, expiry_minutes=15, justification="receipt")
 
     def verify(self, receipt):
         return verify_receipt.verify_full(receipt, intent=self.intent(), safe=SAFE, module=MODULE,
@@ -660,7 +692,7 @@ class TestReceiptVerification(TempSessionMixin, unittest.TestCase):
         self.assertIn(verify_receipt.LOG_COUNT_AMBIGUOUS, result["mismatches"])
 
     def test_single_non_matching_log_is_not_ambiguous(self):
-        """Un seul log du jeton qui ne correspond pas = mismatch ordinaire (pas d'ambiguïté)."""
+        """A single token log that does not match = ordinary mismatch (not ambiguous)."""
         receipt = synthetic_receipt(logs=[transfer_log(token=USDC, sender=SAFE, recipient=B, value=1),
                                           self.module_log()])
         result = self.verify(receipt)
@@ -669,7 +701,7 @@ class TestReceiptVerification(TempSessionMixin, unittest.TestCase):
         self.assertNotIn(verify_receipt.LOG_COUNT_AMBIGUOUS, result["mismatches"])
 
     def test_two_token_logs_with_one_exact_match(self):
-        """Deux logs du jeton dont un seul correspond exactement : conforme (règle d'unicité)."""
+        """Two token logs with exactly one exact match: compliant (uniqueness rule)."""
         other = transfer_log(token=USDC, sender=C, recipient=C, value=7)
         good = transfer_log(token=USDC, sender=SAFE, recipient=B, value=50_000_000)
         result = self.verify(synthetic_receipt(logs=[other, good, self.module_log()]))
@@ -717,7 +749,7 @@ class TestReceiptVerification(TempSessionMixin, unittest.TestCase):
 
 
 # =============================================================================
-# signataire (mode simulé)
+# signer (simulated mode)
 # =============================================================================
 
 class TestSignerDryRun(unittest.TestCase):
@@ -739,7 +771,7 @@ class TestSignerDryRun(unittest.TestCase):
     def test_dry_run_never_reads_key(self):
         signer = signer_mod.Signer(dry_run=True, env={"ORVYREN_PRIVATE_KEY": "0x" + "11" * 32})
         self.assertTrue(signer.key_present())
-        self.assertIsNone(signer.address())     # dry-run : aucune dérivation
+        self.assertIsNone(signer.address())     # dry-run: no derivation
         result = signer.sign_transaction({"chainId": 84532, "nonce": 0, "to": MODULE, "value": 0,
                                           "data": "0x"})
         self.assertNotIn("11" * 32, json.dumps(result))
@@ -754,10 +786,10 @@ class TestSignerDryRun(unittest.TestCase):
         with self.assertRaises(signer_mod.SignerError):
             signer.sign_transaction({"chainId": 1, "nonce": 0, "to": MODULE, "value": 0, "data": "0x"})
 
+    @unittest.skipIf(HAVE_ETH_ACCOUNT,
+                     "eth-account present: the \"library missing\" path is not testable")
     def test_real_mode_without_library_fails_cleanly(self):
         signer = signer_mod.Signer(dry_run=False, env={})
-        if signer.library_available():
-            self.skipTest("eth-account présent : le chemin « bibliothèque absente » n'est pas testable")
         with self.assertRaises(signer_mod.SignerDependencyError):
             signer.sign_transaction({"chainId": 84532, "nonce": 0, "to": MODULE, "value": 0, "data": "0x"})
 
@@ -771,12 +803,11 @@ class TestSignerDryRun(unittest.TestCase):
         self.assertTrue(signer_mod.Signer(dry_run=True,
                                           env={"ORVYREN_PRIVATE_KEY": "11" * 32}).key_present())
 
-    # --- régression : casse EIP-55 du champ 'from' (rencontré le 2026-10-16 en exécution réelle) ---
+    # --- regression: EIP-55 casing of the 'from' field (met on 2026-10-16 in real execution) ---
 
+    @unittest.skipUnless(HAVE_ETH_ACCOUNT, "eth-account required to really sign")
     def test_execute_normalizes_from_to_eip55(self):
         signer = signer_mod.Signer(dry_run=False, env={"ORVYREN_PRIVATE_KEY": "0x" + "22" * 32})
-        if not signer.library_available():
-            self.skipTest("eth-account absent")
         address = signer.address()
         tx = {"chainId": 84532, "nonce": 0, "to": MODULE.lower(), "value": 0, "data": "0x",
               "gas": 21000, "maxFeePerGas": 10 ** 9, "maxPriorityFeePerGas": 10 ** 9,
@@ -784,26 +815,36 @@ class TestSignerDryRun(unittest.TestCase):
         result = signer.sign_transaction(tx, intent_id="I-FROM")
         self.assertFalse(result["simulated"])
         self.assertTrue(result["tx_hash"].startswith("0x"))
-        self.assertEqual(tx["from"], address.lower())      # le dict appelant n'est pas muté
-        self.assertNotIn("22" * 32, json.dumps(result))    # jamais de clé dans la sortie
+        self.assertEqual(tx["from"], address.lower())      # the caller dict is not mutated
+        self.assertNotIn("22" * 32, json.dumps(result))    # never a key in the output
 
+    @unittest.skipUnless(HAVE_ETH_ACCOUNT, "eth-account required to really sign")
     def test_execute_refuses_from_mismatch(self):
         signer = signer_mod.Signer(dry_run=False, env={"ORVYREN_PRIVATE_KEY": "0x" + "22" * 32})
-        if not signer.library_available():
-            self.skipTest("eth-account absent")
         tx = {"chainId": 84532, "nonce": 0, "to": MODULE, "value": 0, "data": "0x",
               "gas": 21000, "maxFeePerGas": 10 ** 9, "maxPriorityFeePerGas": 10 ** 9,
               "type": 2, "from": "0x" + "33" * 20}
         with self.assertRaises(signer_mod.SignerError):
             signer.sign_transaction(tx, intent_id="I-BAD")
 
+    def test_signer_output_never_contains_key_material(self):
+        """Security property tested EVEN without eth-account (never skipped)."""
+        key = "0x" + "22" * 32
+        signer = signer_mod.Signer(dry_run=True, env={"ORVYREN_PRIVATE_KEY": key})
+        result = signer.sign_transaction({"chainId": 84532, "nonce": 0, "to": MODULE,
+                                          "value": 0, "data": "0x"})
+        payload = json.dumps(result)
+        self.assertNotIn("22" * 32, payload)
+        self.assertNotIn(key, payload)
+        self.assertNotIn("22" * 32, json.dumps(signer.safe_dict()))
+
 
 # =============================================================================
-# attente de confirmations (anti-reorg bornée)
+# waiting for confirmations (bounded anti-reorg)
 # =============================================================================
 
 class TestWaitConfirmations(unittest.TestCase):
-    """Sémantique : CONFIRMED = profondeur ≥ k ET couple (bloc, hash) stable sur deux lectures."""
+    """Semantics: CONFIRMED = depth ≥ k AND (block, hash) pair stable over two reads."""
 
     def setUp(self):
         self.round = 0
@@ -840,7 +881,7 @@ class TestWaitConfirmations(unittest.TestCase):
         self.assertNotIn("view_updated", result)
 
     def test_view_change_annotated_not_reorged(self):
-        r = self._receipt(100, "0x" + "bb" * 32)  # hash différent du témoin consigné (aa)
+        r = self._receipt(100, "0x" + "bb" * 32)  # hash different from the recorded witness (aa)
         self.receipts = [r, r]
         self.heads = [101, 102]
         result = self._run()
@@ -862,13 +903,13 @@ class TestWaitConfirmations(unittest.TestCase):
     def test_timeout_returns_pending_never_hangs(self):
         r = self._receipt(100, "0x" + "aa" * 32)
         self.receipts = [r]
-        self.heads = [100]  # profondeur 1 < 2 : jamais confirmable
+        self.heads = [100]  # depth 1 < 2: never confirmable
         result = self._run(timeout_seconds=0)
         self.assertEqual(result["status"], "PENDING_CONFIRMATION")
 
 
 class TestReplayRevertRetry(unittest.TestCase):
-    """Régression : nœud en retard (« block not found ») → réessais bornés, jamais un faux revert."""
+    """Regression: lagging node ("block not found") → bounded retries, never a false revert."""
 
     def _rpc_error(self, message):
         return common.chain_client.RpcError("eth_call", -32000, message, None)
@@ -905,7 +946,7 @@ class TestReplayRevertRetry(unittest.TestCase):
 
 
 # =============================================================================
-# paquet d'audit
+# audit packet
 # =============================================================================
 
 class TestAuditPacket(TempSessionMixin, unittest.TestCase):
@@ -919,7 +960,7 @@ class TestAuditPacket(TempSessionMixin, unittest.TestCase):
         self.assertTrue(os.path.isfile(result["zip_path"]))
         self.assertTrue(os.path.isfile("{}.sha256".format(result["zip_path"])))
         self.assertEqual(len(result["bundle_digest"]), 64)
-        # le vérificateur embarqué doit valider le paquet extrait
+        # the embedded verifier must validate the extracted packet
         extract_dir = os.path.join(self.tmp, "extract")
         with zipfile.ZipFile(result["zip_path"]) as archive:
             archive.extractall(extract_dir)
@@ -943,7 +984,7 @@ class TestAuditPacket(TempSessionMixin, unittest.TestCase):
 
 
 # =============================================================================
-# contraintes du kit : stdlib seule hors signataire
+# kit constraints: stdlib only outside the signer
 # =============================================================================
 
 class TestKitConstraints(unittest.TestCase):
@@ -957,7 +998,7 @@ class TestKitConstraints(unittest.TestCase):
             source = open(os.path.join(DEMO_DIR, name), "r", encoding="utf-8").read()
             for module in self.NON_STDLIB:
                 self.assertNotIn("import {}".format(module), source,
-                                 "{} importe {}".format(name, module))
+                                 "{} imports {}".format(name, module))
 
     def test_scripts_expose_help_and_exit_codes(self):
         for script in ("demo.py", "preflight.py", "signer.py", "verify_receipt.py",

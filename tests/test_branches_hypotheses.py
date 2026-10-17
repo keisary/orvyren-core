@@ -97,7 +97,7 @@ class RecordStructureTest(unittest.TestCase):
         self.assertEqual(set(ALLOWED_TRANSITIONS["UNDER_TEST"]),
                          {"SUPPORTED", "REFUTED", "INCONCLUSIVE", "MERGED_INTO", "ARCHIVED"})
         self.assertEqual(ALLOWED_TRANSITIONS["ARCHIVED"], ("UNDER_TEST",))
-        # "tout état -> ARCHIVED" (ARCHIVED itself excluded: no self-transition).
+        # "any state -> ARCHIVED" (ARCHIVED itself excluded: no self-transition).
         for state in HYPOTHESIS_STATES:
             if state != "ARCHIVED":
                 self.assertIn("ARCHIVED", ALLOWED_TRANSITIONS[state])

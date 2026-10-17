@@ -3,6 +3,12 @@ on:
   push:
   pull_request:
 
+env:
+  # UTF-8 console/runner: JSON and dossier outputs must never depend on the
+  # locale (cp1252 locally, C.UTF-8 in CI).
+  PYTHONIOENCODING: utf-8
+  PYTHONUNBUFFERED: "1"
+
 jobs:
   tests:
     runs-on: ubuntu-latest
@@ -23,3 +29,27 @@ jobs:
         run: python run_pipeline.py
       - name: Corpus presence check (replay mode must work offline)
         run: python collect_corpus.py --offline
+
+  # Guarantees the suite is green on a PRISTINE clone of HEAD: `git archive`
+  # only restores tracked files (no dist/, demo_runs/, caches or local WIP).
+  # That is the definition of a reproducible clone.
+  clean-clone:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Materialise HEAD in a pristine directory (no untracked files)
+        run: |
+          rm -rf /tmp/clone
+          mkdir -p /tmp/clone
+          git archive HEAD | tar -x -C /tmp/clone
+      - name: Install dependencies in the clone
+        working-directory: /tmp/clone
+        run: |
+          python -m pip install --upgrade pip
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+      - name: Unit tests on the pristine clone
+        working-directory: /tmp/clone
+        run: python -m unittest discover -s tests -v

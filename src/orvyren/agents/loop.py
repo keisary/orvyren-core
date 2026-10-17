@@ -51,8 +51,8 @@ and ``prompt_hash`` / ``response_hash`` / ``tokens_in`` / ``tokens_out`` /
 primary one) so a cost sum over the journal never double-counts. A
 non-conforming output is preserved as a ``QUARANTINED`` line — the frozen
 journal quarantines unknown fields, so the loop stamps the explicit
-``quarantine_reason`` marker: the refusal stays visible (« le refus est
-démontrable ») and can never be promoted.
+``quarantine_reason`` marker: the refusal stays visible ("the refusal is
+demonstrable") and can never be promoted.
 
 Schemas: PLANNING uses ``orvyren/orch/v1`` (+1 re-prompt with the error
 injected, then quarantine + ARRET-3). EVALUATION uses a **free schema**
@@ -510,7 +510,7 @@ class BoundedLoop:
             entries.append(self._journal.append_dict(self._line(
                 kind="REFLECTION", content=str(claim.get("enonce", "")), refs=refs,
                 **self._llm_fields(result, accounting=(index == 0)))))
-        if not entries:  # a valid evaluation may conclude « rien d'exploitable »
+        if not entries:  # a valid evaluation may conclude "nothing usable"
             note = str(data.get("reflexions") or data.get("insuffisance")
                        or "evaluation returned no claim").strip()
             entries.append(self._journal.append_dict(self._line(
@@ -623,8 +623,8 @@ class BoundedLoop:
                   ) -> Union[contracts.LLMResult, contracts.LoopOutcome]:
         """One orchestrator call, ≤2 retries on a transport failure.
 
-        Fails closed: ARRET-3 after the retries (B1 §4.4 « erreur réseau/API
-        transitoire »), or ARRET-2 when a ceiling blocks the retry.
+        Fails closed: ARRET-3 after the retries (B1 §4.4 "transient network/API
+        error"), or ARRET-2 when a ceiling blocks the retry.
         """
         error = ""
         for attempt in range(1, MAX_LLM_ATTEMPTS + 1):

@@ -60,7 +60,7 @@ class TestMaBProcesses(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         if not os.path.exists(os.path.join(STORE, "calls.jsonl")):
-            raise unittest.SkipTest("store scripté absent — lancer "
+            raise unittest.SkipTest("scripted store missing — run "
                                     "scripts/agents_seed_demo.py --case %s" % CASE)
 
     def setUp(self):
@@ -74,7 +74,7 @@ class TestMaBProcesses(unittest.TestCase):
         done_crit = json.load(open(os.path.join(run_dir, "worker_done_critic.json"),
                                    encoding="utf-8"))
         self.assertNotEqual(done_orch["pid"], done_crit["pid"],
-                            "les deux rôles doivent tourner dans des PROCESSUS distincts")
+                            "the two roles must run in SEPARATE PROCESSES")
         orch_entries = worker_mod.load_journal(os.path.join(run_dir, "journal_orchestrator.jsonl"))
         crit_entries = worker_mod.load_journal(os.path.join(run_dir, "journal_critic.jsonl"))
         self.assertEqual({e.agent_id for e in orch_entries}, {"orchestrator"})
@@ -89,10 +89,10 @@ class TestMaBProcesses(unittest.TestCase):
         final, run_dir, _ = _run_once(self.session)
         self.assertEqual(final["critique"].get("verdict_lecture"), "FRAGILE")
         self.assertEqual(final["escalation"], "REQUIRE_APPROVAL",
-                         "FRAGILE doit pousser vers l'approbation humaine (B1 §5.3)")
+                         "FRAGILE must push towards human approval (B1 §5.3)")
         outcome = final["outcome"]
         self.assertEqual(outcome["stop_condition"], "ARRET-1")
-        self.assertTrue(outcome["non_recherche"], "liste non_recherche exigée (DOC2 §5.2.4)")
+        self.assertTrue(outcome["non_recherche"], "non_recherche list required (DOC2 §5.2.4)")
         self.assertLessEqual(outcome["budget_used"]["llm_calls"], 30)
         self.assertLessEqual(outcome["budget_used"]["cost_usd"], 0.10)
 
@@ -103,8 +103,8 @@ class TestMaBProcesses(unittest.TestCase):
             heads.add((final["journals"]["orchestrator"]["chain_head"],
                        final["journals"]["critic"]["chain_head"]))
         self.assertEqual(len(heads), 1,
-                         "k=%d rejeux doivent produire des têtes de chaîne identiques "
-                         "(reçu %d variantes)" % (K_REPLAYS, len(heads)))
+                         "k=%d replays must produce identical chain heads "
+                         "(got %d variants)" % (K_REPLAYS, len(heads)))
 
 
 if __name__ == "__main__":

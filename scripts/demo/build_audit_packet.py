@@ -1,35 +1,35 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-"""ORVYREN — kit de démo testnet : **assemblage du paquet d'audit** (B6 §5).
+"""ORVYREN — testnet demo kit: **audit packet assembly** (B6 §5).
 
-NOTE (W6) : builder **v1 historique du kit** (layout simple). Le paquet complet
-T10 — flux multiples + LINK/SEAL, vérificateur gelé embarqué, HASHES +
-BUNDLE_DIGEST, mutation-test — est construit par ``scripts/build_audit_packet.py``
-(v2, racine du dépôt). Le vérificateur T10 lit les deux layouts.
+NOTE (W6): **historical v1 builder of the kit** (simple layout). The full
+T10 packet — multiple streams + LINK/SEAL, embedded frozen verifier, HASHES +
+BUNDLE_DIGEST, mutation-test — is built by ``scripts/build_audit_packet.py``
+(v2, repository root). The T10 verifier reads both layouts.
 
-Assemble le dossier livrable au jury/relecteur :
+Assembles the deliverable dossier for the jury/reviewer:
 
-    1  README_AUDIT.md (EN — vérification en 3 commandes, « ce que ça prouve / pas »)
+    1  README_AUDIT.md (EN — verification in 3 commands, "what it proves / does not")
     2  dossier_<case>.md + .html          (self-hash, orvyren.audit.dossier)
-    3  decision_<case>.json               (vérité machine du dossier)
-    4  extras du dossier                  (baseline, quality, policy_execution_demo)
-    5  audit.jsonl                        (flux exécution chaîné ; + manifest des flux)
-    6  agent_journal.jsonl                (déclaré absent si le run sans LLM)
-    7  graph/                             (déclaré absent si non exporté)
-    8  manifest.json                      (têtes de flux, versions, inventaire)
-    9  receipts/ + policy/                (reçus bruts + politique versionnée)
-    10 verify/verify_hashes.py            (vérificateur hors-ligne minimal — squelette T10)
-    11 HASHES.txt                         (sha256 de chaque fichier + bundle_digest)
-    12 anchor/                            (vide/absent — ancrage EAS reporté, FREEZE_V2 F3)
+    3  decision_<case>.json               (machine truth of the dossier)
+    4  dossier extras                     (baseline, quality, policy_execution_demo)
+    5  audit.jsonl                        (chained execution stream; + stream manifest)
+    6  agent_journal.jsonl                (declared absent if the run had no LLM)
+    7  graph/                             (declared absent if not exported)
+    8  manifest.json                      (stream heads, versions, inventory)
+    9  receipts/ + policy/                (raw receipts + versioned policy)
+    10 verify/verify_hashes.py            (minimal offline verifier — T10 skeleton)
+    11 HASHES.txt                         (sha256 of each file + bundle_digest)
+    12 anchor/                            (empty/absent — EAS anchoring deferred, FREEZE_V2 F3)
 
 ``bundle_digest = sha256(canonical_json(sorted(files \\ {dossier_*.{md,html}, HASHES.txt})))``
-(B6 annexe B). Le zip est nommé ``audit_packet_<case>_<run8>.zip`` et son sha256
-est imprimé (ancrage « option ii » : empreinte publiée, coût nul).
+(B6 annex B). The zip is named ``audit_packet_<case>_<run8>.zip`` and its sha256
+is printed (anchoring "option ii": published digest, zero cost).
 
-Ce script fonctionne **hors ligne** (dry-run par défaut) : il n'invente aucune
-pièce manquante, il les déclare absentes avec leur raison.
+This script works **offline** (dry-run by default): it invents no
+missing piece, it declares them absent with their reason.
 
-CLI :
+CLI:
 
     python scripts/demo/build_audit_packet.py --session evidence/demo_runs/rseth \
         [--case rseth] [--evidence evidence] [--out dist/audit_packets] [--strict]
@@ -46,7 +46,7 @@ from typing import Any, Dict, List, Optional, Tuple
 
 try:
     from . import common
-except ImportError:  # exécution directe
+except ImportError:  # direct execution
     _sys_dir = os.path.dirname(os.path.abspath(__file__))
     if _sys_dir not in sys.path:
         sys.path.insert(0, _sys_dir)
@@ -127,7 +127,7 @@ def read_hashes(root):
             if len(parts) == 2 and parts[0] == "bundle_digest":
                 digest = parts[1]
             elif len(parts) == 2:
-                # format sha256sum : <digest>  <chemin>
+                # sha256sum format: <digest>  <path>
                 entries[parts[1]] = parts[0]
     return entries, digest
 
@@ -275,7 +275,7 @@ def build_packet(*, session_dir: str, case: str, evidence_dir: str, out_dir: Opt
                  strict: bool = False) -> Dict[str, Any]:
     session_dir = os.path.abspath(session_dir)
     if not os.path.isdir(session_dir):
-        raise common.ConfigurationError("session inexistante: {}".format(session_dir))
+        raise common.ConfigurationError("nonexistent session: {}".format(session_dir))
     session = common.load_json(os.path.join(session_dir, "session.json"), default={}) or {}
     run_id = str(session.get("run_id") or common.ulid())
     run8 = run_id[:8]
@@ -298,47 +298,47 @@ def build_packet(*, session_dir: str, case: str, evidence_dir: str, out_dir: Opt
         inventory.append((relative, label))
         return destination
 
-    # 2/3/4 — le dossier de décision et ses extras (produits par orvyren.audit.dossier)
+    # 2/3/4 — the decision dossier and its extras (produced by orvyren.audit.dossier)
     place(os.path.join(evidence_dir, "dossier_{}.md".format(case)), "dossier_{}.md".format(case),
           "dossier md (self-hash)")
     place(os.path.join(evidence_dir, "dossier_{}.html".format(case)), "dossier_{}.html".format(case),
           "dossier html (self-hash)")
     place(os.path.join(evidence_dir, "decision_{}.json".format(case)), "decision_{}.json".format(case),
-          "vérité machine du dossier")
+          "machine truth of the dossier")
     for extra in ("baseline_report.json", "quality_report.json", "policy_execution_demo.json"):
         place(os.path.join(evidence_dir, extra), extra, "extra: {}".format(extra), required=False)
 
-    # 5 — le journal d'exécution chaîné
+    # 5 — the chained execution journal
     journal_source = os.path.join(session_dir, "audit.jsonl")
-    place(journal_source, "audit.jsonl", "journal d'exécution chaîné")
+    place(journal_source, "audit.jsonl", "chained execution journal")
 
-    # 6/7 — flux non produits par ce run (déclarés absents, jamais inventés)
+    # 6/7 — streams not produced by this run (declared absent, never invented)
     streams = {
         "exec": {"path": "audit.jsonl", "records": len(common.read_jsonl(journal_source)),
                  "head_hash": None, "present": os.path.isfile(journal_source)},
-        "agent": {"present": False, "reason": "run de démonstration sans LLM (démo d'exécution)"},
-        "graph": {"present": False, "reason": "aucun export de graphe attaché à ce run"},
+        "agent": {"present": False, "reason": "demo run without LLM (execution demo)"},
+        "graph": {"present": False, "reason": "no graph export attached to this run"},
     }
 
-    # 9 — reçus bruts + politique versionnée
+    # 9 — raw receipts + versioned policy
     receipts_src = os.path.join(session_dir, "receipts")
     if os.path.isdir(receipts_src):
         for name_file in sorted(os.listdir(receipts_src)):
-            place(os.path.join(receipts_src, name_file), "receipts/{}".format(name_file), "reçu brut", required=False)
+            place(os.path.join(receipts_src, name_file), "receipts/{}".format(name_file), "raw receipt", required=False)
     place(os.path.join(session_dir, "policy.effective.json"), "policy/policy.effective.json",
-          "politique versionnée", required=False)
-    place(os.path.join(common.HERE, "policy.demo.json"), "policy/policy.demo.json", "politique de démo", required=False)
+          "versioned policy", required=False)
+    place(os.path.join(common.HERE, "policy.demo.json"), "policy/policy.demo.json", "demo policy", required=False)
     place(os.path.join(session_dir, "intent_registry.json"), "policy/intent_registry.json",
-          "registre d'idempotence", required=False)
+          "idempotency registry", required=False)
     place(os.path.join(session_dir, "signatures.jsonl"), "policy/signatures.jsonl",
-          "journal des signatures (compteur)", required=False)
+          "signature log (counter)", required=False)
 
-    # 5bis — le manifeste de session (écrit par le run E) et le rapport lisible
+    # 5bis — the session manifest (written by run E) and the human-readable report
     place(os.path.join(session_dir, "export", "manifest.json"), "manifest.json",
-          "manifeste de session", required=False)
-    place(os.path.join(session_dir, "report.md"), "report.md", "rapport lisible", required=False)
+          "session manifest", required=False)
+    place(os.path.join(session_dir, "report.md"), "report.md", "human-readable report", required=False)
 
-    # 10 — vérificateur hors-ligne minimal (le vérificateur T10 complet n'existe pas encore)
+    # 10 — minimal offline verifier (the full T10 verifier does not exist yet)
     os.makedirs(os.path.join(staging, "verify"), exist_ok=True)
     with open(os.path.join(staging, "verify", "verify_hashes.py"), "w", encoding="utf-8", newline="\n") as handle:
         handle.write(VERIFY_SCRIPT)
@@ -349,26 +349,26 @@ def build_packet(*, session_dir: str, case: str, evidence_dir: str, out_dir: Opt
     with open(os.path.join(staging, "verify", "VERIFY_NOT_BUILT.txt"), "w", encoding="utf-8", newline="\n") as handle:
         handle.write(note)
 
-    # 12 — ancrage (reporté) : dossier vide avec la raison, jamais un faux artefact
+    # 12 — anchoring (deferred): empty folder with the reason, never a fake artifact
     os.makedirs(os.path.join(staging, "anchor"), exist_ok=True)
     with open(os.path.join(staging, "anchor", "README_ANCHOR.txt"), "w", encoding="utf-8", newline="\n") as handle:
         handle.write("EAS anchoring is conditional (FREEZE_V2 F3) and was not executed for this session. "
                      "The published digest required by option (ii) is the `bundle_digest` of HASHES.txt.\n")
 
-    # 1 — README (l'inventaire est complet à ce stade : pièces + vérificateur)
-    inventory.append(("README_AUDIT.md", "mode d'emploi de vérification (EN)"))
-    inventory.append(("verify/verify_hashes.py", "vérificateur hors-ligne minimal"))
-    inventory.append(("verify/VERIFY_NOT_BUILT.txt", "note sur l'absence du vérificateur T10 complet"))
-    inventory.append(("manifest.json", "manifeste du paquet"))
-    inventory.append(("anchor/README_ANCHOR.txt", "note d'ancrage (reporté)"))
-    inventory.append(("HASHES.txt", "sha256 de chaque fichier + bundle_digest"))
+    # 1 — README (the inventory is complete at this point: pieces + verifier)
+    inventory.append(("README_AUDIT.md", "verification instructions (EN)"))
+    inventory.append(("verify/verify_hashes.py", "minimal offline verifier"))
+    inventory.append(("verify/VERIFY_NOT_BUILT.txt", "note on the missing full T10 verifier"))
+    inventory.append(("manifest.json", "packet manifest"))
+    inventory.append(("anchor/README_ANCHOR.txt", "anchoring note (deferred)"))
+    inventory.append(("HASHES.txt", "sha256 of each file + bundle_digest"))
     with open(os.path.join(staging, "README_AUDIT.md"), "w", encoding="utf-8", newline="\n") as handle:
         handle.write(README_TEMPLATE.format(
             case=case, run8=run8, run_id=run_id, txt_ok=TXT_PROVES, txt_no=TXT_NOT_PROVES,
             inventory="\n".join("- `{}` — {}".format(path, label) for path, label in inventory)
-                      or "- (aucune pièce)"))
+                      or "- (no piece)"))
 
-    # 8 — manifeste du paquet (têtes de flux, versions, inventaire — sans digests : stabilité du hash)
+    # 8 — packet manifest (stream heads, versions, inventory — no digests: hash stability)
     journal = common.read_jsonl(journal_source) if os.path.isfile(journal_source) else []
     journal_records = [record for record in journal if isinstance(record, dict)]
     if journal_records:
@@ -390,12 +390,12 @@ def build_packet(*, session_dir: str, case: str, evidence_dir: str, out_dir: Opt
         "verifier": {"full_t10": "not built", "shipped": "verify/verify_hashes.py"},
         "missing_pieces": missing,
         "files": [path for path, _label in inventory],
-        "note": "Le sha256 du zip est publié à côté du zip (<nom>.zip.sha256) : il ne peut pas être "
-                "inscrit dans le paquet sans créer une récursion.",
+        "note": "The zip sha256 is published next to the zip (<name>.zip.sha256): it cannot be "
+                "written inside the packet without creating a recursion.",
     }
     common.write_json(os.path.join(staging, "manifest.json"), manifest)
 
-    # 11 — HASHES.txt + bundle_digest (calculés APRÈS la dernière écriture dans le paquet)
+    # 11 — HASHES.txt + bundle_digest (computed AFTER the last write into the packet)
     files: List[List[str]] = []
     for dirpath, _dirnames, filenames in os.walk(staging):
         for entry in sorted(filenames):
@@ -414,7 +414,7 @@ def build_packet(*, session_dir: str, case: str, evidence_dir: str, out_dir: Opt
             handle.write("{}  {}\n".format(digest, path))
         handle.write("bundle_digest  {}\n".format(bundle_digest))
 
-    # zip nommé + hashé (le sha256 du zip est publié à côté — ancrage option ii)
+    # named + hashed zip (the zip sha256 is published next to it — anchoring option ii)
     destination_dir = out_dir or os.path.join(session_dir, "packet")
     os.makedirs(destination_dir, exist_ok=True)
     zip_path = os.path.join(destination_dir, "{}.zip".format(name))
@@ -440,18 +440,18 @@ def build_packet(*, session_dir: str, case: str, evidence_dir: str, out_dir: Opt
 def main(argv: Optional[list] = None) -> int:
     parser = argparse.ArgumentParser(
         prog="build_audit_packet.py",
-        description="ORVYREN — assemblage du paquet d'audit (B6 §5) : pièces, HASHES.txt, bundle_digest, zip. "
-                    "Hors ligne ; ne fabrique aucune pièce manquante (elle est déclarée absente).")
+        description="ORVYREN — audit packet assembly (B6 §5): pieces, HASHES.txt, bundle_digest, zip. "
+                    "Offline; fabricates no missing piece (it is declared absent).")
     parser.add_argument("--session", default=None,
-                        help="répertoire de session de démo (défaut : evidence/demo_runs/<case>)")
-    parser.add_argument("--case", default="rseth", help="étiquette de cas (défaut : rseth)")
+                        help="demo session directory (default: evidence/demo_runs/<case>)")
+    parser.add_argument("--case", default="rseth", help="case label (default: rseth)")
     parser.add_argument("--evidence", default=os.path.join(common.ROOT, "evidence"),
-                        help="répertoire des dossiers de décision (défaut : evidence/)")
-    parser.add_argument("--out", default=None, help="répertoire de sortie du zip (défaut : <session>/packet)")
+                        help="decision dossier directory (default: evidence/)")
+    parser.add_argument("--out", default=None, help="zip output directory (default: <session>/packet)")
     parser.add_argument("--dry-run", action="store_true",
-                        help="assemblage hors ligne (défaut de fait : aucun réseau n'est utilisé)")
+                        help="offline assembly (de facto default: no network is used)")
     parser.add_argument("--strict", action="store_true",
-                        help="échec si une pièce requise est absente (dossier de décision, journal)")
+                        help="fail if a required piece is absent (decision dossier, journal)")
     args = parser.parse_args(argv)
 
     session_dir = args.session or os.path.join(common.ROOT, "evidence", "demo_runs", args.case)
@@ -459,17 +459,17 @@ def main(argv: Optional[list] = None) -> int:
         result = build_packet(session_dir=session_dir, case=args.case, evidence_dir=args.evidence,
                               out_dir=args.out, strict=args.strict)
     except common.ConfigurationError as exc:
-        print("ERREUR: {}".format(exc), file=sys.stderr)
+        print("ERROR: {}".format(exc), file=sys.stderr)
         return EXIT_USAGE
 
-    print("ORVYREN — paquet d'audit assemblé")
-    print("  répertoire : {}".format(common.display_path(result["packet_dir"])))
+    print("ORVYREN — audit packet assembled")
+    print("  directory  : {}".format(common.display_path(result["packet_dir"])))
     print("  zip        : {}".format(common.display_path(result["zip_path"])))
     print("  sha256(zip): {}".format(result["zip_sha256"]))
-    print("  bundle_digest (à publier — option ii, FREEZE_V2 F3) : {}".format(result["bundle_digest"]))
-    print("  fichiers   : {}".format(result["files"]))
+    print("  bundle_digest (to publish — option ii, FREEZE_V2 F3): {}".format(result["bundle_digest"]))
+    print("  files      : {}".format(result["files"]))
     if result["missing_pieces"]:
-        print("  pièces absentes (déclarées, jamais inventées) :")
+        print("  missing pieces (declared, never invented):")
         for piece in result["missing_pieces"]:
             print("    - {} ({})".format(piece["piece"], piece["reason"]))
     if args.strict and result["missing_pieces"]:

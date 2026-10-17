@@ -1,17 +1,18 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-"""ORVYREN-Core — CLI racine : vérificateur tiers T10 (paquets d'audit v2).
+"""ORVYREN-Core — root CLI: third-party T10 verifier (audit packets v2).
 
-Alias pratique de ``PYTHONPATH=src python -m orvyren.verify`` (le paquet n'est
-pas installé ; la forme module reste disponible pour l'intégration).
+Convenience alias of ``PYTHONPATH=src python -m orvyren.verify`` (the package is
+not installed; the module form remains available for integration).
 
-Usage :
-    python run_verify.py <paquet.zip|dossier> [--rpc URL] [--mutate-test] [--json rapport.json]
+Usage:
+    python run_verify.py <packet.zip|directory> [--rpc URL] [--mutate-test] [--json report.json]
     python run_verify.py . --offline
 
-Un paquet d'audit livré à un tiers embarque sa **copie gelée** du vérificateur
-(``verify/orvyren_verify.py``) : le tiers n'a besoin ni du dépôt ni d'autre
-chose que la bibliothèque standard — voir ``README_AUDIT.md`` dans le paquet.
+An audit packet delivered to a third party embeds its **frozen copy** of the
+verifier (``verify/orvyren_verify.py``): the third party needs neither the
+repository nor anything beyond the standard library — see ``README_AUDIT.md``
+inside the packet.
 """
 
 import os

@@ -137,14 +137,14 @@ def main(argv=None):
         axes = case["axes"]
         rdof_payload = case["rdof"]
         lines.append(
-            f"Axes (séparés) :  épistémique={axes['epistemic_verdict']} · "
-            f"économique={axes['economic_action']} · "
-            f"autorisation={axes['authorization_verdict']}")
+            f"Axes (separate) : epistemic={axes['epistemic_verdict']} · "
+            f"economic={axes['economic_action']} · "
+            f"authorization={axes['authorization_verdict']}")
         lines.append(
-            f"RDOF v1:          {len(rdof_payload['trace'])} recherche(s), "
-            f"arrêt « {rdof_payload['stop']} », "
-            f"coût {rdof_payload['budget']['consomme']['secondes']} s "
-            f"({rdof_payload['budget']['consomme']['appels']} appel(s))")
+            f"RDOF v1:          {len(rdof_payload['trace'])} search(es), "
+            f"stop \"{rdof_payload['stop']}\", "
+            f"cost {rdof_payload['budget']['consomme']['secondes']} s "
+            f"({rdof_payload['budget']['consomme']['appels']} call(s))")
     lines.append(
         f"Baseline A0:      signals_main={len(baseline['signals_main'])}, "
         f"signals_control={len(baseline['signals_control'])}, "

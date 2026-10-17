@@ -46,8 +46,8 @@ class AdrIndexTests(unittest.TestCase):
 
     def test_gap_in_numbering_is_detected(self):
         with tempfile.TemporaryDirectory(prefix="orvyren_adr_") as tmp:
-            _write_adr(tmp, 1, "un")
-            _write_adr(tmp, 3, "trois")
+            _write_adr(tmp, 1, "one")
+            _write_adr(tmp, 3, "three")
             entries = adr_index.scan(tmp)
             problems = adr_index.check(entries, tmp)
             self.assertTrue(any("ADR-0002" in problem for problem in problems), problems)
@@ -56,22 +56,22 @@ class AdrIndexTests(unittest.TestCase):
         with tempfile.TemporaryDirectory(prefix="orvyren_adr_") as tmp:
             path = os.path.join(tmp, "ADR-0001-partial.md")
             with open(path, "w", encoding="utf-8", newline="\n") as handle:
-                handle.write("# ADR-0001 — partiel\n\nAucun entête structuré ici.\n")
+                handle.write("# ADR-0001 — partial\n\nNo structured header here.\n")
             entries = adr_index.scan(tmp)
             problems = adr_index.check(entries, tmp)
             joined = " | ".join(problems)
-            self.assertIn("statut manquant", joined)
-            self.assertIn("date manquante", joined)
+            self.assertIn("missing status", joined)
+            self.assertIn("missing date", joined)
 
     def test_duplicated_number_is_detected(self):
         with tempfile.TemporaryDirectory(prefix="orvyren_adr_") as tmp:
-            _write_adr(tmp, 1, "un")
+            _write_adr(tmp, 1, "one")
             second = os.path.join(tmp, "ADR-0001-bis.md")
             with open(second, "w", encoding="utf-8", newline="\n") as handle:
-                handle.write("# ADR-0001 — doublon\n\n**Date :** 2026-01-01 · **Statut : ACCEPTÉE** · x\n")
+                handle.write("# ADR-0001 — duplicate\n\n**Date :** 2026-01-01 · **Statut : ACCEPTÉE** · x\n")
             entries = adr_index.scan(tmp)
             problems = adr_index.check(entries, tmp)
-            self.assertTrue(any("dupliqué" in problem for problem in problems), problems)
+            self.assertTrue(any("duplicate" in problem for problem in problems), problems)
 
 
 if __name__ == "__main__":

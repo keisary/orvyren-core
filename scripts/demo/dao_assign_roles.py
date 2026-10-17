@@ -1,16 +1,16 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-"""ORVYREN — côté DAO du kill switch (run D) : ``assignRoles(agent, [AGENT], [flag])`` par la Safe 2/3.
+"""ORVYREN — DAO side of the kill switch (run D): ``assignRoles(agent, [AGENT], [flag])`` by the 2/3 Safe.
 
-Le rôle AGENT est retiré (ou rendu) par la **DAO** — 2 signatures sur 3, jamais par l'agent :
+The AGENT role is removed (or restored) by the **DAO** — 2 signatures out of 3, never by the agent:
 
-    python scripts/demo/dao_assign_roles.py --enable false    # révocation (kill switch K1)
-    python scripts/demo/dao_assign_roles.py --enable true     # reset après la démonstration
+    python scripts/demo/dao_assign_roles.py --enable false    # revocation (K1 kill switch)
+    python scripts/demo/dao_assign_roles.py --enable true     # reset after the demonstration
 
-Preuves imprimées : transaction Safe signée/soumise depuis un propriétaire financé, reçu vérifié,
-et **simulation indépendante** de l'effet (eth_call depuis l'agent : le module doit reverter
-``NoMembership`` = ``0xfd8e9f28`` après révocation, et ne plus le faire après reset).
-Aucune clé n'est jamais affichée ; ``demo_runs/setup/dao_assign_roles_last.json`` reçoit le hash.
+Printed evidence: Safe transaction signed/submitted from a funded owner, verified receipt,
+and **independent simulation** of the effect (eth_call from the agent: the module must revert
+``NoMembership`` = ``0xfd8e9f28`` after revocation, and no longer do so after reset).
+No key is ever displayed; ``demo_runs/setup/dao_assign_roles_last.json`` receives the hash.
 """
 from __future__ import annotations
 
@@ -27,11 +27,11 @@ import calls  # noqa: E402
 import common  # noqa: E402
 import setup_chain as sc  # noqa: E402
 
-NOT_AUTHORIZED = "0xfd8e9f28"  # NoMembership() — mesuré on-chain le 2026-10-16 (la mesure prime sur la doc)
+NOT_AUTHORIZED = "0xfd8e9f28"  # NoMembership() — measured on-chain on 2026-10-16 (measurement beats the doc)
 
 
 def simulate_agent_call(setup: "sc.ChainSetup", recipient: str, amount: int = 1_000_000) -> Dict[str, Any]:
-    """Simulation (eth_call) d'un transfert via le module depuis l'agent — sélecteur de revert inclus."""
+    """Simulation (eth_call) of a transfer through the module from the agent — revert selector included."""
     data = calls.exec_with_role_data(target=setup.usdc, value=0,
                                      inner_data=calls.erc20_transfer_data(recipient, amount),
                                      operation=calls.OPERATION_CALL, role_key=common.ROLE_KEY_AGENT)
@@ -39,9 +39,9 @@ def simulate_agent_call(setup: "sc.ChainSetup", recipient: str, amount: int = 1_
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="assignRoles(agent, [AGENT], [flag]) par la Safe 2/3")
+    parser = argparse.ArgumentParser(description="assignRoles(agent, [AGENT], [flag]) by the 2/3 Safe")
     parser.add_argument("--enable", required=True, choices=("true", "false"),
-                        help="true = (re)donne le rôle AGENT ; false = révocation (kill switch)")
+                        help="true = (re)grants the AGENT role; false = revocation (kill switch)")
     parser.add_argument("--env-file", default=os.path.join(_HERE, ".env"))
     parser.add_argument("--owners-file", default=os.path.join(_HERE, "owners.env"))
     parser.add_argument("--rpc-url", default=os.environ.get("ORVYREN_RPC_URL_BASE_SEPOLIA") or common.DEFAULT_RPC_URL)
@@ -57,7 +57,7 @@ def main() -> int:
     for address, label in ((setup.safe_address, "Safe"), (setup.module_address, "module")):
         code = common.eth_get_code(setup.rpc_url, address)
         if not code or code == "0x":
-            raise sc.SetupError("{} sans code sur la chaîne — arrêt".format(label))
+            raise sc.SetupError("{} without code on chain — stopping".format(label))
     setup.submitter = setup.owner_addresses[0]
     setup._safe_nonce_expected = None
 
@@ -74,12 +74,12 @@ def main() -> int:
         if not flag:
             if selector != NOT_AUTHORIZED:
                 raise sc.SetupError(
-                    "simulation agent : attendu NotAuthorized({}) après révocation, observé {!r}".format(
+                    "agent simulation: expected NotAuthorized({}) after revocation, observed {!r}".format(
                         NOT_AUTHORIZED, selector))
         elif selector == NOT_AUTHORIZED:
-            raise sc.SetupError("simulation agent : le rôle semble toujours retiré (NotAuthorized) après reset")
-        print("[ok] simulation agent indépendante — revert_selector={!r} (attendu : {} )".format(
-            selector, "absent/autre" if flag else NOT_AUTHORIZED))
+            raise sc.SetupError("agent simulation: the role still seems removed (NotAuthorized) after reset")
+        print("[ok] independent agent simulation — revert_selector={!r} (expected: {} )".format(
+            selector, "absent/other" if flag else NOT_AUTHORIZED))
 
     setup.execute_safe_call(label, setup.module_address, data, verify=verify)
     entry = setup.artifacts["safe_calls"][-1]

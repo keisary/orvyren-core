@@ -1,8 +1,104 @@
 {
-  "generated_at": "2026-10-16T12:40:12+00:00",
+  "generated_at": "2026-10-17T04:34:02+00:00",
   "chain": "Base Sepolia (84532)",
   "mode": "unsigned instruction + human execution + on-chain receipt verification",
   "agent_holds_key": false,
+  "policy": {
+    "path": "policy_v1.yaml",
+    "version": "v1.0",
+    "policy_hash": "b8d2e92e2d9233010c392b553df63f9014b25b36891307e4178f1b4d6ac580ad",
+    "yaml_sha256": "b99ad99bc2d32184fd4e1b45fb136f0424e972f40d71cafeab622ae11acc0c03",
+    "recipients_resolved": [
+      "B"
+    ],
+    "unresolved_recipients": [
+      "C"
+    ]
+  },
+  "policy_state": {
+    "paused": false,
+    "agent_member": true,
+    "envelope_status": "PASS",
+    "envelope_source": "fixture",
+    "envelope_fixture": "fixtures/roles_agent_config.json",
+    "envelope_checks": [
+      {
+        "id": "D1",
+        "name": "chain",
+        "status": "PASS",
+        "detail": {
+          "chain_id": 84532
+        }
+      },
+      {
+        "id": "D3",
+        "name": "role key",
+        "status": "PASS",
+        "detail": {}
+      },
+      {
+        "id": "D4",
+        "name": "role targets",
+        "status": "PASS",
+        "detail": {
+          "targets": [
+            "0x036cbd53842c5426634e7929541ec2318f3dcf7e"
+          ]
+        }
+      },
+      {
+        "id": "D5",
+        "name": "role functions",
+        "status": "PASS",
+        "detail": {
+          "functions": [
+            [
+              "0x036cbd53842c5426634e7929541ec2318f3dcf7e",
+              "0xa9059cbb"
+            ]
+          ]
+        }
+      },
+      {
+        "id": "D7",
+        "name": "allowance",
+        "status": "PASS",
+        "detail": {
+          "mismatches": [],
+          "fixture": 300000000,
+          "policy": 300000000
+        }
+      },
+      {
+        "id": "D8",
+        "name": "call quota",
+        "status": "PASS",
+        "detail": {
+          "fixture": 10,
+          "policy": 10
+        }
+      },
+      {
+        "id": "D9",
+        "name": "scheduled revocation",
+        "status": "PASS",
+        "detail": {}
+      },
+      {
+        "id": "D10",
+        "name": "asset",
+        "status": "PASS",
+        "detail": {}
+      }
+    ],
+    "available_balance": 1000.0,
+    "budget_cap_usd": 0.1,
+    "cumulative_spent_24h": 100.0
+  },
+  "demo_defaults": {
+    "agent_member": true,
+    "available_balance": true
+  },
   "execution_config": {
     "rpc_url_masked": "https://sepolia.base.org",
     "treasury_address": "0x2222222222222222222222222222222222222222",
@@ -41,8 +137,8 @@
         },
         {
           "rule": "P4-function",
-          "result": "SKIPPED",
-          "note": "registre de fonctions non configuré (legacy)"
+          "result": "OK",
+          "note": "transfer -> (0x036cbd53842c5426634e7929541ec2318f3dcf7e, 0xa9059cbb)"
         },
         {
           "rule": "P5-amount",
@@ -56,8 +152,8 @@
         },
         {
           "rule": "P7-exposure",
-          "result": "SKIPPED",
-          "note": "state non fourni (appel legacy)"
+          "result": "OK",
+          "note": "balance 1000.0 (floor/exposure not configured)"
         },
         {
           "rule": "P8-permission",
@@ -66,8 +162,8 @@
         },
         {
           "rule": "P9-freshness",
-          "result": "SKIPPED",
-          "note": "TTL d'intention non configuré (legacy)"
+          "result": "OK",
+          "note": "age 0:00:00"
         },
         {
           "rule": "P10-idempotency",
@@ -76,18 +172,18 @@
         },
         {
           "rule": "P11-pause",
-          "result": "SKIPPED",
-          "note": "state non fourni (appel legacy)"
+          "result": "OK",
+          "note": ""
         },
         {
           "rule": "P12-envelope",
-          "result": "SKIPPED",
-          "note": "state non fourni (appel legacy)"
+          "result": "OK",
+          "note": ""
         },
         {
           "rule": "P14-budget",
-          "result": "SKIPPED",
-          "note": "state non fourni (appel legacy)"
+          "result": "OK",
+          "note": "0.0 < 0.1"
         },
         {
           "rule": "P13-action",
@@ -95,6 +191,9 @@
           "note": "transfer"
         }
       ],
+      "skipped_rules": [],
+      "policy_version": "v1.0",
+      "policy_hash": "b8d2e92e2d9233010c392b553df63f9014b25b36891307e4178f1b4d6ac580ad",
       "instruction": {
         "to": "0x036cbd53842c5426634e7929541eC2318f3dCF7e",
         "calldata": "0xa9059cbb00000000000000000000000011111111111111111111111111111111111111110000000000000000000000000000000000000000000000000000000005f5e100",
@@ -129,8 +228,8 @@
         },
         {
           "rule": "P4-function",
-          "result": "SKIPPED",
-          "note": "registre de fonctions non configuré (legacy)"
+          "result": "OK",
+          "note": "transfer -> (0x036cbd53842c5426634e7929541ec2318f3dcf7e, 0xa9059cbb)"
         },
         {
           "rule": "P5-amount",
@@ -144,8 +243,8 @@
         },
         {
           "rule": "P7-exposure",
-          "result": "SKIPPED",
-          "note": "state non fourni (appel legacy)"
+          "result": "OK",
+          "note": "balance 1000.0 (floor/exposure not configured)"
         },
         {
           "rule": "P8-permission",
@@ -154,8 +253,8 @@
         },
         {
           "rule": "P9-freshness",
-          "result": "SKIPPED",
-          "note": "TTL d'intention non configuré (legacy)"
+          "result": "OK",
+          "note": "age 0:00:00"
         },
         {
           "rule": "P10-idempotency",
@@ -164,20 +263,23 @@
         },
         {
           "rule": "P11-pause",
-          "result": "SKIPPED",
-          "note": "state non fourni (appel legacy)"
+          "result": "OK",
+          "note": ""
         },
         {
           "rule": "P12-envelope",
-          "result": "SKIPPED",
-          "note": "state non fourni (appel legacy)"
+          "result": "OK",
+          "note": ""
         },
         {
           "rule": "P14-budget",
-          "result": "SKIPPED",
-          "note": "state non fourni (appel legacy)"
+          "result": "OK",
+          "note": "0.0 < 0.1"
         }
       ],
+      "skipped_rules": [],
+      "policy_version": "v1.0",
+      "policy_hash": "b8d2e92e2d9233010c392b553df63f9014b25b36891307e4178f1b4d6ac580ad",
       "instruction": null
     },
     {
@@ -208,7 +310,7 @@
         {
           "rule": "P4-function",
           "result": "SKIPPED",
-          "note": "registre de fonctions non configuré (legacy)"
+          "note": "approval-only action — no direct call in v1"
         },
         {
           "rule": "P5-amount",
@@ -218,12 +320,12 @@
         {
           "rule": "P6-cumulative",
           "result": "OK",
-          "note": "100.0 <= 300.0"
+          "note": "200.0 <= 300.0"
         },
         {
           "rule": "P7-exposure",
-          "result": "SKIPPED",
-          "note": "state non fourni (appel legacy)"
+          "result": "OK",
+          "note": "balance 1000.0 (floor/exposure not configured)"
         },
         {
           "rule": "P8-permission",
@@ -232,8 +334,8 @@
         },
         {
           "rule": "P9-freshness",
-          "result": "SKIPPED",
-          "note": "TTL d'intention non configuré (legacy)"
+          "result": "OK",
+          "note": "age 0:00:00"
         },
         {
           "rule": "P10-idempotency",
@@ -242,18 +344,18 @@
         },
         {
           "rule": "P11-pause",
-          "result": "SKIPPED",
-          "note": "state non fourni (appel legacy)"
+          "result": "OK",
+          "note": ""
         },
         {
           "rule": "P12-envelope",
-          "result": "SKIPPED",
-          "note": "state non fourni (appel legacy)"
+          "result": "OK",
+          "note": ""
         },
         {
           "rule": "P14-budget",
-          "result": "SKIPPED",
-          "note": "state non fourni (appel legacy)"
+          "result": "OK",
+          "note": "0.0 < 0.1"
         },
         {
           "rule": "P13-action",
@@ -261,6 +363,11 @@
           "code": "ACTION_NEEDS_HUMAN_APPROVAL"
         }
       ],
+      "skipped_rules": [
+        "P4-function"
+      ],
+      "policy_version": "v1.0",
+      "policy_hash": "b8d2e92e2d9233010c392b553df63f9014b25b36891307e4178f1b4d6ac580ad",
       "instruction": null
     }
   ],
@@ -268,6 +375,45 @@
     "I2: execution blocked: policy verdict 'DENY' — the instruction is refused (reason codes: AMOUNT_ABOVE_TX_CAP, AMOUNT_ABOVE_PERIOD_CAP)",
     "I3: execution blocked: policy verdict 'REQUIRE_APPROVAL' — a human approval is required before this instruction may be prepared (reason codes: ACTION_NEEDS_HUMAN_APPROVAL)"
   ],
+  "period_cap_check": {
+    "amount_usdc": 100.0,
+    "max_cumulative_24h": 300.0,
+    "verdicts": [
+      {
+        "attempt": 1,
+        "intent_id": "period-cap-demo-1",
+        "verdict": "ALLOW",
+        "deny_codes": []
+      },
+      {
+        "attempt": 2,
+        "intent_id": "period-cap-demo-2",
+        "verdict": "ALLOW",
+        "deny_codes": []
+      },
+      {
+        "attempt": 3,
+        "intent_id": "period-cap-demo-3",
+        "verdict": "ALLOW",
+        "deny_codes": []
+      },
+      {
+        "attempt": 4,
+        "intent_id": "period-cap-demo-4",
+        "verdict": "DENY",
+        "deny_codes": [
+          "AMOUNT_ABOVE_PERIOD_CAP"
+        ]
+      }
+    ],
+    "fourth_verdict": "DENY",
+    "fourth_deny_codes": [
+      "AMOUNT_ABOVE_PERIOD_CAP"
+    ],
+    "spent_24h_after_restart": 300.0,
+    "ledger_entries_after_restart": 3,
+    "restart_simulated": true
+  },
   "receipt_verification": {
     "status": "no transaction hash provided yet (pending human execution)"
   },

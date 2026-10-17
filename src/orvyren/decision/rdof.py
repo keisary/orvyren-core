@@ -1,25 +1,25 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-"""ORVYREN-Core — RDOF v1: recherche discriminante ordonnée par falsification (W3 L3.2/L3.3).
+"""ORVYREN-Core — RDOF v1: discriminating search ordered by falsification (W3 L3.2/L3.3).
 
 Spec: B3_DECISION_ETUDE.md §b.2 (DOC2 §5.4.3, FREEZE_V2 C2). Five deterministic
 rules, zero probability:
 
-1. **Évaluabilité** — mark every hypothesis criterion evaluable / not under the
+1. **Evaluability** — mark every hypothesis criterion evaluable / not under the
    current evidence state; collect the unknowns.
-2. **Effet des prédicats** — for every candidate predicate and each of its
+2. **Predicate effects** — for every candidate predicate and each of its
    registered outcome classes, compute "if the outcome were this class, what
    happens to each hypothesis verdict?" by *counterfactual re-classification*
    (``predicates.inject_outcome`` + ``scenarios.classify_hypotheses``) — the
    effect is computed, never hard-coded.
-3. **Ordonnancement** — frozen lexicographic comparison, ties broken by id:
+3. **Ordering** — frozen lexicographic comparison, ties broken by id:
    (i) can refute the currently dominant hypothesis; (ii) makes evaluable a
    criterion carrying the opposite decision; (iii) resolves a registered
    unresolved contradiction; (iv) lowest measured cost (seconds + queries).
-4. **Exécution** — collect the chosen predicate, add it to the evidence state,
+4. **Execution** — collect the chosen predicate, add it to the evidence state,
    restart.
-5. **Arrêt** — first true: c1 INVARIANCE (every remaining outcome leads to the
-   same action candidate → "décision stable", even with budget left); c2
+5. **Stop** — first true: c1 INVARIANCE (every remaining outcome leads to the
+   same action candidate → "stable decision", even with budget left); c2
    BUDGET (list what was not searched and its possible effect).
 
 The dominant hypothesis is the first hypothesis (frozen order H1, H2, H3) that
@@ -45,13 +45,13 @@ from orvyren.decision.scenarios import (INCONCLUSIVE, REFUTED, SUPPORTED,
                                         observations_in_window,
                                         parse_window_bound)
 
-#: Frozen search budget defaults (B3 §b.2 "plafonds gelés" — requêtes+secondes).
+#: Frozen search budget defaults (B3 §b.2 "frozen ceilings" — queries+seconds).
 DEFAULT_BUDGET = {"recherches": 3, "appels": 10, "secondes": 60.0}
 
 #: Frozen hypothesis order (dominance test walks this order).
 FROZEN_HYPOTHESIS_ORDER = ("H1", "H2", "H3")
 
-#: The documented bounded fixed order (repli, DOC4 §4): RDOF is evaluated
+#: The documented bounded fixed order (fallback, DOC4 §4): RDOF is evaluated
 #: against it before anything else is activated (FREEZE_V2 C2).
 FROZEN_FIXED_ORDER = ("P-1.2", "P-1.3", "P-6.3", "P-2.2", "P-2.5", "P-1.4",
                       "P-5.1", "P-PERS")
@@ -78,8 +78,8 @@ class EvidenceState:
 
     Supply series are *hidden* until P-6.3 is collected: the supply fact is in
     the frozen corpus, but it enters the evidence state only when the research
-    act buys it (B3 §b.2 micro-exemple: "H2 tant que la baisse d'offre n'est
-    pas observée").
+    act buys it (B3 §b.2 micro-example: "H2 as long as the supply drop has not
+    been observed").
     """
 
     def __init__(self, observations, window_start, window_end, horizon=None,
@@ -237,7 +237,7 @@ def rdof_run(observations, window_start, window_end, case_id="usdc-2023-03",
             if case_id not in predicate.case_scope:
                 excluded.append({
                     "predicate_id": predicate.predicate_id,
-                    "reason": "hors périmètre du cas %s (périmètre : %s)" % (
+                    "reason": "outside the case scope %s (scope: %s)" % (
                         case_id, ", ".join(predicate.case_scope))})
                 continue
             if predicate.predicate_id in state.collected:
@@ -253,7 +253,7 @@ def rdof_run(observations, window_start, window_end, case_id="usdc-2023-03",
                     "predicate_id": predicate.predicate_id,
                     "reason": ("no registered hypothesis criterion consumes this "
                                "measure — its outcome classes cannot change any "
-                               "verdict (never bought, règle c1)"),
+                               "verdict (never bought, rule c1)"),
                 })
                 continue
             candidates.append(predicate)
@@ -268,7 +268,7 @@ def rdof_run(observations, window_start, window_end, case_id="usdc-2023-03",
         if not candidates or all(
                 _invariant(effects_by_id[p.predicate_id], current_action)
                 for p in candidates):
-            stop = "décision stable (invariance c1)"
+            stop = "stable decision (invariance c1)"
             stop_rule = "c1"
             break
 
@@ -279,7 +279,7 @@ def rdof_run(observations, window_start, window_end, case_id="usdc-2023-03",
                   and consumed["appels"] + p.cost_queries <= budget_limits["appels"]
                   and consumed["recherches"] + 1 <= budget_limits["recherches"]]
         if not viable:
-            stop = "budget épuisé (c2)"
+            stop = "budget exhausted (c2)"
             stop_rule = "c2"
             break
 
@@ -299,15 +299,15 @@ def rdof_run(observations, window_start, window_end, case_id="usdc-2023-03",
         effects = effects_by_id[chosen.predicate_id]
         if dominant and any(dominant in effects[label].get("can_refute", [])
                             for label in effects):
-            why.append("règle (i) : peut réfuter l'hypothèse dominante %s" % dominant)
+            why.append("rule (i): can refute the dominant hypothesis %s" % dominant)
         if any(effects[label].get("makes_evaluable") for label in effects):
             made = sorted({item for label in effects
                            for item in effects[label].get("makes_evaluable", [])})
-            why.append("règle (ii) : rend évaluable un critère décisif (%s)" % ", ".join(made))
+            why.append("rule (ii): makes a decisive criterion evaluable (%s)" % ", ".join(made))
         if not why:
-            why.append("règle (iv) : issue encore capable de changer une décision, coût le plus faible")
+            why.append("rule (iv): outcome still able to change a decision, lowest cost")
         if chosen.decision_delay_seconds:
-            why.append("délai de verdict : %s" % chosen.decision_delay_note)
+            why.append("verdict delay: %s" % chosen.decision_delay_note)
 
         before_verdicts = {h: verdicts[h]["verdict"] for h in FROZEN_HYPOTHESIS_ORDER}
         state.collected[chosen.predicate_id] = fact
@@ -317,7 +317,7 @@ def rdof_run(observations, window_start, window_end, case_id="usdc-2023-03",
         consumed["secondes"] = round(consumed["secondes"] + chosen.cost_seconds, 6)
         trace.append({
             "iteration": len(trace) + 1,
-            "question": "quel fait enregistré peut changer un verdict au coût mesuré le plus faible ?",
+            "question": "which recorded fact can change a verdict at the lowest measured cost?",
             "chosen": chosen.predicate_id,
             "chosen_name": chosen.name,
             "why": why,
@@ -373,7 +373,7 @@ def rdof_run(observations, window_start, window_end, case_id="usdc-2023-03",
 
 def fixed_order_run(observations, window_start, window_end, case_id="usdc-2023-03",
                     horizon=None, budget=None, collected=None, exposure=None):
-    """The bounded fixed order (repli documenté): buys in a frozen list order,
+    """The bounded fixed order (documented fallback): buys in a frozen list order,
     without the invariance stop — that is exactly what T02/HYP-02R measures."""
     state = EvidenceState(observations, window_start, window_end, horizon, collected)
     budget_limits = dict(DEFAULT_BUDGET if budget is None else budget)
@@ -406,7 +406,7 @@ def fixed_order_run(observations, window_start, window_end, case_id="usdc-2023-0
 
     final_verdicts = state.classify()
     return {
-        "order": "ordre fixe borné (repli documenté, DOC4 §4)",
+        "order": "bounded fixed order (documented fallback, DOC4 §4)",
         "frozen_order": list(FROZEN_FIXED_ORDER),
         "purchases": purchases,
         "unnecessary_purchases": unnecessary,
@@ -420,7 +420,7 @@ def fixed_order_run(observations, window_start, window_end, case_id="usdc-2023-0
 def compare_rdof_vs_fixed_order(observations, window_start, window_end,
                                 case_id="usdc-2023-03", horizon=None, budget=None,
                                 collected=None):
-    """T02/HYP-02R-style essai: RDOF must beat or match the fixed order.
+    """T02/HYP-02R-style trial: RDOF must beat or match the fixed order.
 
     Compared: number of purchases, unnecessary purchases (bought although every
     outcome would have led to the same action — the c1 case), total measured

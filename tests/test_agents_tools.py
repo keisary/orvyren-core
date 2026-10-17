@@ -83,7 +83,7 @@ def fixtures():
 
 
 class ToolRegistryTest(unittest.TestCase):
-    """Allow-list semantics (DOC2 §5.2.5, « jamais exposé aux agents »)."""
+    """Allow-list semantics (DOC2 §5.2.5, "never exposed to agents")."""
 
     def setUp(self):
         self.journal = AgentJournal()

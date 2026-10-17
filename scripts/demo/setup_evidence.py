@@ -1,15 +1,15 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-"""ORVYREN — consolidation des preuves du montage on-chain (à partir des reçus).
+"""ORVYREN — consolidation of the on-chain setup evidence (from the receipts).
 
-Lit ``demo_runs/setup/receipts/*.json`` (un reçu par étape), récupère l'input de chaque
-transaction via ``eth_getTransactionByHash``, **recalcule les hash Safe (EIP-712)** des appels
-2/3 et **décode les événements** attendus (ProxyCreation, ModuleProxyCreation, RolesModSetup,
+Reads ``demo_runs/setup/receipts/*.json`` (one receipt per step), fetches each
+transaction's input via ``eth_getTransactionByHash``, **recomputes the Safe (EIP-712) hashes** of the
+2/3 calls and **decodes the expected events** (ProxyCreation, ModuleProxyCreation, RolesModSetup,
 ScopeTarget, ScopeFunction, SetAllowance, AssignRoles, EnabledModule, ExecutionSuccess).
 
-Sortie : ``demo_runs/setup/tx_hashes.json`` (index complet + événements décodés).
+Output: ``demo_runs/setup/tx_hashes.json`` (full index + decoded events).
 
-Usage :
+Usage:
     python scripts/demo/setup_evidence.py [--receipts DIR] [--out DIR] [--rpc-url URL]
 """
 
@@ -21,9 +21,9 @@ import os
 import sys
 from typing import Any, Dict, List, Optional
 
-try:  # paquet
+try:  # package
     from . import common, setup_chain
-except ImportError:  # exécution directe
+except ImportError:  # direct execution
     _sys_dir = os.path.dirname(os.path.abspath(__file__))
     if _sys_dir not in sys.path:
         sys.path.insert(0, _sys_dir)
@@ -54,7 +54,7 @@ SAFE_STEPS = ["safe_enable_module", "role_scope_target", "role_allowance_usdc",
 
 
 def decode_event(log_entry: Dict[str, Any], topics_map: Dict[str, str]) -> Dict[str, Any]:
-    """Décode le nom de l'événement et ses arguments principaux (best effort, jamais d'exception)."""
+    """Decodes the event name and its main arguments (best effort, never an exception)."""
     raw_topics = log_entry.get("topics") or []
     topic0 = raw_topics[0][2:].lower() if raw_topics else ""
     name = topics_map.get(topic0, "?")
@@ -86,8 +86,8 @@ def decode_event(log_entry: Dict[str, Any], topics_map: Dict[str, str]) -> Dict[
         elif name == "RolesModSetup" and len(raw_topics) >= 4:
             args = {"initiator": "0x" + raw_topics[1][26:], "owner": "0x" + raw_topics[2][26:],
                     "avatar": "0x" + raw_topics[3][26:]}
-    except Exception:  # noqa: BLE001 - preuve best effort
-        args = {"note": "arguments non décodés"}
+    except Exception:  # noqa: BLE001 - best-effort proof
+        args = {"note": "arguments not decoded"}
     if args:
         out["args"] = args
     return out
@@ -144,7 +144,7 @@ def build_index(receipts_dir: str, rpc_url: str, safe_hint: Optional[str] = None
             safe_nonce = 0
         index["tx"].append(entry)
         index["events"][step] = [decode_event(log, topics_map) for log in (receipt.get("logs") or [])]
-    # vérification croisée : hash local == safeTxHash émis par ExecutionSuccess
+    # cross-check: local hash == safeTxHash emitted by ExecutionSuccess
     checks = []
     for entry in index["tx"]:
         if "safe_tx_hash" not in entry:
@@ -159,20 +159,20 @@ def build_index(receipts_dir: str, rpc_url: str, safe_hint: Optional[str] = None
 
 
 def main(argv: Optional[List[str]] = None) -> int:
-    parser = argparse.ArgumentParser(description="ORVYREN — consolidation des preuves du montage")
+    parser = argparse.ArgumentParser(description="ORVYREN — consolidation of the setup evidence")
     parser.add_argument("--receipts", default=os.path.join(common.ROOT, "demo_runs", "setup", "receipts"))
     parser.add_argument("--out", default=os.path.join(common.ROOT, "demo_runs", "setup"))
     parser.add_argument("--rpc-url", default=os.environ.get("ORVYREN_RPC_URL_BASE_SEPOLIA") or common.DEFAULT_RPC_URL)
     args = parser.parse_args(argv)
     if common.eth_chain_id(args.rpc_url) != setup_chain.CHAIN_ID_DEMO:
-        print("REFUS : chaîne ≠ {}".format(setup_chain.CHAIN_ID_DEMO), file=sys.stderr)
+        print("REFUSED: chain ≠ {}".format(setup_chain.CHAIN_ID_DEMO), file=sys.stderr)
         return 2
     index = build_index(args.receipts, args.rpc_url)
     common.write_json(os.path.join(args.out, "tx_hashes.json"), index)
-    print("{} transaction(s) indexée(s) ; hash Safe vérifiés : {}".format(
+    print("{} transaction(s) indexed; Safe hashes verified: {}".format(
         len(index["tx"]), index["all_safe_tx_hashes_verified"]))
     for entry in index["tx"]:
-        print("  {:<22} {} status={} bloc={}".format(entry["step"], entry["tx_hash"], entry["status"], entry["block"]))
+        print("  {:<22} {} status={} block={}".format(entry["step"], entry["tx_hash"], entry["status"], entry["block"]))
     return 0
 
 

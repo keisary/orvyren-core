@@ -54,22 +54,22 @@ class TestRunAgentsCli(unittest.TestCase):
 
     def test_journal_run_prints_cost_and_escalation(self):
         if not os.path.exists(os.path.join(STORE, "calls.jsonl")):
-            self.skipTest("store scripté absent")
+            self.skipTest("scripted store missing")
         buffer = io.StringIO()
         with contextlib.redirect_stdout(buffer):
             code = run_agents.main(["--case", CASE, "--replay", "journal",
                                     "--session", self.session])
         self.assertEqual(code, 0)
         text = buffer.getvalue()
-        self.assertIn("coût LLM cumulé", text)
+        self.assertIn("cumulative LLM cost", text)
         self.assertIn("REQUIRE_APPROVAL", text)
-        self.assertIn("chaîne OK", text)
+        self.assertIn("chain OK", text)
 
     def test_replay_with_changed_budget_fails_closed(self):
-        """Le budget fait partie du prompt enregistré : un budget différent ne
-        doit PAS improviser — abstention fail-closed (E_LLM_NOT_RECORDED)."""
+        """The budget is part of the recorded prompt: a different budget must
+        NOT improvise — fail-closed abstention (E_LLM_NOT_RECORDED)."""
         if not os.path.exists(os.path.join(STORE, "calls.jsonl")):
-            self.skipTest("store scripté absent")
+            self.skipTest("scripted store missing")
         buffer = io.StringIO()
         with contextlib.redirect_stdout(buffer):
             code = run_agents.main(["--case", CASE, "--replay", "journal",

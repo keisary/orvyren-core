@@ -6,7 +6,7 @@ Spec: B3_DECISION_ETUDE.md §d.2-d.4 (DOC2 §5.4.5). An action is never a free
 order — it is a **bounded intent** (asset, amount, destination, function,
 expiration) that the policy may refuse. Every action carries its template:
 epistemic trigger, economic trigger, bounds, cost, expected effect and
-applicability ("exécutable on-chain" or "simulée" — demonstration honesty).
+applicability ("executable on-chain" or "simulated" — demonstration honesty).
 No action opens new exposure during a stress episode (reduce / convert /
 repay / withdraw only — the bound the policy service can verify).
 
@@ -149,8 +149,8 @@ def catalog_for(persona: str) -> Tuple[ActionRecord, ...]:
 
 
 def bounded_size(x_max: float, depth_eps: float, x_threshold: float) -> float:
-    """x* = min(x_max_rôle, profondeur d'exécution mesurée, taille au seuil
-    économique) — B3 §d.1. Never negative."""
+    """x* = min(role x_max, measured execution depth, size at the economic
+    threshold) — B3 §d.1. Never negative."""
     return max(0.0, min(x_max, depth_eps, x_threshold))
 
 
@@ -164,15 +164,15 @@ def check_applicability(record: ActionRecord,
     context = context or {}
     if record.applicability == APPLICABILITY_ESCALATE:
         return {"applicable": False, "action": record,
-                "motif": "escalade humaine — jamais une action de l'agent (B3 §d.4)"}
+                "motif": "human escalation — never an action of the agent (B3 §d.4)"}
     if (record.applicability == APPLICABILITY_SIMULATED
             and not context.get("allow_simulation")):
         return {"applicable": False, "action": record,
-                "motif": "simulée hors enveloppe — jamais exécutée sans opt-in déclaré"}
+                "motif": "simulated outside the envelope — never executed without a declared opt-in"}
     if (record.applicability == APPLICABILITY_ON_CHAIN
             and context.get("abstentions_actives")):
         return {"applicable": False, "action": record,
-                "motif": "conditions d'abstention actives — levées d'abord (DOC2 §5.4.5)"}
+                "motif": "abstention conditions active — lift them first (DOC2 §5.4.5)"}
     return {"applicable": True, "action": record, "motif": "applicable"}
 
 

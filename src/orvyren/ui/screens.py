@@ -4,28 +4,28 @@
 Twelve offline screens rendered as plain server-side HTML: **no JavaScript, no
 external asset, no network**.  Every screen carries a mandatory banner with:
 
-* its **mode** (``LIVE`` / ``REPLAY — journal scellé`` / ``DONNÉES FIGÉES`` …),
+* its **mode** (``LIVE`` / ``REPLAY — sealed journal`` / ``FROZEN DATA`` …),
 * the **wall clock** (UTC, read once per request),
 * the **simulated clock** when the underlying artefact has one,
 * the **sources** it renders, with a short SHA-256 per file.
 
-A screen never invents data: a missing source renders as ``SOURCE ABSENTE``.
+A screen never invents data: a missing source renders as ``SOURCE MISSING``.
 
 Screens (L8.1: 1-9, L8.3: 10-12):
 
 ======  ==============================  =========================================
-1       Fenêtre & PIT                   épisodes archivés + horloge du rejeu
-2       Graphe                          snapshots de graphe (contenu adressé)
-3       Branches                        hypothèses + trace RDOF du dossier figé
-4       Timeline des réflexions         appels LLM scellés (role, modèle, coût)
-5       Recherche & coût                requêtes graphe + coût cumulé des appels
-6       Dossier                         dossier de décision one-page (liens)
-7       Refus politique                 verdicts P1-P14 + refus + garde-fous
-8       Quarantaine                     heures écartées par les portes qualité
-9       Coût par décision               coût vs plafonds gelés (A5)
-10      Runs A/C/E                      événements chaîne + reçus + export
-11      Journal (3 flux)                chaîne / agents / méta, volumétrie, têtes
-12      Kill switch                     K0/K1 + séquence testée (refus, révocation)
+1       Window & PIT                    archived episodes + replay clock
+2       Graph                           graph snapshots (content-addressed)
+3       Branches                        hypotheses + RDOF trace of the frozen dossier
+4       Reasoning timeline              sealed LLM calls (role, model, cost)
+5       Research & cost                 graph queries + cumulative call cost
+6       Dossier                         one-page decision dossier (links)
+7       Policy denials                  P1-P14 verdicts + denials + guard rails
+8       Quarantine                      hours dropped by the data gates
+9       Cost per decision               cost vs frozen caps (A5)
+10      Runs A/C/E                      chain events + receipts + export
+11      Journal (3 streams)             chain / agents / meta, volume, heads
+12      Kill switch                     K0/K1 + tested sequence (denial, revocation)
 ======  ==============================  =========================================
 """
 
@@ -58,7 +58,7 @@ class Ctx:
 
 # --------------------------------------------------------------------------
 # generic helpers — every read is defensive; a screen never raises on a
-# missing file, it renders SOURCE ABSENTE instead.
+# missing file, it renders SOURCE MISSING instead.
 # --------------------------------------------------------------------------
 
 
@@ -114,7 +114,7 @@ def _read_jsonl(path, limit=None):
 def _exists_note(ctx, path):
     if os.path.exists(path):
         return ""
-    return '<p class="warn">SOURCE ABSENTE : <code>%s</code></p>' % _esc(_rel(ctx, path))
+    return '<p class="warn">SOURCE MISSING: <code>%s</code></p>' % _esc(_rel(ctx, path))
 
 
 def _clock_now():
@@ -134,7 +134,7 @@ def _table(headers, rows, cap=None):
         parts.append("<tr>" + "".join("<td>%s</td>" % _esc(cell) for cell in row) + "</tr>")
     parts.append("</tbody></table>")
     if truncated:
-        parts.append('<p class="note">(table tronquée pour l\'affichage)</p>')
+        parts.append('<p class="note">(table truncated for display)</p>')
     return "".join(parts)
 
 
@@ -146,7 +146,7 @@ def _source_banner_list(ctx, sources):
         if short:
             items.append("<li><code>%s</code> <span class=\"sha\">sha256:%s…</span></li>" % (_esc(name), short))
         else:
-            items.append("<li><code>%s</code> <span class=\"warn\">absent</span></li>" % _esc(name))
+            items.append("<li><code>%s</code> <span class=\"warn\">missing</span></li>" % _esc(name))
     return "<ul class=\"sources\">%s</ul>" % "".join(items)
 
 
@@ -174,25 +174,25 @@ footer{margin-top:1.4rem;color:#666;font-size:.8rem;border-top:1px solid #ddd;pa
 
 def _page(ctx, screen_id, title, mode, clock_sim, body, sources):
     total = len(SCREEN_DEFS)
-    prev_link = ('<a href="/screen/%d">← écran %d</a>' % (screen_id - 1, screen_id - 1)) if screen_id > 1 else ""
-    next_link = ('<a href="/screen/%d">écran %d →</a>' % (screen_id + 1, screen_id + 1)) if 1 <= screen_id < total else ""
+    prev_link = ('<a href="/screen/%d">← screen %d</a>' % (screen_id - 1, screen_id - 1)) if screen_id > 1 else ""
+    next_link = ('<a href="/screen/%d">screen %d →</a>' % (screen_id + 1, screen_id + 1)) if 1 <= screen_id < total else ""
     doc = """<!DOCTYPE html>
-<html lang="fr"><head><meta charset="utf-8"><title>ORVYREN — écran %(id)d — %(title)s</title>
+<html lang="en"><head><meta charset="utf-8"><title>ORVYREN — screen %(id)d — %(title)s</title>
 <style>%(style)s</style></head><body>
 <div class="banner">
-  <span>ÉCRAN %(id)d/%(total)d</span>
-  <span class="mode">MODE : %(mode)s</span>
-  <span>Horloge (UTC) : %(clock)s</span>
-  <span>Horloge simulée : %(sim)s</span>
+  <span>SCREEN %(id)d/%(total)d</span>
+  <span class="mode">MODE: %(mode)s</span>
+  <span>Clock (UTC): %(clock)s</span>
+  <span>Simulated clock: %(sim)s</span>
 </div>
-<nav><a href="/ui">index des écrans</a><a href="/">dossier one-page</a>%(prev)s%(next)s</nav>
+<nav><a href="/ui">screen index</a><a href="/">one-page dossier</a>%(prev)s%(next)s</nav>
 <h1>%(title)s</h1>
 %(body)s
-<h2>Sources rendues</h2>
+<h2>Rendered sources</h2>
 %(sources)s
-<footer>ORVYREN-Core — page statique servie localement (hors-ligne) : aucun JavaScript,
-aucun asset externe, aucune donnée inventée. Un champ absent s'affiche
-« SOURCE ABSENTE » ou « — ».</footer>
+<footer>ORVYREN-Core — static page served locally (offline): no JavaScript,
+no external asset, no invented data. A missing field is rendered as
+"SOURCE MISSING" or "—".</footer>
 </body></html>
 """ % {
         "id": screen_id, "total": total, "title": _esc(title), "mode": _esc(mode),
@@ -227,18 +227,18 @@ def _s1_fenetre_pit(ctx):
             len(data.get("sources") or []),
         ))
     body = _exists_note(ctx, ctx.evidence_path("episode_usdc_2023-03.json"))
-    body += "<p>Fenêtres d'épisode utilisées par le harnais : <b>PIT strict</b> — " \
-            "tout fait postérieur à la fenêtre est rejeté (run abandonné + audit).</p>"
-    body += _table(["cas", "mode", "fenêtre (UTC)", "points", "pas (s)", "sources"], rows)
+    body += "<p>Episode windows used by the harness: <b>strict PIT</b> — " \
+            "any fact later than the window is rejected (run aborted + audit).</p>"
+    body += _table(["case", "mode", "window (UTC)", "points", "step (s)", "sources"], rows)
     journal = _read_json(_first_glob(ctx.evidence_path("replay", "*_replay_journal_*.json")))
     if journal:
-        body += "<h2>Horloge du rejeu (journal)</h2>"
-        body += _table(["run_id", "ts_wall_utc", "transcript_hash", "note horloge"], [(
+        body += "<h2>Replay clock (journal)</h2>"
+        body += _table(["run_id", "ts_wall_utc", "transcript_hash", "clock note"], [(
             journal.get("run_id", "—"), journal.get("ts_wall_utc", "—"),
             (journal.get("transcript_hash") or "—")[:20] + "…",
             (journal.get("clock_audit") or {}).get("note", "—"),
         )])
-    return {"title": "1 · Fenêtre & PIT", "mode": "DONNÉES FIGÉES — épisodes archivés",
+    return {"title": "1 · Window & PIT", "mode": "FROZEN DATA — archived episodes",
             "clock_sim": clock_sim, "body": body,
             "sources": episodes + [p for p in [_first_glob(ctx.evidence_path("replay", "*_replay_journal_*.json"))] if p]}
 
@@ -246,6 +246,24 @@ def _s1_fenetre_pit(ctx):
 def _first_glob(pattern):
     hits = sorted(glob.glob(pattern))
     return hits[0] if hits else None
+
+
+def _demo_session_dir(ctx):
+    """Demo session read by screens 10-12 (L8.3).
+
+    Priority goes to the complete local session ``evidence/demo_runs/rseth``
+    (created by the real runs, git-ignored by design); failing that, the
+    **versioned public micro-chain** ``evidence/demo_chain/rseth`` — the one
+    that keeps these screens populated on a clean clone. If neither exists,
+    the ``demo_chain`` path is returned so the screen honestly declares
+    ``SOURCE MISSING`` instead of inventing data.
+    """
+    candidates = (ctx.evidence_path("demo_runs", "rseth"),
+                  ctx.evidence_path("demo_chain", "rseth"))
+    for candidate in candidates:
+        if os.path.isfile(os.path.join(candidate, "audit.jsonl")):
+            return candidate
+    return candidates[-1]
 
 
 def _s2_graphe(ctx):
@@ -266,10 +284,10 @@ def _s2_graphe(ctx):
         ))
         if os.path.exists(snap_file):
             sources.append(snap_file)
-    body = "<p>Snapshots exportés du graphe (34 relations / 4 familles, record 17 champs). " \
-           "Contenu <b>adressé par hash</b> : le snapshot cité dans une preuve est re-vérifiable hors-ligne.</p>"
-    body += _table(["cas", "as_of", "compteurs", "records", "snapshot_hash"], rows)
-    return {"title": "2 · Graphe", "mode": "SNAPSHOTS FIGÉS (contenu adressé)",
+    body = "<p>Graph snapshots exported (34 relations / 4 families, 17-field record). " \
+           "Content <b>addressed by hash</b>: the snapshot cited in a proof can be re-verified offline.</p>"
+    body += _table(["case", "as_of", "counters", "records", "snapshot_hash"], rows)
+    return {"title": "2 · Graph", "mode": "FROZEN SNAPSHOTS (content-addressed)",
             "clock_sim": None, "body": body, "sources": sources}
 
 
@@ -281,8 +299,8 @@ def _s3_branches(ctx):
     for hyp in registry.get("ids") or []:
         rows.append((hyp, ", ".join(registry.get("etats") or ["—"])))
     body = _exists_note(ctx, record_path)
-    body += "<p>Branches (hypothèses) du dossier <code>%s</code> et trace du processus de décision RDOF :</p>" % _esc(record.get("case", "—"))
-    body += _table(["hypothèse", "état"], rows)
+    body += "<p>Branches (hypotheses) of dossier <code>%s</code> and trace of the RDOF decision process:</p>" % _esc(record.get("case", "—"))
+    body += _table(["hypothesis", "state"], rows)
     rdof = record.get("rdof") or {}
     trace = rdof.get("trace") or []
     if isinstance(trace, list) and trace:
@@ -292,16 +310,16 @@ def _s3_branches(ctx):
                 trace_rows.append(tuple(str(step.get(k, ""))[:90] for k in ("step", "kind", "verdict", "note")))
             else:
                 trace_rows.append((str(step)[:160], "", "", ""))
-        body += "<h2>Trace RDOF</h2>"
-        body += _table(["étape", "kind", "verdict", "note"], trace_rows, cap=16)
-    body += "<h2>Arrêt & budget de recherche</h2>"
-    body += _table(["arrêt", "règle", "dominant final"], [(
+        body += "<h2>RDOF trace</h2>"
+        body += _table(["step", "kind", "verdict", "note"], trace_rows, cap=16)
+    body += "<h2>Stop &amp; research budget</h2>"
+    body += _table(["stop", "rule", "final dominant"], [(
         rdof.get("stop", "—"), rdof.get("stop_rule", "—"),
         json.dumps(rdof.get("dominant_final"), ensure_ascii=False)[:120])])
     abstention = record.get("abstention")
     if abstention is not None:
-        body += "<p>Abstention (A1-A5) : <code>%s</code></p>" % _esc(json.dumps(abstention, ensure_ascii=False)[:200])
-    return {"title": "3 · Branches", "mode": "REPLAY — dossier de décision figé",
+        body += "<p>Abstention (A1-A5): <code>%s</code></p>" % _esc(json.dumps(abstention, ensure_ascii=False)[:200])
+    return {"title": "3 · Branches", "mode": "REPLAY — frozen decision dossier",
             "clock_sim": None, "body": body, "sources": [record_path]}
 
 
@@ -323,13 +341,13 @@ def _s4_timeline(ctx):
             "%s → %s" % ((call.get("prompt_hash") or "—")[:10], (call.get("response_hash") or "—")[:10]),
         ))
     body = _exists_note(ctx, calls_path)
-    body += '<p class="note">Sorties <b>figées de démonstration</b> (SEED.json) : le rejeu est bit-à-bit et ' \
-            're-vérifiable ; une session <b>live</b> exige la clé fournisseur (jamais dans le dépôt).</p>'
-    body += _table(["n°", "ts_utc", "rôle", "modèle", "tokens in/out", "latence (ms)", "coût ($)", "prompt → réponse"], rows)
-    body += "<p>Blobs scellés : <b>%d</b> fichiers (prompts + réponses adressés par hash) dans <code>fixtures/agents/store_usdc-2023-03/blobs/</code>.</p>" % len(blobs)
+    body += '<p class="note">Outputs <b>frozen for the demo</b> (SEED.json): the replay is bit-for-bit and ' \
+            're-verifiable; a <b>live</b> session requires the provider key (never in the repository).</p>'
+    body += _table(["#", "ts_utc", "role", "model", "tokens in/out", "latency (ms)", "cost ($)", "prompt → response"], rows)
+    body += "<p>Sealed blobs: <b>%d</b> files (prompts + responses, addressed by hash) in <code>fixtures/agents/store_usdc-2023-03/blobs/</code>.</p>" % len(blobs)
     if os.path.exists(seed_path):
-        body += "<p>SEED.json — provenance : <code>%s</code></p>" % _esc((_sha256_short(seed_path, 24) or "?") + "…")
-    return {"title": "4 · Timeline des réflexions", "mode": "REPLAY — journal scellé",
+        body += "<p>SEED.json — provenance: <code>%s</code></p>" % _esc((_sha256_short(seed_path, 24) or "?") + "…")
+    return {"title": "4 · Reasoning timeline", "mode": "REPLAY — sealed journal",
             "clock_sim": last_ts, "body": body, "sources": [p for p in (calls_path, seed_path) if os.path.exists(p)]}
 
 
@@ -349,18 +367,18 @@ def _s5_recherche_cout(ctx):
         per_model.setdefault(call.get("model", "—"), [0, 0.0])
         per_model[call.get("model", "—")][0] += 1
         per_model[call.get("model", "—")][1] += float(call.get("cost_usd") or 0)
-    model_rows = [(m, "%d appels" % n, "%.6f $" % c) for m, (n, c) in sorted(per_model.items())]
-    body = "<h2>Recherche</h2>"
+    model_rows = [(m, "%d calls" % n, "%.6f $" % c) for m, (n, c) in sorted(per_model.items())]
+    body = "<h2>Research</h2>"
     if names:
-        body += "<p>Requêtes graphe disponibles (module <code>src/orvyren/graph/queries.py</code>) :</p>"
+        body += "<p>Available graph queries (module <code>src/orvyren/graph/queries.py</code>):</p>"
         body += "<ul>" + "".join("<li><code>%s</code></li>" % _esc(n) for n in names) + "</ul>"
     else:
         body += _exists_note(ctx, queries_path)
-    body += "<p class='note'>Recherche <b>sémantique / embeddings</b> : reclassée en V2 — absente de la v1 " \
-            "(voir <code>docs/decisions/ADR-0003</code>).</p>"
-    body += "<h2>Coût cumulé des appels LLM (session scellée)</h2>"
-    body += _table(["modèle", "volume", "coût"], model_rows + [("TOTAL", "%d appels" % len(calls), "%.6f $" % total)])
-    return {"title": "5 · Recherche & coût", "mode": "REPLAY — journal scellé",
+    body += "<p class='note'><b>Semantic / embeddings</b> research: reclassified to V2 — absent from v1 " \
+            "(see <code>docs/decisions/ADR-0003</code>).</p>"
+    body += "<h2>Cumulative cost of LLM calls (sealed session)</h2>"
+    body += _table(["model", "volume", "cost"], model_rows + [("TOTAL", "%d calls" % len(calls), "%.6f $" % total)])
+    return {"title": "5 · Research & cost", "mode": "REPLAY — sealed journal",
             "clock_sim": None, "body": body,
             "sources": [p for p in (queries_path, calls_path) if os.path.exists(p)]}
 
@@ -374,20 +392,20 @@ def _s6_dossier(ctx):
     if latest:
         md_path = latest[: -len(".html")] + ".md"
         meta = dossier_mod.parse_dossier_metadata(md_path) if os.path.isfile(md_path) else {}
-        body += _table(["champ", "valeur"], [
-            ("cas", meta.get("case", "—")),
+        body += _table(["field", "value"], [
+            ("case", meta.get("case", "—")),
             ("verdict", meta.get("verdict", "—")),
-            ("généré (UTC)", meta.get("generated_at", "—")),
+            ("generated (UTC)", meta.get("generated_at", "—")),
             ("sha256 (md)", dossier_mod.sha256_file(md_path) if os.path.isfile(md_path) else "—"),
             ("sha256 (html)", dossier_mod.sha256_file(latest)),
-            ("fichier html", _rel(ctx, latest)),
+            ("html file", _rel(ctx, latest)),
         ])
-        body += '<p><a href="/">▸ ouvrir le dossier one-page (HTML servi)</a> · ' \
-                '<a href="/api/dossier">aperçu JSON (/api/dossier)</a></p>'
+        body += '<p><a href="/">▸ open the one-page dossier (served HTML)</a> · ' \
+                '<a href="/api/dossier">JSON preview (/api/dossier)</a></p>'
         sources = [latest] + ([md_path] if os.path.isfile(md_path) else [])
     else:
-        body += '<p class="warn">Aucun dossier construit. Lancer <code>python run_audit.py</code>.</p>'
-    return {"title": "6 · Dossier", "mode": "REPLAY — dossier figé", "clock_sim": None,
+        body += '<p class="warn">No dossier built yet. Run <code>python run_audit.py</code>.</p>'
+    return {"title": "6 · Dossier", "mode": "REPLAY — frozen dossier", "clock_sim": None,
             "body": body, "sources": sources}
 
 
@@ -404,23 +422,23 @@ def _s7_refus_politique(ctx):
             len(case.get("rules_evaluated") or []),
         ))
     body = _exists_note(ctx, path)
-    body += "<p>Démonstration politique (P1-P14) — cas I1/I2/I3 et verdicts attendus :</p>"
-    body += _table(["intent", "action", "montant USDC", "verdict", "codes de refus", "règles évaluées"], rows)
+    body += "<p>Policy demonstration (P1-P14) — cases I1/I2/I3 and expected verdicts:</p>"
+    body += _table(["intent", "action", "amount USDC", "verdict", "deny codes", "rules evaluated"], rows)
     verdict_check = data.get("verdict_check") or {}
     unexpected = verdict_check.get("unexpected") or []
-    body += "<h2>Contrôle des verdicts</h2>"
-    body += '<p>Attendus : <code>%s</code> — inattendus : <b>%s</b></p>' % (
+    body += "<h2>Verdict check</h2>"
+    body += '<p>Expected: <code>%s</code> — unexpected: <b>%s</b></p>' % (
         _esc(json.dumps(verdict_check.get("expected", {}), ensure_ascii=False)),
         _esc(len(unexpected)))
     guard_blocks = data.get("guard_blocks") or []
     if guard_blocks:
-        body += "<h2>Garde-fous (blocages d'exécution)</h2><ul>"
+        body += "<h2>Guard rails (execution blocks)</h2><ul>"
         body += "".join("<li>%s</li>" % _esc(str(block)) for block in guard_blocks)
         body += "</ul>"
     receipt = data.get("receipt_verification") or {}
     if receipt:
-        body += "<p class='note'>Vérification des reçus : %s</p>" % _esc(json.dumps(receipt, ensure_ascii=False)[:240])
-    return {"title": "7 · Refus politique", "mode": "%s (Base Sepolia) — preuves capturées" % (data.get("mode", "LIVE")),
+        body += "<p class='note'>Receipt verification: %s</p>" % _esc(json.dumps(receipt, ensure_ascii=False)[:240])
+    return {"title": "7 · Policy denials", "mode": "%s (Base Sepolia) — captured evidence" % (data.get("mode", "LIVE")),
             "clock_sim": None, "body": body, "sources": [path]}
 
 
@@ -436,20 +454,20 @@ def _s8_quarantaine(ctx):
             ", ".join(example.get("missing") or []) or "—",
         ))
     body = _exists_note(ctx, path)
-    body += "<p>Heures examinées par les <b>portes qualité</b> : une source manquante est " \
-            "<b>déclarée</b> (jamais comblée silencieusement) — ce qui n'atteint pas la couverture " \
-            "requise n'entre pas dans une décision.</p>"
-    body += _table(["heure", "statut", "sources présentes", "manquantes"], rows, cap=30)
+    body += "<p>Hours examined by the <b>data gates</b>: a missing source is " \
+            "<b>declared</b> (never silently filled in) — whatever does not reach the required " \
+            "coverage never enters a decision.</p>"
+    body += _table(["hour", "status", "venues present", "missing"], rows, cap=30)
     coverage = data.get("coverage") or {}
     if coverage:
-        body += "<h2>Couverture</h2>"
-        body += _table(["champ", "valeur"], [
-            ("venues de prix indépendantes", ", ".join(coverage.get("independent_price_venues") or []) or "—"),
-            ("heures avec ≥2 sources indépendantes", coverage.get("hours_with_two_plus_independent_venues", "—")),
-            ("première heure à 2 sources", coverage.get("first_two_venue_hour", "—")),
-            ("dernière heure à 2 sources", coverage.get("last_two_venue_hour", "—")),
+        body += "<h2>Coverage</h2>"
+        body += _table(["field", "value"], [
+            ("independent price venues", ", ".join(coverage.get("independent_price_venues") or []) or "—"),
+            ("hours with ≥2 independent sources", coverage.get("hours_with_two_plus_independent_venues", "—")),
+            ("first hour with 2 sources", coverage.get("first_two_venue_hour", "—")),
+            ("last hour with 2 sources", coverage.get("last_two_venue_hour", "—")),
         ])
-    return {"title": "8 · Quarantaine", "mode": "DONNÉES FIGÉES — portes qualité",
+    return {"title": "8 · Quarantine", "mode": "FROZEN DATA — data gates",
             "clock_sim": None, "body": body, "sources": [path]}
 
 
@@ -459,32 +477,33 @@ def _s9_cout_decision(ctx):
     total = sum(float(c.get("cost_usd") or 0) for c in calls)
     rows = [(c.get("ts_utc", "—"), c.get("role", "—"), c.get("model", "—"),
              "%s+%s" % (c.get("tokens_in", "—"), c.get("tokens_out", "—")), c.get("cost_usd", "—")) for c in calls]
-    body = "<p>Plafonds gelés (A5, fail-closed) : <b>≤ 30 appels</b>, ≤ 12 outils, ≤ 10 min, " \
-           "<b>≤ 0,10 $</b> par décision. Dépassement ⇒ arrêt immédiat, jamais de dégradation silencieuse.</p>"
-    body += _table(["ts_utc", "rôle", "modèle", "tokens", "coût ($)"], rows)
-    body += _table(["consommation", "valeur"], [
-        ("appels LLM", "%d / 30" % len(calls)),
-        ("coût total", "%.6f $ / 0,10 $" % total),
-        ("part du plafond", "%.2f %%" % (100.0 * total / 0.10)),
+    body = "<p>Frozen caps (A5, fail-closed): <b>≤ 30 calls</b>, ≤ 12 tools, ≤ 10 min, " \
+           "<b>≤ $0.10</b> per decision. Any overrun ⇒ immediate stop, never a silent degradation.</p>"
+    body += _table(["ts_utc", "role", "model", "tokens", "cost ($)"], rows)
+    body += _table(["consumption", "value"], [
+        ("LLM calls", "%d / 30" % len(calls)),
+        ("total cost", "%.6f $ / 0.10 $" % total),
+        ("share of the cap", "%.2f %%" % (100.0 * total / 0.10)),
     ])
     record = _read_json(ctx.evidence_path("decision_record_usdc-2023-03.json")) or {}
     research = record.get("research_cost") or {}
     limites = research.get("limites") or {}
     consomme = research.get("consomme") or {}
     if limites or consomme:
-        body += "<h2>Budget de recherche du dossier (RDOF)</h2>"
-        body += _table(["ressource", "consommé", "plafond"], [
-            ("recherches", consomme.get("recherches", "—"), limites.get("recherches", "—")),
-            ("appels", consomme.get("appels", "—"), limites.get("appels", "—")),
-            ("secondes", consomme.get("secondes", "—"), limites.get("secondes", "—")),
+        body += "<h2>Dossier research budget (RDOF)</h2>"
+        body += _table(["resource", "consumed", "cap"], [
+            ("searches", consomme.get("recherches", "—"), limites.get("recherches", "—")),
+            ("calls", consomme.get("appels", "—"), limites.get("appels", "—")),
+            ("seconds", consomme.get("secondes", "—"), limites.get("secondes", "—")),
         ])
-    return {"title": "9 · Coût par décision", "mode": "REPLAY — journal scellé",
+    return {"title": "9 · Cost per decision", "mode": "REPLAY — sealed journal",
             "clock_sim": None, "body": body,
             "sources": [calls_path] + [p for p in [ctx.evidence_path("decision_record_usdc-2023-03.json")] if os.path.exists(p)]}
 
 
 def _s10_runs(ctx):
-    audit_path = ctx.evidence_path("demo_runs", "rseth", "audit.jsonl")
+    session = _demo_session_dir(ctx)
+    audit_path = os.path.join(session, "audit.jsonl")
     records = _read_jsonl(audit_path) or []
     kinds = {}
     run_starts = []
@@ -498,35 +517,39 @@ def _s10_runs(ctx):
                 payload.get("case", "—"), payload.get("journal_records_at_start", "—"),
             ))
     body = _exists_note(ctx, audit_path)
-    body += "<p>Chaîne d'exécution réelle (testnet) : chaque événement est enchaîné par hash " \
+    if os.path.basename(os.path.dirname(session)) == "demo_chain":
+        body += '<p class="note">Source: versioned PUBLIC micro-chain ' \
+                '<code>evidence/demo_chain/rseth</code> (extract of the real 2026-10-16 runs, no secret).</p>'
+    body += "<p>Real execution chain (testnet): every event is hash-chained " \
             "(<code>prev_hash</code> → <code>record_hash</code>).</p>"
-    body += _table(["run", "mode", "cas", "enregistrements au départ"], run_starts)
-    body += "<h2>Événements par type</h2>"
-    body += _table(["type", "nombre"], sorted(kinds.items()))
-    receipts_dir = ctx.evidence_path("demo_runs", "rseth", "receipts")
+    body += _table(["run", "mode", "case", "records at start"], run_starts)
+    body += "<h2>Events by type</h2>"
+    body += _table(["type", "count"], sorted(kinds.items()))
+    receipts_dir = os.path.join(session, "receipts")
     receipts = sorted(os.listdir(receipts_dir)) if os.path.isdir(receipts_dir) else []
-    body += "<h2>Reçus on-chain</h2><p>%d reçus scellés. Exemples :</p>" % len(receipts)
+    body += "<h2>On-chain receipts</h2><p>%d sealed receipts. Examples:</p>" % len(receipts)
     body += "<ul>" + "".join("<li><code>%s</code></li>" % _esc(name[:26] + "…") for name in receipts[:8]) + "</ul>"
     a_tx = [name for name in receipts if name.startswith("0x82827c")]
     if a_tx:
-        body += "<p>RUN A (transfert 100 USDC) : <code>%s</code></p>" % _esc(a_tx[0][:26] + "…")
-    manifest_path = ctx.evidence_path("demo_runs", "rseth", "export", "manifest.json")
+        body += "<p>RUN A (100 USDC transfer): <code>%s</code></p>" % _esc(a_tx[0][:26] + "…")
+    manifest_path = os.path.join(session, "export", "manifest.json")
     manifest = _read_json(manifest_path) or {}
     if manifest:
         counters = manifest.get("counters") or {}
         body += "<h2>Export (RUN E)</h2>"
-        body += _table(["champ", "valeur"], [
+        body += _table(["field", "value"], [
             ("run_id", manifest.get("run_id", "—")),
-            ("exporté (UTC)", manifest.get("exported_at", "—")),
-            ("compteurs", ", ".join("%s=%s" % (k, v) for k, v in sorted(counters.items()))[:200]),
+            ("exported (UTC)", manifest.get("exported_at", "—")),
+            ("counters", ", ".join("%s=%s" % (k, v) for k, v in sorted(counters.items()))[:200]),
         ])
-    return {"title": "10 · Runs A/C/E", "mode": "LIVE (Base Sepolia testnet) — preuves de chaîne",
+    return {"title": "10 · Runs A/C/E", "mode": "LIVE (Base Sepolia testnet) — on-chain evidence",
             "clock_sim": None, "body": body,
             "sources": [p for p in (audit_path, manifest_path) if os.path.exists(p)]}
 
 
 def _s11_journal(ctx):
-    audit_path = ctx.evidence_path("demo_runs", "rseth", "audit.jsonl")
+    session = _demo_session_dir(ctx)
+    audit_path = os.path.join(session, "audit.jsonl")
     calls_path = ctx.repo_path("fixtures", "agents", "store_usdc-2023-03", "calls.jsonl")
     replay_path = _first_glob(ctx.evidence_path("replay", "*_replay_journal_*.json"))
     audit_rows = _read_jsonl(audit_path) or []
@@ -536,25 +559,26 @@ def _s11_journal(ctx):
     blobs_dir = ctx.repo_path("fixtures", "agents", "store_usdc-2023-03", "blobs")
     blobs = len(os.listdir(blobs_dir)) if os.path.isdir(blobs_dir) else 0
     rows = [
-        ("flux chaîne (LIVE)", _rel(ctx, audit_path) if os.path.exists(audit_path) else "absent",
-         "%d enregistrements" % len(audit_rows), "tête : %s…" % last_hash[:16]),
-        ("flux agents (REPLAY)", _rel(ctx, calls_path) if os.path.exists(calls_path) else "absent",
-         "%d appels scellés · %d blobs" % (len(calls), blobs),
-         "transcript : %s…" % ((journal or {}).get("transcript_hash") or "—")[:16]),
-        ("flux méta (rejeu)", _rel(ctx, replay_path) if replay_path else "absent",
-         "run_id : %s" % ((journal or {}).get("run_id") or "—"),
-         "content : %s…" % ((journal or {}).get("content_sha256") or "—")[:16]),
+        ("chain stream (LIVE)", _rel(ctx, audit_path) if os.path.exists(audit_path) else "missing",
+         "%d records" % len(audit_rows), "head: %s…" % last_hash[:16]),
+        ("agent stream (REPLAY)", _rel(ctx, calls_path) if os.path.exists(calls_path) else "missing",
+         "%d sealed calls · %d blobs" % (len(calls), blobs),
+         "transcript: %s…" % ((journal or {}).get("transcript_hash") or "—")[:16]),
+        ("meta stream (replay)", _rel(ctx, replay_path) if replay_path else "missing",
+         "run_id: %s" % ((journal or {}).get("run_id") or "—"),
+         "content: %s…" % ((journal or {}).get("content_sha256") or "—")[:16]),
     ]
-    body = "<p>Journal d'audit à <b>trois flux</b> (W6) : chaque flux est append-only, " \
-           "enchaîné par hash et re-vérifiable hors-ligne par <code>python run_verify.py &lt;cible&gt;</code>.</p>"
-    body += _table(["flux", "fichier", "volumétrie", "tête / empreinte"], rows)
-    return {"title": "11 · Journal (3 flux)", "mode": "MIXTE — chaque flux est étiqueté",
+    body = "<p>Audit journal with <b>three streams</b> (W6): each stream is append-only, " \
+           "hash-chained and re-verifiable offline with <code>python run_verify.py &lt;target&gt;</code>.</p>"
+    body += _table(["stream", "file", "volume", "head / fingerprint"], rows)
+    return {"title": "11 · Journal (3 streams)", "mode": "MIXED — each stream is labelled",
             "clock_sim": None, "body": body,
             "sources": [p for p in (audit_path, calls_path, replay_path) if p and os.path.exists(p)]}
 
 
 def _s12_kill_switch(ctx):
-    audit_path = ctx.evidence_path("demo_runs", "rseth", "audit.jsonl")
+    session = _demo_session_dir(ctx)
+    audit_path = os.path.join(session, "audit.jsonl")
     records = _read_jsonl(audit_path) or []
     sequence = []
     revoke_tx = None
@@ -567,41 +591,41 @@ def _s12_kill_switch(ctx):
             match = re.search(r"0x0fb9[0-9a-f]{8}", payload_text)
             if match:
                 revoke_tx = match.group(0)
-    body = "<p>Procédure de coupe-circuit (gel v2) : <b>K0</b> = pause immédiate (drapeau, ≤ 5 min) ; " \
-           "<b>K1</b> = révocation du rôle AGENT (Safe/Zodiac, ≤ 60 min). Fail-closed : tout refus " \
-           "on-chain est un événement de journal, jamais un silence.</p>"
-    body += _table(["niveau", "mécanisme", "délai", "testé"], [
-        ("K0", "drapeau de pause (ORVYREN_K0_PAUSED)", "≤ 5 min", "RUN D — refus contrôlé"),
-        ("K1", "revoke role AGENT (Roles v2)", "≤ 60 min", "RUN D — révocation on-chain"),
-        ("reset", "restauration du rôle (reprise)", "—", "RUN D — reset confirmé"),
+    body = "<p>Kill-switch procedure (v2 freeze): <b>K0</b> = immediate pause (flag, ≤ 5 min); " \
+           "<b>K1</b> = revoke the AGENT role (Safe/Zodiac, ≤ 60 min). Fail-closed: every on-chain " \
+           "refusal is a journal event, never a silence.</p>"
+    body += _table(["level", "mechanism", "delay", "tested"], [
+        ("K0", "pause flag (ORVYREN_K0_PAUSED)", "≤ 5 min", "RUN D — controlled denial"),
+        ("K1", "revoke role AGENT (Roles v2)", "≤ 60 min", "RUN D — on-chain revocation"),
+        ("reset", "role restoration (resume)", "—", "RUN D — reset confirmed"),
     ])
-    receipts_dir = ctx.evidence_path("demo_runs", "rseth", "receipts")
+    receipts_dir = os.path.join(session, "receipts")
     receipts = sorted(os.listdir(receipts_dir)) if os.path.isdir(receipts_dir) else []
     revoked = [name for name in receipts if "0fb9" in name]
     if revoked:
         revoke_tx = revoked[0][:26] + "…"
     if revoke_tx:
-        body += "<p>Révocation : <code>%s</code> — refus refusé par la chaîne avec le sélecteur " \
-                "<code>0xfd8e9f28</code> après révocation (preuve d'application effective).</p>" % _esc(revoke_tx)
+        body += "<p>Revocation: <code>%s</code> — the refusal was rejected by the chain with selector " \
+                "<code>0xfd8e9f28</code> after revocation (proof that it took effect).</p>" % _esc(revoke_tx)
     if sequence:
-        body += "<h2>Séquence observée (journal chaîne)</h2>"
-        body += _table(["type", "mode", "extrait"], sequence, cap=10)
-    return {"title": "12 · Kill switch", "mode": "LIVE (Base Sepolia testnet) — preuves capturées",
+        body += "<h2>Observed sequence (chain journal)</h2>"
+        body += _table(["type", "mode", "excerpt"], sequence, cap=10)
+    return {"title": "12 · Kill switch", "mode": "LIVE (Base Sepolia testnet) — captured evidence",
             "clock_sim": None, "body": body, "sources": [p for p in (audit_path,) if os.path.exists(p)]}
 
 
 SCREEN_DEFS = (
-    (1, "fenetre-pit", "Fenêtre & PIT", _s1_fenetre_pit),
-    (2, "graphe", "Graphe", _s2_graphe),
+    (1, "fenetre-pit", "Window & PIT", _s1_fenetre_pit),
+    (2, "graphe", "Graph", _s2_graphe),
     (3, "branches", "Branches", _s3_branches),
-    (4, "timeline", "Timeline des réflexions", _s4_timeline),
-    (5, "recherche-cout", "Recherche & coût", _s5_recherche_cout),
+    (4, "timeline", "Reasoning timeline", _s4_timeline),
+    (5, "recherche-cout", "Research & cost", _s5_recherche_cout),
     (6, "dossier", "Dossier", _s6_dossier),
-    (7, "refus-politique", "Refus politique", _s7_refus_politique),
-    (8, "quarantaine", "Quarantaine", _s8_quarantaine),
-    (9, "cout-decision", "Coût par décision", _s9_cout_decision),
+    (7, "refus-politique", "Policy denials", _s7_refus_politique),
+    (8, "quarantaine", "Quarantine", _s8_quarantaine),
+    (9, "cout-decision", "Cost per decision", _s9_cout_decision),
     (10, "runs", "Runs A/C/E", _s10_runs),
-    (11, "journal", "Journal (3 flux)", _s11_journal),
+    (11, "journal", "Journal (3 streams)", _s11_journal),
     (12, "kill-switch", "Kill switch", _s12_kill_switch),
 )
 
@@ -619,9 +643,9 @@ def build_screen(screen_id, ctx):
             except Exception as exc:  # a screen must never take the server down
                 result = {
                     "title": title,
-                    "mode": "ERREUR DE RENDU",
+                    "mode": "RENDER ERROR",
                     "clock_sim": None,
-                    "body": '<p class="warn">ERREUR DE RENDU : %s: %s</p>' % (_esc(type(exc).__name__), _esc(exc)),
+                    "body": '<p class="warn">RENDER ERROR: %s: %s</p>' % (_esc(type(exc).__name__), _esc(exc)),
                     "sources": [],
                 }
             return _page(ctx, sid, result["title"], result["mode"], result.get("clock_sim"),
@@ -631,20 +655,20 @@ def build_screen(screen_id, ctx):
 
 def build_index(ctx):
     """Render ``/ui`` — the offline index of the twelve screens."""
-    parts = ['<table><thead><tr><th>écran</th><th>titre</th><th>mode</th><th>état</th></tr></thead><tbody>']
+    parts = ['<table><thead><tr><th>screen</th><th>title</th><th>mode</th><th>status</th></tr></thead><tbody>']
     for sid, slug, title, builder in SCREEN_DEFS:
         try:
             probe = builder(ctx) or {}
-            status = "OK" if probe.get("sources") else "sources manquantes"
+            status = "OK" if probe.get("sources") else "missing sources"
             mode = probe.get("mode", "—")
         except Exception as exc:
-            status = "erreur : %s" % type(exc).__name__
+            status = "error: %s" % type(exc).__name__
             mode = "—"
         parts.append(
             '<tr><td><a href="/screen/%d">%d</a></td><td>%s</td><td>%s</td><td>%s</td></tr>'
             % (sid, sid, _esc(title), _esc(mode), _esc(status)))
     parts.append("</tbody></table>")
-    body = "<p>Visionneuse locale <b>hors-ligne</b> : douze écrans de démonstration et d'audit. " \
-           "Chaque écran affiche son <b>mode</b> et son <b>horloge</b> ; un champ absent est déclaré, jamais inventé.</p>"
+    body = "<p>Local <b>offline</b> viewer: twelve demo and audit screens. " \
+           "Every screen shows its <b>mode</b> and its <b>clock</b>; a missing field is declared, never invented.</p>"
     body += "".join(parts)
-    return _page(ctx, 0, "Index des écrans", "INDEX — hors-ligne", None, body, [])
+    return _page(ctx, 0, "Screen index", "INDEX — offline", None, body, [])

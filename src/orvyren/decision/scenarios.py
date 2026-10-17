@@ -53,13 +53,13 @@ _REPO_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.
 
 # --- pre-registered constants (FREEZE_V1.md section 2: do not modify) -------
 PEG_REFERENCE = 1.0              # par value the stablecoin is measured against
-DEVIATION_ALERT_PCT = 1.0        # "ecart > 1 %"
-AGGREGATE_TOLERANCE_PCT = 0.5    # "agregat < 0,5 % sous l'ancrage"
-RECOVERY_TOLERANCE_PCT = 0.1     # "retour a +/- 0,1 %"
-RECOVERY_HOURS_LIMIT = 12.0      # "... en moins de 12 h"
-PERSISTENCE_HOURS_LIMIT = 12.0   # "persistant ... pendant > 12 h"
-SUPPLY_DROP_PCT = 1.0            # "baisse de l'offre en circulation > 1 %"
-SUPPLY_WINDOW_HOURS = 24.0       # "... en 24 h"
+DEVIATION_ALERT_PCT = 1.0        # "deviation > 1 %"
+AGGREGATE_TOLERANCE_PCT = 0.5    # "aggregate < 0.5 % below peg"
+RECOVERY_TOLERANCE_PCT = 0.1     # "return to +/- 0.1 %"
+RECOVERY_HOURS_LIMIT = 12.0      # "... within less than 12 h"
+PERSISTENCE_HOURS_LIMIT = 12.0   # "persisting ... for > 12 h"
+SUPPLY_DROP_PCT = 1.0            # "circulating supply drop > 1 %"
+SUPPLY_WINDOW_HOURS = 24.0       # "... within 24 h"
 CONCORDANCE_WINDOW_HOURS = 2.0   # +/- window used to test source corroboration
 
 MAX_HOURLY_GAP = timedelta(hours=1)   # a run breaks when an hourly gap appears

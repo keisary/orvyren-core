@@ -8,19 +8,19 @@ plan** ("what is missing, where to get it, what it would change") instead of a
 mute refusal; the ESCALATE vs NO-ACTION decision is a deterministic table.
 
 Structural note (B3 §c.2): A4 is an **authorization** abstention (axis 3),
-never confused with A1-A3, which are **epistemic** (axis 1). "DENY de
-politique" != "échec épistémique" ; "INCONCLUSIVE" != "NO-ACTION".
+never confused with A1-A3, which are **epistemic** (axis 1). "policy DENY"
+!= "epistemic failure"; "INCONCLUSIVE" != "NO-ACTION".
 """
 
 from __future__ import annotations
 
 from typing import Any, Dict, List, Optional, Sequence
 
-A1 = "A1 (entrée requise absente)"
-A2 = "A2 (contradiction non résolue)"
-A3 = "A3 (décision non identifiable sous budget)"
-A4 = "A4 (hors enveloppe / politique)"
-A5 = "A5 (convention de mesure ambiguë)"
+A1 = "A1 (required input missing)"
+A2 = "A2 (unresolved contradiction)"
+A3 = "A3 (decision not identifiable within budget)"
+A4 = "A4 (outside the envelope / policy)"
+A5 = "A5 (ambiguous measurement convention)"
 
 CONDITION_CODES = {"A1": A1, "A2": A2, "A3": A3, "A4": A4, "A5": A5}
 
@@ -100,7 +100,7 @@ def build_inconclusive(verdicts, conditions, what_would_change, decision_delta,
 
     ``what_would_change`` is MANDATORY (B3 §c.3): each entry names the missing
     fact, the hypotheses it affects, the predicate that would buy it, where,
-    and its estimated cost — never "données insuffisantes" in prose.
+    and its estimated cost — never "insufficient data" in prose.
     """
     if not what_would_change:
         raise ValueError(
@@ -132,7 +132,7 @@ def escalate_vs_no_action(conclusive, action_passes_threshold=None,
     """Deterministic implementation of the B3 §c.4 table.
 
     Returns ``{"sortie": "NO-ACTION"|"ESCALATE", "motif", "row"}`` with the
-    spec row it implements. "Attendre" is never "ne pas agir": NO-ACTION is
+    spec row it implements. "Waiting" is never "not acting": NO-ACTION is
     justified as the best feasible action, with its computed motive.
     """
     if not integrity_ok:
@@ -185,7 +185,7 @@ def what_would_change_entries(missing_predicates, verdicts):
             "hypotheses_affectees": survivors,
             "predicat": predicate["predicate_id"],
             "cible": predicate.get("source", ""),
-            "cout_estime": "%d requête(s), < %.1f s" % (
+            "cout_estime": "%d request(s), < %.1f s" % (
                 predicate.get("cost_queries", 1),
                 max(predicate.get("cost_seconds", 0.65), 0.5)),
         })

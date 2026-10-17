@@ -45,7 +45,7 @@ class TestPredicateCatalogue(unittest.TestCase):
         ids = [p.predicate_id for p in CATALOG_V1]
         self.assertEqual(ids, ["P-1.2", "P-1.3", "P-1.4", "P-2.2", "P-2.5",
                                "P-5.1", "P-6.3", "P-PERS"])
-        # measured eth_call cost (B3 §b.2 "Coûts", W3-A 2026-10-15)
+        # measured eth_call cost (B3 §b.2 "Costs", W3-A 2026-10-15)
         self.assertEqual(BY_ID["P-6.3"].cost_seconds, 0.65)
         self.assertEqual(BY_ID["P-6.3"].cost_queries, 1)
         # chain-backed predicates are declared not-offline, never invented
@@ -78,7 +78,7 @@ class TestRdofMicroExample(unittest.TestCase):
         self.assertEqual(step["outcome"]["value"], PUBLISHED_SUPPLY_DROP)
         self.assertEqual(step["outcome"]["class"], ">=1 %")
         # rule (ii): the criterion carrying the opposite decision becomes evaluable
-        self.assertTrue(any("règle (ii)" in item for item in step["why"]))
+        self.assertTrue(any("rule (ii)" in item for item in step["why"]))
         # question -> predicate -> cost -> effect (the dossier trace contract)
         self.assertEqual(step["cost"]["queries"], 1)
         self.assertEqual(step["cost"]["seconds"], 0.65)
@@ -88,7 +88,7 @@ class TestRdofMicroExample(unittest.TestCase):
         self.assertEqual(step["verdicts_before"]["H2"], "INCONCLUSIVE")
         self.assertEqual(step["verdicts_after"]["H2"], "SUPPORTED")
         self.assertEqual(self.result["stop_rule"], "c1")
-        self.assertIn("décision stable", self.result["stop"])
+        self.assertIn("stable decision", self.result["stop"])
         self.assertEqual(self.result["budget"]["consomme"],
                          {"recherches": 1, "appels": 1, "secondes": 0.65})
 

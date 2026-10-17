@@ -1,23 +1,23 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-"""Garde-fous d'intégrité et de reproductibilité (revue du 2026-10-14).
+"""Integrity and reproducibility guards (2026-10-14 review).
 
-Chaque classe ici épingle un défaut réel trouvé pendant la revue, pour qu'il
-ne puisse pas revenir sans faire échouer la suite :
+Each class here pins a real defect found during the review, so that it cannot
+come back without failing the suite:
 
-  * des empreintes dépendantes de la plateforme (CRLF vs LF) : le sha256 du
-    corpus enregistré dans les preuves ne correspondait pas au fichier du
-    dépôt sur toute machine autre que celle qui l'avait produit ;
-  * des chemins absolus (``D:\\orvyren_core\\...``) gravés dans le dossier
-    d'audit, donc non portables et différents d'une machine à l'autre ;
-  * un cache de collecte d'avant le filtre de fenêtre qui avait expédié
-    855 lignes Bitstamp hors fenêtre dans l'archive ;
-  * une sémantique « au moins deux venues » implémentée par intersection,
-    qui aurait exigé *toutes* les venues à partir de trois séries ;
-  * une démo d'exécution dont les horodatages internes changeaient à chaque
-    exécution alors que la conception promet un contenu reproductible.
+  * platform-dependent digests (CRLF vs LF): the corpus sha256 recorded in the
+    evidence did not match the repository file on any machine other than the
+    one that produced it;
+  * absolute paths (``D:\\orvyren_core\\...``) etched into the audit dossier,
+    hence non-portable and different from one machine to another;
+  * a collection cache predating the window filter that had shipped
+    855 out-of-window Bitstamp rows into the archive;
+  * an "at least two venues" semantics implemented by intersection, which
+    would have required *all* venues once there were three series;
+  * an execution demo whose internal timestamps changed on every run while
+    the design promises reproducible content.
 
-Exécution : python -m unittest discover -s tests -v
+Run: python -m unittest discover -s tests -v
 """
 
 import datetime as dt
@@ -54,7 +54,7 @@ def _write(path, content, newline=None):
 
 
 class TestTextDigestsArePlatformStable(unittest.TestCase):
-    """CRLF et LF doivent produire la même empreinte (Windows vs Unix)."""
+    """CRLF and LF must produce the same digest (Windows vs Unix)."""
 
     SAMPLE = ("timestamp_utc,venue,metric,value,extra,retrieved_at\n"
               "2023-03-09T00:00:00+00:00,defillama,price_usd,1.0,,x\n"
@@ -80,7 +80,7 @@ class TestTextDigestsArePlatformStable(unittest.TestCase):
             self.assertEqual(dossier.sha256_file(lf), dossier.sha256_file(crlf))
 
     def test_recorded_corpus_digest_matches_the_repository_copy(self):
-        """Le sha enregistré dans les preuves doit se recalculer depuis le dépôt."""
+        """The sha recorded in the evidence must be recomputable from the repository."""
         if not os.path.exists(DECISION_JSON):
             self.skipTest("evidence/decision JSON not built yet")
         recorded = json.load(open(DECISION_JSON, encoding="utf-8"))[
@@ -94,7 +94,7 @@ class TestTextDigestsArePlatformStable(unittest.TestCase):
 
 
 class TestDossierPathsArePortable(unittest.TestCase):
-    """Aucun chemin absolu ne doit entrer dans un dossier d'audit haché."""
+    """No absolute path may enter a hashed audit dossier."""
 
     def test_repo_inputs_display_repo_relative_paths(self):
         if not os.path.exists(DECISION_JSON):
@@ -131,8 +131,8 @@ class TestDossierPathsArePortable(unittest.TestCase):
 
 
 class TestPinnedBuildIsReproducible(unittest.TestCase):
-    """Avec les mêmes entrées, la même date gelée et la même destination,
-    le dossier est octet à octet identique."""
+    """With the same inputs, the same frozen date and the same destination,
+    the dossier is byte-for-byte identical."""
 
     def test_two_builds_with_same_generated_at_are_byte_identical(self):
         if not os.path.exists(DECISION_JSON):
@@ -170,7 +170,7 @@ class TestPinnedBuildIsReproducible(unittest.TestCase):
             self.assertIn(b"2026-10-14T00:00:00Z", snapshots[0])
 
     def test_committed_dossier_self_hash_recomputes(self):
-        """Le self-hash du dossier committé doit se recalculer à la main."""
+        """The self-hash of the committed dossier must be recomputable by hand."""
         import hashlib
         import re
         md_path = os.path.join(EVIDENCE_DIR, "dossier_usdc-2023-03.md")
@@ -187,7 +187,7 @@ class TestPinnedBuildIsReproducible(unittest.TestCase):
 
 
 class TestCorpusWindowContract(unittest.TestCase):
-    """L'archive ne contient que les fenêtres déclarées (D1/D2)."""
+    """The archive contains only the declared windows (D1/D2)."""
 
     def _rows(self):
         import csv
@@ -276,7 +276,7 @@ class TestSimultaneousAlertSemantics(unittest.TestCase):
 
 
 class TestExecutionDemoClock(unittest.TestCase):
-    """Le contenu de la démo d'exécution ne dépend pas de l'heure du run."""
+    """The execution demo content does not depend on the run time."""
 
     def _report(self, when):
         import run_execution_demo
