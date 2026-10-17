@@ -185,8 +185,8 @@ def safe_join(root: str, rel: Any) -> Optional[str]:
     parts = [part for part in normalized.split("/") if part not in ("", ".")]
     if not parts or any(part == ".." for part in parts):
         return None
-    root_abs = os.path.abspath(root)
-    candidate = os.path.abspath(os.path.join(root_abs, *parts))
+    root_abs = os.path.realpath(root)
+    candidate = os.path.realpath(os.path.join(root_abs, *parts))
     try:
         if os.path.commonpath((root_abs, candidate)) != root_abs:
             return None
@@ -211,13 +211,18 @@ def _safe_sha256_file(root: str, rel: Any, *, lf_normalize: bool = False) -> Opt
 
 
 def _extract_zip_safely(archive: zipfile.ZipFile, destination: str) -> None:
-    """Extract a packet zip while refusing zip-slip and symlink entries."""
+    """Extract a packet zip while refusing zip-slip, symlinks and zip bombs."""
+    max_bytes = 512 * 1024 * 1024
+    total_bytes = 0
     root_abs = os.path.abspath(destination)
     for member in archive.infolist():
         name = member.filename
         target = safe_join(root_abs, name)
         if target is None:
             raise zipfile.BadZipFile("unsafe archive member: %s" % name)
+        total_bytes += int(member.file_size)
+        if total_bytes > max_bytes:
+            raise zipfile.BadZipFile("archive expands beyond the 512 MiB safety limit")
         mode = (member.external_attr >> 16) & 0o170000
         if mode == stat.S_IFLNK:
             raise zipfile.BadZipFile("symlink archive member refused: %s" % name)

@@ -40,6 +40,7 @@ import json
 import os
 import time
 import urllib.error
+import urllib.parse
 import urllib.request
 from datetime import datetime, timezone
 from pathlib import Path
@@ -360,6 +361,9 @@ def _urllib_post(url: str, headers: Mapping[str, str], body_bytes: bytes,
     HTTP error statuses come back as values (not exceptions); transport
     failures keep raising — the caller retries them (≤ 2).
     """
+    parts = urllib.parse.urlsplit(str(url))
+    if parts.scheme not in ("http", "https"):
+        raise ValueError("unsupported LLM endpoint scheme: %r" % (parts.scheme or "<empty>"))
     request = urllib.request.Request(url, data=body_bytes,
                                      headers=dict(headers), method="POST")
     try:
