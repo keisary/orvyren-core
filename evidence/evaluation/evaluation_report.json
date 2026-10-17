@@ -64,7 +64,7 @@
   }
  },
  "banner": "DEV",
- "content_sha256": "b3ef5eab4d26b540ed5046938c420ba580d3181396b58f6b985b095a7e7d5fbf",
+ "content_sha256": "9d5335946fbbadbf0016d603de44af4c393a89d6e690e4224199b22819894a86",
  "forced_mention": null,
  "frozen": {
   "dir": "frozen",
@@ -72,12 +72,12 @@
    "G1": "fffbab916323d237eccc6ca2e05396351a0c83e105adaacb70263bc34f167459",
    "G2": "58e4e4a1bfebbbff0a5ae97feaac4ba291b579a60359a30829333c4b14dc771d",
    "G3": "d2cd02a94c686ff0f744247bd2b95a50e6a3a3f2bdb40ecfd86a5318e8f36f96",
-   "G4": "9a1689a52bd0b7e6fd529b7aa4e4ebd03e2406b140dbaaf269cc96d2b5a88a62",
+   "G4": "ce24a5172ab1d4f5a708312ce79fc355cc37317b2c26ea774a44f31c87a55797",
    "G5": "ca6f289daad6ae5b5c341df2091bcd2efd9cdffd31d5741ffc0097e2c663e6ea",
-   "G6": "60294336b7100868dd5a764b680d103791aa6d0b2057eb2c39132ebfe474d91c"
+   "G6": "6ad4733010b4a436a33d8a5cd5490f29a72d12e3a7227276dbc93b138b656779"
   }
  },
- "generated_at_utc": "2026-10-17T01:24:24Z",
+ "generated_at_utc": "2026-10-17T09:09:25Z",
  "n_windows": 4,
  "n_windows_skipped": 0,
  "params": {

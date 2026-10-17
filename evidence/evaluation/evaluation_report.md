@@ -2,7 +2,7 @@
 
 # Rapport d'évaluation ORVYREN — DEV
 
-*hash de contenu* : `b3ef5eab4d26b540ed5046938c420ba580d3181396b58f6b985b095a7e7d5fbf` · *généré* : 2026-10-17T01:24:24Z · *fenêtres sautées* : 0
+*hash de contenu* : `9d5335946fbbadbf0016d603de44af4c393a89d6e690e4224199b22819894a86` · *généré* : 2026-10-17T09:09:25Z · *fenêtres sautées* : 0
 
 **Paramètres** : q = 100.0 · p_ref = 1.0 · k = 0.0 · tirages B0 = 200
 
@@ -36,4 +36,4 @@
 - O = borne inférieure du regret (exécution au meilleur instant observé) — pas une vérité terrain.
 - Substitutions DEV (P_exec = prix observé, k = 0, A2 = dossier déterministe) déclarées dans chaque fenêtre.
 
-*Rapport reproductible : hash de contenu `b3ef5eab4d26b540ed5046938c420ba580d3181396b58f6b985b095a7e7d5fbf` (champs d'exécution réels exclus).*
+*Rapport reproductible : hash de contenu `9d5335946fbbadbf0016d603de44af4c393a89d6e690e4224199b22819894a86` (champs d'exécution réels exclus).*
