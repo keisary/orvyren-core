@@ -222,6 +222,23 @@ class TestGraphPathTool(GraphToolsFixture):
         bad = tool.run({"src": ADDR_A, "dst": ASSET_X, "bidule": 1})
         self.assertIn("E_TOOL_ARGS_UNKNOWN:bidule", bad.error)
 
+    def test_kinds_as_string_is_refused(self):
+        """tuple('ABC') would iterate characters — a string is not a list."""
+        tool = self.tool(GraphPathTool)
+        result = tool.run({"src": ADDR_A, "dst": ASSET_X,
+                           "kinds": "COLLATERALIZES"})
+        self.assertFalse(result.ok)
+        self.assertIn("E_TOOL_ARGS_TYPE:kinds", result.error)
+        # Same call with a real list reaches Q2 (published by A since H8).
+        ok_shape = tool.run({"src": ADDR_A, "dst": ASSET_X,
+                             "kinds": ["COLLATERALIZES"]})
+        self.assertTrue(ok_shape.ok)
+
+    def test_int_args_enforced(self):
+        tool = self.tool(GraphPathTool)
+        result = tool.run({"src": ADDR_A, "dst": ASSET_X, "max_depth": "4"})
+        self.assertIn("E_TOOL_ARGS_TYPE:max_depth", result.error)
+
 
 class TestGraphSnapshotTool(GraphToolsFixture):
     def test_hash_and_real_counts(self):

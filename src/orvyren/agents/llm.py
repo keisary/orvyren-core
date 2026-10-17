@@ -644,11 +644,24 @@ def parse_tool_calls(raw: Any) -> Optional[Tuple[contracts.ToolCall, ...]]:
     return tuple(calls)
 
 
+#: Spec ``type`` → accepted Python types (bool is NOT an integer here).
+_ARG_TYPES: Mapping[str, Any] = {
+    "string": str,
+    "integer": int,
+    "number": (int, float),
+    "boolean": bool,
+    "array": (list, tuple),
+    "object": Mapping,
+}
+
+
 def _check_call_args(spec: Mapping[str, Any], args: Mapping[str, Any]) -> List[str]:
     """Validate call args against a strict tool spec (closed object).
 
     Unknown key → ``E_TOOL_ARGS_UNKNOWN:<key>``; missing required key →
-    ``E_TOOL_ARGS_REQUIRED:<key>``. Nothing is silently ignored.
+    ``E_TOOL_ARGS_REQUIRED:<key>``; wrong JSON type → ``E_TOOL_ARGS_TYPE:<key>``
+    (a string where an array is expected must never reach a tool: it would be
+    iterated character by character). Nothing is silently ignored.
     """
     parameters = ((spec.get("function") or {}).get("parameters")
                   or spec.get("parameters") or {})
@@ -659,6 +672,15 @@ def _check_call_args(spec: Mapping[str, Any], args: Mapping[str, Any]) -> List[s
     for key in parameters.get("required", ()):
         if key not in args:
             errors.append("E_TOOL_ARGS_REQUIRED:%s" % key)
+    for key, value in args.items():
+        expected = (properties.get(key) or {}).get("type")
+        checker = _ARG_TYPES.get(str(expected or ""))
+        if checker is None:
+            continue
+        if isinstance(value, bool) and expected in ("integer", "number"):
+            errors.append("E_TOOL_ARGS_TYPE:%s" % key)
+        elif not isinstance(value, checker):
+            errors.append("E_TOOL_ARGS_TYPE:%s" % key)
     return errors
 
 

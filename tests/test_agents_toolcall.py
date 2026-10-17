@@ -390,6 +390,14 @@ class TestArgValidation(unittest.TestCase):
         self.assertEqual(spy.executed, [])
         self.assertEqual(turn.results[0]["result"]["error"], "E_TOOL_FORBIDDEN")
 
+    def test_wrong_arg_type_refused(self):
+        """A string where the spec says integer/array never reaches the tool."""
+        turn, spy = self._turn_with(
+            [{"name": "graph_query", "args": {"query": 123}}])
+        self.assertEqual(spy.executed, [])
+        self.assertIn("E_TOOL_ARGS_TYPE:query",
+                      turn.results[0]["result"]["error"])
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -71,6 +71,17 @@ def _bad_args(errors: Sequence[str]) -> contracts.ToolResult:
                                 error=";".join(errors))
 
 
+def _int_arg_errors(args: Mapping[str, Any], keys: Sequence[str]) -> List[str]:
+    """Integer args must really be integers (bool excluded) when present."""
+    errors: List[str] = []
+    for key in keys:
+        value = args.get(key)
+        if value is not None and (isinstance(value, bool)
+                                  or not isinstance(value, int)):
+            errors.append("E_TOOL_ARGS_TYPE:%s" % key)
+    return errors
+
+
 def _observation(response: Mapping[str, Any], deadline_s: float
                  ) -> contracts.ToolResult:
     """One API response as one observation (the rows travel verbatim).
@@ -110,6 +121,7 @@ class GraphQueryTool:
         for key in _QUERY_REQUIRED[query]:
             if not str(args.get(key, "") or "").strip():
                 errors.append("E_TOOL_ARGS_REQUIRED:%s" % key)
+        errors += _int_arg_errors(args, ("as_of_block", "max_depth", "limit"))
         if errors:
             return _bad_args(errors)
         try:
@@ -165,6 +177,11 @@ class GraphPathTool:
         for key in ("src", "dst"):
             if not str(args.get(key, "") or "").strip():
                 errors.append("E_TOOL_ARGS_REQUIRED:%s" % key)
+        kinds = args.get("kinds")
+        if kinds is not None and not isinstance(kinds, (list, tuple)):
+            # A bare string would be iterated character by character.
+            errors.append("E_TOOL_ARGS_TYPE:kinds")
+        errors += _int_arg_errors(args, ("max_depth",))
         if errors:
             return _bad_args(errors)
         if self._q2 is None:
@@ -204,6 +221,7 @@ class GraphSnapshotTool:
         args = dict(args or {})
         errors = ["E_TOOL_ARGS_UNKNOWN:%s" % key
                   for key in sorted(set(args) - set(("as_of", "as_of_block")))]
+        errors += _int_arg_errors(args, ("as_of_block",))
         if errors:
             return _bad_args(errors)
         block = args.get("as_of_block")

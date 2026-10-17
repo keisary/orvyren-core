@@ -100,6 +100,19 @@ class TestFTSMemory(unittest.TestCase):
         self.assertIn(E_MEMORY_NO_REFS, str(ctx.exception))
         self.assertEqual(self.memory.count(), 0)
 
+    def test_remember_replaces_stale_fts_rows(self):
+        """Same memory_id twice: no stale/duplicate FTS row survives."""
+        self.memory.remember("m1", "exposition WETH ancienne", ["rel:1"])
+        self.memory.remember("m1", "concentration cbBTC nouvelle", ["rel:2"])
+        self.assertEqual(self.memory.count(), 1)
+        self.assertEqual(self.memory.recall("exposition"), ())
+        hits = self.memory.recall("concentration")
+        self.assertEqual(len(hits), 1)
+        self.assertEqual(hits[0].text, "concentration cbBTC nouvelle")
+        rows = self.memory.con.execute(
+            "SELECT memory_id FROM memory_fts").fetchall()
+        self.assertEqual(len(rows), 1)
+
     def test_remember_and_recall(self):
         self.memory.remember("m1", "exposition WETH du holder", ["rel:1"])
         self.memory.remember("m2", "concentration cbBTC", ["rel:2", "rel:3"])
