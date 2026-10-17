@@ -1,0 +1,27 @@
+# ORVYREN-Core — local reproduction through Docker.
+#
+#   docker compose run --rm tests     # unittest -v suite (default image)
+#   docker compose up ui              # offline UI on http://localhost:8000
+#
+# No `version:` key: obsolete in Compose v2+.
+
+services:
+  tests:
+    build:
+      context: .
+    image: orvyren:dev
+    command: ["python", "-m", "unittest", "discover", "-s", "tests", "-v"]
+    environment:
+      PYTHONIOENCODING: "utf-8"
+      PYTHONUNBUFFERED: "1"
+
+  ui:
+    build:
+      context: .
+    image: orvyren:dev
+    command: ["python", "run_audit.py", "--serve", "--host", "0.0.0.0", "--port", "8000"]
+    ports:
+      - "8000:8000"
+    environment:
+      PYTHONIOENCODING: "utf-8"
+      PYTHONUNBUFFERED: "1"

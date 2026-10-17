@@ -1,0 +1,35 @@
+# Minimal build context — a pattern without a leading slash matches at any
+# depth (same semantics as .gitignore).
+
+# --- VCS / CI ---
+.git
+.github
+
+# --- Secrets: never baked into an image ---
+.env
+.env.*
+scripts/demo/.env
+scripts/demo/config.env
+scripts/demo/owners.env
+secrets/
+
+# --- Local artifacts (gitignored, not reproducible) ---
+demo_runs/
+dist/
+*.log
+.DS_Store
+Thumbs.db
+
+# --- Python caches ---
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+
+# --- Docs: not needed by the image, EXCEPT the ADR registry ---
+# tests/test_adr_index.py reads docs/decisions/: excluding it would break the
+# suite inside the image. So we exclude the contents of docs/ while keeping
+# that subdirectory.
+docs/*
+!docs/decisions
