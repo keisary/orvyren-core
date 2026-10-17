@@ -62,16 +62,29 @@ class MemoryEntry:
 
 def refs_from_observations(observations: Iterable[Mapping[str, Any]]
                            ) -> Tuple[str, ...]:
-    """Evidence refs found in tool observations (stable order, no duplicate)."""
+    """Evidence refs found in tool observations (stable order, no duplicate).
+
+    The scan is depth-first and walks inside ``rows``-style lists: an API
+    response carries its evidence refs inside its rows, not only at top level.
+    """
     refs: List[str] = []
+
+    def scan(value: Any, depth: int) -> None:
+        if depth < 0:
+            return
+        if isinstance(value, Mapping):
+            for key in OBSERVATION_REF_KEYS:
+                found = value.get(key)
+                if isinstance(found, str) and found.strip() and found not in refs:
+                    refs.append(found)
+            for key in value:
+                scan(value[key], depth - 1)
+        elif isinstance(value, (list, tuple)):
+            for item in value:
+                scan(item, depth - 1)
+
     for observation in observations or ():
-        if not isinstance(observation, Mapping):
-            continue
-        for key in OBSERVATION_REF_KEYS:
-            value = observation.get(key)
-            if isinstance(value, str) and value.strip():
-                if value not in refs:
-                    refs.append(value)
+        scan(observation, 4)
     return tuple(refs)
 
 

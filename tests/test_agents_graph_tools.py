@@ -186,6 +186,14 @@ class TestGraphQueryTool(GraphToolsFixture):
         result = tool.run({"query": "Q1", "holder": ADDR_A})
         self.assertTrue(result.ok)  # 20 s par défaut (CONTRACT.md)
 
+    def test_latency_telemetry_is_neutralised_for_replay(self):
+        """latency_ms is measured by the API but never enters the observation:
+        a recorded turn must replay bit-identically."""
+        tool = self.tool(GraphQueryTool)
+        result = tool.run({"query": "Q1", "holder": ADDR_A})
+        self.assertTrue(result.ok)
+        self.assertIsNone(result.observations[0].get("latency_ms"))
+
 
 class TestGraphPathTool(GraphToolsFixture):
     def test_q2_unavailable_is_honest(self):

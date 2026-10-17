@@ -75,9 +75,17 @@ def _bad_args(errors: Sequence[str]) -> contracts.ToolResult:
 
 def _observation(response: Mapping[str, Any], deadline_s: float
                  ) -> contracts.ToolResult:
-    """One API response as one observation (the rows travel verbatim)."""
-    return contracts.ToolResult(ok=True, status="OK",
-                                observations=(dict(response),))
+    """One API response as one observation (the rows travel verbatim).
+
+    ``latency_ms`` is neutralised: it is volatile telemetry measured by the
+    API, and a recorded tooled turn must replay bit-identically (it also feeds
+    the finalisation prompt hash). The measured latency stays visible where it
+    is displayed — the UI queries the API itself.
+    """
+    clean = dict(response)
+    if "latency_ms" in clean:
+        clean["latency_ms"] = None
+    return contracts.ToolResult(ok=True, status="OK", observations=(clean,))
 
 
 class GraphQueryTool:
