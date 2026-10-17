@@ -15,7 +15,7 @@ Le graphe cible doit être **matérialisé, temporel, typé et requêtable**, pa
 
 **Décision recommandée** :
 
-1. **SQLite pour la démo 72 h** (zéro ops, fichier, `WITH RECURSIVE`, JSON1), **PostgreSQL + SQL/PGQ comme cible** (Neon free, index, JSONB, requêtes de chemin natives quand disponibles).
+1. **SQLite pour la démo 72 h** (zéro ops, fichier, `WITH RECURSIVE`, JSON1), **PostgreSQL + `WITHOUT OVERLAPS` (PG 19) comme cible** (Neon free, index, JSONB, contraintes temporelles natives). **Pas de SQL/PGQ** : le patch a été reverté ; PG 19 RC1 ne le livre pas (contradiction MiniMax, vérifiée sur les commits PostgreSQL).
 2. **Pas de base graphe dédiée** pour le concours : Neo4j/Kuzu ajoutent une seconde base à synchroniser, alors que le goulot est le schéma et les données, pas le moteur (B2 §2.3).
 3. **Un nœud `EVENT` de première classe**, une table `nodes`, une table `events`, une table `relations` qui persiste les **17 champs** + les champs on-chain, et une table `relation_provenance`.
 4. **PIT bitemporel** : `valid_from/valid_to` pour le monde, `inserted_at/revision` pour la connaissance, `block_number` pour l'on-chain.
@@ -51,7 +51,7 @@ Le graphe cible doit être **matérialisé, temporel, typé et requêtable**, pa
 | Option | Avantages | Limites | Verdict |
 |---|---|---|---|
 | **SQLite** | zéro ops, fichier, démo offline, `WITH RECURSIVE`, JSON1, tests rapides | écriture mono-writer, pas de SQL/PGQ, moins bon pour concurrence | **Démo 72 h** |
-| **PostgreSQL + SQL/PGQ** | index, JSONB, transactions, SQL/PGQ (PG 18+), `pgvector` optionnel, Neon free | service à opérer, scale-to-zero, quota | **Cible** |
+| **PostgreSQL + `WITHOUT OVERLAPS`** | index, JSONB, transactions, contraintes temporelles natives (PG 19), `pgvector` optionnel, Neon free | service à opérer, scale-to-zero, quota ; **SQL/PGQ non livrable** | **Cible** |
 | **Neo4j AuraDB Free** | Cypher, algos, visualisation | 200k nœuds/400k relations, 2ᵉ base à synchroniser, hors trajectoire | **Non** |
 | **Kuzu** | embarqué, rapide | projet archivé le 10/10/2025, support nul (B2 §2.3) | **Non** |
 | **DuckDB/Parquet** | analytique, scans, walk-forward | pas un store transactionnel de faits | **Companion analytique** |
@@ -61,7 +61,7 @@ Le graphe cible doit être **matérialisé, temporel, typé et requêtable**, pa
 
 - **Un seul `GraphStore` interface**, deux dialectes : SQLite (démo) et PostgreSQL (cible).
 - Le DDL est écrit pour PostgreSQL, puis adapté en SQLite (types `TEXT`, `REAL`, `INTEGER`, JSON1).
-- Les requêtes Q1–Q14 sont écrites en SQL standard + `WITH RECURSIVE` ; la version SQL/PGQ est une optimisation PostgreSQL, pas une dépendance.
+- Les requêtes Q1–Q14 sont écrites en SQL standard + `WITH RECURSIVE` ; **SQL/PGQ n'est pas une dépendance** (patch reverté, aucune version livrable) ; `WITHOUT OVERLAPS` (PG 19) est la seule capacité temporelle native à retenir.
 - **Pas de base graphe** avant d'avoir mesuré que Postgres ne suffit pas.
 
 ---
@@ -301,8 +301,10 @@ CREATE TABLE relations (
     PRIMARY KEY (relation_id, revision)
 );
 
-CREATE INDEX idx_rel_src_kind   ON relations(src, kind);
-CREATE INDEX idx_rel_dst_kind   ON relations(dst, kind);
+-- Ne pas créer d'index manuel sur (src, kind) / (dst, kind) sur l'append-only :
+-- MiniMax a mesuré ×117–139 à 50k/100k (SQLite), car l'index manuel empêche
+-- l'index automatique (lifecycle, src). La cible est une table `edge_current`
+-- matérialisée, indexée sur (src, kind) si les mesures le justifient.
 CREATE INDEX idx_rel_kind       ON relations(kind);
 CREATE INDEX idx_rel_current    ON relations(relation_id, inserted_at);
 CREATE INDEX idx_rel_valid      ON relations(valid_from, valid_to);
@@ -485,7 +487,7 @@ C'est la requête qui rend le graphe **utile à l'agent** : elle dit ce qui manq
 - **Chaîne** : Base mainnet, `chain_id = 8453`.
 - **Protocole** : Aave v3 (Pool, Oracle, aTokens, debt tokens).
 - **Fenêtre** : **30 jours** d'abord ; extension à 90 jours si les quotas RPC le permettent.
-- **Objectif** : **10 000–50 000 événements décodés**, **2 000+ nœuds**, **10 000+ relations**.
+- **Objectif** : **10 000+ événements décodés**, **2 000+ nœuds**, **8 000+ relations** ; 50 000 seulement si le débit RPC est mesuré (Codex conteste 10⁴–10⁵ en 72 h sans preuve).
 - **Trésorerie** : une adresse de démonstration (EOA/Safe) avec des positions Aave ; pas de clé privée réelle, pas de fonds réels.
 
 ### 8.2 Sources
@@ -647,12 +649,15 @@ Benchmark synthétique `_bench/bench_graph_scale.py`, résultats `_bench/bench_r
 - Le chargement de 50 000 relations coûte **1,14 s** ; la base pèse **15,66 Mo**.
 - Q2 synthétique a peu de chemins (1) ; son temps Python n'est pas représentatif. La requête SQL reste < 32 ms.
 
+**Contradiction MiniMax (à intégrer)** : le générateur v2 ci-dessus est dégénéré (`q2_paths=1`, 60 arêtes/nœud). Le générateur v4 de MiniMax mesure **Q1 0,055 s à 50 000** et **0,220 s à 100 000** (×342 vs Python ; 31,7 Mo), et un index manuel `(src,kind)` coûte **×117–139**. La conclusion « SQL ≫ Python » tient, mais l'écart réel est ~16× supérieur à celui de ce tableau. Utiliser les chiffres v4 pour les seuils ; ce tableau reste un plancher conservateur.
+
 **Limite** : topologie synthétique, pas Aave. Le vrai benchmark doit être refait sur 10k–50k événements Aave ; ces chiffres prouvent la **différence d'architecture** (matérialiser vs scanner Python), pas la performance finale.
 
-**Critère d'acceptation provisoire** :
+**Critère d'acceptation provisoire** (après contradiction MiniMax) :
 
-- 50 000 relations : Q1 SQL **< 1 s** (mesuré 0,98 s) ; Q2 SQL < 100 ms.
-- 100 000 relations : Q1 SQL **< 2 s** ; Q4/Q7/Q8 < 500 ms.
+- 50 000 relations : Q1 SQL **< 0,25 s** (mesuré 0,055 s sur générateur v4) ; Q2 SQL < 100 ms.
+- 100 000 relations : Q1 SQL **< 0,5 s** (mesuré 0,220 s sur v4) ; Q4/Q7/Q8 < 500 ms.
+- Ne pas créer d'index manuel `(src, kind)` sur l'append-only ; matérialiser `edge_current` avant de l'indexer.
 - 100 % des claims de décision ont une chaîne de provenance complète.
 - 0 relation orpheline, 0 claim sans observation.
 
@@ -670,7 +675,7 @@ Benchmark synthétique `_bench/bench_graph_scale.py`, résultats `_bench/bench_r
 
 ### 11.2 J2 — relations + requêtes
 
-- Peupler 16 relations : `DEPLOYED_ON`, `ISSUED_BY`, `TARGETS_PEG`, `HOLDS`, `OWES`, `DEPOSITED_IN`, `COLLATERALIZES`, `PRICED_BY`, `CONSTRAINS`, `MEMBER_OF`, `ALLOWS`, `ADMINISTERED_BY`, `OBSERVED_FROM`, `DERIVED_FROM`, `SUPPORTS`, `CONTRADICTS`.
+- Peupler **8–10 relations** (Codex) : le chemin minimal `HOLDS → DEPOSITED_IN/COLLATERALIZES → PRICED_BY`, plus `OBSERVED_FROM`, `DERIVED_FROM`, `SUPPORTS`, `CONTRADICTS`, `CONSTRAINS`, `DEPLOYED_ON`. Les 16 relations précédentes sont un maximum conditionnel, pas un quota.
 - Écrire Q1/Q4/Q6/Q7/Q8 en SQL ; test de parité fixture ↔ SQL.
 - Brancher un outil agent `graph_query` sur les requêtes.
 - UI : un panneau graphe + preuves + décision (un seul écran, pas 12).
@@ -731,7 +736,7 @@ Benchmark synthétique `_bench/bench_graph_scale.py`, résultats `_bench/bench_r
 5. Granularité des événements ? Un log = un event ; les transfers sont agrégés pour l'UI.
 6. `IMPLEMENTED_BY` : 35e relation, P1 ; à ajouter au catalogue si le temps le permet.
 7. Quantités : `payload.amount` + `unit` + `decimals` ; pas de double comptage.
-8. Postgres 18/19 SQL/PGQ : utiliser si disponible, sinon `WITH RECURSIVE` ; ne pas bloquer la démo.
+8. PostgreSQL 19 `WITHOUT OVERLAPS` : à adopter pour l'intégrité temporelle si la GA est disponible ; **pas de SQL/PGQ** (patch reverté). SQLite `WITH RECURSIVE` reste la référence pour Q1–Q8.
 
 ---
 
@@ -762,7 +767,9 @@ Benchmark synthétique `_bench/bench_graph_scale.py`, résultats `_bench/bench_r
 - EIP-1967, proxy storage slots — https://eips.ethereum.org/EIPS/eip-1967 — consulté 2026-10-17.
 - Zodiac Roles — https://docs.roles.gnosisguild.org/ — consulté 2026-10-17.
 - Safe docs — https://docs.safe.global/ — consulté 2026-10-17.
-- PostgreSQL SQL/PGQ — https://www.postgresql.org/docs/19/ddl-property-graphs.html — consulté 2026-10-17.
+- PostgreSQL, documentation courante — https://www.postgresql.org/docs/current/index.html — consulté 2026-10-17.
+- PostgreSQL 19, tables temporelles (`WITHOUT OVERLAPS`) — https://www.postgresql.org/docs/19/ddl-temporal-tables.html — consulté 2026-10-17.
+- PostgreSQL, commit SQL/PGQ puis rollback — https://git.postgresql.org/gitweb/?p=postgresql.git;a=commit;h=2f094e7ac69 et https://git.postgresql.org/pg/commitdiff/2b9e1aff4d3d933ae8ee377fef22c2af9c7797e8 — consulté 2026-10-17.
 - SQLite recursive CTE — https://sqlite.org/lang_with.html — consulté 2026-10-17.
 - Neon pricing — https://neon.com/pricing — consulté 2026-10-17.
 - The Graph, querying — https://thegraph.com/docs/en/subgraphs/querying/introduction/ — consulté 2026-10-17.
