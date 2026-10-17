@@ -2,6 +2,8 @@
 
 *14 octobre 2026. Ce document répond à la seule question qui manquait avant de coder : **comment les modules sont découpés, qui parle à qui, et par quel mécanisme.** Il complète `FREEZE_V1.md` (valeurs à geler) et la V0.2 (conception). Statut des décisions : ✅ figé ici, ☐ à valider par l'équipe.*
 
+> **Mise à jour 17/10/2026** — la carte ci-dessous reste la conception v1. L'état exécuté du slice de concours est plus large : graphe v3 SQLite (15 000 événements Aave v3 Base), API SQL read-only Q1/Q2/Q4/Q5/Q6/Q7/Q8, agents à tool calling + outils graphe, UI 3 panneaux (`/panels`), et 932 tests verts. Voir `README.md` et `docs/RAPPORT_10H_2026-10-17.md` pour l'état mesuré.
+
 ---
 
 ## 1. Modèle d'exécution (décision structurante)
