@@ -376,8 +376,10 @@ class GraphStore:
                 self.connection.execute(
                     "ALTER TABLE relations ADD COLUMN %s %s" % (column, ddl))
         for statement in (
-            "CREATE INDEX IF NOT EXISTS idx_rel_src_kind_v2 ON relations(src, kind)",
-            "CREATE INDEX IF NOT EXISTS idx_rel_dst_kind_v2 ON relations(dst, kind)",
+            # Do not create a manual index on (src, kind) / (dst, kind) on the
+            # append-only table: MiniMax measured x117-139 slower Q1 at 50k/100k
+            # (the manual index defeats SQLite's automatic (lifecycle, src)
+            # covering index). Materialize `edge_current` before indexing it.
             "CREATE INDEX IF NOT EXISTS idx_rel_current_v2 ON relations(relation_id, inserted_at)",
             "CREATE INDEX IF NOT EXISTS idx_rel_valid_v2 ON relations(valid_from, valid_to)",
         ):

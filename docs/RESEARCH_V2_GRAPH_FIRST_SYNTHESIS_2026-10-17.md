@@ -27,7 +27,7 @@ Les agents outillés, les recherches, les exécutions bornées et la sécurité 
 | Axe | Aujourd'hui | Cible v2 |
 |---|---|---|
 | Cas | `usdc-2023-03`, un cas | Aave v3 Base, une classe de situations |
-| Graphe | 520 observations, 4 claims, 4 `SUPPORTS`, 0 structure | 10k+ événements, 2k+ nœuds, 10k+ relations, 16 kinds |
+| Graphe | 520 observations, 4 claims, 4 `SUPPORTS`, 0 structure | 10k+ événements, 2k+ nœuds, 8k+ relations, 8–10 core kinds |
 | Record relation | 17 champs spécifiés, non persistés | 17 champs + champs on-chain en SQL |
 | PIT | `revision`/`inserted_at` partiels | bitemporel complet : monde ∩ connaissance, block-native |
 | Collecte | one-shot `collect_corpus.py` | pipeline logs/calls + watermark + reprise |
@@ -103,10 +103,9 @@ flowchart LR
 - **Chaîne** : Base mainnet, `chain_id = 8453`.
 - **Protocole** : Aave v3 (Pool, Oracle, aTokens, debt tokens).
 - **Fenêtre** : 30 jours d'abord ; 90 jours si les quotas RPC le permettent.
-- **Volume cible** : 10 000–50 000 événements décodés, 2 000+ nœuds, 10 000+ relations.
+- **Volume cible** : **10 000+ événements décodés**, 2 000+ nœuds, **8 000+ relations** ; 50 000 seulement si le débit RPC est mesuré (contradiction Codex).
 - **Trésorerie** : une adresse de démonstration avec des positions Aave ; pas de clé privée réelle, pas de fonds réels.
-- **Relations** : 16 kinds (voir audit §7.1) :
-  `DEPLOYED_ON`, `ISSUED_BY`, `TARGETS_PEG`, `HOLDS`, `OWES`, `DEPOSITED_IN`, `COLLATERALIZES`, `PRICED_BY`, `CONSTRAINS`, `MEMBER_OF`, `ALLOWS`, `ADMINISTERED_BY`, `OBSERVED_FROM`, `DERIVED_FROM`, `SUPPORTS`, `CONTRADICTS`.
+- **Relations** : **8–10 kinds core** (voir audit §7.1) : `DEPLOYED_ON`, `HOLDS`, `OWES`, `DEPOSITED_IN`, `COLLATERALIZES`, `PRICED_BY`, `CONSTRAINS`, `OBSERVED_FROM`, `DERIVED_FROM`, `SUPPORTS`, `CONTRADICTS`. Les 16 kinds listés initialement sont un maximum conditionnel, pas un quota.
 
 ### 3.2 Requêtes de décision
 
@@ -131,7 +130,7 @@ Voir `10_graph__schema-cible` §3–7. Résumé :
 - `graph_snapshots` (as_of, as_of_block, graph_hash, counts).
 - `ingestion_watermarks` (last_block, status).
 
-**Stockage** : SQLite pour la démo ; PostgreSQL + SQL/PGQ pour la cible ; pas de base graphe dédiée.
+**Stockage** : SQLite pour la démo ; PostgreSQL + `WITHOUT OVERLAPS` (PG 19) pour la cible ; **pas de SQL/PGQ** (patch reverté) ; pas de base graphe dédiée.
 
 ---
 
@@ -216,7 +215,7 @@ schéma + migration
 
 ### 6.3 J2 — relations + requêtes + agent
 
-- Peupler 16 relations ; Q1/Q4/Q6/Q7/Q8 en SQL.
+- Peupler **8–10 relations core** ; Q1/Q4/Q6/Q7/Q8 en SQL.
 - Test de parité fixture ↔ SQL.
 - Outils `graph_query`, `graph_path`, `graph_snapshot`.
 - UI : un panneau graphe + preuves + décision.
@@ -273,10 +272,10 @@ Cette synthèse est volontairement **DRAFT**. Les rapports attendus qui peuvent 
 
 ### Graphe
 
-- [ ] 10 000+ événements décodés, 2 000+ nœuds, 10 000+ relations.
-- [ ] 16 kinds peuplés, 0 relation orpheline.
+- [ ] 10 000+ événements décodés, 2 000+ nœuds, 8 000+ relations.
+- [ ] 8–10 kinds core peuplés, 0 relation orpheline.
 - [ ] Q1/Q4/Q6/Q7/Q8 répondent sur le graphe Aave.
-- [ ] Q1 SQL < 1 s à 10k relations ; < 2 s à 100k (provisoire).
+- [ ] Q1 SQL < 0,25 s à 50k relations ; < 0,5 s à 100k (générateur v4 MiniMax), pas 1–2 s.
 - [ ] 100 % des claims de la décision ont une chaîne `decision → claim → observation → source`.
 - [ ] PIT : un fait inséré après T n'apparaît pas à T.
 - [ ] Snapshot stable : deux rebuilds = même hash.
@@ -302,7 +301,7 @@ Cette synthèse est volontairement **DRAFT**. Les rapports attendus qui peuvent 
 | 1 | Aave v3 Base vs Ethereum | **Base** pour le 72 h ; Ethereum si temps |
 | 2 | 30 vs 90 jours | **30 jours** d'abord ; étendre si quotas |
 | 3 | SQLite vs Postgres pour la démo | **SQLite** ; Postgres en miroir |
-| 4 | 16 relations ou plus | **16** ; le reste schema-only |
+| 4 | 8–10 core ou 16 relations | **8–10 core** ; 16 maximum conditionnel |
 | 5 | `IMPLEMENTED_BY` | **Ajouter** comme 35e kind, P1 |
 | 6 | Safe/Zodiac | **Oui** pour MEMBER_OF/ALLOWS/ADMINISTERED_BY |
 | 7 | UI | **Un écran** d'enquête |
@@ -319,7 +318,7 @@ Cette synthèse est volontairement **DRAFT**. Les rapports attendus qui peuvent 
 | RPC rate-limited | pas de 10k events | provider archive free, cache raw, 30 jours, chunks |
 | Décodage Aave faux | graphe faux | ABI officielle, tests sur events connus, `eth_call` |
 | Adresses/proxies | mauvais nœuds | address book, vérification on-chain |
-| Scope creep | rien de fini | 16 relations, Base, un écran |
+| Scope creep | rien de fini | 8–10 relations, Base, un écran |
 | SQLite mono-writer | lenteur | batch, WAL, un writer |
 | PIT/reorg | décisions faux | `finalized`, profondeur, `REORGED` |
 | Postgres free quota | démo cassée | fallback SQLite |
@@ -337,4 +336,4 @@ Cette synthèse est volontairement **DRAFT**. Les rapports attendus qui peuvent 
 - `src/orvyren/graph/{catalog,record,queries,store,models}.py`
 - `evidence/graph.sqlite`, `fixtures/graphs/*.json`
 - `_bench/bench_results_guarded.json`
-- Aave `IPool.sol`, Aave address book, Base docs, EIP-1967, Zodiac Roles, Safe docs, PostgreSQL SQL/PGQ, SQLite CTE — URLs dans le rapport schéma §14.
+- Aave `IPool.sol`, Aave address book, Base docs, EIP-1967, Zodiac Roles, Safe docs, PostgreSQL `WITHOUT OVERLAPS`/documentation courante, SQLite CTE — URLs dans le rapport schéma §14.

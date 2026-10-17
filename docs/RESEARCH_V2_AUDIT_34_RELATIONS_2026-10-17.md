@@ -18,10 +18,9 @@ Mais le graphe **n'est pas construit** :
 - `evidence/graph.sqlite` contient **520 observations, 4 claims, 4 relations**, et **ces 4 relations sont toutes `SUPPORTS`** (claim → hypothèse `H1-usdc-disclosure-disorder`). Il n'y a **aucune** arête structurelle (`HOLDS`, `DEPOSITED_IN`, `COLLATERALIZES`, `DEPLOYED_ON`, `PRICED_BY`, etc.).
 - Il n'y a **aucune table `entities` ni `events`** ; les 520 observations sont des séries de prix/supply, pas un monde on-chain.
 - Les 3 fixtures utilisent **20 records et 13 kinds** ; 21 kinds du catalogue ne sont jamais instanciés, même en fixture.
-- Le record à 17 champs est **spécifié** (`record.py`) mais **non persisté** par le store SQLite, dont la table `relations` n'a que 7 colonnes (`store.py:94–104`).
-- Les Q1–Q8 sont des fonctions pures sur des `RelationRecord` de fixtures (`queries.py`), pas des requêtes SQL sur le graphe live.
+- Le record à 17 champs est **spécifié** (`record.py`) et, depuis le 17/10 (master `29db54b`), **persisté par le store** (schéma v3) ; mais `evidence/graph.sqlite` n'a pas encore été régénérée, donc le graphe live reste 520/4/4. Les Q1–Q8 restent des fonctions pures sur des `RelationRecord` de fixtures (`queries.py`), pas des requêtes SQL sur le graphe live.
 
-**Conclusion** : le catalogue est un **plan**, pas un graphe. Le chantier prioritaire n'est pas d'ajouter 30 types de plus ; c'est de **peupler 12–16 relations avec des données on-chain réelles**, de **persister le record 17 champs**, et de faire tourner Q1–Q8 sur ce graphe.
+**Conclusion** : le catalogue est un **plan**, pas un graphe. Le chantier prioritaire n'est pas d'ajouter 30 types de plus ; c'est de **peupler 8–10 relations avec des données on-chain réelles** (16 maximum conditionnel, cf. contradiction Codex), de **persister le record 17 champs**, et de faire tourner Q1–Q8 sur ce graphe.
 
 ---
 
@@ -91,15 +90,11 @@ Kinds utilisés dans les fixtures : `AFFECTS`, `COLLATERALIZES`, `CONSTRAINS`, `
 
 **21 kinds du catalogue ne sont jamais instanciés, même en fixture** : `REFUTES`, `SUPERSEDES`, `SAME_AS`, `IS_A`, `PART_OF`, `DEPLOYED_ON`, `ISSUED_BY`, `TARGETS_PEG`, `REDEEMABLE_VIA`, `CUSTODIED_AT`, `REHYPOTHECATED_TO`, `BRIDGED_VIA`, `VERIFIED_BY`, `CORRELATES_WITH`, `AUTHORIZES`, `REVOKES`, `MEMBER_OF`, `ALLOWS`, `ADMINISTERED_BY`, `GOVERNED_BY`, `REGULATED_BY`.
 
-### 3.3 Le record 17 champs n'est pas le schéma du store
+### 3.3 Le record 17 champs : de la spécification au store (corrigé le 17/10)
 
 `record.py:86–135` définit 17 groupes de champs (identité, famille, kind, src/dst typés, mécanisme, signe, conditions/régime/horizon, statut épistémique, lifecycle, validation, validité, révision, provenance, extraction, chain_ref, confiance, payload). `record.py:138–156` les liste.
 
-Mais `store.py:94–104` ne stocke que **7 champs métier** (`relation_id`, `revision`, `src`, `dst`, `kind`, `source_family_id`, `extract_method`) plus `inserted_at` :
-
-Il manque : `family`, `src_kind`, `dst_kind`, `mechanism`, `sign_prior`, `conditions`, `regime_scope`, `horizon_scope`, `epistemic_status`, `lifecycle`, `validation_status`, `valid_from`, `valid_to`, `superseded_by`, `provenance_refs`, `model_version`, `run_id`, `chain_ref`, `confidence`, `payload`.
-
-**Conséquence** : le store ne peut pas distinguer un fait d'une hypothèse, une relation active d'une relation rejetée, une relation valide au bloc B d'une relation connue plus tard. C'est le premier chantier de schéma.
+**Avant le 17/10**, `store.py` ne stockait que 7 champs métier + `inserted_at` ; la base live n'utilisait pas le record. **Depuis master `29db54b`**, la table `relations` du schéma v3 stocke les 17 champs + les champs on-chain (`chain_id`, bloc, tx, log, finalité, confiance, payload), et `insert_relation_record` écrit la provenance. La base `evidence/graph.sqlite` n'a pas encore été régénérée : le graphe live reste donc 520/4/4. Le prochain test de vérité est l'ingestion Aave, pas le schéma.
 
 ---
 
@@ -233,7 +228,7 @@ C'est le piège qui a déjà produit un graphe de 4 relations.
 
 ## 7. Priorisation 72 h
 
-### 7.1 Les 16 relations à peupler
+### 7.1 Les 8–10 relations à peupler d'abord
 
 | Rang | Relation | Pourquoi |
 |---:|---|---|
@@ -254,6 +249,8 @@ C'est le piège qui a déjà produit un graphe de 4 relations.
 | 15 | `SUPPORTS` | Claims → hypothèses |
 | 16 | `CONTRADICTS` | Contradictions de sources |
 
+Le **slice 72 h** retenu après contradiction Codex = **10 relations** : rangs 1, 4, 6, 7, 8, 9, 13, 14, 15, 16 (`DEPLOYED_ON`, `HOLDS`, `DEPOSITED_IN`, `COLLATERALIZES`, `PRICED_BY`, `CONSTRAINS`, `OBSERVED_FROM`, `DERIVED_FROM`, `SUPPORTS`, `CONTRADICTS`). Les rangs 2, 3, 5 et 10–12 (`ISSUED_BY`, `TARGETS_PEG`, `OWES`, permissions Safe) sont **conditionnels** : à n'ajouter que si le parcours ou le wallet les utilise réellement. Les 16 ne sont pas un quota.
+
 `REFUTES` et `SAME_AS` sont les suivants ; `AFFECTS`/`DEPENDS_ON` peuvent être ajoutés si le temps le permet (3–5 mécanismes curés, pas plus).
 
 ### 7.2 Ce qu'on ne fait pas en 72 h
@@ -262,7 +259,7 @@ C'est le piège qui a déjà produit un graphe de 4 relations.
 - Pas de `GOVERNED_BY`/`REGULATED_BY` au-delà d'un exemple.
 - Pas de `CORRELATES_WITH` : c'est statistique, non causal, et il ne doit jamais être chaîné.
 - Pas de `AFFECTS` générique : seulement des mécanismes nommés, avec source et conditions.
-- Pas de 34 types peuplés : 16 relations bien faites valent mieux que 34 coquilles.
+- Pas de 34 types peuplés : 8–10 relations bien faites valent mieux que 34 coquilles.
 
 ---
 
@@ -294,9 +291,9 @@ C'est le piège qui a déjà produit un graphe de 4 relations.
 1. **Garder les 34 types** comme catalogue normatif, mais **ne pas les peupler tous**. Le catalogue est une vision ; le graphe est un produit.
 2. **Adopter le record 17 champs comme schéma de stockage**, pas seulement comme dataclass de fixture. Ajouter les champs DeFi : `chain_id`, `block_number`, `tx_hash`, `log_index`, `finality`, `payload`.
 3. **Ajouter `IMPLEMENTED_BY`** (35e candidat) et étendre `AFFECTS`/`EXTRACTED_FROM`/`DERIVED_FROM` à `EVENT`. Ajouter `ROLE_OF` seulement si Q8 l'exige.
-4. **Peupler 16 relations** sur Aave v3 Base + trésorerie de démonstration, avec 10⁴–10⁵ événements et 10⁴+ relations.
+4. **Peupler 8–10 relations** sur Aave v3 Base + trésorerie de démonstration, avec **10 000+ événements** (50 000 seulement si le débit RPC est mesuré) et **8 000+ relations** ; 16 types = maximum conditionnel, pas un quota.
 5. **Faire tourner Q1–Q8 sur SQL**, avec un test de parité fixture ↔ SQL : les mêmes records doivent produire les mêmes résultats.
-6. **Ne pas ajouter de base graphe** : SQLite pour la démo, PostgreSQL + SQL/PGQ pour la cible ; DuckDB pour l'analytique. Le graphe est petit ; le problème est le schéma et les données, pas le moteur.
+6. **Ne pas ajouter de base graphe** : SQLite pour la démo, PostgreSQL + `WITHOUT OVERLAPS` (PG 19) pour la cible ; **pas de SQL/PGQ** (patch reverté) ; DuckDB pour l'analytique. Le graphe est petit ; le problème est le schéma et les données, pas le moteur.
 7. **Ne pas utiliser de GNN/GraphRAG** dans le chemin de décision v1. B2 §5.3 le dit déjà : aucun modèle appris dans le confirmatoire.
 
 ---
@@ -341,6 +338,8 @@ C'est le piège qui a déjà produit un graphe de 4 relations.
 - Zodiac Roles — https://docs.roles.gnosisguild.org/ — consulté 2026-10-17.
 - Safe docs — https://docs.safe.global/ — consulté 2026-10-17.
 - Base docs — https://docs.base.org/ — consulté 2026-10-17.
-- PostgreSQL SQL/PGQ — https://www.postgresql.org/docs/19/ddl-property-graphs.html — consulté 2026-10-17.
+- PostgreSQL, documentation courante — https://www.postgresql.org/docs/current/index.html — consulté 2026-10-17.
+- PostgreSQL 19, tables temporelles (`WITHOUT OVERLAPS`) — https://www.postgresql.org/docs/19/ddl-temporal-tables.html — consulté 2026-10-17.
+- PostgreSQL, commit SQL/PGQ puis rollback — https://git.postgresql.org/gitweb/?p=postgresql.git;a=commit;h=2f094e7ac69 et https://git.postgresql.org/pg/commitdiff/2b9e1aff4d3d933ae8ee377fef22c2af9c7797e8 — consulté 2026-10-17.
 - SQLite recursive CTE — https://sqlite.org/lang_with.html — consulté 2026-10-17.
 - MIMIR/DFKG, voir §3 du brief et les documents internes ci-dessus.
