@@ -1,13 +1,13 @@
-# G4 — Seuils par persona (gel v1, statut PROPOSÉ)
+# G4 — Seuils par persona (gel v1, statut VALIDÉ)
 
-**Statut : PROPOSÉ — à valider avant la première exécution EVAL** — 2026-10-16T00:00:00Z.
-Sources : W2-D §C.4.1 (DAO), §C.4.2 (desk), B7 §e.3/e.4 (métriques). Les valeurs
-ci-dessous sont **reprises telles quelles** des documents sources, qui les
-marquent explicitement « propositions à valider, pas des faits ».
+**Statut : VALIDÉ — validation électronique du chef d'équipe le 2026-10-17.** 2026-10-16T00:00:00Z.
+Signataire : **AKUE-BITCHI Adote Jovanny** — validation électronique du chef d'équipe — autorisation explicite dans la session Hermes du 2026-10-17 ; une copie manuscrite scannée peut être jointe à la soumission. Sources : W2-D §C.4.1 (DAO), §C.4.2 (desk),
+B7 §e.3/e.4 (métriques). Les valeurs ci-dessous sont **reprises telles quelles**
+des documents sources et **validées** ; elles ne sont pas des faits mesurés.
 
 ## 1. Persona DAO (trésorerie)
 
-| Code | Critère | Formulation | Valeur proposée |
+| Code | Critère | Formulation | Valeur validée |
 |---|---|---|---|
 | SD1 | Perte évitée matérielle | `(L(A0) − L(A2)) / q` en % de l'exposition, conditionnellement à l'obligation ; second affichage en jours de runway | ≥ 5 % |
 | SD2 | Friction maîtrisée | coût cumulé de A2 sur fenêtres CALME | ≤ 10 % de la perte évitée de crise |
@@ -18,7 +18,7 @@ marquent explicitement « propositions à valider, pas des faits ».
 
 ## 2. Persona desk (P&L)
 
-| Code | Critère | Formulation | Valeur proposée |
+| Code | Critère | Formulation | Valeur validée |
 |---|---|---|---|
 | ST1 | P&L net cumulé | tous coûts inclus (frais, slippage mesuré, financement) + intervalle bootstrap par blocs | > 0 |
 | ST2 | Qualité d'exécution | slippage réalisé vs échelle `get_dy` ; taille ≤ Depth_100bp | ≤ 30 bp en stress |
@@ -35,9 +35,9 @@ réplications, graine fixée) · DSR/journal des variantes · R⁻/R⁺ séparé
 contingence · mention de contamination · « ce que nous ne revendiquons pas » ·
 **un scalaire est interdit** (vecteur de métriques + axes non mesurés déclarés).
 
-## 4. NOT DONE
+## 4. Vérification exécutable à venir
 
 Les seuils SD/ST ne sont **pas encore lus par du code** (le harnais §e.6 items 6–7 n'est pas
-construit) : ce document les gèle en tant que déclaration, la vérification exécutable
-viendra avec `harness.py`. Toute modification après la première exécution EVAL invalide
-l'évaluation (embargo de paramètres).
+construit) : ce document les gèle en tant que déclaration **validée**, la vérification
+exécutable viendra avec `harness.py`. Toute modification après la première exécution EVAL
+invalide l'évaluation (embargo de paramètres).

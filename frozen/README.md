@@ -10,9 +10,9 @@
 | `G1_fonction_de_perte.md` | G1 — formules de perte, conventions, six tests |
 | `G2_comparateurs.md` | G2 — A0/A1/A2/B0/AX0/O, paramètres, phrases gelées |
 | `G3_fenetres.md` | G3 — registre DEV/EVAL, embargos, porte de gel |
-| `G4_seuils.md` | G4 — seuils persona (PROPOSÉ) |
+| `G4_seuils.md` | G4 — seuils persona (VALIDÉ) |
 | `G5_plan_analyse.md` | G5 — métriques, cascade, rapport |
-| `G6_hypotheses_economiques.md` | G6 — hypothèses économiques (PROPOSÉ) |
+| `G6_hypotheses_economiques.md` | G6 — hypothèses économiques (SIGNÉ) |
 | `G6_FEUILLE_DE_SIGNATURE.md` | Feuille de signature du chef d'équipe |
 | `Gx.sha256` | Manifestes sha256sum des documents ci-dessus |
 | `forecasts_dev.jsonl` | Prévisions DEV gelées, chaînées par `prev_hash` |
@@ -34,10 +34,11 @@ python scripts/freeze_sprint0.py --out /tmp/frozen_recalc
 
 * **GELÉ** : les six documents, leurs empreintes, les 9 prévisions DEV (hash chaîné) et leurs
   résolutions déterministes ;
-* **PROPOSÉ (en attente de signature)** : G4 (seuils persona) et G6 (hypothèses économiques) —
-  marqués tels quels ; l'évaluation EVAL ne peut pas être revendiquée avant signature ;
-* **NOT DONE (jamais inventé)** : fenêtres CALME EVAL 2025–2026 (B7 Q6), `Depth_ε`, `r_capital`,
-  `P(obligation)` EVAL, `p_s` desk — voir `G3_fenetres.md` §4 et `G6` §1.
+* **VALIDÉ / SIGNÉ le 2026-10-17** : G4 (seuils persona, validés) et G6 (hypothèses
+  économiques, signées par **AKUE-BITCHI Adote Jovanny**) — l'EVAL peut être revendiquée à partir de ce paquet ;
+* **NOT DONE (jamais inventé)** : fenêtres CALME EVAL 2025–2026 (B7 Q6) et `Depth_ε` —
+  voir `G3_fenetres.md` §4 ; les hypothèses G6 précédemment manquantes sont désormais
+  signées (P(obligation) EVAL = 0,20 ; `p_s` uniformes ; `r_capital` = 0 %).
 
 ## Empreintes des manifestes (recopiables)
 
@@ -46,9 +47,9 @@ python scripts/freeze_sprint0.py --out /tmp/frozen_recalc
 | `G1.sha256` | `e4a962426fd4e4b0c5109dfc9a817d7832a3cb6d2c62635e17ad6e562dc20581` |
 | `G2.sha256` | `412b374b6195fa0f5fce42817cd0395f3861f8430ec4f1d6414c57c2006159a2` |
 | `G3.sha256` | `37acc25fc99df6abd031ef9664e89aa2f3e87edc75ea83fa4848be4075d244e9` |
-| `G4.sha256` | `49f48e9057996636bcebcdfb9e76deafa6998d8c856519cb27b817d9577f8f46` |
+| `G4.sha256` | `6c3cbeb13e0fe47240caa9124945b944aeef1fed9e058e93f6d473e021f81974` |
 | `G5.sha256` | `49e4371615940b543ad58c7c9b85e6eec49a168cc65e936217626598b5ce6fd4` |
-| `G6.sha256` | `3c77a063f1b082634d0a8b6b211806d4604c6fdeeed6a492005f10ef24b394d1` |
+| `G6.sha256` | `e42e7da0529d244abbe2e29894e9494623e25fdc642324c213a2c12e5ce9c0c2` |
 
 *Note : `README.md` et `FORECASTS_DEV.md` ne figurent pas dans les manifestes Gx (ils ne sont pas
 des documents gelés au sens du protocole) ; leurs empreintes sont vérifiées par `verify_frozen.py`

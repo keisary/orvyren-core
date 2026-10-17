@@ -1,0 +1,65 @@
+{
+ "aggregates": {},
+ "banner": "EVAL",
+ "content_sha256": "c2ed9ca28f3fa0aef491e31a5201549138749e6aa93003db03bf8a11b56e41ff",
+ "forced_mention": null,
+ "frozen": {
+  "dir": "frozen",
+  "hashes": {
+   "G1": "fffbab916323d237eccc6ca2e05396351a0c83e105adaacb70263bc34f167459",
+   "G2": "58e4e4a1bfebbbff0a5ae97feaac4ba291b579a60359a30829333c4b14dc771d",
+   "G3": "d2cd02a94c686ff0f744247bd2b95a50e6a3a3f2bdb40ecfd86a5318e8f36f96",
+   "G4": "ce24a5172ab1d4f5a708312ce79fc355cc37317b2c26ea774a44f31c87a55797",
+   "G5": "ca6f289daad6ae5b5c341df2091bcd2efd9cdffd31d5741ffc0097e2c663e6ea",
+   "G6": "6ad4733010b4a436a33d8a5cd5490f29a72d12e3a7227276dbc93b138b656779"
+  }
+ },
+ "generated_at_utc": "2026-10-17T09:09:51Z",
+ "n_windows": 0,
+ "n_windows_skipped": 2,
+ "params": {
+  "b0_draws": 200,
+  "k": 0.0,
+  "note": "paramètres de démonstration DEV : q = 100 USDC (montant mobilisable du dossier), p_ref = 1,0, k = 0 (coûts non mesurés en DEV) — à geler pour l'EVAL",
+  "p_ref": 1.0,
+  "q": 100.0
+ },
+ "schema": "orvyren.evaluation-report/v1",
+ "set": "eval",
+ "skipped": [
+  {
+   "reason": "no series source resolved for window eval-rseth-2026-04 (evidence/episode_rseth_2026-04.json: unrecognised series in D:\\orvyren_core\\evidence/episode_rseth_2026-04.json (unexpected keys) · B7 §d.1: unrecognised source type)",
+   "window_id": "eval-rseth-2026-04"
+  },
+  {
+   "reason": "no series source resolved for window eval-usd0pp-2025-01 (B7 §d.1: unrecognised source type)",
+   "window_id": "eval-usd0pp-2025-01"
+  }
+ ],
+ "superiority": {
+  "mcnemar": null,
+  "note": "tests de supériorité (Wilson, McNemar exact, bootstrap par blocs) exécutés seulement quand N ≥ 100 — le harnais refuse de publier un score agrégé unique (B7 §e.5)",
+  "status": "NON CALCULÉ — N < 100"
+ },
+ "validity": "non conclusionnel : N < 100 (cascade B7 §b.3)",
+ "windows": [
+  {
+   "config_losses": {},
+   "config_regrets": {},
+   "notes": [
+    "paramètres de démonstration DEV : q = 100 USDC (montant mobilisable du dossier), p_ref = 1,0, k = 0 (coûts non mesurés en DEV) — à geler pour l'EVAL"
+   ],
+   "status": "SKIPPED",
+   "window_id": "eval-rseth-2026-04"
+  },
+  {
+   "config_losses": {},
+   "config_regrets": {},
+   "notes": [
+    "paramètres de démonstration DEV : q = 100 USDC (montant mobilisable du dossier), p_ref = 1,0, k = 0 (coûts non mesurés en DEV) — à geler pour l'EVAL"
+   ],
+   "status": "SKIPPED",
+   "window_id": "eval-usd0pp-2025-01"
+  }
+ ]
+}
