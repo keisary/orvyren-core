@@ -5,6 +5,11 @@ Routes
 ``GET /``
     Latest ``evidence/dossier_*.html``. Returns ``503`` with a clear message
     when no dossier has been built yet (the server never crashes on this).
+``GET /ui``
+    Offline index of the twelve W8 screens (L8.1-L8.3); every screen banner
+    carries its mode label and its clock.
+``GET /screen/<1-12>``
+    One screen, server-rendered HTML — no JavaScript, no external asset.
 ``GET /api/dossier``
     JSON description of the latest dossier (paths, SHA-256s, case, verdict,
     ``generated_at``), or the decision JSON itself when no dossier exists yet.
@@ -31,10 +36,12 @@ if _SRC_DIR not in sys.path:
     sys.path.insert(0, _SRC_DIR)
 
 from orvyren.audit import dossier  # noqa: E402
+from orvyren.ui import screens  # noqa: E402
 
 DEFAULT_HOST = "127.0.0.1"
 DEFAULT_PORT = 8000
 _REPO_ROOT = os.path.dirname(_SRC_DIR)
+_ROUTE_LIST = ["/", "/ui", "/screen/<1-12>", "/api/dossier", "/api/health"]
 
 
 def resolve_evidence_dir(evidence_dir=None):
@@ -136,6 +143,11 @@ class DossierRequestHandler(BaseHTTPRequestHandler):
                 path = path.rstrip("/") or "/"
             if path == "/":
                 self._route_root()
+            elif path == "/ui":
+                ctx = screens.Ctx(_REPO_ROOT, self.server.evidence_dir)
+                self._send(200, "text/html; charset=utf-8", screens.build_index(ctx))
+            elif path.startswith("/screen/"):
+                self._route_screen(path)
             elif path == "/api/health":
                 self._send_json(200, {"ok": True, "version": dossier.ENGINE_VERSION})
             elif path == "/api/dossier":
@@ -147,7 +159,7 @@ class DossierRequestHandler(BaseHTTPRequestHandler):
                     {
                         "ok": False,
                         "error": f"unknown path: {path}",
-                        "routes": ["/", "/api/dossier", "/api/health"],
+                        "routes": _ROUTE_LIST,
                     },
                 )
         except Exception as exc:  # defensive: a request must never down the server
@@ -177,6 +189,24 @@ class DossierRequestHandler(BaseHTTPRequestHandler):
             self._send_json(500, {"ok": False, "error": f"cannot read {latest}: {exc}"})
             return
         self._send(200, "text/html; charset=utf-8", payload)
+
+    def _route_screen(self, path):
+        ctx = screens.Ctx(_REPO_ROOT, self.server.evidence_dir)
+        try:
+            screen_id = int(path.split("/", 2)[2])
+        except (IndexError, ValueError):
+            screen_id = None
+        if screen_id not in screens.screen_ids():
+            self._send_json(
+                404,
+                {
+                    "ok": False,
+                    "error": f"unknown screen: {path}",
+                    "screens": [f"/screen/{sid}" for sid in screens.screen_ids()],
+                },
+            )
+            return
+        self._send(200, "text/html; charset=utf-8", screens.build_screen(screen_id, ctx))
 
     def _send(self, code, content_type, body):
         self.send_response(code)
@@ -220,7 +250,7 @@ def serve(host=DEFAULT_HOST, port=DEFAULT_PORT, evidence_dir=None):
     print(f"  evidence dir : {httpd.evidence_dir}")
     latest = dossier.find_latest_dossier(httpd.evidence_dir)
     print(f"  dossier      : {latest if latest else 'none yet - GET / returns 503 until one is built'}")
-    print("  routes       : / (latest dossier HTML), /api/dossier (JSON), /api/health")
+    print("  routes       : / (latest dossier HTML), /ui (12 écrans), /screen/1..12, /api/dossier (JSON), /api/health")
     try:
         httpd.serve_forever()
     except KeyboardInterrupt:
