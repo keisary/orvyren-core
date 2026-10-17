@@ -1,6 +1,7 @@
 # ADR-0002 — Politique v1 : set de 14 règles, `policy_v1.yaml` et test de dérive (Sprint 2 / W4)
 
-**Date :** 2026-10-16 · **Statut : PROPOSÉE — à acter par l'équipe** · **Portée :** bloc D
+**Date :** 2026-10-16 · **Statut : ACCEPTÉE** — actée le 2026-10-17 (chef d'équipe, mandat de
+finalisation du périmètre restant ; régie par le protocole `docs/decisions/`) · **Portée :** bloc D
 (politique) — implémentation du gel `FREEZE_V2.md` §D1.
 
 ## Contexte
