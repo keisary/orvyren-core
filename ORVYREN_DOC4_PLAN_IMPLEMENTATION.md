@@ -24,7 +24,7 @@ Vérifié sur le dépôt le 15/10/2026. Étiquettes : **[FAIT]** = exécuté et 
 | Exécution bornée + vérification de receipt | `run_execution_demo.py`, `src/orvyren/execution/` | [FAIT] (16/10 — exécution bornée **on-chain** : 5 runs A→E via le kit démo ; vérification de reçu + contrôle A8 du vérificateur T10) |
 | Dossier 1 page + visionneuse locale | `run_audit.py` → `evidence/dossier_usdc-2023-03.{md,html}` | [FAIT] |
 | Orchestrateur de pipeline | `run_pipeline.py` → `evidence/pipeline_summary.json` | [FAIT] |
-| Suite de tests | `python -m unittest discover -s tests` → **798 tests — OK (795 verts, 3 sautés)** | VERTE |
+| Suite de tests | `python -m unittest discover -s tests` → **811 tests — OK (808 verts, 3 sautés)** | VERTE |
 | `src/orvyren/branches/`, `src/orvyren/research/`, `src/orvyren/agents/` | — | [PARTIEL] (`branches/` + `agents/` MA-B livrés et **fusionnés** 16/10 — boucle, 2 processus, magasin haché ; partie live sous clé API ; `research/` absent) |
 | `src/orvyren/evaluation/`, `src/orvyren/replay/` | `run_evaluation.py` · `run_calibration.py` · `run_replay.py` → `evidence/evaluation/`, `evidence/calibration_report.{json,md}`, `evidence/replay/` | [FAIT] (Sprint 0 pour `loss`/`comparators`/`calibration`/`windows`/`forecasts`/`outcomes` + gel G1–G6 ; **17/10 — W7 complet** : `harness.py`/`report.py`, paquet `replay/` (clock PIT, corpus figé, journal k=10, archive, dossier), CLIs ; portes de gel/verrou/embargo ; correctif identité de Murphy intra-bin + **re-gel G5** documenté) |
 | `python -m orvyren.verify` (vérificateur tiers T10) | `src/orvyren/verify/` (moteur A1–A8 + B/C) ; `scripts/build_audit_packet.py` (paquet v2) | [FAIT] (16/10 — `--mutate-test` **6/6** ; vérificateur **gelé** livré dans chaque paquet ; `README_AUDIT.md` + `VERIFY_EXPECTED.txt`) |
@@ -48,7 +48,7 @@ Vérifié sur le dépôt le 15/10/2026. Étiquettes : **[FAIT]** = exécuté et 
 - Une PR qui casse la CI n'est pas mergée ; une PR mergée qui fait rougir la CI est **revertée le jour même**.
 
 ### 1.2 Tests obligatoires par module
-- **Barre non négociable** : la suite reste verte (aujourd'hui **798 tests — 795 verts, 3 sautés** : deux tests live-RPC opt-in + un conditionnel selon la présence d'`eth-account`). **Le total monte, il ne descend jamais** ; aucun test supprimé, aucun test désactivé pour faire passer une PR.
+- **Barre non négociable** : la suite reste verte (aujourd'hui **811 tests — 808 verts, 3 sautés** : deux tests live-RPC opt-in + un conditionnel selon la présence d'`eth-account`). **Le total monte, il ne descend jamais** ; aucun test supprimé, aucun test désactivé pour faire passer une PR.
 - Chaque lot apporte **ses tests dans la même PR** que le code. Les seuils par module sont en §6.
 - **Hors-ligne par défaut** : les tests lisent les fixtures archivées (`corpus/`, `evidence/`, `fixtures/`) ; un test qui exige le réseau est `skip` par défaut et exécutable explicitement (convention des 2 sautés existants).
 - **Test de contrat** : toute interface [I] a un test qui la consomme côté aval. Une PR qui change un contrat change **les deux côtés** et le test, sinon refus.
@@ -59,7 +59,7 @@ Chaque fichier a **un propriétaire unique**. Un workstream n'édite pas les fic
 | Chemins | Propriétaire |
 |---|---|
 | `src/orvyren/data/`, `quality/`, `graph/`, `corpus/`, `scripts/reconstruct_*`, `reconstruct_common.py`, `collect_corpus.py`, `run_quality.py` | **W1** |
-| `src/orvyren/branches/`, `src/orvyren/research/`, `src/orvyren/agents/`, `run_agents.py`, `config/models.yaml` | **W2** |
+| `src/orvyren/branches/`, `src/orvyren/research/`, `src/orvyren/agents/`, `run_agents.py`, `config/models.json` | **W2** |
 | `src/orvyren/decision/`, `run_decision.py`, `config/decision_*.yaml`, catalogues d'actions | **W3** |
 | `src/orvyren/policy/`, `policy_v1.yaml`, `fixtures/roles_agent_config.json`, `scripts/run_drift_check.py`, `docs/decisions/` (politique) | **W4** |
 | `src/orvyren/execution/`, `scripts/b5/`, `run_execution_demo.py`, `docs/demo/` | **W5** |
@@ -117,7 +117,7 @@ Gabarit identique pour chacun : **objectif · périmètre · livrables [DONE] ·
 
 ### W2 — Agents & Orchestration
 - **Objectif** : multi-agent **réel** (MA-B gelé) — orchestrateur et critique adversarial en **processus distincts**, journaux propres, outils bornés, budgets stricts, et un mode **REPLAY-JOURNAL** bit-à-bit.
-- **Périmètre** : `src/orvyren/branches/` [à créer], `src/orvyren/research/` [à créer], `src/orvyren/agents/` [à créer], `run_agents.py` [à créer], `config/models.yaml` (IDs épinglés + date de vérification).
+- **Périmètre** : `src/orvyren/branches/` [à créer], `src/orvyren/research/` [à créer], `src/orvyren/agents/` [à créer], `run_agents.py` [à créer], `config/models.json` (IDs épinglés + date de vérification).
 - **Lots** :
   - **L2.1** registre d'hypothèses : record **12 champs**, cycle **7 états** + 5 règles de transition (une hypothèse ne se supprime jamais), historique append-only — 1,5 j.
   - **L2.2** boucle agent : états cibles, **4 compteurs** (appels LLM, outils, temps, coût) et **5 conditions d'arrêt** ; plafonds gelés A5 : ≤ 30 appels · ≤ 12 outils · ≤ 10 min · ≤ 0,10 $ — 2 j.
@@ -341,7 +341,7 @@ Cinq rôles, une propriété claire, un **backup déclaré** par workstream (per
 ## 5. Conventions techniques rappelées
 
 ### 5.1 Tests
-- `python -m unittest discover -s tests` — état actuel **223 OK, 2 sautés**. Aucune baisse autorisée.
+- `python -m unittest discover -s tests` — état actuel **811 tests — OK (808 verts, 3 sautés)**. Aucune baisse autorisée.
 - Chaque module nouveau apporte ses fichiers `tests/test_<module>.py` ; chaque règle de politique, chaque relation du graphe, chaque état d'hypothèse a son test de rejet ou de frontière.
 - Les tests qui exigent le réseau sont `skip` par défaut, avec un drapeau explicite pour les lancer.
 - Un bug corrigé **gagne son test de non-régression** dans la même PR.
@@ -359,7 +359,7 @@ Cinq rôles, une propriété claire, un **backup déclaré** par workstream (per
 ### 5.4 Versionnage
 - **Documents** : version + date en tête ; toute mise à jour ultérieure passe par la procédure de révision (ADR + registre) et le paquet hashé.
 - **Politique** : `policy_v1.yaml` versionné, **hash dans chaque verdict** ; changement de règle = 6 étapes documentées.
-- **Modèles API** : IDs **épinglés** dans `config/models.yaml` (avec date de vérification) ; les fournisseurs redirigent ou déprécient les identifiants — la reproductibilité repose sur le **journal des réponses**, pas sur « même modèle, même prompt ».
+- **Modèles API** : IDs **épinglés** dans `config/models.json` (avec date de vérification) ; les fournisseurs redirigent ou déprécient les identifiants — la reproductibilité repose sur le **journal des réponses**, pas sur « même modèle, même prompt ».
 - **Artefacts** : tout JSON livré porte sa version, son horodatage et ses `provenance_refs` ; les hashs (SHA-256) sont recalculables par un tiers.
 - **Langue** : notes internes et études en français ; code, README, docs et vidéo du concours **en anglais** (exigence organisateur) ; les documents finaux de l'équipe, celui-ci inclus, sont en français.
 
@@ -387,7 +387,7 @@ Cinq rôles, une propriété claire, un **backup déclaré** par workstream (per
 | # | Risque | Impact | Signal précoce | Mitigation | Propriétaire |
 |---|---|---|---|---|---|
 | R1 | **Panne d'un fournisseur LLM** (503, quota, indisponibilité) | boucle agent bloquée | erreurs d'appel répétées, latence | second modèle dès v1 (critique cross-modèle) ; **journal de réponses** → rejeu sans appel ; arrêt fail-closed borné ; sauvegarde incrémentale des artefacts | P1 |
-| R2 | **Versionnage des modèles API** (IDs redirigés ou invalides) | reproductibilité détruite | ID inconnu au smoke test | IDs épinglés + date de vérification dans `config/models.yaml` ; test de fumée d'ID ; reproductibilité portée par le journal, pas par l'ID | P1 |
+| R2 | **Versionnage des modèles API** (IDs redirigés ou invalides) | reproductibilité détruite | ID inconnu au smoke test | IDs épinglés + date de vérification dans `config/models.json` ; test de fumée d'ID ; reproductibilité portée par le journal, pas par l'ID | P1 |
 | R3 | **Chemin critique wallet / faucet testnet** | pièce ⑥ manquante (preuves d'exécution) | wallet non financé à J-2 | kit de démo prêt à l'avance ; robinets gratuits ; montage la veille ; **repli** : vidéo en REPLAY-JOURNAL + reçus ajoutés dès exécution | P4 + équipe |
 | R4 | **Deadline 20/10 15 h 59 UTC** (+ clôture anticipée des inscriptions) | soumission incomplète | retard > 0,5 j sur Sprint 0 | priorité soumission > construction ; tampon interne 19/10 ; liste opposable §3.2 ; inscription gérée en parallèle | P5 |
 | R5 | **Budget API** dépassé (plafond 20 $/mois) | agents à l'arrêt | compteur de coût | 4 compteurs par décision (0,10 $ max) ; cache de réponses ; coût mesuré 0,013–0,036 $/décision ; replay gratuit | P1 |

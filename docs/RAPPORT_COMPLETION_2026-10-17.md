@@ -22,7 +22,7 @@ chacun avec sa définition et ses preuves vérifiables dans le dépôt.
 | **F — Audit (4)** | 3 : F1 (3 flux + paquet v2 + digest), F2 (vérificateur T10 : OFFLINE_PASS 16/16, mutations 6/6), F4 (textes FR+EN verbatim) | — | **1 ouverte obligatoire : F3 « empreinte publiée »** — le `bundle_digest` du paquet n'est **pas encore publié** (EAS = conditionnel, non exécuté — conforme au gel) |
 | **G — Évaluation (4)** | 4 : G1 (DEV/EVAL registre), G2 (embargo implementé + testé), G3 (A0/A1/A2/B0+AX0), G4 (loss/comparators/calibration + **8 prévisions DEV gelées** ≥ 5-10 exigées) | — | — |
 | **H — UI & Ops (4)** | 3 : H2 (lecture seule = état actuel), H3 (full local), H4 (ajouts CI) | 1 : H1 — **écrans W8 non construits** (`ui/server.py` = 3 routes ; 12 écrans à faire ; préparation vidéo reportée par le gel lui-même) | — |
-| **I — Gouvernance (4)** | 4 : I1 (ADR-0001 + paquet ; ADR-0002 enregistrée **à acter**), I2 (**règle 0 vérifiée : 0 occurrence « MIMIR »**), I3 (4 documents), I4 (ordre respecté) | — | — |
+| **I — Gouvernance (4)** | 4 : I1 (ADR-0001 + paquet ; **ADR-0002 actée le 17/10**), I2 (**règle 0 vérifiée : 0 occurrence du nom interdit**), I3 (4 documents), I4 (ordre respecté) | — | — |
 | **J — Soumission (3)** | 3 : J1 (email envoyé/répondu, côté Jovanny), J2 (wallet testnet, robinets gratuits), J3 (kit de démo) | — | — |
 
 **Taux cercle 1 : 38/46 pleines (83 %) · 6 partielles (13 %) · 1 reportée (2 %) · 1 ouverte
@@ -98,5 +98,30 @@ reclassement V2 par ADR — à trancher, c'est la seule incohérence gel↔plan.
    déjà prêts) — *deadline 20/10 15:59 UTC*.
 
 *Toutes les affirmations de ce rapport sont vérifiables dans le dépôt : `git log` (fusions),
-`python -m pytest tests/ -q` (798), `python run_verify.py` (paquet), `python scripts/verify_frozen.py`
+`python -m pytest tests/ -q` (798 à la rédaction ; 811 après W8), `python run_verify.py` (paquet), `python scripts/verify_frozen.py`
 (gel), `grep` cités en place. Rapport rédigé le 2026-10-17 sur `master = e2baf8d`.*
+
+---
+
+## Mise à jour — 17/10/2026 (soir, après ce rapport)
+
+Livré depuis (sur `master`, CI locale verte — **mesure : 811 tests — 808 verts, 3 sautés**) :
+
+- **W8 ✅** — UI locale hors-ligne `/ui` : **12 écrans** (mode + horloge sur chacun), index cliquable,
+  routes `/screen/1..12`, aucun JS ni asset externe ; **registre ADR** indexé (`scripts/adr_index.py` +
+  contrôle CI) ; **build `dist/docs/`** (7 `.docx`) ; règle 0 (terme interdit) testée en suite.
+  Nouveaux tests : `test_ui_routes.py`, `test_adr_index.py`, `test_docs_forbidden_term.py`.
+- **ADR-0002 actée** (politique v1) · **ADR-0003** créée et actée (recherche sémantique / ML-1 → V2 —
+  le « gelé orphelin » est tranché).
+- **F3 ✅** — empreintes publiées dans `evidence/audit_packets/README.md` (sha256 des deux zips ;
+  `bundle_digest` v2 `658428691e4a68279dc1d57ee694fbd05258137a17c735028c7424d05269981f` ; EAS conditionnel
+  non exécuté — déclaré).
+- **Clés vérifiées** : DeepSeek **fonctionnelle** (probe live `deepseek-flash` OK) ; MiMo = clé
+  **Token Plan** (`tp-…`) refusée 401 sur tous les endpoints publics — il faut soit l'**URL de base
+  exclusive** affichée à côté de la clé dans la console Token Plan, soit une clé **pay-as-you-go** (`sk-…`)
+  compatible avec l'endpoint gelé `api.xiaomimimo.com/v1`.
+
+Reste (inchangé) : **feuille G6 à signer** (chef d'équipe) · **agents live + REPLAY-ARCHIVE réel**
+(débloqués par la clé MiMo corrigée) · **1ᵉᵉ exécution EVAL** (après signature — jeu brûlé) ·
+**soumission** (hors périmètre de cet ordre).
+

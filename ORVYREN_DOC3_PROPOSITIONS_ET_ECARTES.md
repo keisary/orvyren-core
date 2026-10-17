@@ -49,7 +49,7 @@ Pour éviter toute confusion : ce qui suit est **gelé** au 15/10/2026 (référe
 - **Audit** : journal à trois flux chaînés + paquet de pièces + empreinte ; vérificateur tiers ; empreinte publiée **obligatoire**, ancrage on-chain **conditionnel** ; textes « ce que l'audit prouve / ne prouve pas » figés.
 - **Évaluation** : jeux de développement et d'évaluation séparés, embargo ; comparateurs A0/A1/A2/B0 ; fonction de perte + comparateurs + calibration à livrer ; prévisions gelées avant l'ouverture du jeu d'évaluation.
 - **UI & Ops** : interface v1 en lecture seule ; hébergement **entièrement local** pour commencer ; préparation vidéo reportée.
-- **Gouvernance** : protocole de décision écrit (ADR + registre + paquet haché) ; aucun nom propre du système amont dans les documents finaux — concepts repris et **redéfinis en propre** ; quatre documents finaux ; ordre gel → documents → implémentation.
+- **Gouvernance** : protocole de décision écrit (ADR + registre + paquet haché ; registre en vigueur : `docs/decisions/README.md` — ADR-0001 gel · ADR-0002 politique v1 · ADR-0003 recherche sémantique → V2) ; aucun nom propre du système amont dans les documents finaux — concepts repris et **redéfinis en propre** ; quatre documents finaux ; ordre gel → documents → implémentation.
 
 ## 1.4 Comment on rouvre une proposition (procédure opposable)
 
