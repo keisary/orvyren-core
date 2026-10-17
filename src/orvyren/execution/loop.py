@@ -124,6 +124,10 @@ def utcnow() -> datetime:
 
 def _iso(moment: datetime) -> str:
     """ISO-8601 UTC timestamp at microsecond precision (stable lexicographic sort)."""
+    if moment.tzinfo is None:
+        # Same documented choice as parse_iso(): naive means UTC, never the
+        # local timezone (astimezone on a naive datetime would localise it).
+        moment = moment.replace(tzinfo=timezone.utc)
     return moment.astimezone(timezone.utc).isoformat(timespec="microseconds")
 
 
@@ -855,7 +859,10 @@ def _rpc_int(url: Optional[str], method: str, params: List[Any], timeout: int) -
     if isinstance(result, int) and not isinstance(result, bool):
         return result
     if isinstance(result, str) and result.startswith("0x"):
-        return int(result, 16)
+        try:
+            return int(result, 16)
+        except ValueError:
+            pass  # "0x" or non-hex digits: fall through to the typed error below
     raise chain_client.ChainError("non-integer response to {}: {!r}".format(method, result))
 
 

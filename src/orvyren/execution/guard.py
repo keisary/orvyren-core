@@ -84,15 +84,20 @@ def mask_rpc_url(url):
     """
     if not url:
         return ""
-    parsed = urlsplit(url)
-    if not parsed.scheme or not parsed.hostname:
-        return MASK  # unparseable: mask everything
-    netloc = parsed.hostname
-    if parsed.port:
-        netloc += ":{}".format(parsed.port)
-    if parsed.username or parsed.password:
-        netloc = "{}@{}".format(MASK, netloc)  # user:password@host
-    segments = [segment for segment in (parsed.path or "").split("/") if segment]
+    try:
+        parsed = urlsplit(url)
+        if not parsed.scheme or not parsed.hostname:
+            return MASK  # unparseable: mask everything
+        netloc = parsed.hostname
+        if parsed.port:
+            netloc += ":{}".format(parsed.port)
+        if parsed.username or parsed.password:
+            netloc = "{}@{}".format(MASK, netloc)  # user:password@host
+        segments = [segment for segment in (parsed.path or "").split("/") if segment]
+    except ValueError:
+        # Malformed URL (bad port, broken IPv6 bracket, ...): this helper runs
+        # inside error paths and must never raise nor leak — mask everything.
+        return MASK
     if not segments:
         return "{}://{}".format(parsed.scheme, netloc)
     # Deny-by-default on path segments: only version-like tokens (v2, v3, ...)

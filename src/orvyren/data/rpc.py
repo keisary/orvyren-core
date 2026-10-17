@@ -241,12 +241,18 @@ def decode_words(data: str) -> List[int]:
 
 def decode_uint(data: str, index: int = 0) -> int:
     """Return word ``index`` of an ABI payload as an unsigned integer."""
-    return decode_words(data)[index]
+    words = decode_words(data)
+    try:
+        return words[index]
+    except IndexError as exc:
+        raise ValueError(
+            f"word index {index} out of range: payload holds {len(words)} word(s)"
+        ) from exc
 
 
 def decode_int(data: str, index: int = 0) -> int:
     """Return word ``index`` of an ABI payload as a two's-complement int256."""
-    word = decode_words(data)[index]
+    word = decode_uint(data, index)
     return word - (1 << 256) if word >= 1 << 255 else word
 
 
@@ -341,7 +347,9 @@ class ArchiveRpc:
                     self.errors += 1
                     failures.append(f"{endpoint}: invalid JSON response ({exc})")
                     break
-                if isinstance(body, dict) and body.get("result") is not None:
+                # A JSON-RPC success carries "result" (possibly null: an unknown
+                # block/receipt is a valid *answer*, not an endpoint failure).
+                if isinstance(body, dict) and body.get("error") is None and "result" in body:
                     self.url_hits[endpoint] = self.url_hits.get(endpoint, 0) + 1
                     self.last_url = endpoint
                     return body["result"]
@@ -508,8 +516,12 @@ class ArchiveRpc:
                     f"eth_getLogs [{cursor}, {stop}] refused: {exc} | free public endpoints cap "
                     f"a single request at {MAX_GET_LOGS_RANGE} blocks"
                 ) from exc
-            if isinstance(chunk, list):
-                logs.extend(chunk)
+            if not isinstance(chunk, list):
+                raise RpcError(
+                    f"eth_getLogs [{cursor}, {stop}] returned {type(chunk).__name__}, "
+                    f"expected a list of logs"
+                )
+            logs.extend(chunk)
             cursor = stop + 1
         return logs
 
@@ -524,10 +536,17 @@ class ArchiveRpc:
             "last_url": self.last_url,
         }
 
+    def close(self) -> None:
+        """Release the underlying transport (keep-alive connections, files...)."""
+        closer = getattr(self._transport, "close", None)
+        if callable(closer):
+            closer()
+
     def __enter__(self) -> "ArchiveRpc":
         return self
 
     def __exit__(self, *exc_info: Any) -> None:
+        self.close()
         return None
 
     def __repr__(self) -> str:  # pragma: no cover - debugging aid
