@@ -32,6 +32,7 @@ import json
 import os
 import re
 import shutil
+import stat
 import sys
 import tempfile
 import urllib.error
@@ -145,7 +146,7 @@ def resolve_target(target: str) -> Tuple[Optional[str], Optional[str], Optional[
         temp = tempfile.mkdtemp(prefix="orvyren_verify_")
         try:
             with zipfile.ZipFile(path) as archive:
-                archive.extractall(temp)
+                _extract_zip_safely(archive, temp)
         except (zipfile.BadZipFile, OSError) as exc:
             shutil.rmtree(temp, ignore_errors=True)
             return None, None, "unreadable zip: %s" % exc
@@ -167,6 +168,65 @@ def packet_files(root: str) -> List[str]:
             full = os.path.join(dirpath, name)
             files.append(os.path.relpath(full, root).replace(os.sep, "/"))
     return sorted(files)
+
+
+def safe_join(root: str, rel: Any) -> Optional[str]:
+    """Join a manifest-relative path without allowing escape from ``root``.
+
+    Audit packets are untrusted input. Every path read from the manifest,
+    HASHES.txt or HASHES table must stay inside the extracted packet root;
+    ``../``, absolute paths and drive-qualified paths are rejected.
+    """
+    if not isinstance(rel, str) or not rel.strip():
+        return None
+    normalized = rel.replace("\\", "/")
+    if normalized.startswith("/") or re.match(r"^[A-Za-z]:", normalized):
+        return None
+    parts = [part for part in normalized.split("/") if part not in ("", ".")]
+    if not parts or any(part == ".." for part in parts):
+        return None
+    root_abs = os.path.abspath(root)
+    candidate = os.path.abspath(os.path.join(root_abs, *parts))
+    try:
+        if os.path.commonpath((root_abs, candidate)) != root_abs:
+            return None
+    except ValueError:
+        return None
+    return candidate
+
+
+def _safe_load_json(root: str, rel: Any) -> Any:
+    path = safe_join(root, rel)
+    return load_json(path) if path else None
+
+
+def _safe_read_jsonl(root: str, rel: Any) -> List[Any]:
+    path = safe_join(root, rel)
+    return read_jsonl(path) if path else []
+
+
+def _safe_sha256_file(root: str, rel: Any, *, lf_normalize: bool = False) -> Optional[str]:
+    path = safe_join(root, rel)
+    return sha256_file(path, lf_normalize=lf_normalize) if path else None
+
+
+def _extract_zip_safely(archive: zipfile.ZipFile, destination: str) -> None:
+    """Extract a packet zip while refusing zip-slip and symlink entries."""
+    root_abs = os.path.abspath(destination)
+    for member in archive.infolist():
+        name = member.filename
+        target = safe_join(root_abs, name)
+        if target is None:
+            raise zipfile.BadZipFile("unsafe archive member: %s" % name)
+        mode = (member.external_attr >> 16) & 0o170000
+        if mode == stat.S_IFLNK:
+            raise zipfile.BadZipFile("symlink archive member refused: %s" % name)
+        if member.is_dir():
+            os.makedirs(target, exist_ok=True)
+            continue
+        os.makedirs(os.path.dirname(target), exist_ok=True)
+        with archive.open(member, "r") as source, open(target, "wb") as output:
+            shutil.copyfileobj(source, output)
 
 
 # --------------------------------------------------------------------------- #
@@ -203,8 +263,8 @@ def check_a1_chains(root: str, manifest: Dict[str, Any]) -> List[Dict[str, Any]]
                 {"declared_absent": True, "reason": decl.get("reason", "")},
                 status="COVERED"))
             continue
-        path = os.path.join(root, decl.get("path", ""))
-        records = read_jsonl(path)
+        path = safe_join(root, decl.get("path", ""))
+        records = read_jsonl(path) if path else []
         state = _chain_state(records)
         expected_count = decl.get("records")
         expected_head = decl.get("head_hash")
@@ -212,9 +272,12 @@ def check_a1_chains(root: str, manifest: Dict[str, Any]) -> List[Dict[str, Any]]
                                   "head_computed": state.get("head"),
                                   "head_expected": expected_head}
         ok = bool(state.get("ok"))
+        if path is None:
+            ok = False
+            detail["reason"] = "unsafe or missing stream path"
         if not ok:
             detail["first_bad"] = state.get("first_bad")
-            detail["reason"] = state.get("reason")
+            detail["reason"] = state.get("reason") or detail.get("reason")
         tail_note = None
         if ok and stream_id == "exec":
             if not isinstance(expected_count, int):
@@ -307,7 +370,11 @@ def check_a2_dossier(root: str, manifest: Dict[str, Any]) -> List[Dict[str, Any]
                                     {"missing": "dossier.%s not declared in the manifest" % key}))
             continue
         detail = {"path": rel}
-        detail.update(recompute_self_hash(os.path.join(root, rel), pattern))
+        safe_path = safe_join(root, rel)
+        if safe_path is None:
+            detail.update({"ok": False, "reason": "unsafe dossier path"})
+        else:
+            detail.update(recompute_self_hash(safe_path, pattern))
         checks.append(new_check("A2.dossier.%s" % label, "A", bool(detail.get("ok")), detail))
     return checks
 
@@ -353,7 +420,7 @@ def check_a3_hashes(root: str, manifest: Dict[str, Any]) -> List[Dict[str, Any]]
     missing_files: List[str] = []
     mismatches: List[Dict[str, str]] = []
     for rel, digest in sorted(listed.items()):
-        actual = sha256_file(os.path.join(root, rel))
+        actual = _safe_sha256_file(root, rel)
         if actual is None:
             missing_files.append(rel)
         elif actual != digest:
@@ -377,10 +444,11 @@ def check_a3_hashes(root: str, manifest: Dict[str, Any]) -> List[Dict[str, Any]]
     dossier = manifest.get("dossier") or {}
     md_rel = dossier.get("md")
     if md_rel:
+        md_path = safe_join(root, md_rel)
         try:
-            with open(os.path.join(root, md_rel), "r", encoding="utf-8") as handle:
+            with open(md_path, "r", encoding="utf-8") as handle:
                 text = handle.read()
-        except OSError:
+        except (OSError, TypeError):
             text = ""
         table_problems: List[Dict[str, str]] = []
         table_checked = 0
@@ -389,7 +457,7 @@ def check_a3_hashes(root: str, manifest: Dict[str, Any]) -> List[Dict[str, Any]]
             label, path, digest = match.group(1).strip(), match.group(2).strip(), match.group(3)
             if "self" in label:
                 continue
-            actual = sha256_file(os.path.join(root, path), lf_normalize=True)
+            actual = _safe_sha256_file(root, path, lf_normalize=True)
             table_checked += 1
             if actual != digest:
                 table_problems.append({"label": label, "path": path,
@@ -429,14 +497,22 @@ def check_a4_rerender(root: str, manifest: Dict[str, Any]) -> List[Dict[str, Any
         # inputs under a fresh root and render there, so every displayed path
         # (the self row included) is identical.
         def _stage(rel: str) -> str:
-            source = os.path.join(root, rel)
-            target = os.path.join(staging, rel)
+            source = safe_join(root, rel)
+            if source is None:
+                raise ValueError("unsafe dossier input path: %s" % rel)
+            target = safe_join(staging, rel)
+            if target is None:
+                raise ValueError("unsafe staging path: %s" % rel)
             os.makedirs(os.path.dirname(target), exist_ok=True)
             shutil.copyfile(source, target)
             return target
 
-        decision_staged = _stage(decision_rel)
-        extra_paths = {label: _stage(rel) for label, rel in sorted(extras.items())}
+        try:
+            decision_staged = _stage(decision_rel)
+            extra_paths = {label: _stage(rel) for label, rel in sorted(extras.items())}
+        except (OSError, ValueError) as exc:
+            return [new_check("A4.dossier.rerender", "A", False,
+                              {"reason": "unsafe or missing dossier input: %s" % exc})]
         _dossier_mod._REPO_ROOT = staging
         built = _dossier_mod.build(decision_staged, staging,
                                    extra_paths=extra_paths, generated_at=generated_at)
@@ -450,8 +526,10 @@ def check_a4_rerender(root: str, manifest: Dict[str, Any]) -> List[Dict[str, Any
             else:
                 with open(rebuilt_path, "rb") as handle:
                     rebuilt = handle.read()
-                packet_path = os.path.join(root, packet_rel)
+                packet_path = safe_join(root, packet_rel)
                 try:
+                    if packet_path is None:
+                        raise OSError("unsafe packet path")
                     with open(packet_path, "rb") as handle:
                         original = handle.read()
                 except OSError:
@@ -502,12 +580,12 @@ def _resolve_recipients(root: str, policy_data: Dict[str, Any], intents: List[Di
 
 def check_a5_policy(root: str, manifest: Dict[str, Any]) -> List[Dict[str, Any]]:
     policy_rel = (manifest.get("policy") or {}).get("file", "policy/policy.effective.json")
-    policy_data = load_json(os.path.join(root, policy_rel))
+    policy_data = _safe_load_json(root, policy_rel)
     if not isinstance(policy_data, dict):
         return [new_check("A5.policy.verdicts", "A", False,
                           {"missing": "unreadable %s" % policy_rel})]
     exec_decl = (manifest.get("streams") or {}).get("exec") or {}
-    records = read_jsonl(os.path.join(root, exec_decl.get("path", "audit.jsonl")))
+    records = _safe_read_jsonl(root, exec_decl.get("path", "audit.jsonl"))
     records = [record for record in records if isinstance(record, dict)]
     intents = [record for record in records if record.get("kind") == "INTENT"]
     policies = [record for record in records if record.get("kind") == "POLICY"]
@@ -618,7 +696,7 @@ def check_a6_snapshot(root: str, manifest: Dict[str, Any]) -> List[Dict[str, Any
     if not rel:
         return [new_check("A6.graph.snapshot", "A", False,
                           {"missing": "manifest.streams.graph.snapshot.path"})]
-    data = load_json(os.path.join(root, rel))
+    data = _safe_load_json(root, rel)
     if not isinstance(data, dict):
         return [new_check("A6.graph.snapshot", "A", False,
                           {"missing": "unreadable %s" % rel})]
@@ -683,13 +761,16 @@ def check_a7_fixtures(root: str, manifest: Dict[str, Any]) -> List[Dict[str, Any
     if not corpus_rel or not decision_rel:
         return [new_check("A7.fixtures.signals", "A", False,
                           {"missing": "manifest.fixtures.corpus / manifest.decision.path"})]
-    decision = load_json(os.path.join(root, decision_rel))
+    decision = _safe_load_json(root, decision_rel)
     if not isinstance(decision, dict):
         return [new_check("A7.fixtures.signals", "A", False,
                           {"missing": "unreadable %s" % decision_rel})]
     window = decision.get("window") or {}
     try:
-        recomputed = _recompute_signals(os.path.join(root, corpus_rel),
+        corpus_path = safe_join(root, corpus_rel)
+        if corpus_path is None:
+            raise ValueError("unsafe corpus path")
+        recomputed = _recompute_signals(corpus_path,
                                         window.get("start"), window.get("end"))
     except (OSError, KeyError, ValueError, TypeError, ZeroDivisionError) as exc:
         return [new_check("A7.fixtures.signals", "A", False,
@@ -736,7 +817,7 @@ def _masked_match(masked: str, address: str) -> bool:
 
 def check_a8_receipts(root: str, manifest: Dict[str, Any]) -> List[Dict[str, Any]]:
     exec_decl = (manifest.get("streams") or {}).get("exec") or {}
-    records = [record for record in read_jsonl(os.path.join(root, exec_decl.get("path", "audit.jsonl")))
+    records = [record for record in _safe_read_jsonl(root, exec_decl.get("path", "audit.jsonl"))
                if isinstance(record, dict)]
     intents_by_id = {}
     for record in records:
@@ -760,10 +841,10 @@ def check_a8_receipts(root: str, manifest: Dict[str, Any]) -> List[Dict[str, Any
             entry["reason"] = "raw_ref missing"
             problems.append(entry)
             continue
-        raw_path = os.path.join(root, raw_rel)
-        actual_sha = sha256_file(raw_path)
+        raw_path = safe_join(root, raw_rel)
+        actual_sha = sha256_file(raw_path) if raw_path else None
         if actual_sha is None:
-            entry["reason"] = "raw receipt file missing"
+            entry["reason"] = "raw receipt file missing or unsafe"
             problems.append(entry)
             continue
         raw = load_json(raw_path)

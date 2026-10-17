@@ -33,6 +33,7 @@ import shutil
 import sys
 import tempfile
 import unittest
+import zipfile
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(HERE)
@@ -384,6 +385,47 @@ def _valid_record():
                   hyp_mod.Criterion(nom="refutation", predicat="p", seuil="s",
                                     sources=("src",), fenetre="f")),
         provenance={"auteur": "a", "modele": "m", "date": "d"})
+
+
+class VerifierZipSafetyTest(_TempRootTest):
+    def test_zip_slip_member_is_refused(self):
+        archive_path = os.path.join(self.root, "evil.zip")
+        with zipfile.ZipFile(archive_path, "w") as archive:
+            archive.writestr("../escape.txt", "owned")
+        root, cleanup, error = engine_mod.resolve_target(archive_path)
+        self.assertIsNone(root)
+        self.assertIsNone(cleanup)
+        self.assertIn("unsafe archive member", error)
+
+    def test_manifest_path_escape_is_not_read(self):
+        outside = os.path.join(os.path.dirname(self.root), "outside_manifest.md")
+        with open(outside, "w", encoding="utf-8", newline="\n") as handle:
+            handle.write("outside")
+        try:
+            checks = engine_mod.check_a2_dossier(
+                self.root, {"dossier": {"md": "../outside_manifest.md"}})
+            self.assertFalse(checks[0]["ok"])
+            self.assertEqual(checks[0]["detail"].get("reason"), "unsafe dossier path")
+        finally:
+            os.remove(outside)
+
+    def test_valid_packet_zip_is_extracted(self):
+        packet = os.path.join(self.root, "packet")
+        os.makedirs(os.path.join(packet, "pkt"))
+        with open(os.path.join(packet, "pkt", "manifest.json"), "w",
+                  encoding="utf-8", newline="\n") as handle:
+            handle.write("{}")
+        archive_path = os.path.join(self.root, "packet.zip")
+        with zipfile.ZipFile(archive_path, "w") as archive:
+            archive.write(os.path.join(packet, "pkt", "manifest.json"), "pkt/manifest.json")
+        root, cleanup, error = engine_mod.resolve_target(archive_path)
+        try:
+            self.assertIsNone(error)
+            self.assertIsNotNone(root)
+            self.assertTrue(os.path.isfile(os.path.join(root, "manifest.json")))
+        finally:
+            if cleanup:
+                shutil.rmtree(cleanup, ignore_errors=True)
 
 
 if __name__ == "__main__":
