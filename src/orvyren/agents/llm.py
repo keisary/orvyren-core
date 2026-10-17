@@ -603,6 +603,8 @@ class LiveBackend(contracts.LLMBackend):
                  cost_usd: float, latency_ms: int,
                  error: str = "") -> None:
         """Archive prompt, raw answer and call line (the replay material)."""
+        if self.store is None:
+            return
         self.store.save_prompt(ctx["prompt_hash"], ctx["system_prompt"],
                                ctx["payload"])
         self.store.save_response(r_hash, raw)

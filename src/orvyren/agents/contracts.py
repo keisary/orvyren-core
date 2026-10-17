@@ -390,7 +390,7 @@ class ResearchPlan:
                    non_recherche=tuple(data.get("non_recherche") or ()))
 
     @classmethod
-    def stopped(cls, motif: str, non_recherche: Mapping[str, Any] = ()) -> "ResearchPlan":
+    def stopped(cls, motif: str, non_recherche: Tuple[str, ...] = ()) -> "ResearchPlan":
         return cls(stop=True, motif_stop=motif, non_recherche=tuple(non_recherche))
 
 

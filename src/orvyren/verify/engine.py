@@ -640,6 +640,10 @@ def check_a5_policy(root: str, manifest: Dict[str, Any]) -> List[Dict[str, Any]]
             results.append({"intent_id": intent_id, "ok": False,
                             "reason": "unreadable context_used.cumulative_spent: %s" % exc})
             continue
+        if moment is None:
+            results.append({"intent_id": intent_id, "ok": False,
+                            "reason": "missing decided_at/expiry: policy clock cannot be recomputed"})
+            continue
         try:
             intent_obj = _policy_mod.Intent(
                 intent_id=str(intent_id), action=str(intent.get("action", "transfer")),
