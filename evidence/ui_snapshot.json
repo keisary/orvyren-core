@@ -1,6 +1,6 @@
 {
   "schema": "orvyren-ui-snapshot/v1",
-  "generated_at": "2026-10-17T12:37:34.354254+00:00",
+  "generated_at": "2026-10-17T12:41:44.026694+00:00",
   "mode": "LIVE",
   "db": "D:/orvyren_10h_2026-10-17/graph_v3.sqlite",
   "as_of": "2026-10-17T11:12:57+00:00",
@@ -47,7 +47,7 @@
       }
     ],
     "count": 4,
-    "latency_ms": null,
+    "latency_ms": 82.77,
     "mode": "LIVE"
   },
   "q4": {
@@ -657,6 +657,7 @@
         "source_family_id": "SF-AAVE-BASE-RPC"
       }
     ],
+    "latency_ms": 28.71,
     "mode": "LIVE"
   },
   "q6": {
@@ -674,6 +675,7 @@
       }
     ],
     "count": 1,
+    "latency_ms": 1.12,
     "mode": "LIVE"
   },
   "q7": {
@@ -862,6 +864,7 @@
         "amount": 1.179727769539e-06
       }
     ],
+    "latency_ms": 9.3,
     "mode": "LIVE"
   },
   "limits": [

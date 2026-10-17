@@ -16,6 +16,7 @@ import hashlib
 import json
 import os
 import sqlite3
+import time
 from typing import Any, Dict, List, Mapping, Optional, Sequence, Tuple
 
 DEFAULT_DB = os.environ.get(
@@ -63,6 +64,7 @@ def exposure(db: Optional[str] = None, holder: str = "", *,
              max_depth: int = 3) -> Dict[str, Any]:
     """Q1 — consolidated direct and indirect exposure of a holder."""
     holder_id = _node_id(holder, "addr")
+    started = time.perf_counter()
     valid, vparams = _validity("r", as_of, as_of_block)
     direct_where = ["r.src = ?", "r.kind = 'HOLDS'"] + _active("r") + valid
     walk_valid, walk_params = _validity("r", as_of, as_of_block)
@@ -100,12 +102,14 @@ def exposure(db: Optional[str] = None, holder: str = "", *,
         con.close()
     return {"query": "Q1", "holder": holder_id, "as_of": as_of,
             "as_of_block": as_of_block, "rows": rows, "count": len(rows),
-            "latency_ms": None, "mode": os.environ.get("ORVYREN_MODE", "LIVE")}
+            "latency_ms": round((time.perf_counter() - started) * 1000, 2),
+            "mode": os.environ.get("ORVYREN_MODE", "LIVE")}
 
 
 def pit(db: Optional[str] = None, *, as_of: Optional[str] = None,
         as_of_block: Optional[int] = None, limit: int = 100) -> Dict[str, Any]:
     """Q4 — facts true and known at a point in time."""
+    started = time.perf_counter()
     valid, params = _validity("r", as_of, as_of_block)
     where = _active("r") + valid
     con = _connect(db)
@@ -122,11 +126,13 @@ def pit(db: Optional[str] = None, *, as_of: Optional[str] = None,
         con.close()
     return {"query": "Q4", "as_of": as_of, "as_of_block": as_of_block,
             "count": int(count), "rows": rows,
+            "latency_ms": round((time.perf_counter() - started) * 1000, 2),
             "mode": os.environ.get("ORVYREN_MODE", "LIVE")}
 
 
 def provenance(db: Optional[str] = None, relation_id: str = "") -> Dict[str, Any]:
     """Q6 — provenance refs of a relation (one hop to the source family)."""
+    started = time.perf_counter()
     con = _connect(db)
     try:
         rows = [dict(row) for row in con.execute(
@@ -136,7 +142,9 @@ def provenance(db: Optional[str] = None, relation_id: str = "") -> Dict[str, Any
     finally:
         con.close()
     return {"query": "Q6", "relation_id": relation_id, "rows": rows,
-            "count": len(rows), "mode": os.environ.get("ORVYREN_MODE", "LIVE")}
+            "count": len(rows),
+            "latency_ms": round((time.perf_counter() - started) * 1000, 2),
+            "mode": os.environ.get("ORVYREN_MODE", "LIVE")}
 
 
 def concentration(db: Optional[str] = None, asset: str = "", *,
@@ -144,6 +152,7 @@ def concentration(db: Optional[str] = None, asset: str = "", *,
                   as_of_block: Optional[int] = None) -> Dict[str, Any]:
     """Q7 — counterparty concentration for a debt/collateral asset."""
     asset_id = _node_id(asset, "asset")
+    started = time.perf_counter()
     valid, params = _validity("r", as_of, as_of_block)
     where = ["r.dst = ?", "r.kind IN ('OWES', 'COLLATERALIZES')"] + _active("r") + valid
     con = _connect(db)
@@ -160,6 +169,7 @@ def concentration(db: Optional[str] = None, asset: str = "", *,
     return {"query": "Q7", "asset": asset_id, "as_of": as_of,
             "as_of_block": as_of_block, "counterparties": len(rows),
             "total": total, "hhi": hhi, "rows": rows,
+            "latency_ms": round((time.perf_counter() - started) * 1000, 2),
             "mode": os.environ.get("ORVYREN_MODE", "LIVE")}
 
 
@@ -168,6 +178,7 @@ def permissions(db: Optional[str] = None, subject: str = "", *,
                 as_of_block: Optional[int] = None) -> Dict[str, Any]:
     """Q8 — permission facts as-of a block (empty means NOT INGESTED)."""
     subject_id = _node_id(subject, "addr")
+    started = time.perf_counter()
     valid, params = _validity("r", as_of, as_of_block)
     where = ["(r.src = ? OR r.dst = ?)",
              "r.kind IN ('MEMBER_OF', 'ALLOWS', 'REVOKES')"] + _active("r") + valid
@@ -183,12 +194,14 @@ def permissions(db: Optional[str] = None, subject: str = "", *,
     return {"query": "Q8", "subject": subject_id, "as_of": as_of,
             "as_of_block": as_of_block, "rows": rows, "count": len(rows),
             "status": "OK" if rows else "NOT_INGESTED",
+            "latency_ms": round((time.perf_counter() - started) * 1000, 2),
             "mode": os.environ.get("ORVYREN_MODE", "LIVE")}
 
 
 def snapshot(db: Optional[str] = None, *, as_of: Optional[str] = None,
              as_of_block: Optional[int] = None) -> Dict[str, Any]:
     """Counts and a deterministic hash of the current graph slice."""
+    started = time.perf_counter()
     con = _connect(db)
     try:
         counts = {
@@ -205,6 +218,7 @@ def snapshot(db: Optional[str] = None, *, as_of: Optional[str] = None,
         con.close()
     return {"query": "snapshot", "as_of": as_of, "as_of_block": as_of_block,
             "counts": counts, "graph_hash": digest.hexdigest(),
+            "latency_ms": round((time.perf_counter() - started) * 1000, 2),
             "mode": os.environ.get("ORVYREN_MODE", "LIVE")}
 
 
