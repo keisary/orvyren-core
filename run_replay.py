@@ -137,6 +137,7 @@ def cmd_journal(args) -> int:
 
 def cmd_archive(args) -> int:
     manifest = corpus_mod.load_manifest(args.manifest)
+    clock, window = _clock_for(args.case, "replay-archive")  # fail fast: no LLM spend on an unknown case
     try:
         report = archive_mod.replay_archive(args.case, args.session or
                                             tempfile.mkdtemp(prefix="orvyren_replay_archive_"),
@@ -144,7 +145,6 @@ def cmd_archive(args) -> int:
     except archive_mod.ArchiveUnavailable as exc:
         print("archive: EXPLICIT REFUSAL — %s" % exc, file=sys.stderr)
         return EXIT_UNAVAILABLE
-    clock, window = _clock_for(args.case, "replay-archive")
     result = dossier_mod.build_replay_dossier(
         episode=args.case, mode="REPLAY-ARCHIVE", mode_slug="archive",
         run_id="%s-archive" % args.case,
@@ -191,6 +191,8 @@ def main(argv=None) -> int:
     p = sub.add_parser("inspect", help="frozen corpus + window + anchors (read-only)")
     p.add_argument("--episode", required=True)
     p.add_argument("--t-sim", default=None)
+    p.add_argument("--manifest", default=argparse.SUPPRESS,
+                   help="corpus manifest (also accepted after the sub-command)")
     p.set_defaults(func=cmd_inspect)
 
     p = sub.add_parser("journal", help="mode 1 — bit-for-bit, offline")
@@ -199,6 +201,8 @@ def main(argv=None) -> int:
     p.add_argument("--session", default=None)
     p.add_argument("--out-dir", default=dossier_mod.DEFAULT_OUT_DIR)
     p.add_argument("--quiet", action="store_true")
+    p.add_argument("--manifest", default=argparse.SUPPRESS,
+                   help="corpus manifest (also accepted after the sub-command)")
     p.set_defaults(func=cmd_journal)
 
     p = sub.add_parser("archive", help="mode 2 — recomputation (LLM key required)")
@@ -207,6 +211,8 @@ def main(argv=None) -> int:
     p.add_argument("--session", default=None)
     p.add_argument("--out-dir", default=dossier_mod.DEFAULT_OUT_DIR)
     p.add_argument("--quiet", action="store_true")
+    p.add_argument("--manifest", default=argparse.SUPPRESS,
+                   help="corpus manifest (also accepted after the sub-command)")
     p.set_defaults(func=cmd_archive)
 
     p = sub.add_parser("verify", help="T10 — recomputes and compares hashes")
@@ -215,6 +221,8 @@ def main(argv=None) -> int:
     p.set_defaults(func=cmd_verify)
 
     args = parser.parse_args(argv)
+    if args.command in ("journal", "archive") and args.k < 1:
+        parser.error("--k must be >= 1 (got %d)" % args.k)
     if args.command == "verify" and not (args.dossier or args.run_dir):
         parser.error("\"verify\" requires --run-dir DIR and/or --dossier FILE "
                      "(without a target, no check would be performed: explicit refusal)")

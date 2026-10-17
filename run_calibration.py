@@ -62,7 +62,12 @@ def main(argv=None) -> int:
         outcomes_mod.verify_outcome_chain(outcomes, args.outcomes)
         by_id = {record["forecast_id"]: record for record in forecasts}
         for outcome in outcomes:
-            outcomes_mod.check_link(by_id[outcome["forecast_id"]], outcome)
+            linked = by_id.get(outcome.get("forecast_id"))
+            if linked is None:  # an outcome naming an unknown forecast is a refusal, not a crash
+                raise outcomes_mod.OutcomeError(
+                    "outcome %s : prévision inconnue %r (absente du fichier de prévisions)"
+                    % (outcome.get("outcome_id"), outcome.get("forecast_id")))
+            outcomes_mod.check_link(linked, outcome)
     except (forecasts_mod.ForecastError, outcomes_mod.OutcomeError) as exc:
         print("REFUSED — %s" % exc, file=sys.stderr)
         return 2
@@ -167,7 +172,7 @@ def main(argv=None) -> int:
     lines.append("")
     lines.append("## 4. By family (N per cell)")
     lines.append("")
-    for episode, bucket in sorted(by_episode.items()):
+    for episode, bucket in sorted(by_episode.items(), key=lambda kv: str(kv[0])):
         lines.append("- **%s** — N = %d — Brier %.4f" % (episode, bucket["n"], bucket["brier"]))
     lines.append("")
     lines.append("## 5. Forecast annex (N = %d)" % len(pairs))

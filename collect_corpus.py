@@ -87,7 +87,8 @@ def cached_or_fetch(sub, name, url, builder):
     `builder()` must return the list of records built from the response."""
     path = os.path.join(RAW, sub, name)
     if os.path.exists(path) and not FORCE:
-        rows = json.load(open(path, encoding="utf-8"))
+        with open(path, encoding="utf-8") as fh:
+            rows = json.load(fh)
         if rows:  # an empty cache (failed collection) must never be reused
             print(f"  {sub}/{name}: {len(rows)} records (reused from cache)")
             return rows, True
@@ -401,7 +402,8 @@ def main():
     if args.offline:
         if not os.path.exists(manifest_path):
             print("No archived corpus. Run an online collection first."); sys.exit(1)
-        data = json.load(open(manifest_path, encoding="utf-8"))
+        with open(manifest_path, encoding="utf-8") as fh:
+            data = json.load(fh)
         print(f"REPLAY — corpus of {data['collected_at']}: {sum(m['records'] for m in data['sources'])} records.")
         return
 

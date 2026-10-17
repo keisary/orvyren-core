@@ -75,10 +75,26 @@ def run_stage(name, script, args):
     if not os.path.exists(path):
         return {"stage": name, "script": script, "status": "MISSING_SCRIPT"}
     started = dt.datetime.now(dt.timezone.utc)
-    proc = subprocess.run(
-        [sys.executable, path, *args],
-        cwd=HERE, capture_output=True, text=True, timeout=900,
-    )
+    try:
+        proc = subprocess.run(
+            [sys.executable, path, *args],
+            cwd=HERE, capture_output=True, text=True, timeout=900,
+        )
+    except subprocess.TimeoutExpired as exc:
+        # A hung stage is a failed stage: report it like one instead of
+        # crashing the orchestrator mid-pipeline (dependent stages still skip).
+        def _tail(stream, limit):
+            if isinstance(stream, bytes):
+                stream = stream.decode("utf-8", "replace")
+            return (stream or "").strip().splitlines()[-limit:]
+        return {
+            "stage": name,
+            "script": script,
+            "status": "FAILED (timeout after 900s)",
+            "seconds": round((dt.datetime.now(dt.timezone.utc) - started).total_seconds(), 2),
+            "stdout_tail": _tail(exc.stdout, 12),
+            "stderr_tail": _tail(exc.stderr, 8),
+        }
     return {
         "stage": name,
         "script": script,
@@ -116,7 +132,8 @@ def summarise():
             "corpus_rejected": len(norm.get("rejected") or []),
             "data_quality_coverage": {
                 "hours_in_window": (coverage.get("window") or {}).get("hours"),
-                "hours_with_two_plus_independent_venues": hours_two_plus or None,
+                "hours_with_two_plus_independent_venues": (
+                    hours_two_plus if hours_by_venue_count else None),
                 "per_venue_hours_covered": {
                     venue: entry.get("hours_covered")
                     for venue, entry in (coverage.get("per_venue") or {}).items()

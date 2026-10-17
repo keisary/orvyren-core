@@ -99,17 +99,20 @@ def main():
         ys = [v for _, v in series]
         pretty = "aggregate (all chains)" if "aggregate" in label else "Ethereum only"
         ax2.plot(xs, ys, color=colour, linestyle=ls, linewidth=1.7, label=pretty)
-    first_a, last_a = supply["defillama_supply_aggregate"][0], supply["defillama_supply_aggregate"][-1]
-    first_e, last_e = supply["defillama_supply_ethereum"][0], supply["defillama_supply_ethereum"][-1]
-    ax2.text(
-        0.015, 0.05,
-        f"aggregate: {first_a[1]:.1f} → {last_a[1]:.1f} bn USD "
-        f"({last_a[1] - first_a[1]:+.1f}, {100 * (last_a[1] / first_a[1] - 1):+.0f}%)\n"
-        f"Ethereum:  {first_e[1]:.1f} → {last_e[1]:.1f} bn USD "
-        f"({last_e[1] - first_e[1]:+.1f}, {100 * (last_e[1] / first_e[1] - 1):+.0f}%)",
-        transform=ax2.transAxes, fontsize=9, va="bottom", ha="left",
-        bbox=dict(boxstyle="round,pad=0.5", facecolor="white", edgecolor="#999999", alpha=0.95),
-    )
+    # Supply deltas: only annotate series that actually have points (the plot
+    # loop above already skips empty ones -- indexing blindly here would crash).
+    if supply["defillama_supply_aggregate"] and supply["defillama_supply_ethereum"]:
+        first_a, last_a = supply["defillama_supply_aggregate"][0], supply["defillama_supply_aggregate"][-1]
+        first_e, last_e = supply["defillama_supply_ethereum"][0], supply["defillama_supply_ethereum"][-1]
+        ax2.text(
+            0.015, 0.05,
+            f"aggregate: {first_a[1]:.1f} → {last_a[1]:.1f} bn USD "
+            f"({last_a[1] - first_a[1]:+.1f}, {100 * (last_a[1] / first_a[1] - 1):+.0f}%)\n"
+            f"Ethereum:  {first_e[1]:.1f} → {last_e[1]:.1f} bn USD "
+            f"({last_e[1] - first_e[1]:+.1f}, {100 * (last_e[1] / first_e[1] - 1):+.0f}%)",
+            transform=ax2.transAxes, fontsize=9, va="bottom", ha="left",
+            bbox=dict(boxstyle="round,pad=0.5", facecolor="white", edgecolor="#999999", alpha=0.95),
+        )
     ax2.set_ylabel("Circulating supply (bn USD)")
     ax2.set_title("Supply contraction around the crisis (daily)", fontsize=10.5, loc="left")
     ax2.legend(loc="upper right", fontsize=9)

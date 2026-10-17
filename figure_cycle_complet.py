@@ -68,7 +68,9 @@ def main():
     for i in range(len(positions)):
         x0, y0 = positions[i]
         x1, y1 = positions[(i + 1) % len(positions)]
-        shrink = 0.16
+        # Endpoints are pulled back from the station boxes via shrinkA/shrinkB
+        # (points, scale-independent); the boxes (zorder=3, white face) cover
+        # whatever remains. A data-space shrink would depend on the axes scale.
         arrow = FancyArrowPatch(
             (x0, y0), (x1, y1), connectionstyle="arc3,rad=-0.22",
             arrowstyle="-|>", mutation_scale=18, linewidth=1.6, color=GREY, alpha=0.85,
