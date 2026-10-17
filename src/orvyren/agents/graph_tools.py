@@ -23,7 +23,7 @@ Standard library only (the API opens SQLite read-only).
 
 from __future__ import annotations
 
-from typing import Any, Dict, Mapping, Optional, Sequence, Tuple
+from typing import Any, Dict, List, Mapping, Optional, Sequence, Tuple
 
 from orvyren.agents import contracts
 from orvyren.agents.llm import tool_spec
@@ -80,6 +80,15 @@ def _int_arg_errors(args: Mapping[str, Any], keys: Sequence[str]) -> List[str]:
                                   or not isinstance(value, int)):
             errors.append("E_TOOL_ARGS_TYPE:%s" % key)
     return errors
+
+def _optional_int(args: Mapping[str, Any], key: str, default: int) -> int:
+    """One optional integer arg, forwarded verbatim.
+
+    ``0`` is a value, not a missing key: an explicit argument must never be
+    silently replaced by its default (the args change the result).
+    """
+    value = args.get(key)
+    return default if value is None else int(value)
 
 
 def _observation(response: Mapping[str, Any], deadline_s: float
@@ -141,11 +150,11 @@ class GraphQueryTool:
         if query == "Q1":
             return self.api.exposure(
                 self.db, str(args["holder"]), as_of=as_of, as_of_block=block,
-                max_depth=int(args.get("max_depth", 3) or 3))
+                max_depth=_optional_int(args, "max_depth", 3))
         if query == "Q4":
             return self.api.pit(
                 self.db, as_of=as_of, as_of_block=block,
-                limit=int(args.get("limit", 100) or 100))
+                limit=_optional_int(args, "limit", 100))
         if query == "Q6":
             return self.api.provenance(self.db, str(args["relation_id"]))
         if query == "Q7":
@@ -192,7 +201,7 @@ class GraphPathTool:
             response = self._q2(
                 self.db, str(args["src"]), str(args["dst"]),
                 kinds=tuple(args.get("kinds") or ()),
-                max_depth=int(args.get("max_depth", 4) or 4))
+                max_depth=_optional_int(args, "max_depth", 4))
         except FileNotFoundError as exc:
             return contracts.ToolResult(
                 ok=False, status="UNAVAILABLE",

@@ -262,10 +262,29 @@ class RecordedBackend(contracts.LLMBackend):
                  config: Optional[Mapping[str, Any]] = None) -> None:
         self.store = store
         self.config = config if config is not None else load_models_config()
+        self._consumed: Dict[str, int] = {}
 
     def find_call(self, prompt_hash: str) -> Optional[Dict[str, Any]]:
         """The call line recorded for this prompt hash, or ``None``."""
         return self.store.find_call(prompt_hash)
+
+    def _next_call(self, prompt_hash: str) -> Optional[Dict[str, Any]]:
+        """The next recorded call for this prompt hash, in **recorded order**.
+
+        A run may ask the same prompt several times (the bounded loop retries
+        a transport failure with the very same payload); a replay must walk
+        the same sequence — fail then success stays fail then success — or the
+        replayed journal diverges from the recorded one. When the recorded
+        sequence is exhausted, the **last** call answers every further
+        identical request (one recording, many identical reads).
+        """
+        entries = [entry for entry in self.store.calls()
+                   if entry.get("prompt_hash") == prompt_hash]
+        if not entries:
+            return None
+        index = self._consumed.get(prompt_hash, 0)
+        self._consumed[prompt_hash] = index + 1
+        return entries[index] if index < len(entries) else entries[-1]
 
     def complete(self, *, role: str, role_version: str, schema_id: str,
                  system_prompt: str, payload: Mapping[str, Any],
@@ -276,7 +295,7 @@ class RecordedBackend(contracts.LLMBackend):
             return contracts.LLMResult(ok=False, error="E_LLM_UNKNOWN_ROLE:%s" % role)
         p_hash = self.store.hash_prompt(role, role_version, schema_id,
                                         system_prompt, payload)
-        entry = self.store.find_call(p_hash)
+        entry = self._next_call(p_hash)
         if entry is None:
             return contracts.LLMResult(
                 ok=False, error="E_LLM_NOT_RECORDED:%s" % p_hash,
@@ -414,8 +433,11 @@ class LiveBackend(contracts.LLMBackend):
                 return result
             failures.append("%s:%s" % (model_key, motif))
         error = "E_LLM_NO_KEY" if not had_key else "E_LLM_ALL_PROVIDERS_FAILED"
-        return contracts.LLMResult(ok=False, error=error, prompt_hash=p_hash,
-                                   **meta)
+        # The terminal failure is archived like a content failure: a replay
+        # must reproduce the SAME failure (same code, same accounting) instead
+        # of failing with E_LLM_NOT_RECORDED — the recorded journal carries the
+        # error line, so the replayed journal has to carry it too.
+        return self._record_failure(ctx, "", error, meta)
 
     # -- one candidate model -------------------------------------------------
     def _call_model(self, model_key: str, model_cfg: Mapping[str, Any],
@@ -754,6 +776,19 @@ class ToolTurnRunner:
         self.clock = clock if clock is not None else time.monotonic
         self._step = 0
 
+    def _now_iso(self) -> str:
+        """Journal timestamp of one line.
+
+        The injected ``clock`` wins when it carries ``now_iso`` (the
+        ``loop.SystemClock`` / ``worker.VirtualClock`` shape): a replayed turn
+        must rewrite byte-identical journal lines, so the wall clock is only
+        the live-mode default — never a hidden input of the hash chain.
+        """
+        now_iso = getattr(self.clock, "now_iso", None)
+        if callable(now_iso):
+            return str(now_iso())
+        return datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+
     # -- journal -----------------------------------------------------------
     def _journal(self, kind: str, content: str,
                  result: Optional[contracts.LLMResult] = None) -> None:
@@ -766,7 +801,7 @@ class ToolTurnRunner:
             "agent_id": self.agent_id,
             "role_version": "toolturn/v1",
             "step_index": self._step,
-            "ts_utc": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+            "ts_utc": self._now_iso(),
             "kind": kind,
             "content": content,
         }

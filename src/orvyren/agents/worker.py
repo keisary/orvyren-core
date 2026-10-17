@@ -92,7 +92,11 @@ class VirtualClock:
         try:
             parsed = datetime.fromisoformat(text)
         except ValueError:
-            parsed = datetime.now(timezone.utc)
+            # Deterministic fallback: the wall clock must never leak into a
+            # REPLAY clock (a missing/unparseable ``created_at`` would rewrite
+            # different ``ts_utc`` — hence different chain heads — on every
+            # replay, B1 §6.2).
+            parsed = datetime.fromisoformat("1970-01-01T00:00:00+00:00")
         if parsed.tzinfo is None:
             parsed = parsed.replace(tzinfo=timezone.utc)
         return parsed
@@ -317,7 +321,12 @@ def run_critic(run_dir: str, wait_s: float = 120.0) -> int:
                       else (False, ["E_LLM_CALL_FAILED: %s" % result.error]))
 
     llm_fields = {}
-    if result.ok or result.prompt_hash:
+    if result.prompt_hash and result.response_hash:
+        # Same rule as ``loop._llm_fields``: the ``llm`` provenance mapping is
+        # stamped only when the call really carries BOTH pinned hashes —
+        # otherwise the validator would reject the line for a "LLM line
+        # without prompt/response hash" although a failed call simply has no
+        # response blob to pin.
         llm_fields = {
             "provider": result.provider, "model": result.model,
             "model_version_pinned": result.model_version_pinned,
