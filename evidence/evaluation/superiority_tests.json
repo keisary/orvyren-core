@@ -1,0 +1,27 @@
+{
+ "mcnemar": null,
+ "note": "tests de supériorité (Wilson, McNemar exact, bootstrap par blocs) exécutés seulement quand N ≥ 100 — le harnais refuse de publier un score agrégé unique (B7 §e.5)",
+ "status": "NON CALCULÉ — N < 100",
+ "window_level": [
+  {
+   "percentile_paired": {
+    "percentile_of_A2": 33.5
+   },
+   "window_id": "dev-usdc-2023-03"
+  },
+  {
+   "percentile_paired": {},
+   "window_id": "dev-usdc-2023-02-temoin"
+  },
+  {
+   "percentile_paired": {
+    "percentile_of_A1": 52.5
+   },
+   "window_id": "dev-steth-2022-06"
+  },
+  {
+   "percentile_paired": {},
+   "window_id": "dev-steth-2022-05-calme"
+  }
+ ]
+}

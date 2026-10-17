@@ -1,0 +1,364 @@
+{
+ "annex": [
+  {
+   "episode_id": "usdc-2023-03",
+   "forecast_id": "dev-usdc-2023-03.h-calme-1",
+   "horizon_kind": "H_class",
+   "p": 0.29949238578680204,
+   "resolution_rule_id": "sustained_depeg_v1",
+   "squared_error": 0.08969568914427066,
+   "y": 0
+  },
+  {
+   "episode_id": "usdc-2023-03",
+   "forecast_id": "dev-usdc-2023-03.h-calme-2",
+   "horizon_kind": "H_class",
+   "p": 0.29949238578680204,
+   "resolution_rule_id": "sustained_depeg_v1",
+   "squared_error": 0.08969568914427066,
+   "y": 0
+  },
+  {
+   "episode_id": "usdc-2023-03",
+   "forecast_id": "dev-usdc-2023-03.h-pre-crise",
+   "horizon_kind": "H_class",
+   "p": 0.29949238578680204,
+   "resolution_rule_id": "sustained_depeg_v1",
+   "squared_error": 0.08969568914427066,
+   "y": 0
+  },
+  {
+   "episode_id": "usdc-2023-03",
+   "forecast_id": "dev-usdc-2023-03.h-crise",
+   "horizon_kind": "H_class",
+   "p": 0.2436548223350254,
+   "resolution_rule_id": "sustained_depeg_v1",
+   "squared_error": 0.5720580277770619,
+   "y": 1
+  },
+  {
+   "episode_id": "usdc-2023-03",
+   "forecast_id": "dev-usdc-2023-03.h-post-crise",
+   "horizon_kind": "H_class",
+   "p": 0.2893401015228426,
+   "resolution_rule_id": "sustained_depeg_v1",
+   "squared_error": 0.08371769434924888,
+   "y": 0
+  },
+  {
+   "episode_id": "steth-2022-06",
+   "forecast_id": "dev-steth-2022-05.t-calme",
+   "horizon_kind": "T",
+   "p": 0.008130081300813009,
+   "resolution_rule_id": "calm_window_v1",
+   "squared_error": 0.9838059356203317,
+   "y": 1
+  },
+  {
+   "episode_id": "steth-2022-06",
+   "forecast_id": "dev-steth-2022-05.t-rupture",
+   "horizon_kind": "T",
+   "p": 0.9786324786324786,
+   "resolution_rule_id": "sustained_depeg_v1",
+   "squared_error": 0.0004565709693914837,
+   "y": 1
+  },
+  {
+   "episode_id": "steth-2022-06",
+   "forecast_id": "dev-steth-2022-06.h-crise",
+   "horizon_kind": "H_class",
+   "p": 1.0,
+   "resolution_rule_id": "sustained_depeg_v1",
+   "squared_error": 0.0,
+   "y": 1
+  }
+ ],
+ "banner": "DEV",
+ "by_episode": {
+  "steth-2022-06": {
+   "brier": 0.3280875021965744,
+   "n": 3
+  },
+  "usdc-2023-03": {
+   "brier": 0.18497255791182457,
+   "n": 5
+  }
+ },
+ "cascade_note": "cascade §b.3 : N < 5 rien ; 5 ≤ N < 30 « non conclusionnel » ; ECE non revendicable avant N ≥ 100 et les 5 conditions",
+ "generated_at_utc": "2026-10-17T00:14:09Z",
+ "global": {
+  "bins": 10,
+  "bootstrap": {
+   "block_size": 6,
+   "n_reps": 10000,
+   "seed": 20261016
+  },
+  "bs": 0.23864066201860576,
+  "bs_bootstrap_ci": [
+   0.11566492006606428,
+   0.36161640397114725
+  ],
+  "bss": 0.04543735192557696,
+  "ece": 0.1805886901606228,
+  "n": 8,
+  "rel": 0.12765848155989915,
+  "reliability": [
+   {
+    "acc_b": 1.0,
+    "bin": 0,
+    "bounds": [
+     0.0,
+     0.1
+    ],
+    "conf_b": 0.008130081300813009,
+    "n_b": 1,
+    "wilson_high": 1.0,
+    "wilson_low": 0.20654931179180275
+   },
+   {
+    "acc_b": null,
+    "bin": 1,
+    "bounds": [
+     0.1,
+     0.2
+    ],
+    "conf_b": null,
+    "n_b": 0,
+    "wilson_high": null,
+    "wilson_low": null
+   },
+   {
+    "acc_b": 0.2,
+    "bin": 2,
+    "bounds": [
+     0.2,
+     0.3
+    ],
+    "conf_b": 0.2862944162436548,
+    "n_b": 5,
+    "wilson_high": 0.624465372970005,
+    "wilson_low": 0.03622410822563068
+   },
+   {
+    "acc_b": null,
+    "bin": 3,
+    "bounds": [
+     0.3,
+     0.4
+    ],
+    "conf_b": null,
+    "n_b": 0,
+    "wilson_high": null,
+    "wilson_low": null
+   },
+   {
+    "acc_b": null,
+    "bin": 4,
+    "bounds": [
+     0.4,
+     0.5
+    ],
+    "conf_b": null,
+    "n_b": 0,
+    "wilson_high": null,
+    "wilson_low": null
+   },
+   {
+    "acc_b": null,
+    "bin": 5,
+    "bounds": [
+     0.5,
+     0.6
+    ],
+    "conf_b": null,
+    "n_b": 0,
+    "wilson_high": null,
+    "wilson_low": null
+   },
+   {
+    "acc_b": null,
+    "bin": 6,
+    "bounds": [
+     0.6,
+     0.7
+    ],
+    "conf_b": null,
+    "n_b": 0,
+    "wilson_high": null,
+    "wilson_low": null
+   },
+   {
+    "acc_b": null,
+    "bin": 7,
+    "bounds": [
+     0.7,
+     0.8
+    ],
+    "conf_b": null,
+    "n_b": 0,
+    "wilson_high": null,
+    "wilson_low": null
+   },
+   {
+    "acc_b": null,
+    "bin": 8,
+    "bounds": [
+     0.8,
+     0.9
+    ],
+    "conf_b": null,
+    "n_b": 0,
+    "wilson_high": null,
+    "wilson_low": null
+   },
+   {
+    "acc_b": 1.0,
+    "bin": 9,
+    "bounds": [
+     0.9,
+     1.0
+    ],
+    "conf_b": 0.9893162393162394,
+    "n_b": 2,
+    "wilson_high": 1.0,
+    "wilson_low": 0.34238022395464934
+   }
+  ],
+  "res": 0.15,
+  "unc": 0.25,
+  "verdict": "non conclusionnel",
+  "ybar": 0.5
+ },
+ "hashes": {
+  "event_label": "calibration_report.dev",
+  "forecasts_file": "c9d4763720d9172471f6a57aed03277560be122fe66b6015a47dd5d877215e94",
+  "outcomes_file": "b1dd134c06f1afd44a43cb517f38fcfb31d05d865af48cd761c7f747dda55c75",
+  "scoring_code": "0a90281453610c1b6258a99540d0d060132c56264aab2039921f81ce845fad13"
+ },
+ "n": 8,
+ "reliability_curve": [
+  {
+   "acc_b": 1.0,
+   "bin": 0,
+   "bounds": [
+    0.0,
+    0.1
+   ],
+   "conf_b": 0.008130081300813009,
+   "n_b": 1,
+   "wilson_high": 1.0,
+   "wilson_low": 0.20654931179180275
+  },
+  {
+   "acc_b": null,
+   "bin": 1,
+   "bounds": [
+    0.1,
+    0.2
+   ],
+   "conf_b": null,
+   "n_b": 0,
+   "wilson_high": null,
+   "wilson_low": null
+  },
+  {
+   "acc_b": 0.2,
+   "bin": 2,
+   "bounds": [
+    0.2,
+    0.3
+   ],
+   "conf_b": 0.2862944162436548,
+   "n_b": 5,
+   "wilson_high": 0.624465372970005,
+   "wilson_low": 0.03622410822563068
+  },
+  {
+   "acc_b": null,
+   "bin": 3,
+   "bounds": [
+    0.3,
+    0.4
+   ],
+   "conf_b": null,
+   "n_b": 0,
+   "wilson_high": null,
+   "wilson_low": null
+  },
+  {
+   "acc_b": null,
+   "bin": 4,
+   "bounds": [
+    0.4,
+    0.5
+   ],
+   "conf_b": null,
+   "n_b": 0,
+   "wilson_high": null,
+   "wilson_low": null
+  },
+  {
+   "acc_b": null,
+   "bin": 5,
+   "bounds": [
+    0.5,
+    0.6
+   ],
+   "conf_b": null,
+   "n_b": 0,
+   "wilson_high": null,
+   "wilson_low": null
+  },
+  {
+   "acc_b": null,
+   "bin": 6,
+   "bounds": [
+    0.6,
+    0.7
+   ],
+   "conf_b": null,
+   "n_b": 0,
+   "wilson_high": null,
+   "wilson_low": null
+  },
+  {
+   "acc_b": null,
+   "bin": 7,
+   "bounds": [
+    0.7,
+    0.8
+   ],
+   "conf_b": null,
+   "n_b": 0,
+   "wilson_high": null,
+   "wilson_low": null
+  },
+  {
+   "acc_b": null,
+   "bin": 8,
+   "bounds": [
+    0.8,
+    0.9
+   ],
+   "conf_b": null,
+   "n_b": 0,
+   "wilson_high": null,
+   "wilson_low": null
+  },
+  {
+   "acc_b": 1.0,
+   "bin": 9,
+   "bounds": [
+    0.9,
+    1.0
+   ],
+   "conf_b": 0.9893162393162394,
+   "n_b": 2,
+   "wilson_high": 1.0,
+   "wilson_low": 0.34238022395464934
+  }
+ ],
+ "schema": "orvyren.calibration-report/v1",
+ "set": "dev",
+ "unresolved": []
+}

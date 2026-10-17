@@ -47,7 +47,7 @@ python scripts/freeze_sprint0.py --out /tmp/frozen_recalc
 | `G2.sha256` | `412b374b6195fa0f5fce42817cd0395f3861f8430ec4f1d6414c57c2006159a2` |
 | `G3.sha256` | `37acc25fc99df6abd031ef9664e89aa2f3e87edc75ea83fa4848be4075d244e9` |
 | `G4.sha256` | `49f48e9057996636bcebcdfb9e76deafa6998d8c856519cb27b817d9577f8f46` |
-| `G5.sha256` | `34597b5b87efd34416d191949cb1a277ff155bce385c4b27b733fae24e279239` |
+| `G5.sha256` | `49e4371615940b543ad58c7c9b85e6eec49a168cc65e936217626598b5ce6fd4` |
 | `G6.sha256` | `3c77a063f1b082634d0a8b6b211806d4604c6fdeeed6a492005f10ef24b394d1` |
 
 *Note : `README.md` et `FORECASTS_DEV.md` ne figurent pas dans les manifestes Gx (ils ne sont pas

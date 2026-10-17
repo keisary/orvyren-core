@@ -2,7 +2,7 @@
 
 **Statut : GELÉ v1** — 2026-10-16T00:00:00Z. Sources : B7 §b.1–b.4, §e.2–e.5, DOC2 §5.8.2.
 Code gelé : `calibration.py` sha256
-`7d8d7efc8e879a2f7a14409b36d18032f2c3aa0c1da4c3555157fa6e1667bfa5`,
+`0a90281453610c1b6258a99540d0d060132c56264aab2039921f81ce845fad13`,
 `forecasts.py` sha256 `b5857165694ae06f736018531c4d295031f30060af563a2f2f7b162047452d8d`,
 `outcomes.py` sha256 `c2a725912a5239b62755aa48d57a5898dfc2e5b54efd0bf0b008f52dbe0c9c0d`.
 
