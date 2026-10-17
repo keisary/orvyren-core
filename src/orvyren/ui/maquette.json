@@ -1,0 +1,151 @@
+{
+  "schema": "orvyren-ui-maquette/v1",
+  "generated_by": "hermes-b (B0, 2026-10-17)",
+  "purpose": "Maquette UI 3 panneaux. Valeurs REELLES extraites de D:/orvyren_10h_2026-10-17/handoff/ui_snapshot_seed.json (seed H2 Hermes-A, ingestion Aave v3 Base) — aucune valeur inventée. Affichage en REPLAY : snapshot statique, pas de live. À remplacer par seed_ui.json / ui_snapshot.json quand l'UI branche l'API.",
+  "banner": {
+    "mode": "REPLAY",
+    "modes_disponibles": ["LIVE", "REPLAY", "FIXTURE", "SYNTHETIC"],
+    "as_of": "2026-10-17T11:12:57+00:00",
+    "as_of_block": 52723115,
+    "graph_hash": "016d6af64fa15b0d58a48550404a455362be374cf0d8e36b52bf0f68ce428c3c",
+    "age": "snapshot seed du 2026-10-17T12:37:34Z (mesuré)",
+    "source": "handoff/ui_snapshot_seed.json"
+  },
+  "panels": {
+    "situation": {
+      "counts": {
+        "relations": 12937,
+        "nodes": 16174,
+        "events": 15000,
+        "relation_provenance": 12937
+      },
+      "graph_hash": "016d6af64fa15b0d58a48550404a455362be374cf0d8e36b52bf0f68ce428c3c",
+      "provenance": [
+        {"ref": "handoff/ui_snapshot_seed.json", "kind": "snapshot", "note": "comptages mesurés Hermes-A (H2)"}
+      ]
+    },
+    "graphe": {
+      "Q1": {
+        "query": "Q1",
+        "holder": "addr:eip155:8453:0xbe00a0de23a02a85d7fb7451ab9b69d84fd61fe3",
+        "as_of": "2026-10-17T11:12:57+00:00",
+        "as_of_block": 52723115,
+        "rows": [
+          {"asset": "asset:eip155:8453:0x4200000000000000000000000000000000000006", "depth": 0, "amount": 474.0717107819323, "unit": "WETH"},
+          {"asset": "asset:eip155:8453:0xcbb7c0000ab88b473b1f5afd9ef808440eed33bf", "depth": 0, "amount": 50.77396044, "unit": "cbBTC"},
+          {"asset": "market:eip155:8453:0xa238dd80c259a72e81d7e4664a9801593f98d1c5:0x4200000000000000000000000000000000000006", "depth": 1, "amount": 0.0, "unit": ""}
+        ],
+        "count": 4,
+        "count_note": "4 lignes au total dans le seed, 3 affichées",
+        "latency_ms": null,
+        "provenance": [
+          {"ref": "handoff/ui_snapshot_seed.json", "kind": "snapshot", "query": "Q1"}
+        ],
+        "mode": "REPLAY"
+      },
+      "Q4": {
+        "query": "Q4",
+        "as_of": "2026-10-17T11:12:57+00:00",
+        "as_of_block": 52723115,
+        "count": 12937,
+        "count_note": "12 937 relations actives au point-in-time, 3 affichées",
+        "rows": [
+          {
+            "relation_id": "rel:0x0003a0bf0e263e32ffa4a0c3c3cf2de7e622017acc82626221091f68005b605f:429:debt",
+            "kind": "OWES",
+            "src": "position:eip155:8453:0x2b8ce2c87c166d8e24e186e7e4253c11fc805427:0x4200000000000000000000000000000000000006",
+            "dst": "debt:eip155:8453:0xa238dd80c259a72e81d7e4664a9801593f98d1c5:0x4200000000000000000000000000000000000006",
+            "valid_from": "2026-10-17T02:04:35+00:00",
+            "valid_to": null,
+            "valid_from_block": 52706664,
+            "valid_to_block": null,
+            "epistemic_status": "FACT",
+            "source_family_id": "SF-AAVE-BASE-RPC"
+          },
+          {
+            "relation_id": "rel:0x000c6c4ad136eb6b95f5724cb9c97f874ca89ec74709635939f5d82ae5b35e62:346:debt",
+            "kind": "OWES",
+            "src": "position:eip155:8453:0x2b8ce2c87c166d8e24e186e7e4253c11fc805427:0xcbb7c0000ab88b473b1f5afd9ef808440eed33bf",
+            "dst": "debt:eip155:8453:0xa238dd80c259a72e81d7e4664a9801593f98d1c5:0xcbb7c0000ab88b473b1f5afd9ef808440eed33bf",
+            "valid_from": "2026-10-16T20:39:01+00:00",
+            "valid_to": null,
+            "valid_from_block": 52696897,
+            "valid_to_block": null,
+            "epistemic_status": "FACT",
+            "source_family_id": "SF-AAVE-BASE-RPC"
+          },
+          {
+            "relation_id": "rel:0x00130087489d1898048bac0d203806d9f11dac50f282c1376c4842f838690b07:591:deposit",
+            "kind": "DEPOSITED_IN",
+            "src": "asset:eip155:8453:0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+            "dst": "market:eip155:8453:0xa238dd80c259a72e81d7e4664a9801593f98d1c5:0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+            "valid_from": "2026-10-16T20:11:03+00:00",
+            "valid_to": null,
+            "valid_from_block": 52696058,
+            "valid_to_block": null,
+            "epistemic_status": "FACT",
+            "source_family_id": "SF-AAVE-BASE-RPC"
+          }
+        ],
+        "latency_ms": 23.87,
+        "provenance": [
+          {"ref": "handoff/ui_snapshot_seed.json", "kind": "snapshot", "query": "Q4"}
+        ],
+        "mode": "REPLAY"
+      },
+      "Q6": {
+        "query": "Q6",
+        "as_of": null,
+        "as_of_note": "Q6 porte sur une relation précise, sans cadrage temporel",
+        "relation_id": "struct:constrains:0xecac9c5f704e954931349da37f60e39f515c11c1",
+        "rows": [
+          {
+            "relation_id": "struct:constrains:0xecac9c5f704e954931349da37f60e39f515c11c1",
+            "revision": 1,
+            "ref_id": "event:eip155:8453:0x2effc9d58b96224aeaf4dbee4725b7409ebe92e02e2eb914baf7194ab77b3c96:790",
+            "ref_kind": "EVENT",
+            "source_family_id": "SF-AAVE-BASE-RPC",
+            "extract_method": "ONCHAIN_READ",
+            "run_id": ""
+          }
+        ],
+        "count": 1,
+        "latency_ms": 0.94,
+        "provenance": [
+          {"ref": "handoff/ui_snapshot_seed.json", "kind": "snapshot", "query": "Q6"}
+        ],
+        "mode": "REPLAY"
+      },
+      "Q7": {
+        "query": "Q7",
+        "asset": "debt:eip155:8453:0xa238dd80c259a72e81d7e4664a9801593f98d1c5:0x4200000000000000000000000000000000000006",
+        "as_of": "2026-10-17T11:12:57+00:00",
+        "as_of_block": 52723115,
+        "counterparties": 44,
+        "count": 44,
+        "total": 2015.6828374374352,
+        "hhi": 0.29739028631918696,
+        "rows": [
+          {"src": "position:eip155:8453:0xbe00a0de23a02a85d7fb7451ab9b69d84fd61fe3:0x4200000000000000000000000000000000000006", "amount": 767.2067119600241},
+          {"src": "position:eip155:8453:0x3cf6454d5468fc769dcfc8dc65f4d19d4d8eedd8:0x4200000000000000000000000000000000000006", "amount": 761.8228819799078},
+          {"src": "position:eip155:8453:0x7aa5c8470653653dd178916e8b0223a2d4e49d8f:0x4200000000000000000000000000000000000006", "amount": 152.0}
+        ],
+        "count_note": "44 contreparties, 3 affichées",
+        "latency_ms": null,
+        "provenance": [
+          {"ref": "handoff/ui_snapshot_seed.json", "kind": "snapshot", "query": "Q7"}
+        ],
+        "mode": "REPLAY"
+      }
+    },
+    "decision": {
+      "statut": "SOURCE MANQUANTE",
+      "note": "panneau Décision alimenté par la boucle agent (B3-B4) — aucune décision dans la maquette, rien à afficher tant que la boucle n'a pas tourné"
+    }
+  },
+  "regles_affichage": {
+    "source_absente": "SOURCE MANQUANTE",
+    "interdiction": "pas de données inventées ; toute ligne affichée porte provenance[]",
+    "bandeau": "mode + bloc + hash + âge toujours visibles"
+  }
+}

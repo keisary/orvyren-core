@@ -36,12 +36,14 @@ if _SRC_DIR not in sys.path:
     sys.path.insert(0, _SRC_DIR)
 
 from orvyren.audit import dossier  # noqa: E402
+from orvyren.ui import panels  # noqa: E402
 from orvyren.ui import screens  # noqa: E402
 
 DEFAULT_HOST = "127.0.0.1"
 DEFAULT_PORT = 8000
 _REPO_ROOT = os.path.dirname(_SRC_DIR)
-_ROUTE_LIST = ["/", "/ui", "/screen/<1-12>", "/api/dossier", "/api/health"]
+_ROUTE_LIST = ["/", "/ui", "/screen/<1-12>", "/panels", "/api/panels",
+               "/api/dossier", "/api/health"]
 
 
 def resolve_evidence_dir(evidence_dir=None):
@@ -148,6 +150,14 @@ class DossierRequestHandler(BaseHTTPRequestHandler):
                 self._send(200, "text/html; charset=utf-8", screens.build_index(ctx))
             elif path.startswith("/screen/"):
                 self._route_screen(path)
+            elif path == "/panels":
+                ctx = screens.Ctx(_REPO_ROOT, self.server.evidence_dir)
+                payload = panels.panels_payload(ctx)
+                self._send(200, "text/html; charset=utf-8",
+                           panels.build_html(payload).encode("utf-8"))
+            elif path == "/api/panels":
+                ctx = screens.Ctx(_REPO_ROOT, self.server.evidence_dir)
+                self._send_json(200, panels.panels_payload(ctx))
             elif path == "/api/health":
                 self._send_json(200, {"ok": True, "version": dossier.ENGINE_VERSION})
             elif path == "/api/dossier":
