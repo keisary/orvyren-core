@@ -23,7 +23,7 @@ import re
 import sqlite3
 import warnings
 from datetime import datetime, timezone
-from typing import Dict, Iterable, List, Mapping, Optional, Sequence
+from typing import Any, Dict, Iterable, List, Mapping, Optional, Sequence
 
 from orvyren.graph import models
 from orvyren.graph.catalog import EXTRACT_METHOD, KIND_CLASS
