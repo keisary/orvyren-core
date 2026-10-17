@@ -339,8 +339,8 @@ def q8_permission_state(records: Sequence[RelationRecord], subject: str,
     """Role membership / allowances / revocations of ``subject``.
 
     On-chain facts are anchored (chain_ref); a fact is visible as-of block B
-    when its anchor block <= B and its validity interval (if any) contains
-    ``as_of``.
+    when its anchor block <= B and its validity intervals (world time and
+    block-native bounds) contain ``as_of`` / ``as_of_block``.
     """
     roles: List[Dict[str, Any]] = []
     allowances: List[Dict[str, Any]] = []
@@ -352,6 +352,15 @@ def q8_permission_state(records: Sequence[RelationRecord], subject: str,
         if (as_of_block is not None and record.chain_ref is not None
                 and record.chain_ref.block > as_of_block):
             continue
+        # Block-native PIT bounds (field 11b): half-open [valid_from_block,
+        # valid_to_block), same inclusivity as the SQL API's validity filter.
+        if as_of_block is not None:
+            if (record.valid_from_block is not None
+                    and record.valid_from_block > as_of_block):
+                continue
+            if (record.valid_to_block is not None
+                    and as_of_block >= record.valid_to_block):
+                continue
         visible.append(record)
     # Pass 1 — membership of the subject.
     for record in visible:
