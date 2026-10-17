@@ -37,6 +37,11 @@ __all__ = [
     "LLMBackend",
     "ToolResult",
     "Tool",
+    "ToolCall",
+    "ToolTurn",
+    "TOOLCALL_SCHEMA_ID",
+    "TOOLCALL_SOURCES",
+    "validate_toolcall_output",
     "ResearchTask",
     "ResearchPlan",
     "EvidencePacket",
@@ -208,7 +213,9 @@ class LLMBackend:
     """
 
     def complete(self, *, role: str, role_version: str, schema_id: str,
-                 system_prompt: str, payload: Mapping[str, Any]) -> LLMResult:
+                 system_prompt: str, payload: Mapping[str, Any],
+                 tools: Optional[Tuple[Mapping[str, Any], ...]] = None
+                 ) -> LLMResult:
         raise NotImplementedError
 
 
@@ -242,6 +249,87 @@ class Tool:
 
     def run(self, args: Mapping[str, Any], *, deadline_s: float = 20.0) -> ToolResult:
         raise NotImplementedError
+
+
+# ---------------------------------------------------------------------------
+# Tool calling (M8): one proposed call, one tooled turn (native or JSON).
+# ---------------------------------------------------------------------------
+#: Strict-JSON fallback envelope (the model answers with this when the
+#: provider does not emit native ``tool_calls``).
+TOOLCALL_SCHEMA_ID = "orvyren/toolcall/v1"
+
+#: Provenance of a proposed call: how the model expressed it.
+TOOLCALL_SOURCES: Tuple[str, ...] = ("native", "json_strict")
+
+
+@dataclass(frozen=True)
+class ToolCall:
+    """One tool call proposed by the model.
+
+    ``source`` ∈ :data:`TOOLCALL_SOURCES`: ``native`` when the provider
+    returned OpenAI-style ``tool_calls``; ``json_strict`` when the call was
+    recovered from the strict JSON envelope (the fallback path — always
+    journaled, never silent).
+    """
+
+    call_id: str
+    name: str
+    args: Dict[str, Any] = field(default_factory=dict)
+    source: str = "native"
+
+    def to_dict(self) -> Dict[str, Any]:
+        return {"call_id": self.call_id, "name": self.name,
+                "args": dict(self.args), "source": self.source}
+
+    @classmethod
+    def from_dict(cls, data: Mapping[str, Any]) -> "ToolCall":
+        return cls(call_id=str(data.get("call_id", "")),
+                   name=str(data.get("name", "")),
+                   args=dict(data.get("args") or {}),
+                   source=str(data.get("source", "native")))
+
+
+@dataclass(frozen=True)
+class ToolTurn:
+    """One tooled turn: calls proposed, tools executed, final strict JSON.
+
+    ``mode`` ∈ :data:`TOOLCALL_SOURCES` is how the calls arrived;
+    ``fallback_motif`` is **non-empty whenever the native path was abandoned**
+    (that fallback is journaled — it is never a silent downgrade). ``llm``
+    carries every :class:`LLMResult` of the turn as dicts, so a recorded turn
+    and its replay can be compared field by field.
+    """
+
+    mode: str = "native"
+    fallback_motif: str = ""
+    calls: Tuple[ToolCall, ...] = ()
+    results: Tuple[Dict[str, Any], ...] = ()
+    final: Optional[Dict[str, Any]] = None
+    llm: Tuple[Dict[str, Any], ...] = ()
+    errors: Tuple[str, ...] = ()
+
+    def to_dict(self) -> Dict[str, Any]:
+        return {"mode": self.mode, "fallback_motif": self.fallback_motif,
+                "calls": [c.to_dict() for c in self.calls],
+                "results": [dict(r) for r in self.results],
+                "final": self.final,
+                "llm": [dict(line) for line in self.llm],
+                "errors": list(self.errors)}
+
+    @classmethod
+    def from_dict(cls, data: Mapping[str, Any]) -> "ToolTurn":
+        return cls(
+            mode=str(data.get("mode", "")),
+            fallback_motif=str(data.get("fallback_motif", "")),
+            calls=tuple(ToolCall.from_dict(c) for c in data.get("calls", ())
+                        if isinstance(c, Mapping)),
+            results=tuple(dict(r) for r in data.get("results", ())
+                          if isinstance(r, Mapping)),
+            final=(dict(data["final"]) if isinstance(data.get("final"), Mapping)
+                   else None),
+            llm=tuple(dict(line) for line in data.get("llm", ())
+                      if isinstance(line, Mapping)),
+            errors=tuple(str(e) for e in data.get("errors", ())))
 
 
 # ---------------------------------------------------------------------------
@@ -579,4 +667,33 @@ def validate_canon_output(data: Mapping[str, Any]) -> Tuple[bool, List[str]]:
                 errors.append("champ %d: extraction not in %s" % (index, CANON_EXTRACTIONS))
     if not isinstance(data.get("champs_inconnus", []), (list, tuple)):
         errors.append("champs_inconnus must be a list")
+    return (not errors), errors
+
+
+def validate_toolcall_output(data: Mapping[str, Any]) -> Tuple[bool, List[str]]:
+    """Validate a ``orvyren/toolcall/v1`` fallback envelope (M8).
+
+    Closed fields everywhere (``additionalProperties=false`` semantics):
+    the envelope carries ``$schema`` and ``calls``; each call carries exactly
+    ``name`` (non-empty) and ``args`` (a mapping). The tool-name allow-list
+    and the per-tool argument schemas are checked by the caller (the
+    registry + spec), never by this schema alone.
+    """
+    errors = _check_closed(data, ("$schema", "calls"))
+    if data.get("$schema") != TOOLCALL_SCHEMA_ID:
+        errors.append("bad $schema")
+    calls = data.get("calls")
+    if not isinstance(calls, (list, tuple)):
+        errors.append("calls must be a list")
+        return (not errors), errors
+    for index, call in enumerate(calls):
+        if not isinstance(call, Mapping):
+            errors.append("call %d is not an object" % index)
+            continue
+        errors += ["call %d: %s" % (index, e) for e in _check_closed(
+            call, ("name", "args"))]
+        if not str(call.get("name", "")).strip():
+            errors.append("call %d: name missing" % index)
+        if not isinstance(call.get("args"), Mapping):
+            errors.append("call %d: args must be a mapping" % index)
     return (not errors), errors
