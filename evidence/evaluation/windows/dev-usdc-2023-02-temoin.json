@@ -1,0 +1,83 @@
+{
+ "configs": {
+  "A0": {
+   "actions": [],
+   "loss": -0.29999999999998295,
+   "notes": [],
+   "p_terminal": 1.003,
+   "regret": {
+    "R": 1.0,
+    "R_minus": 0.0,
+    "R_plus": 1.0,
+    "note": "R⁻ et R⁺ ne sont jamais moyennés ensemble (règle de langage B7 §e.5)"
+   },
+   "sold": 0.0,
+   "wealth_t0": 100.0,
+   "wealth_terminal": 100.29999999999998
+  },
+  "A1": {
+   "actions": [],
+   "loss": -0.29999999999998295,
+   "notes": [],
+   "p_terminal": 1.003,
+   "regret": {
+    "R": 1.0,
+    "R_minus": 0.0,
+    "R_plus": 1.0,
+    "note": "R⁻ et R⁺ ne sont jamais moyennés ensemble (règle de langage B7 §e.5)"
+   },
+   "sold": 0.0,
+   "wealth_t0": 100.0,
+   "wealth_terminal": 100.29999999999998
+  },
+  "A2": {
+   "actions": null,
+   "reason": "pas de dossier déterministe pour usdc-2023-02 sur DEV — A2 viendra du rejeu journal/archive (déclaré)",
+   "status": "DECLARED"
+  },
+  "AX0": {
+   "actions": [],
+   "loss": -0.29999999999998295,
+   "notes": [],
+   "p_terminal": 1.003,
+   "regret": {
+    "R": 1.0,
+    "R_minus": 0.0,
+    "R_plus": 1.0,
+    "note": "R⁻ et R⁺ ne sont jamais moyennés ensemble (règle de langage B7 §e.5)"
+   },
+   "sold": 0.0,
+   "wealth_t0": 100.0,
+   "wealth_terminal": 100.29999999999998
+  },
+  "B0": {
+   "actions": null,
+   "reason": "aucune taille d'action à apparier",
+   "status": "DECLARED"
+  }
+ },
+ "end_utc": "2023-02-18T00:00:00Z",
+ "episode_id": "usdc-2023-02",
+ "kind": "temoin",
+ "notes": [
+  "paramètres de démonstration DEV : q = 100 USDC (montant mobilisable du dossier), p_ref = 1,0, k = 0 (coûts non mesurés en DEV) — à geler pour l'EVAL"
+ ],
+ "oracle": {
+  "best_price": 1.013,
+  "best_stamp_utc": "2023-02-17T15:00:00+00:00",
+  "loss": -1.299999999999983,
+  "note": "O = oracle ex post FAISABLE (exécution au meilleur instant observé, famille G1) — borne inférieure du regret, pas une vérité terrain",
+  "x": 100.0
+ },
+ "p_terminal": 1.003,
+ "series": {
+  "gaps": [],
+  "grid_note": "grille non horaire (73 points) — déclarée",
+  "points": 73,
+  "source": "corpus/usdc_observations.csv"
+ },
+ "set": "dev",
+ "start_utc": "2023-02-15T00:00:00Z",
+ "status": "OK",
+ "window_id": "dev-usdc-2023-02-temoin"
+}

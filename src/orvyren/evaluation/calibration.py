@@ -181,9 +181,16 @@ def murphy_decomposition(p: Sequence[float], y: Sequence[int], n_bins: int = ECE
 
     ``REL = Σ_b (n_b/N)(conf_b − acc_b)²``,
     ``RES = Σ_b (n_b/N)(acc_b − ȳ)²``,
-    ``UNC = ȳ(1 − ȳ)``. L'identité est **exacte** (estimations binnées) : la
-    fonction la vérifie et lève une erreur si l'écart dépasse 1e-9 — c'est le
-    test d'identité de B7 §b.2 en fonctionnement normal.
+    ``UNC = ȳ(1 − ȳ)``.
+
+    L'identité classique n'est exacte que lorsque ``p`` est **constant par
+    bin** (cas du KAT). En général il faut le **terme intra-bin** exact :
+
+    ``BS = REL − RES + UNC + [Σa_i² + 2Σa_i·c_i]/N``,
+    avec ``a_i = p_i − p̄_b`` et ``c_i = ȳ_b − y_i`` (terme nul si ``p`` est
+    constant par bin). La fonction vérifie l'identité exacte et lève si
+    l'écart dépasse 1e-9 — c'est le test d'identité de B7 §b.2 en
+    fonctionnement normal (correctif W7 : le terme intra-bin manquait).
     """
     ps, ys = _check_vectors(p, y)
     n = len(ps)
@@ -193,12 +200,26 @@ def murphy_decomposition(p: Sequence[float], y: Sequence[int], n_bins: int = ECE
     res = sum(row["n_b"] / n * (row["acc_b"] - ybar) ** 2 for row in rows if row["n_b"])
     unc = ybar * (1.0 - ybar)
     bs = brier_score(ps, ys)
-    identity = rel - res + unc
+    by_bin: dict = {}
+    for pi, yi in zip(ps, ys):
+        by_bin.setdefault(bin_index(pi, n_bins), []).append((pi, yi))
+    within = 0.0
+    for items in by_bin.values():
+        p_bar = sum(pi for pi, _yi in items) / len(items)
+        y_bar = sum(yi for _pi, yi in items) / len(items)
+        for pi, yi in items:
+            a = pi - p_bar
+            within += a * a + 2.0 * a * (y_bar - yi)
+    within /= n
+    identity = rel - res + unc + within
     if abs(identity - bs) > 1e-9:
         raise CalibrationError(
-            f"identité REL − RES + UNC cassée : {identity!r} ≠ BS {bs!r} (bug de binning)"
+            f"identité exacte (REL − RES + UNC + intra-bin) cassée : {identity!r} ≠ BS {bs!r} "
+            "(bug de binning)"
         )
-    return {"bs": bs, "rel": rel, "res": res, "unc": unc, "ybar": ybar, "rel_minus_res_plus_unc": identity}
+    return {"bs": bs, "rel": rel, "res": res, "unc": unc, "ybar": ybar,
+            "within_bin_term": within, "rel_minus_res_plus_unc": rel - res + unc,
+            "exact_identity": identity}
 
 
 # --- C5 : bornes de Wilson ---------------------------------------------------

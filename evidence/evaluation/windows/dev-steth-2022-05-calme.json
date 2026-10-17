@@ -1,0 +1,109 @@
+{
+ "configs": {
+  "A0": {
+   "actions": [],
+   "loss": 0.22268924168822934,
+   "notes": [],
+   "p_terminal": 0.9977731075831178,
+   "regret": {
+    "R": 0.15925149013165196,
+    "R_minus": 0.0,
+    "R_plus": 0.15925149013165196,
+    "note": "R⁻ et R⁺ ne sont jamais moyennés ensemble (règle de langage B7 §e.5)"
+   },
+   "sold": 0.0,
+   "wealth_t0": 100.0,
+   "wealth_terminal": 99.77731075831177
+  },
+  "A1": {
+   "actions": [],
+   "loss": 0.22268924168822934,
+   "notes": [],
+   "p_terminal": 0.9977731075831178,
+   "regret": {
+    "R": 0.15925149013165196,
+    "R_minus": 0.0,
+    "R_plus": 0.15925149013165196,
+    "note": "R⁻ et R⁺ ne sont jamais moyennés ensemble (règle de langage B7 §e.5)"
+   },
+   "sold": 0.0,
+   "wealth_t0": 100.0,
+   "wealth_terminal": 99.77731075831177
+  },
+  "A2": {
+   "actions": null,
+   "reason": "pas de dossier déterministe pour steth-2022-06 sur DEV — A2 viendra du rejeu journal/archive (déclaré)",
+   "status": "DECLARED"
+  },
+  "AX0": {
+   "actions": null,
+   "reason": "règle AX0 = règle USDC gelée ; sans portée sur steth-2022-06",
+   "status": "NOT APPLICABLE"
+  },
+  "B0": {
+   "actions": null,
+   "reason": "aucune taille d'action à apparier",
+   "status": "DECLARED"
+  }
+ },
+ "end_utc": "2022-05-08T00:00:00Z",
+ "episode_id": "steth-2022-06",
+ "kind": "calme",
+ "notes": [
+  "paramètres de démonstration DEV : q = 100 USDC (montant mobilisable du dossier), p_ref = 1,0, k = 0 (coûts non mesurés en DEV) — à geler pour l'EVAL"
+ ],
+ "oracle": {
+  "best_price": 0.9993656224844342,
+  "best_stamp_utc": "2022-05-03T00:00:00Z",
+  "loss": 0.06343775155657738,
+  "note": "O = oracle ex post FAISABLE (exécution au meilleur instant observé, famille G1) — borne inférieure du regret, pas une vérité terrain",
+  "x": 100.0
+ },
+ "p_terminal": 0.9977731075831178,
+ "series": {
+  "gaps": [
+   {
+    "after_utc": "2022-05-01T00:00:00Z",
+    "before_utc": "2022-05-02T00:00:00Z",
+    "gap_minutes": 1440.0
+   },
+   {
+    "after_utc": "2022-05-02T00:00:00Z",
+    "before_utc": "2022-05-03T00:00:00Z",
+    "gap_minutes": 1440.0
+   },
+   {
+    "after_utc": "2022-05-03T00:00:00Z",
+    "before_utc": "2022-05-04T00:00:00Z",
+    "gap_minutes": 1440.0
+   },
+   {
+    "after_utc": "2022-05-04T00:00:00Z",
+    "before_utc": "2022-05-05T00:00:00Z",
+    "gap_minutes": 1440.0
+   },
+   {
+    "after_utc": "2022-05-05T00:00:00Z",
+    "before_utc": "2022-05-06T00:00:00Z",
+    "gap_minutes": 1440.0
+   },
+   {
+    "after_utc": "2022-05-06T00:00:00Z",
+    "before_utc": "2022-05-07T00:00:00Z",
+    "gap_minutes": 1440.0
+   },
+   {
+    "after_utc": "2022-05-07T00:00:00Z",
+    "before_utc": "2022-05-08T00:00:00Z",
+    "gap_minutes": 1440.0
+   }
+  ],
+  "grid_note": "grille non horaire (8 points) — déclarée",
+  "points": 8,
+  "source": "evidence/episode_steth_2022-06.json"
+ },
+ "set": "dev",
+ "start_utc": "2022-05-01T00:00:00Z",
+ "status": "OK",
+ "window_id": "dev-steth-2022-05-calme"
+}

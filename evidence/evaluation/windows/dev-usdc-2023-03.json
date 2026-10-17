@@ -1,0 +1,170 @@
+{
+ "configs": {
+  "A0": {
+   "actions": [],
+   "loss": 0.061400000000006116,
+   "notes": [],
+   "p_terminal": 0.999386,
+   "regret": {
+    "R": 0.3792955737234678,
+    "R_minus": 0.0,
+    "R_plus": 0.3792955737234678,
+    "note": "R⁻ et R⁺ ne sont jamais moyennés ensemble (règle de langage B7 §e.5)"
+   },
+   "sold": 0.0,
+   "wealth_t0": 100.0,
+   "wealth_terminal": 99.9386
+  },
+  "A1": {
+   "actions": [
+    {
+     "amount_usdc": 100.0,
+     "notes": [
+      "Depth_ε non mesurée — plafond x_max utilisé (chantier W2-B §(f) 5)",
+      "x_seuil non gelé — plafond x_max utilisé"
+     ],
+     "rule": "a1_seuil_v1",
+     "triggered_at_utc": "2023-03-10T23:00:00+00:00",
+     "type": "reduce_exposure"
+    }
+   ],
+   "loss": 0.5761685847875668,
+   "notes": [],
+   "p_terminal": 0.999386,
+   "regret": {
+    "R": 0.8940641585110285,
+    "R_minus": 0.0,
+    "R_plus": 0.8940641585110285,
+    "note": "R⁻ et R⁺ ne sont jamais moyennés ensemble (règle de langage B7 §e.5)"
+   },
+   "sold": 100.0,
+   "wealth_t0": 100.0,
+   "wealth_terminal": 99.42383141521243
+  },
+  "A2": {
+   "actions": [
+    {
+     "amount_usdc": 100.0,
+     "notes": [
+      "A2 DEV = dossier déterministe (decision_usdc-2023-03.json) — substitution déclarée",
+      "horodatage = dernière observation de la provenance du dossier (le dossier ne date pas autrement son action)"
+     ],
+     "rule": "a2_dossier_deterministe",
+     "triggered_at_utc": "2023-03-13T14:00:00+00:00",
+     "type": "reduce_exposure"
+    }
+   ],
+   "loss": 0.12870000000000914,
+   "notes": [],
+   "p_terminal": 0.999386,
+   "regret": {
+    "R": 0.4465955737234708,
+    "R_minus": 0.0,
+    "R_plus": 0.4465955737234708,
+    "note": "R⁻ et R⁺ ne sont jamais moyennés ensemble (règle de langage B7 §e.5)"
+   },
+   "sold": 100.0,
+   "wealth_t0": 100.0,
+   "wealth_terminal": 99.87129999999999
+  },
+  "AX0": {
+   "actions": [
+    {
+     "amount_usdc": 100.0,
+     "evidence_refs": [
+      {
+       "timestamp_utc": "2023-03-11T02:00:00+00:00",
+       "value": 0.9840669405733308,
+       "venue": "defillama"
+      },
+      {
+       "timestamp_utc": "2023-03-11T03:00:00+00:00",
+       "value": 0.9798257461693491,
+       "venue": "defillama"
+      }
+     ],
+     "rule": "ax0_baseline_gelee",
+     "triggered_at_utc": "2023-03-11T03:00:00+00:00",
+     "type": "reduce_exposure"
+    },
+    {
+     "amount_usdc": 100.0,
+     "evidence_refs": [
+      {
+       "timestamp_utc": "2023-03-13T05:00:00+00:00",
+       "value": 0.9860398348829958,
+       "venue": "defillama"
+      },
+      {
+       "timestamp_utc": "2023-03-13T06:00:00+00:00",
+       "value": 0.983199,
+       "venue": "defillama"
+      }
+     ],
+     "rule": "ax0_baseline_gelee",
+     "triggered_at_utc": "2023-03-13T06:00:00+00:00",
+     "type": "reduce_exposure"
+    }
+   ],
+   "loss": 2.0174253830650883,
+   "notes": [
+    "action ignorée : exposition déjà entièrement réduite"
+   ],
+   "p_terminal": 0.999386,
+   "regret": {
+    "R": 2.33532095678855,
+    "R_minus": 0.0,
+    "R_plus": 2.33532095678855,
+    "note": "R⁻ et R⁺ ne sont jamais moyennés ensemble (règle de langage B7 §e.5)"
+   },
+   "sold": 100.0,
+   "wealth_t0": 100.0,
+   "wealth_terminal": 97.98257461693491
+  },
+  "B0": {
+   "actions": null,
+   "distribution": {
+    "draws": 200,
+    "m": 200,
+    "max": 12.650395573723458,
+    "mean": 2.774987205067231,
+    "median": 1.3452232625027136,
+    "min": 0.0,
+    "note": "B0 apparié à A2 (A2 présent)",
+    "paired_with": "A2",
+    "percentile_of_A2": 33.5,
+    "quantiles": {
+     "p05": 0.12655746517873467,
+     "p50": 1.3452232625027136,
+     "p95": 9.16139130943013
+    },
+    "seed": 20261016
+   },
+   "status": "DISTRIBUTION"
+  }
+ },
+ "end_utc": "2023-03-14T00:00:00Z",
+ "episode_id": "usdc-2023-03",
+ "kind": "stress",
+ "notes": [
+  "paramètres de démonstration DEV : q = 100 USDC (montant mobilisable du dossier), p_ref = 1,0, k = 0 (coûts non mesurés en DEV) — à geler pour l'EVAL"
+ ],
+ "oracle": {
+  "best_price": 1.0031789557372346,
+  "best_stamp_utc": "2023-03-10T18:00:00+00:00",
+  "loss": -0.31789557372346167,
+  "note": "O = oracle ex post FAISABLE (exécution au meilleur instant observé, famille G1) — borne inférieure du regret, pas une vérité terrain",
+  "x": 100.0
+ },
+ "p_terminal": 0.999386,
+ "series": {
+  "gaps": [],
+  "grid_note": "grille non horaire (97 points) — déclarée",
+  "points": 97,
+  "source": "corpus/usdc_observations.csv"
+ },
+ "set": "dev",
+ "start_utc": "2023-03-10T00:00:00Z",
+ "status": "OK",
+ "window_id": "dev-usdc-2023-03"
+}

@@ -1,0 +1,185 @@
+{
+ "aggregates": {
+  "A0": {
+   "losses": [
+    0.061400000000006116,
+    -0.29999999999998295,
+    2.6352566458240148,
+    0.22268924168822934
+   ],
+   "mean_R_minus": 0.0,
+   "mean_R_plus": 0.9189896373699007,
+   "mean_loss": 0.6548364718780668,
+   "n": 4,
+   "regrets": [
+    0.3792955737234678,
+    1.0,
+    2.137411485624483,
+    0.15925149013165196
+   ]
+  },
+  "A1": {
+   "losses": [
+    0.5761685847875668,
+    -0.29999999999998295,
+    2.8462199094722536,
+    0.22268924168822934
+   ],
+   "mean_R_minus": 0.0,
+   "mean_R_plus": 1.1004225994788506,
+   "mean_loss": 0.8362694339870167,
+   "n": 4,
+   "regrets": [
+    0.8940641585110285,
+    1.0,
+    2.348374749272722,
+    0.15925149013165196
+   ]
+  },
+  "A2": {
+   "losses": [
+    0.12870000000000914
+   ],
+   "mean_R_minus": 0.0,
+   "mean_R_plus": 0.4465955737234708,
+   "mean_loss": 0.12870000000000914,
+   "n": 1,
+   "regrets": [
+    0.4465955737234708
+   ]
+  },
+  "AX0": {
+   "losses": [
+    2.0174253830650883,
+    -0.29999999999998295
+   ],
+   "mean_R_minus": 0.0,
+   "mean_R_plus": 1.667660478394275,
+   "mean_loss": 0.8587126915325527,
+   "n": 2,
+   "regrets": [
+    2.33532095678855,
+    1.0
+   ]
+  }
+ },
+ "banner": "DEV",
+ "content_sha256": "b3ef5eab4d26b540ed5046938c420ba580d3181396b58f6b985b095a7e7d5fbf",
+ "forced_mention": null,
+ "frozen": {
+  "dir": "frozen",
+  "hashes": {
+   "G1": "fffbab916323d237eccc6ca2e05396351a0c83e105adaacb70263bc34f167459",
+   "G2": "58e4e4a1bfebbbff0a5ae97feaac4ba291b579a60359a30829333c4b14dc771d",
+   "G3": "d2cd02a94c686ff0f744247bd2b95a50e6a3a3f2bdb40ecfd86a5318e8f36f96",
+   "G4": "9a1689a52bd0b7e6fd529b7aa4e4ebd03e2406b140dbaaf269cc96d2b5a88a62",
+   "G5": "ca6f289daad6ae5b5c341df2091bcd2efd9cdffd31d5741ffc0097e2c663e6ea",
+   "G6": "60294336b7100868dd5a764b680d103791aa6d0b2057eb2c39132ebfe474d91c"
+  }
+ },
+ "generated_at_utc": "2026-10-17T00:14:08Z",
+ "n_windows": 4,
+ "n_windows_skipped": 0,
+ "params": {
+  "b0_draws": 200,
+  "k": 0.0,
+  "note": "paramètres de démonstration DEV : q = 100 USDC (montant mobilisable du dossier), p_ref = 1,0, k = 0 (coûts non mesurés en DEV) — à geler pour l'EVAL",
+  "p_ref": 1.0,
+  "q": 100.0
+ },
+ "schema": "orvyren.evaluation-report/v1",
+ "set": "dev",
+ "skipped": [],
+ "superiority": {
+  "mcnemar": null,
+  "note": "tests de supériorité (Wilson, McNemar exact, bootstrap par blocs) exécutés seulement quand N ≥ 100 — le harnais refuse de publier un score agrégé unique (B7 §e.5)",
+  "status": "NON CALCULÉ — N < 100"
+ },
+ "validity": "non conclusionnel : N < 100 (cascade B7 §b.3)",
+ "windows": [
+  {
+   "config_losses": {
+    "A0": 0.061400000000006116,
+    "A1": 0.5761685847875668,
+    "A2": 0.12870000000000914,
+    "AX0": 2.0174253830650883,
+    "B0": null
+   },
+   "config_regrets": {
+    "A0": 0.3792955737234678,
+    "A1": 0.8940641585110285,
+    "A2": 0.4465955737234708,
+    "AX0": 2.33532095678855,
+    "B0": null
+   },
+   "notes": [
+    "paramètres de démonstration DEV : q = 100 USDC (montant mobilisable du dossier), p_ref = 1,0, k = 0 (coûts non mesurés en DEV) — à geler pour l'EVAL"
+   ],
+   "status": "OK",
+   "window_id": "dev-usdc-2023-03"
+  },
+  {
+   "config_losses": {
+    "A0": -0.29999999999998295,
+    "A1": -0.29999999999998295,
+    "A2": null,
+    "AX0": -0.29999999999998295,
+    "B0": null
+   },
+   "config_regrets": {
+    "A0": 1.0,
+    "A1": 1.0,
+    "A2": null,
+    "AX0": 1.0,
+    "B0": null
+   },
+   "notes": [
+    "paramètres de démonstration DEV : q = 100 USDC (montant mobilisable du dossier), p_ref = 1,0, k = 0 (coûts non mesurés en DEV) — à geler pour l'EVAL"
+   ],
+   "status": "OK",
+   "window_id": "dev-usdc-2023-02-temoin"
+  },
+  {
+   "config_losses": {
+    "A0": 2.6352566458240148,
+    "A1": 2.8462199094722536,
+    "A2": null,
+    "AX0": null,
+    "B0": null
+   },
+   "config_regrets": {
+    "A0": 2.137411485624483,
+    "A1": 2.348374749272722,
+    "A2": null,
+    "AX0": null,
+    "B0": null
+   },
+   "notes": [
+    "paramètres de démonstration DEV : q = 100 USDC (montant mobilisable du dossier), p_ref = 1,0, k = 0 (coûts non mesurés en DEV) — à geler pour l'EVAL"
+   ],
+   "status": "OK",
+   "window_id": "dev-steth-2022-06"
+  },
+  {
+   "config_losses": {
+    "A0": 0.22268924168822934,
+    "A1": 0.22268924168822934,
+    "A2": null,
+    "AX0": null,
+    "B0": null
+   },
+   "config_regrets": {
+    "A0": 0.15925149013165196,
+    "A1": 0.15925149013165196,
+    "A2": null,
+    "AX0": null,
+    "B0": null
+   },
+   "notes": [
+    "paramètres de démonstration DEV : q = 100 USDC (montant mobilisable du dossier), p_ref = 1,0, k = 0 (coûts non mesurés en DEV) — à geler pour l'EVAL"
+   ],
+   "status": "OK",
+   "window_id": "dev-steth-2022-05-calme"
+  }
+ ]
+}
