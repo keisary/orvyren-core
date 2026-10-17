@@ -191,8 +191,13 @@ def verify_replay_dossier(path: str, *, runs_log: str = DEFAULT_RUNS_LOG) -> Dic
                 line = line.strip()
                 if not line:
                     continue
-                entry = json.loads(line)
-                if entry.get("replay_id") == replay_id:
+                try:
+                    entry = json.loads(line)
+                except json.JSONDecodeError:
+                    # A truncated/corrupt line (interrupted append) must never
+                    # abort a T10 verification: keep scanning for the replay_id.
+                    continue
+                if isinstance(entry, dict) and entry.get("replay_id") == replay_id:
                     registered = True
                     logged = entry.get("content_sha256")
                     break

@@ -90,8 +90,14 @@ def load_transcript(run_dir: str) -> Dict[str, Any]:
     outcome_path = os.path.join(run_dir, "run_outcome.json")
     if not os.path.isfile(outcome_path):
         raise ReplayJournalError("E_REPLAY_INCOMPLETE: run_outcome.json missing")
-    with open(outcome_path, "r", encoding="utf-8") as handle:
-        outcome = json.load(handle)
+    try:
+        with open(outcome_path, "r", encoding="utf-8") as handle:
+            outcome = json.load(handle)
+    except (OSError, json.JSONDecodeError) as exc:
+        raise ReplayJournalError("E_REPLAY_INCOMPLETE: run_outcome.json unreadable — %s"
+                                 % exc) from exc
+    if not isinstance(outcome, dict):
+        raise ReplayJournalError("E_REPLAY_INCOMPLETE: run_outcome.json is not an object")
     journals: Dict[str, Any] = {}
     run_id = outcome.get("run_id")
     for role in ("orchestrator", "critic"):

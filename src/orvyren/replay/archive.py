@@ -56,8 +56,9 @@ def replay_archive(case_id: str, work_root: str, *, k: int = MIN_REPLAYS,
                    quiet: bool = True) -> Dict[str, Any]:
     """k recomputation passes (mode 2); requires an LLM provider.
 
-    Returns ``{"k", "run_dirs", "outcomes": [...], "identical": bool, "note"}``.
-    ``identical`` honestly carries the distribution: ``False`` (different
+    Returns ``{"k", "run_dirs", "outcomes": [...], "identical_decisions": bool,
+    "note"}``.
+    ``identical_decisions`` honestly carries the distribution: ``False`` (different
     texts) is a **published result**, not an error — the *decision* may stay
     stable while the text differs.
     """

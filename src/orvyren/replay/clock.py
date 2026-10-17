@@ -118,14 +118,17 @@ class ReplayClock:
         Returns the new instant, or ``None`` if no event remains.
         """
         current = self._t_sim
-        upcoming = sorted(_parse_utc(stamp) for stamp in event_stamps
-                          if _parse_utc(stamp) > current)
+        # Only in-window events can ever become admissible (t_sim never passes
+        # the window end): an out-of-window event must be ignored, never used to
+        # drag the clock to the window end — that would return an instant where
+        # the very event just stepped to is still inadmissible (a spurious
+        # PITViolation on admit, i.e. an aborted run for nothing).
+        upcoming = sorted(moment
+                          for moment in (_parse_utc(stamp) for stamp in event_stamps)
+                          if current < moment <= self._t_sim_end)
         if not upcoming:
             return None
-        target = min(upcoming[0], self._t_sim_end)
-        if target == self._t_sim:
-            return None
-        self._t_sim = target
+        self._t_sim = upcoming[0]
         self.step_index += 1
         return self.t_sim_iso()
 
