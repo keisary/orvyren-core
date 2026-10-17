@@ -1,0 +1,31 @@
+{
+  "$schema": "orvyren/orch/v1",
+  "lacune_id": "L-1",
+  "tache": {
+    "question": "Les venues indépendantes cotées au même instant affichent-elles toutes le même écart au pair, ou l'écart observé provient-il d'une seule d'entre elles ?",
+    "outil": "read_prices",
+    "args": {
+      "paire": "USDC/USD",
+      "as_of": "2023-03-11T12:00:00Z",
+      "comparer_venues_independantes": true,
+      "granularite": "instantane"
+    },
+    "critere_discriminant": "Si toutes les venues indépendantes affichent un écart au pair convergent, la dislocation inter-venues est corroborée et l'hypothèse de dislocation réalisable n'est pas réfutée ; si l'écart n'apparaît que sur une seule venue tandis que les autres cotent au pair, la dispersion est un artefact de source unique et cette hypothèse est réfutée.",
+    "branches_concernees": [
+      "HYP-001",
+      "HYP-002"
+    ],
+    "cout_max": {
+      "appels_llm": 1,
+      "secondes": 60
+    }
+  },
+  "stop": false,
+  "motif_stop": null,
+  "non_recherche": [
+    "La profondeur d'exécution aux tailles de trésorerie : relève de la lacune portant sur la réalisabilité et de l'hypothèse correspondante, non de la présente tâche.",
+    "Les niveaux de prix ou tout état postérieur à l'instant d'analyse : inadmissibles point-in-time.",
+    "Toute action de marché ou tentative d'exécution : aucun outil d'action n'est autorisé.",
+    "L'origine et le déroulement de la crise bancaire en cours : contexte explicatif, non discriminant pour la lacune visée."
+  ]
+}

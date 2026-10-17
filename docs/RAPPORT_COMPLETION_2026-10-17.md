@@ -116,12 +116,23 @@ Livré depuis (sur `master`, CI locale verte — **mesure : 811 tests — 808 ve
 - **F3 ✅** — empreintes publiées dans `evidence/audit_packets/README.md` (sha256 des deux zips ;
   `bundle_digest` v2 `658428691e4a68279dc1d57ee694fbd05258137a17c735028c7424d05269981f` ; EAS conditionnel
   non exécuté — déclaré).
-- **Clés vérifiées** : DeepSeek **fonctionnelle** (probe live `deepseek-flash` OK) ; MiMo = clé
-  **Token Plan** (`tp-…`) refusée 401 sur tous les endpoints publics — il faut soit l'**URL de base
-  exclusive** affichée à côté de la clé dans la console Token Plan, soit une clé **pay-as-you-go** (`sk-…`)
-  compatible avec l'endpoint gelé `api.xiaomimimo.com/v1`.
+- **Clés vérifiées et exécutées** : DeepSeek ✅ ; **MiMo ✅ — URL Token Plan régionale fournie
+  (`token-plan-sgp.xiaomimimo.com`), clé `tp-…` validée (8 modèles + chat), endpoint intégré au pin
+  `config/models.json`** (les clés pay-as-you-go `sk-…` restent sur `api.xiaomimimo.com/v1`, noté).
+- **Agents LIVE ✅** — première session réelle MA-B (17/10) : orchestrateur DeepSeek V4.1-Flash
+  (18 appels) + critique MiMo V2.6-Pro, processus séparés ; `DONE / ARRET-2` (arrêt ordonné, budget
+  outils 12/12), critique **FRAGILE** (8 objections) → escalade `REQUIRE_APPROVAL` ; 0,0192 $ ; journaux
+  chaînés ; session **scellée** dans `evidence/agents_live/`.
+- **REPLAY-ARCHIVE k=3 ✅** — 3 recalculs live sur données archivées ; distribution publiée **telle
+  quelle** (`evidence/replay/…archive-20261017T015200Z.md`) : 2 passes `DONE/ARRET-2`, 1 passe
+  `ABORTED/ARRET-3` (fail-closed : plan sans `$schema` après re-prompt) ; critique : 1 verdict valide
+  (INCOHERENTE, 12 objections), 2 sorties **quarantinées** (objection > 240 caractères — limite stricte
+  du schéma `crit/v1`). « Même décision, texte différent » — résultat honnête, pas un échec.
+- **Re-scellement visible** : prompt orchestrateur `orch-p1.0.0` → **`orch-p1.1.0`** (« deux étapes,
+  deux sorties » — le modèle live confondait plan/évaluation), consigne d'évaluation explicite +
+  re-prompt transmettant la sortie précédente ; magasin scripté **re-seedé** (6 appels), dossier de
+  rejeu **régénéré** (`…journal-20261017T012804Z`), `replay/runs.jsonl` append-only (3 entrées).
 
-Reste (inchangé) : **feuille G6 à signer** (chef d'équipe) · **agents live + REPLAY-ARCHIVE réel**
-(débloqués par la clé MiMo corrigée) · **1ᵉᵉ exécution EVAL** (après signature — jeu brûlé) ·
-**soumission** (hors périmètre de cet ordre).
+Reste : **feuille G6 à signer** (chef d'équipe) · **1ʳᵉ exécution EVAL** (après signature — jeu brûlé) ·
+**soumission** (hors périmètre de cet ordre). Les agents live et le REPLAY-ARCHIVE ne sont plus bloqués.
 

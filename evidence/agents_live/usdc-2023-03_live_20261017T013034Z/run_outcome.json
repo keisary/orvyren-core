@@ -1,0 +1,137 @@
+{
+ "case_id": "usdc-2023-03",
+ "critique": {
+  "$schema": "orvyren/crit/v1",
+  "findings": [
+   {
+    "enonce": "Aucune valeur de cotation n'est restituée par venue : les sources sont nommées mais leurs prix sont absents, donc les critères R et S de HYP-001 sont inapplicables.",
+    "gravite": "BLOQUANT",
+    "refs": [
+     "observation:graph_snapshot:usdc-2023-03@2023-03-11T12:00:00Z",
+     "observation:chainlink/usdc-usd/2023-03-11T12:00Z",
+     "hypothesis:HYP-001"
+    ],
+    "test_discriminant": "Récupérer les valeurs chiffrées par venue avec unité et horodatage ; si elles restent absentes, aucun test de dispersion inter-venues n'est possible.",
+    "type": "MANQUE"
+   },
+   {
+    "enonce": "L'absence de déclaration de dépendance n'établit pas l'indépendance : Chainlink et DefiLlama agrègent des flux amont qui peuvent converger vers une source unique.",
+    "gravite": "MAJEUR",
+    "refs": [
+     "observation:graph_snapshot:usdc-2023-03@2023-03-11T12:00:00Z",
+     "observation:chainlink/usdc-usd/2023-03-11T12:00Z",
+     "observation:defillama/usdc-usd/2023-03-11T12:00Z",
+     "hypothesis:HYP-001"
+    ],
+    "test_discriminant": "Exiger la lignée amont (constituants, opérateur de collecte) ; une source amont commune invaliderait le critère S « deux venues indépendantes ».",
+    "type": "DEPENDANCE"
+   },
+   {
+    "enonce": "Les observations portent l'horodatage de l'événement analysé alors que le journal est exécuté bien plus tard : rien n'établit que l'instant de snapshot coïncide avec l'instant de décision.",
+    "gravite": "MAJEUR",
+    "refs": [
+     "observation:graph_snapshot:usdc-2023-03@2023-03-11T12:00:00Z",
+     "observation:bitstamp/usdc-usd/2023-03-11T12:00Z"
+    ],
+    "test_discriminant": "Comparer snapshot_at à l'horodatage de décision et vérifier l'existence d'un re-fetch ; un écart non justifié rend la lecture temporellement irrecevable.",
+    "type": "PIT"
+   },
+   {
+    "enonce": "Aucune donnée de profondeur de carnet, de taille exécutable ou de trésorerie n'est présente : les critères R et S de HYP-002 ne sont discriminables sur aucun élément fourni.",
+    "gravite": "BLOQUANT",
+    "refs": [
+     "hypothesis:HYP-002",
+     "observation:graph_snapshot:usdc-2023-03@2023-03-11T12:00:00Z"
+    ],
+    "test_discriminant": "Obtenir des carnets d'ordres ou des tailles exécutables aux tailles pertinentes ; sans cela HYP-002 reste non testable.",
+    "type": "MANQUE"
+   },
+   {
+    "enonce": "Plusieurs claims répètent le même contenu à partir d'une unique observation ; les compter comme corroborations distinctes serait une multiplication artificielle de la preuve.",
+    "gravite": "MINEUR",
+    "refs": [
+     "observation:graph_snapshot:usdc-2023-03@2023-03-11T12:00:00Z"
+    ],
+    "test_discriminant": "Vérifier les identifiants d'appel d'outil derrière chaque claim ; un seul identifiant signifie une seule preuve effective.",
+    "type": "DEPENDANCE"
+   },
+   {
+    "enonce": "L'absence de valeurs de cotation et de métadonnées de lignée peut provenir d'une vue tronquée ou de permissions limitées sur le snapshot, et non de l'absence réelle de dispersion.",
+    "gravite": "MINEUR",
+    "refs": [
+     "observation:graph_snapshot:usdc-2023-03@2023-03-11T12:00:00Z"
+    ],
+    "test_discriminant": "Rejouer la requête avec droits étendus ou source brute ; l'apparition de valeurs invaliderait la lecture « pas de données ».",
+    "type": "ALTERNATIVE"
+   },
+   {
+    "enonce": "Un claim classe les sources en « deux fournisseurs de type oracle » alors que les observations ne déclarent que des noms ; cette catégorisation est une inférence non étayée par la donnée.",
+    "gravite": "MINEUR",
+    "refs": [
+     "observation:defillama/usdc-usd/2023-03-11T12:00Z",
+     "observation:graph_snapshot:usdc-2023-03@2023-03-11T12:00:00Z"
+    ],
+    "test_discriminant": "Vérifier le type déclaré de chaque fournisseur dans la source ; un type divergent invalide la classification.",
+    "type": "CONTRADICTION"
+   },
+   {
+    "enonce": "Six refus de plan pour schéma invalide sans journal de plan ni motif détaillé : la chaîne de preuve est incomplète et on ignore ce qui a été tenté puis abandonné.",
+    "gravite": "MAJEUR",
+    "refs": [
+     "claim:usdc-2023-03_live_20261017T013034Z-orchestrator-0001",
+     "claim:usdc-2023-03_live_20261017T013034Z-orchestrator-0055"
+    ],
+    "test_discriminant": "Produire les plans refusés et leurs erreurs de schéma ; l'absence de journal confirme la lacune documentaire.",
+    "type": "MANQUE"
+   }
+  ],
+  "note": "Aucun chiffre n'est produit par les observations ; tous les critères R/S restent non discriminables en l'état. Les claims successifs ne constituent pas des preuves indépendantes. La lecture n'est pas incohérente en interne, mais elle ne soutient aucune des deux hypothèses.",
+  "preuves_manquantes": [
+   "valeurs de cotation par venue (chainlink, defillama, bitstamp) avec unité et horodatage",
+   "métadonnées de lignée prouvant l'indépendance ou la dépendance amont des venues",
+   "données de profondeur de carnet et tailles exécutables pour HYP-002",
+   "définition chiffrée de la tolérance « au pair » utilisée par le critère R",
+   "journal des plans refusés et motifs de rejet de schéma",
+   "justification du lien entre snapshot_at et l'instant de décision, avec preuve de re-fetch"
+  ],
+  "verdict_lecture": "FRAGILE"
+ },
+ "escalation": "REQUIRE_APPROVAL",
+ "journals": {
+  "critic": {
+   "agent_ids": [
+    "critic"
+   ],
+   "chain_head": "df7b175a0a542a2355a950fef380cfd1eb3d2656346e4a1de144fd43a71a680f",
+   "lines": 1
+  },
+  "orchestrator": {
+   "agent_ids": [
+    "orchestrator"
+   ],
+   "chain_head": "87bd314d78a68c11398b223bb0c4bcd427879fc5fd6f3bd47d92e3b858f36cec",
+   "lines": 62
+  }
+ },
+ "mode": "live",
+ "outcome": {
+  "budget_used": {
+   "cost_usd": 0.019194689999999997,
+   "llm_calls": 18.0,
+   "tool_calls": 12.0,
+   "wall_seconds": 137.46900000000005
+  },
+  "critique_verdict": "",
+  "inconclusive": true,
+  "motif": "budget exhausted: tool_calls",
+  "non_recherche": [
+   "Les venues indépendantes cotées au même instant affichent-elles toutes le même écart au pair, ou l'écart observé provient-il d'une seule d'entre elles ?",
+   "Une source on-chain indépendante confirme-t-elle, à l'instant du cliché, une profondeur d'exécution suffisante pour rendre la décote réalisable aux tailles pertinentes pour une trésorerie ?",
+   "Sur le pair USDC/USD, plusieurs venues indépendantes cotent-elles sous le pair au même instant, ou la dispersion observée provient-elle d'une seule source divergente ?"
+  ],
+  "state": "DONE",
+  "stop_condition": "ARRET-2"
+ },
+ "run_dir": "D:\\orvyren_core\\demo_runs\\agents\\usdc-2023-03\\usdc-2023-03_live_20261017T013034Z",
+ "schema": "orvyren/agent-run-outcome/v1"
+}

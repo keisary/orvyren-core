@@ -1,0 +1,26 @@
+{
+  "$schema": "orvyren/orch/v1",
+  "lacune_id": "L-1",
+  "tache": {
+    "question": "Sur le pair USDC/USD, plusieurs venues indépendantes cotent-elles sous le pair simultanément, ou la dispersion observée provient-elle d'une seule source divergente ?",
+    "outil": "compute_signal",
+    "args": {
+      "signal": "usdc_venue_consensus_dispersion",
+      "venues": "toutes_venues_observées",
+      "snapshot_ref": "graph_snapshot:usdc-2023-03@2023-03-11T12:00:00Z"
+    },
+    "critere_discriminant": "Si au moins deux venues indépendantes cotent sous le pair au même instant, la dispersion n'est pas un artefact mono-source et HYP-001 (branche S) est soutenue ; si toutes les venues cotent au pair, HYP-001 est réfutée (branche R) et la dispersion observée est attribuée à une source isolée défaillante.",
+    "branches_concernees": ["HYP-001"],
+    "cout_max": {
+      "appels_llm": 1,
+      "secondes": 60
+    }
+  },
+  "stop": false,
+  "motif_stop": null,
+  "non_recherche": [
+    "HYP-002 (réalisabilité aux tailles de trésorerie) : les outils read_prices et read_chain sont indisponibles et la profondeur d'exécution n'est pas mesurable avec les sources autorisées restantes.",
+    "Tout objet ou cotation postérieur au snapshot : inadmissible point-in-time.",
+    "Causalité macro du stress SVB : descriptive, non falsifiable par les sources autorisées."
+  ]
+}

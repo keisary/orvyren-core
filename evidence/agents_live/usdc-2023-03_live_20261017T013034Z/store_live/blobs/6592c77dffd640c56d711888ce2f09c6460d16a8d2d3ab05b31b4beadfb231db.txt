@@ -1,0 +1,30 @@
+{
+  "$schema": "orvyren/orch/v1",
+  "lacune_id": "L-1",
+  "tache": {
+    "question": "La dispersion du pair USDC/USD provient-elle de flux d'exécution distincts et indépendants, ou d'une seule source répliquée sur plusieurs affichages ?",
+    "outil": "graph_query",
+    "args": {
+      "noeud_source": "graph_snapshot:usdc-2023-03@2023-03-11T12:00:00Z",
+      "champ": "dispersion_bps",
+      "direction": "amont",
+      "recherche": "provenance et lignée des observations sous-jacentes par venue"
+    },
+    "critere_discriminant": "Si la lignée des observations par venue remonte à au moins deux opérateurs ou flux de collecte indépendants, la dispersion n'est pas un artefact d'une source unique et l'hypothèse de dislocation réalisable n'est pas réfutée ; si toutes les observations par venue remontent à une source unique ou à un même flux répliqué, la dispersion est un artefact d'affichage et l'hypothèse de dislocation réalisable est réfutée.",
+    "branches_concernees": [
+      "HYP-001"
+    ],
+    "cout_max": {
+      "appels_llm": 1,
+      "secondes": 60
+    }
+  },
+  "stop": false,
+  "motif_stop": null,
+  "non_recherche": [
+    "read_prices figure dans outils_indisponibles : on ne cherche pas à re-tirer les prix bruts par venue",
+    "on ne cherche pas la profondeur d'exécution aux tailles de trésorerie, qui relève d'une autre lacune et d'un autre outil",
+    "on ne cherche pas à quantifier la dislocation ni à estimer un gain",
+    "on ne cherche pas la décote réalisable auprès d'une source d'exchange indépendante, qui exigerait l'outil de prix indisponible"
+  ]
+}
