@@ -21,6 +21,7 @@ from __future__ import annotations
 import json
 import re
 import sqlite3
+import warnings
 from datetime import datetime, timezone
 from typing import Dict, Iterable, List, Mapping, Optional, Sequence
 
@@ -129,7 +130,7 @@ CREATE TABLE IF NOT EXISTS relations (
     block_hash       TEXT,
     tx_hash          TEXT,
     log_index        INTEGER,
-    finality         TEXT NOT NULL DEFAULT 'FINALIZED',
+    finality         TEXT NOT NULL DEFAULT 'PENDING',
     confidence       REAL NOT NULL DEFAULT 0.0,
     payload          TEXT NOT NULL DEFAULT '{}',
     inserted_at      TEXT NOT NULL
@@ -282,6 +283,50 @@ CREATE TRIGGER IF NOT EXISTS {table}_no_delete BEFORE DELETE ON {table}
 BEGIN SELECT RAISE(ABORT, 'append-only table: {table}'); END;
 """
 
+#: Storage-level guardrails from the MiniMax propagation audit: the Python
+#: validator is bypassed by a direct sqlite3 writer, the engine is not.
+_GUARDRAILS = """
+CREATE TRIGGER IF NOT EXISTS relations_g1_correlation_statistical
+BEFORE INSERT ON relations
+WHEN NEW.kind = 'CORRELATES_WITH' AND NEW.epistemic_status <> 'STATISTICAL'
+BEGIN SELECT RAISE(ABORT, 'G1: CORRELATES_WITH requires STATISTICAL'); END;
+
+CREATE TRIGGER IF NOT EXISTS relations_g2_correlation_ambiguous
+BEFORE INSERT ON relations
+WHEN NEW.kind = 'CORRELATES_WITH' AND NEW.sign_prior <> 'ambigu'
+BEGIN SELECT RAISE(ABORT, 'G2: CORRELATES_WITH requires an ambiguous sign'); END;
+
+CREATE TRIGGER IF NOT EXISTS relations_g3_mechanism_scope
+BEFORE INSERT ON relations
+WHEN NEW.family = 'ECONOMIC_MECHANISM'
+ AND (NEW.conditions = '' OR NEW.horizon_scope = '' OR NEW.mechanism = '')
+BEGIN SELECT RAISE(ABORT, 'G3: mechanism needs conditions, horizon and label'); END;
+
+CREATE TRIGGER IF NOT EXISTS relations_g4_sign_enum
+BEFORE INSERT ON relations
+WHEN NEW.sign_prior NOT IN ('+', '-', 'ambigu')
+BEGIN SELECT RAISE(ABORT, 'G4: invalid sign_prior'); END;
+
+CREATE TRIGGER IF NOT EXISTS relations_g5_dependency_sign
+BEFORE INSERT ON relations
+WHEN NEW.kind IN ('DEPENDS_ON', 'AFFECTS') AND NEW.sign_prior = 'ambigu'
+BEGIN SELECT RAISE(ABORT, 'G5: a propagatable edge needs a sign'); END;
+
+CREATE VIEW IF NOT EXISTS prop_edge AS
+SELECT * FROM relations r
+WHERE r.kind IN ('DEPENDS_ON', 'AFFECTS')
+  AND r.lifecycle = 'ACTIVE'
+  AND r.validation_status = 'VALIDATED'
+  AND r.row_id IN (SELECT MAX(row_id) FROM relations GROUP BY relation_id);
+
+CREATE VIEW IF NOT EXISTS prop_step AS
+SELECT relation_id, dst AS origin, src AS target, kind, sign_prior, epistemic_status
+FROM prop_edge WHERE kind = 'DEPENDS_ON'
+UNION ALL
+SELECT relation_id, src AS origin, dst AS target, kind, sign_prior, epistemic_status
+FROM prop_edge WHERE kind = 'AFFECTS';
+"""
+
 
 def _now_iso() -> str:
     return datetime.now(timezone.utc).isoformat()
@@ -323,6 +368,7 @@ class GraphStore:
                           "relation_provenance", "graph_snapshots"):
                 self.connection.executescript(
                     _APPEND_ONLY_TRIGGERS.format(table=table))
+            self.connection.executescript(_GUARDRAILS)
             row = self.connection.execute(
                 "SELECT MAX(version) FROM schema_version").fetchone()
             if row[0] is None or int(row[0]) < SCHEMA_VERSION:
@@ -367,7 +413,7 @@ class GraphStore:
             ("block_hash", "TEXT"),
             ("tx_hash", "TEXT"),
             ("log_index", "INTEGER"),
-            ("finality", "TEXT NOT NULL DEFAULT 'FINALIZED'"),
+            ("finality", "TEXT NOT NULL DEFAULT 'PENDING'"),
             ("confidence", "REAL NOT NULL DEFAULT 0.0"),
             ("payload", "TEXT NOT NULL DEFAULT '{}'"),
         )
@@ -495,6 +541,9 @@ class GraphStore:
         Legacy path: it writes the historical columns only. New code should use
         :meth:`insert_relation_record`, which persists the full 17-field record.
         """
+        warnings.warn(
+            "insert_relation is the legacy writer; use insert_relation_record",
+            DeprecationWarning, stacklevel=2)
         if relation.extract_method and relation.extract_method not in EXTRACT_METHOD:
             raise ValueError("unknown extract_method: %s" % relation.extract_method)
         revision = self._next_revision("relations", "relation_id", relation.id)
@@ -620,14 +669,17 @@ class GraphStore:
              record.sign_prior, record.conditions, record.regime_scope,
              record.horizon_scope, record.epistemic_status, record.lifecycle,
              record.validation_status, record.valid_from, record.valid_to,
-             record.payload.get("valid_from_block"), record.payload.get("valid_to_block"),
+             (record.valid_from_block if record.valid_from_block is not None
+              else record.payload.get("valid_from_block")),
+             (record.valid_to_block if record.valid_to_block is not None
+              else record.payload.get("valid_to_block")),
              record.superseded_by, refs, record.source_family_id, record.extract_method,
              record.model_version, record.run_id,
              chain_ref.chain_id if chain_ref else None,
              chain_ref.block if chain_ref else None,
              None, chain_ref.tx_hash if chain_ref else None,
              record.payload.get("log_index"),
-             str(record.payload.get("finality", "FINALIZED")),
+             str(record.payload.get("finality", "PENDING")),
              float(record.confidence), body, record.inserted_at))
         for ref in record.provenance_refs:
             self.connection.execute(
@@ -719,7 +771,12 @@ class GraphStore:
             regime_scope=row["regime_scope"], horizon_scope=row["horizon_scope"],
             epistemic_status=row["epistemic_status"], lifecycle=row["lifecycle"],
             validation_status=row["validation_status"], valid_from=row["valid_from"],
-            valid_to=row["valid_to"], revision=int(row["revision"]),
+            valid_to=row["valid_to"],
+            valid_from_block=(int(row["valid_from_block"])
+                              if row["valid_from_block"] is not None else None),
+            valid_to_block=(int(row["valid_to_block"])
+                            if row["valid_to_block"] is not None else None),
+            revision=int(row["revision"]),
             inserted_at=row["inserted_at"], superseded_by=row["superseded_by"],
             provenance_refs=tuple(json.loads(row["provenance_refs"] or "[]")),
             source_family_id=row["source_family_id"],

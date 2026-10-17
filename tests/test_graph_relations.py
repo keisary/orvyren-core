@@ -5,7 +5,7 @@
 Covers B2_GRAPHE_ETUDE.md §3.0–§3.1: the record field groups (exactly 17) and
 the rejection codes of :func:`validate_relation_record` — one code per golden
 rule or closed enum. Every catalogue row is also proven constructible: a
-conform record exists for each of the 34 kinds.
+conform record exists for each of the 35 kinds.
 
 Execution: ``python -m unittest discover -s tests -v``
 """

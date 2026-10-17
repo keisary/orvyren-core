@@ -118,6 +118,47 @@ class GraphV2SchemaTest(unittest.TestCase):
                 "SELECT ref_id, ref_kind, source_family_id FROM relation_provenance")]
             self.assertEqual(rows, [("obs:abcdef0123456789", "OBSERVATION", "SF-BASE-RPC")])
 
+    def test_block_bounds_are_first_class_and_persisted(self):
+        with GraphStore(":memory:") as store:
+            store.insert_relation_record(_holds_record(
+                valid_from_block=100, valid_to_block=200))
+            record = store.relation_record_by_id("rel-holds-1")
+            self.assertEqual(record.valid_from_block, 100)
+            self.assertEqual(record.valid_to_block, 200)
+            row = store.connection.execute(
+                "SELECT valid_from_block, valid_to_block, finality FROM relations "
+                "WHERE relation_id='rel-holds-1'").fetchone()
+            self.assertEqual(row["valid_from_block"], 100)
+            self.assertEqual(row["valid_to_block"], 200)
+            self.assertEqual(row["finality"], "PENDING")
+
+    def test_invalid_block_bounds_are_rejected(self):
+        with GraphStore(":memory:") as store:
+            with self.assertRaises(ValueError) as caught:
+                store.insert_relation_record(_holds_record(
+                    valid_from_block=200, valid_to_block=100))
+            self.assertIn("E_BLOCK_ORDER", str(caught.exception))
+
+    def test_storage_guardrails_refuse_invalid_direct_writes(self):
+        with GraphStore(":memory:") as store:
+            with self.assertRaises(sqlite3.IntegrityError):
+                store.connection.execute(
+                    "INSERT INTO relations (relation_id, revision, kind, src, dst, "
+                    "epistemic_status, sign_prior, inserted_at) "
+                    "VALUES ('bad','1','CORRELATES_WITH','a','b','FACT','ambigu','x')")
+            with self.assertRaises(sqlite3.IntegrityError):
+                store.connection.execute(
+                    "INSERT INTO relations (relation_id, revision, kind, src, dst, "
+                    "epistemic_status, sign_prior, inserted_at) "
+                    "VALUES ('bad2','1','DEPENDS_ON','a','b','FACT','ambigu','x')")
+
+    def test_propagation_views_exist(self):
+        with GraphStore(":memory:") as store:
+            views = {row[0] for row in store.connection.execute(
+                "SELECT name FROM sqlite_master WHERE type='view'")}
+            self.assertIn("prop_edge", views)
+            self.assertIn("prop_step", views)
+
     def test_invalid_record_is_rejected(self):
         with GraphStore(":memory:") as store:
             with self.assertRaises(ValueError) as caught:

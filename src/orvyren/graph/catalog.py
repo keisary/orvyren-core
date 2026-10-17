@@ -1,12 +1,12 @@
-"""Relation catalogue: machine-verifiable enum of the 34 relation kinds.
+"""Relation catalogue: machine-verifiable enum of the 35 relation kinds.
 
 Source of truth
 ---------------
 ``B2_GRAPHE_ETUDE.md`` §3.0–§3.3 (archive ``D:/orvyren_archive_2026-10-15/``):
-34 relation kinds in 4 families, with allowed subject/object node kinds,
-direction, transitivity and a one-line semantics. The catalogue is the piece
-ORVYREN produces (no public DeFi relation catalogue was found — B2 §3.3), so
-the enums here are normative for every relation record.
+34 relation kinds in 4 families, plus ``LIQUIDATED_IN`` (2.16) added for the
+on-chain liquidation slice. The catalogue is the piece ORVYREN produces (no
+public DeFi relation catalogue was found — B2 §3.3), so the enums here are
+normative for every relation record.
 
 Node kinds
 ----------
@@ -128,6 +128,9 @@ class NodeKind:
     INTENT = "INTENT"
     EXECUTION = "EXECUTION"
     OUTCOME = "OUTCOME"
+    # Event layer (10 h slice): a dated state transition, not a measurement.
+    EVENEMENT = "EVENT"
+    ETAT_PARAMETRE = "PARAM_STATE"
     # Governance members.
     ROLE = "ROLE"
     PERMISSION = "PERMISSION"
@@ -361,6 +364,11 @@ _SPECS: Tuple[RelationSpec, ...] = (
           DIRECTED, TRANSITIVITY_N,
           "Valuation backed by this feed (type, `description()`, heartbeat, cap).",
           "D", "D (W2B 1.3/4.1)"),
+    _spec("2.16", "LIQUIDATED_IN", FAMILY_STRUCTURE, ("ENTITE", "ADRESSE"),
+          ("MARCHE", "DETTE"), DIRECTED, TRANSITIVITY_N,
+          "Position liquidated on this market at block B — collateral seized, "
+          "debt closed; the amount is in the payload.",
+          "D", "D (liquidation cascade)"),
     # ---- Family 3 — Economic mechanism (3) -------------------------------
     _spec("3.1", "AFFECTS", FAMILY_MECHANISM, ("VARIABLE", "ENTITE", "INSTRUMENT"),
           ("VARIABLE", "ENTITE", "INSTRUMENT"), DIRECTED, TRANSITIVITY_Q,
@@ -412,7 +420,7 @@ RELATION_CATALOG: Mapping[str, RelationSpec] = {spec.kind: spec for spec in _SPE
 
 
 def catalog_stats() -> Dict[str, int]:
-    """Counts per family (B2 §3.2: 8 / 15 / 3 / 8 = 34)."""
+    """Counts per family (B2 §3.2: 8 / 16 / 3 / 8 = 35)."""
     stats = {family: 0 for family in FAMILIES}
     for spec in _SPECS:
         stats[spec.family] += 1
