@@ -288,6 +288,24 @@ class RecordedBackend(contracts.LLMBackend):
             return contracts.LLMResult(
                 ok=False, error="E_LLM_MISSING_BLOB:%s" % r_hash,
                 prompt_hash=p_hash, response_hash=r_hash, **meta)
+        recorded_error = str(entry.get("error", "") or "")
+        if recorded_error:
+            # A recorded failure replays as the same failure (same code,
+            # same accounting) — never as a surprise success.
+            return contracts.LLMResult(
+                ok=False, raw=raw, data=None, error=recorded_error,
+                provider=str(entry.get("provider", meta["provider"])),
+                model=str(entry.get("model", meta["model"])),
+                model_version_pinned=str(
+                    entry.get("model_version_pinned", meta["model_version_pinned"])),
+                temperature=float(entry.get("temperature", meta["temperature"])),
+                tokens_in=int(entry.get("tokens_in", 0) or 0),
+                cached_in=int(entry.get("cached_in", 0) or 0),
+                tokens_out=int(entry.get("tokens_out", 0) or 0),
+                cost_usd=float(entry.get("cost_usd", 0.0) or 0.0),
+                latency_ms=int(entry.get("latency_ms", 0) or 0),
+                prompt_hash=p_hash, response_hash=r_hash,
+                ts_utc=str(entry.get("ts_utc", "")))
         try:
             data = json.loads(raw)
         except (json.JSONDecodeError, ValueError):
@@ -469,9 +487,7 @@ class LiveBackend(contracts.LLMBackend):
             if isinstance(envelope.get("usage"), dict):
                 usage = envelope["usage"]
         if not isinstance(message, Mapping):
-            return contracts.LLMResult(
-                ok=False, raw=str(text), error="E_LLM_BAD_RESPONSE",
-                prompt_hash=ctx["prompt_hash"], **meta)
+            return self._record_failure(ctx, str(text), "E_LLM_BAD_RESPONSE", meta)
         tokens_in = int(usage.get("prompt_tokens") or 0)
         cached_in = int(usage.get("prompt_cache_hit_tokens") or 0)
         tokens_out = int(usage.get("completion_tokens") or 0)
@@ -501,28 +517,22 @@ class LiveBackend(contracts.LLMBackend):
                 ts_utc=ts_utc)
         content = message.get("content")
         if content is None:
-            return contracts.LLMResult(
-                ok=False, raw=str(text), error="E_LLM_BAD_RESPONSE",
-                prompt_hash=ctx["prompt_hash"], **meta)
+            return self._record_failure(ctx, str(text), "E_LLM_BAD_RESPONSE", meta)
         content = str(content)
         if not content.strip():
             # Documented DeepSeek pitfall: a 200 with empty content is
             # non-conforming (DOC2 §5.2.4) — never a guess downstream.
-            return contracts.LLMResult(
-                ok=False, raw=content, error="E_LLM_EMPTY_RESPONSE",
-                tokens_in=tokens_in, cached_in=cached_in, tokens_out=tokens_out,
-                cost_usd=cost_usd, latency_ms=latency_ms,
-                prompt_hash=ctx["prompt_hash"], **meta)
+            return self._record_failure(
+                ctx, content, "E_LLM_EMPTY_RESPONSE", meta,
+                tokens_in, cached_in, tokens_out, cost_usd, latency_ms)
         try:
             data = json.loads(content)
         except (json.JSONDecodeError, ValueError):
             data = None
         if not isinstance(data, dict):
-            return contracts.LLMResult(
-                ok=False, raw=content, error="E_LLM_BAD_JSON",
-                tokens_in=tokens_in, cached_in=cached_in, tokens_out=tokens_out,
-                cost_usd=cost_usd, latency_ms=latency_ms,
-                prompt_hash=ctx["prompt_hash"], **meta)
+            return self._record_failure(
+                ctx, content, "E_LLM_BAD_JSON", meta,
+                tokens_in, cached_in, tokens_out, cost_usd, latency_ms)
         ts_utc = _utc_now()
         r_hash = response_hash(content)
         if self.store is not None:
@@ -538,10 +548,38 @@ class LiveBackend(contracts.LLMBackend):
             prompt_hash=ctx["prompt_hash"], response_hash=r_hash,
             ts_utc=ts_utc)
 
+    def _record_failure(self, ctx: Mapping[str, Any], raw: str, error: str,
+                        meta: Mapping[str, Any], tokens_in: int = 0,
+                        cached_in: int = 0, tokens_out: int = 0,
+                        cost_usd: float = 0.0, latency_ms: int = 0
+                        ) -> contracts.LLMResult:
+        """Archive a failed exchange too — a replay must reproduce failures.
+
+        The raw body is stored like a success, and the call line carries the
+        error code, so :class:`RecordedBackend` can return the exact same
+        failure (same code, same accounting, same hashes).
+        """
+        ts_utc = _utc_now()
+        r_hash = response_hash(raw)
+        if self.store is not None:
+            self._archive(ctx, r_hash, raw, ts_utc, meta,
+                          tokens_in, cached_in, tokens_out, cost_usd,
+                          latency_ms, error=error)
+        return contracts.LLMResult(
+            ok=False, raw=raw, data=None, error=error,
+            provider=meta["provider"], model=meta["model"],
+            model_version_pinned=meta["model_version_pinned"],
+            temperature=meta["temperature"],
+            tokens_in=tokens_in, cached_in=cached_in, tokens_out=tokens_out,
+            cost_usd=cost_usd, latency_ms=latency_ms,
+            prompt_hash=ctx["prompt_hash"], response_hash=r_hash,
+            ts_utc=ts_utc)
+
     def _archive(self, ctx: Mapping[str, Any], r_hash: str, raw: str,
                  ts_utc: str, meta: Mapping[str, Any],
                  tokens_in: int, cached_in: int, tokens_out: int,
-                 cost_usd: float, latency_ms: int) -> None:
+                 cost_usd: float, latency_ms: int,
+                 error: str = "") -> None:
         """Archive prompt, raw answer and call line (the replay material)."""
         self.store.save_prompt(ctx["prompt_hash"], ctx["system_prompt"],
                                ctx["payload"])
@@ -563,6 +601,7 @@ class LiveBackend(contracts.LLMBackend):
             "tokens_out": tokens_out,
             "cost_usd": cost_usd,
             "latency_ms": latency_ms,
+            "error": error,
         })
 
 
