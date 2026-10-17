@@ -116,8 +116,8 @@ class RetroactiveColumnsTest(unittest.TestCase):
             self.assertEqual(relation_rows[0]["source_family_id"], "SF-1")
             self.assertEqual(relation_rows[0]["extract_method"], "HUMAN")
 
-    def test_schema_version_is_2(self):
-        self.assertEqual(SCHEMA_VERSION, 2)
+    def test_schema_version_is_3(self):
+        self.assertEqual(SCHEMA_VERSION, 3)
 
 
 if __name__ == "__main__":

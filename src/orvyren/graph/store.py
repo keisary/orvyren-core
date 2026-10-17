@@ -19,24 +19,26 @@ Standard library only (``sqlite3``).
 from __future__ import annotations
 
 import json
+import re
 import sqlite3
-from dataclasses import asdict
 from datetime import datetime, timezone
 from typing import Dict, Iterable, List, Mapping, Optional, Sequence
 
 from orvyren.graph import models
-from orvyren.graph.catalog import EXTRACT_METHOD
+from orvyren.graph.catalog import EXTRACT_METHOD, KIND_CLASS
 from orvyren.graph.models import (Claim, DecisionNode, Hypothesis, Observation,
                                   Relation, Source)
 from orvyren.graph.provenance import snapshot_hash
+from orvyren.graph.record import (ChainRef, RelationRecord,
+                                  validate_relation_record)
 from orvyren.quality.normalize import parse_timestamp
 
 __all__ = ["GraphStore", "SCHEMA_VERSION", "GRAPH_VERSION"]
 
-#: v2 (lot L1.3): relations gain the retroactive columns ``source_family_id``
-#: and ``extract_method`` (B2 §3.0 fields 13–14). Older files are migrated
-#: additively on open.
-SCHEMA_VERSION = 2
+#: v3 (graph-v2 schema): the 17-field relation record is persisted, and the
+#: nodes/events/provenance tables make the graph queryable. v2 databases are
+#: migrated additively on open (no UPDATE/DELETE; old rows get safe defaults).
+SCHEMA_VERSION = 3
 GRAPH_VERSION = "orvyren-graph-v1"
 
 #: (table, logical-id column) in the order used for snapshots.
@@ -48,6 +50,9 @@ _TABLES = (
     ("hypotheses", "hypothesis_id"),
     ("decision_nodes", "node_id"),
 )
+
+#: Canonical on-chain node ids: ``addr|asset|market|role|param:eip155:<chain>:<id>``.
+_NODE_CHAIN_RE = re.compile(r"^(?:addr|asset|market|role|param):eip155:(\d+):(.+)$")
 
 _SCHEMA = """
 CREATE TABLE IF NOT EXISTS schema_version (
@@ -95,11 +100,38 @@ CREATE TABLE IF NOT EXISTS relations (
     row_id           INTEGER PRIMARY KEY AUTOINCREMENT,
     relation_id      TEXT NOT NULL,
     revision         INTEGER NOT NULL,
+    family           TEXT NOT NULL DEFAULT '',
+    kind             TEXT NOT NULL,
     src              TEXT NOT NULL,
     dst              TEXT NOT NULL,
-    kind             TEXT NOT NULL,
+    src_kind         TEXT NOT NULL DEFAULT '',
+    dst_kind         TEXT NOT NULL DEFAULT '',
+    mechanism        TEXT NOT NULL DEFAULT '',
+    sign_prior       TEXT NOT NULL DEFAULT 'ambigu',
+    conditions       TEXT NOT NULL DEFAULT '',
+    regime_scope     TEXT NOT NULL DEFAULT '',
+    horizon_scope    TEXT NOT NULL DEFAULT '',
+    epistemic_status TEXT NOT NULL DEFAULT 'REPORTED',
+    lifecycle        TEXT NOT NULL DEFAULT 'DISCOVERED',
+    validation_status TEXT NOT NULL DEFAULT 'PENDING',
+    valid_from       TEXT,
+    valid_to         TEXT,
+    valid_from_block INTEGER,
+    valid_to_block   INTEGER,
+    superseded_by    TEXT,
+    provenance_refs  TEXT NOT NULL DEFAULT '[]',
     source_family_id TEXT NOT NULL DEFAULT '',
     extract_method   TEXT NOT NULL DEFAULT '',
+    model_version    TEXT NOT NULL DEFAULT '',
+    run_id           TEXT NOT NULL DEFAULT '',
+    chain_id         INTEGER,
+    block_number     INTEGER,
+    block_hash       TEXT,
+    tx_hash          TEXT,
+    log_index        INTEGER,
+    finality         TEXT NOT NULL DEFAULT 'FINALIZED',
+    confidence       REAL NOT NULL DEFAULT 0.0,
+    payload          TEXT NOT NULL DEFAULT '{}',
     inserted_at      TEXT NOT NULL
 );
 
@@ -124,6 +156,107 @@ CREATE TABLE IF NOT EXISTS decision_nodes (
     inserted_at TEXT NOT NULL
 );
 
+-- Graph v2 (schema v3): first-class nodes and events. The existing
+-- observations/claims/relations tables remain the proof layer; these tables
+-- make the world layer queryable without rewriting the legacy rows.
+
+CREATE TABLE IF NOT EXISTS nodes (
+    row_id       INTEGER PRIMARY KEY AUTOINCREMENT,
+    node_id      TEXT NOT NULL,
+    revision     INTEGER NOT NULL,
+    kind         TEXT NOT NULL,
+    node_class   TEXT NOT NULL,
+    chain_id     INTEGER,
+    address      TEXT,
+    canonical_key TEXT NOT NULL,
+    label        TEXT NOT NULL,
+    status       TEXT NOT NULL DEFAULT 'ACTIVE',
+    valid_from   TEXT,
+    valid_to     TEXT,
+    inserted_at  TEXT NOT NULL,
+    payload      TEXT NOT NULL DEFAULT '{}',
+    UNIQUE (node_id, revision)
+);
+
+CREATE TABLE IF NOT EXISTS node_aliases (
+    alias_id     TEXT PRIMARY KEY,
+    node_id      TEXT NOT NULL,
+    alias        TEXT NOT NULL,
+    source_id    TEXT NOT NULL,
+    valid_from   TEXT,
+    valid_to     TEXT,
+    confidence   REAL NOT NULL DEFAULT 0.0,
+    inserted_at  TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS events (
+    event_id         TEXT PRIMARY KEY,
+    event_type       TEXT NOT NULL,
+    chain_id         INTEGER,
+    block_number     INTEGER,
+    block_hash       TEXT,
+    tx_hash          TEXT,
+    log_index        INTEGER,
+    event_time       TEXT,
+    publication_time TEXT,
+    observation_time TEXT NOT NULL,
+    effective_time   TEXT,
+    valid_from       TEXT,
+    valid_to         TEXT,
+    actors           TEXT NOT NULL DEFAULT '[]',
+    targets          TEXT NOT NULL DEFAULT '[]',
+    magnitude        REAL,
+    actual           REAL,
+    expected         REAL,
+    surprise         REAL,
+    status           TEXT NOT NULL DEFAULT 'CONFIRMED',
+    payload          TEXT NOT NULL DEFAULT '{}'
+);
+
+CREATE TABLE IF NOT EXISTS event_observations (
+    event_id       TEXT NOT NULL,
+    observation_id TEXT NOT NULL,
+    relation       TEXT NOT NULL,
+    source_id      TEXT NOT NULL,
+    confidence     REAL NOT NULL DEFAULT 0.0,
+    inserted_at    TEXT NOT NULL,
+    PRIMARY KEY (event_id, observation_id, relation)
+);
+
+CREATE TABLE IF NOT EXISTS relation_provenance (
+    relation_id      TEXT NOT NULL,
+    revision         INTEGER NOT NULL,
+    ref_id           TEXT NOT NULL,
+    ref_kind         TEXT NOT NULL,
+    source_family_id TEXT NOT NULL DEFAULT '',
+    extract_method   TEXT NOT NULL DEFAULT '',
+    run_id           TEXT NOT NULL DEFAULT '',
+    PRIMARY KEY (relation_id, revision, ref_id)
+);
+
+CREATE TABLE IF NOT EXISTS source_families (
+    source_family_id TEXT PRIMARY KEY,
+    description      TEXT NOT NULL,
+    independence     TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS ingestion_watermarks (
+    source_id       TEXT PRIMARY KEY,
+    last_block      INTEGER NOT NULL,
+    last_block_hash TEXT,
+    last_ts         TEXT NOT NULL,
+    status          TEXT NOT NULL DEFAULT 'OK'
+);
+
+CREATE TABLE IF NOT EXISTS graph_snapshots (
+    snapshot_id  TEXT PRIMARY KEY,
+    as_of        TEXT,
+    as_of_block  INTEGER,
+    graph_hash   TEXT NOT NULL,
+    counts       TEXT NOT NULL,
+    created_at   TEXT NOT NULL
+);
+
 CREATE INDEX IF NOT EXISTS idx_observations_id  ON observations(observation_id);
 CREATE INDEX IF NOT EXISTS idx_observations_src ON observations(source_id);
 CREATE INDEX IF NOT EXISTS idx_observations_hour ON observations(ts_event);
@@ -131,6 +264,15 @@ CREATE INDEX IF NOT EXISTS idx_sources_id       ON sources(source_id);
 CREATE INDEX IF NOT EXISTS idx_claims_id        ON claims(claim_id);
 CREATE INDEX IF NOT EXISTS idx_relations_dst    ON relations(dst);
 CREATE INDEX IF NOT EXISTS idx_hypotheses_id    ON hypotheses(hypothesis_id);
+CREATE INDEX IF NOT EXISTS idx_nodes_kind       ON nodes(kind);
+CREATE INDEX IF NOT EXISTS idx_nodes_class      ON nodes(node_class);
+CREATE INDEX IF NOT EXISTS idx_nodes_chain_addr ON nodes(chain_id, address);
+CREATE INDEX IF NOT EXISTS idx_nodes_label      ON nodes(label);
+CREATE INDEX IF NOT EXISTS idx_alias_node       ON node_aliases(node_id);
+CREATE INDEX IF NOT EXISTS idx_events_type_time ON events(event_type, event_time);
+CREATE INDEX IF NOT EXISTS idx_events_chain_block ON events(chain_id, block_number);
+CREATE INDEX IF NOT EXISTS idx_events_tx        ON events(chain_id, tx_hash);
+CREATE INDEX IF NOT EXISTS idx_rel_prov_ref     ON relation_provenance(ref_id);
 """
 
 _APPEND_ONLY_TRIGGERS = """
@@ -177,22 +319,69 @@ class GraphStore:
             for table, _ in _TABLES:
                 self.connection.executescript(
                     _APPEND_ONLY_TRIGGERS.format(table=table))
+            for table in ("nodes", "node_aliases", "events", "event_observations",
+                          "relation_provenance", "graph_snapshots"):
+                self.connection.executescript(
+                    _APPEND_ONLY_TRIGGERS.format(table=table))
             row = self.connection.execute(
-                "SELECT COUNT(*) FROM schema_version").fetchone()
-            if row[0] == 0:
+                "SELECT MAX(version) FROM schema_version").fetchone()
+            if row[0] is None or int(row[0]) < SCHEMA_VERSION:
                 self.connection.execute(
-                    "INSERT INTO schema_version (version, applied_at) VALUES (?, ?)",
-                    (SCHEMA_VERSION, _now_iso()))
+                    "INSERT OR IGNORE INTO schema_version (version, applied_at) "
+                    "VALUES (?, ?)", (SCHEMA_VERSION, _now_iso()))
 
     def _migrate_relation_columns(self) -> None:
-        """Additive migration for pre-L1.3 databases (columns added in v2)."""
+        """Additive migration from the v1/v2 relations table to schema v3.
+
+        SQLite ``ALTER TABLE ADD COLUMN`` is append-only; every new column is
+        nullable or carries a safe default, so legacy rows stay readable. The
+        old ``insert_relation`` path keeps working with defaults; the new
+        ``insert_relation_record`` writes the full 17-field record.
+        """
         existing = {row["name"] for row in self.connection.execute(
             "PRAGMA table_info(relations)")}
-        for column in ("source_family_id", "extract_method"):
+        columns = (
+            ("source_family_id", "TEXT NOT NULL DEFAULT ''"),
+            ("extract_method", "TEXT NOT NULL DEFAULT ''"),
+            ("family", "TEXT NOT NULL DEFAULT ''"),
+            ("src_kind", "TEXT NOT NULL DEFAULT ''"),
+            ("dst_kind", "TEXT NOT NULL DEFAULT ''"),
+            ("mechanism", "TEXT NOT NULL DEFAULT ''"),
+            ("sign_prior", "TEXT NOT NULL DEFAULT 'ambigu'"),
+            ("conditions", "TEXT NOT NULL DEFAULT ''"),
+            ("regime_scope", "TEXT NOT NULL DEFAULT ''"),
+            ("horizon_scope", "TEXT NOT NULL DEFAULT ''"),
+            ("epistemic_status", "TEXT NOT NULL DEFAULT 'REPORTED'"),
+            ("lifecycle", "TEXT NOT NULL DEFAULT 'DISCOVERED'"),
+            ("validation_status", "TEXT NOT NULL DEFAULT 'PENDING'"),
+            ("valid_from", "TEXT"),
+            ("valid_to", "TEXT"),
+            ("valid_from_block", "INTEGER"),
+            ("valid_to_block", "INTEGER"),
+            ("superseded_by", "TEXT"),
+            ("provenance_refs", "TEXT NOT NULL DEFAULT '[]'"),
+            ("model_version", "TEXT NOT NULL DEFAULT ''"),
+            ("run_id", "TEXT NOT NULL DEFAULT ''"),
+            ("chain_id", "INTEGER"),
+            ("block_number", "INTEGER"),
+            ("block_hash", "TEXT"),
+            ("tx_hash", "TEXT"),
+            ("log_index", "INTEGER"),
+            ("finality", "TEXT NOT NULL DEFAULT 'FINALIZED'"),
+            ("confidence", "REAL NOT NULL DEFAULT 0.0"),
+            ("payload", "TEXT NOT NULL DEFAULT '{}'"),
+        )
+        for column, ddl in columns:
             if column not in existing:
                 self.connection.execute(
-                    "ALTER TABLE relations ADD COLUMN %s TEXT NOT NULL DEFAULT ''"
-                    % column)
+                    "ALTER TABLE relations ADD COLUMN %s %s" % (column, ddl))
+        for statement in (
+            "CREATE INDEX IF NOT EXISTS idx_rel_src_kind_v2 ON relations(src, kind)",
+            "CREATE INDEX IF NOT EXISTS idx_rel_dst_kind_v2 ON relations(dst, kind)",
+            "CREATE INDEX IF NOT EXISTS idx_rel_current_v2 ON relations(relation_id, inserted_at)",
+            "CREATE INDEX IF NOT EXISTS idx_rel_valid_v2 ON relations(valid_from, valid_to)",
+        ):
+            self.connection.execute(statement)
 
     # -- internal helpers ----------------------------------------------------
 
@@ -301,9 +490,8 @@ class GraphStore:
     def insert_relation(self, relation: Relation) -> int:
         """Append a revision of ``relation``; returns the new row id.
 
-        ``source_family_id`` and ``extract_method`` (L1.3) are persisted; a
-        non-empty ``extract_method`` must be one of the closed vocabulary
-        (B2 §3.0 field 14).
+        Legacy path: it writes the historical columns only. New code should use
+        :meth:`insert_relation_record`, which persists the full 17-field record.
         """
         if relation.extract_method and relation.extract_method not in EXTRACT_METHOD:
             raise ValueError("unknown extract_method: %s" % relation.extract_method)
@@ -316,6 +504,227 @@ class GraphStore:
              relation.source_family_id, relation.extract_method, _now_iso()))
         self.connection.commit()
         return int(cursor.lastrowid)
+
+    # -- graph-v2 writes -----------------------------------------------------
+
+    @staticmethod
+    def _ref_kind(ref_id: str) -> str:
+        """Best-effort kind of a provenance reference (stable prefixes)."""
+        for prefix, kind in (("obs:", "OBSERVATION"), ("claim:", "CLAIM"),
+                             ("doc:", "DOCUMENT"), ("event:", "EVENT"),
+                             ("hyp:", "HYPOTHESE"), ("src:", "SOURCE")):
+            if ref_id.startswith(prefix):
+                return kind
+        return "UNKNOWN"
+
+    def _ensure_node(self, node_id: str, kind: str) -> None:
+        """Insert a canonical node if absent; never overwrite an existing one."""
+        if not node_id:
+            return
+        kind = kind or "UNKNOWN"
+        node_class = KIND_CLASS.get(kind, kind)
+        chain_id = None
+        address = None
+        match = _NODE_CHAIN_RE.match(node_id)
+        if match:
+            chain_id = int(match.group(1))
+            address = match.group(2).lower()
+        self.connection.execute(
+            "INSERT OR IGNORE INTO nodes (node_id, revision, kind, node_class, "
+            "chain_id, address, canonical_key, label, status, inserted_at, payload) "
+            "VALUES (?, 1, ?, ?, ?, ?, ?, ?, 'ACTIVE', ?, '{}')",
+            (node_id, kind, node_class, chain_id, address, node_id, node_id,
+             _now_iso()))
+
+    def insert_node(self, node_id: str, kind: str, node_class: Optional[str] = None,
+                    chain_id: Optional[int] = None, address: Optional[str] = None,
+                    label: Optional[str] = None, payload: Optional[Mapping[str, Any]] = None,
+                    status: str = "ACTIVE", valid_from: Optional[str] = None,
+                    valid_to: Optional[str] = None) -> int:
+        """Append a revision of a graph node; returns the new row id."""
+        if not node_id.strip():
+            raise ValueError("node_id is empty")
+        revision = self._next_revision("nodes", "node_id", node_id)
+        body = json.dumps(dict(payload or {}), sort_keys=True, default=str)
+        cursor = self.connection.execute(
+            "INSERT INTO nodes (node_id, revision, kind, node_class, chain_id, "
+            "address, canonical_key, label, status, valid_from, valid_to, "
+            "inserted_at, payload) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+            (node_id, revision, kind or "UNKNOWN",
+             node_class or KIND_CLASS.get(kind, kind) or "UNKNOWN",
+             chain_id, address.lower() if address else None, node_id,
+             label or node_id, status, valid_from, valid_to, _now_iso(), body))
+        self.connection.commit()
+        return int(cursor.lastrowid)
+
+    def insert_event(self, event: Mapping[str, Any]) -> int:
+        """Insert one first-class event. ``event_id`` and ``event_type`` are required."""
+        event_id = str(event.get("event_id", "")).strip()
+        event_type = str(event.get("event_type", "")).strip()
+        observation_time = str(event.get("observation_time", "")).strip()
+        if not event_id or not event_type or not observation_time:
+            raise ValueError("event_id, event_type and observation_time are required")
+        actors = event.get("actors", [])
+        targets = event.get("targets", [])
+        payload = event.get("payload", {})
+        cursor = self.connection.execute(
+            "INSERT INTO events (event_id, event_type, chain_id, block_number, "
+            "block_hash, tx_hash, log_index, event_time, publication_time, "
+            "observation_time, effective_time, valid_from, valid_to, actors, "
+            "targets, magnitude, actual, expected, surprise, status, payload) "
+            "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+            (event_id, event_type, event.get("chain_id"), event.get("block_number"),
+             event.get("block_hash"), event.get("tx_hash"), event.get("log_index"),
+             event.get("event_time"), event.get("publication_time"),
+             observation_time, event.get("effective_time"), event.get("valid_from"),
+             event.get("valid_to"),
+             actors if isinstance(actors, str) else json.dumps(list(actors), default=str),
+             targets if isinstance(targets, str) else json.dumps(list(targets), default=str),
+             event.get("magnitude"), event.get("actual"), event.get("expected"),
+             event.get("surprise"), event.get("status", "CONFIRMED"),
+             payload if isinstance(payload, str) else json.dumps(dict(payload), sort_keys=True,
+                                                                  default=str)))
+        self.connection.commit()
+        return int(cursor.lastrowid)
+
+    def insert_relation_record(self, record: RelationRecord) -> int:
+        """Persist a validated 17-field relation record and its provenance.
+
+        Raises ``ValueError`` with the stable ``E_*`` codes when the record does
+        not conform to the catalogue. This is the writer the graph pipeline and
+        the tests should use; ``insert_relation`` stays as the legacy path.
+        """
+        errors = validate_relation_record(record)
+        if errors:
+            raise ValueError("invalid relation record: %s" % ", ".join(errors))
+        self._ensure_node(record.src, record.src_kind)
+        self._ensure_node(record.dst, record.dst_kind)
+        revision = self._next_revision("relations", "relation_id", record.relation_id)
+        refs = json.dumps(list(record.provenance_refs))
+        body = json.dumps(dict(record.payload), sort_keys=True, default=str)
+        chain_ref = record.chain_ref
+        cursor = self.connection.execute(
+            "INSERT INTO relations (relation_id, revision, family, kind, src, dst, "
+            "src_kind, dst_kind, mechanism, sign_prior, conditions, regime_scope, "
+            "horizon_scope, epistemic_status, lifecycle, validation_status, "
+            "valid_from, valid_to, valid_from_block, valid_to_block, superseded_by, "
+            "provenance_refs, source_family_id, extract_method, model_version, run_id, "
+            "chain_id, block_number, block_hash, tx_hash, log_index, finality, "
+            "confidence, payload, inserted_at) "
+            "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, "
+            "?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+            (record.relation_id, revision, record.family, record.kind, record.src,
+             record.dst, record.src_kind, record.dst_kind, record.mechanism,
+             record.sign_prior, record.conditions, record.regime_scope,
+             record.horizon_scope, record.epistemic_status, record.lifecycle,
+             record.validation_status, record.valid_from, record.valid_to,
+             record.payload.get("valid_from_block"), record.payload.get("valid_to_block"),
+             record.superseded_by, refs, record.source_family_id, record.extract_method,
+             record.model_version, record.run_id,
+             chain_ref.chain_id if chain_ref else None,
+             chain_ref.block if chain_ref else None,
+             None, chain_ref.tx_hash if chain_ref else None,
+             record.payload.get("log_index"),
+             str(record.payload.get("finality", "FINALIZED")),
+             float(record.confidence), body, record.inserted_at))
+        for ref in record.provenance_refs:
+            self.connection.execute(
+                "INSERT OR IGNORE INTO relation_provenance (relation_id, revision, "
+                "ref_id, ref_kind, source_family_id, extract_method, run_id) "
+                "VALUES (?, ?, ?, ?, ?, ?, ?)",
+                (record.relation_id, revision, ref, self._ref_kind(ref),
+                 record.source_family_id, record.extract_method, record.run_id))
+        self.connection.commit()
+        return int(cursor.lastrowid)
+
+    def insert_source_family(self, source_family_id: str, description: str,
+                             independence: str) -> None:
+        """Register a source family once (idempotent)."""
+        self.connection.execute(
+            "INSERT OR IGNORE INTO source_families (source_family_id, description, "
+            "independence) VALUES (?, ?, ?)",
+            (source_family_id, description, independence))
+        self.connection.commit()
+
+    def set_watermark(self, source_id: str, last_block: int,
+                      last_block_hash: Optional[str] = None,
+                      last_ts: Optional[str] = None,
+                      status: str = "OK") -> None:
+        """Upsert the ingestion watermark of a source (the only mutable table)."""
+        self.connection.execute(
+            "INSERT INTO ingestion_watermarks (source_id, last_block, last_block_hash, "
+            "last_ts, status) VALUES (?, ?, ?, ?, ?) "
+            "ON CONFLICT(source_id) DO UPDATE SET last_block=excluded.last_block, "
+            "last_block_hash=excluded.last_block_hash, last_ts=excluded.last_ts, "
+            "status=excluded.status",
+            (source_id, int(last_block), last_block_hash, last_ts or _now_iso(), status))
+        self.connection.commit()
+
+    def record_graph_snapshot(self, snapshot_id: str,
+                              as_of: Optional[str] = None,
+                              as_of_block: Optional[int] = None,
+                              graph_hash: Optional[str] = None) -> int:
+        """Persist a graph snapshot reference (append-only)."""
+        snapshot = self.snapshot_v2()
+        counts = json.dumps(snapshot["counts"], sort_keys=True)
+        cursor = self.connection.execute(
+            "INSERT INTO graph_snapshots (snapshot_id, as_of, as_of_block, graph_hash, "
+            "counts, created_at) VALUES (?, ?, ?, ?, ?, ?)",
+            (snapshot_id, as_of, as_of_block, graph_hash or str(snapshot["hash"]),
+             counts, _now_iso()))
+        self.connection.commit()
+        return int(cursor.lastrowid)
+
+    def graph_counts(self) -> Dict[str, int]:
+        """Current logical counts of the graph-v2 world tables."""
+        counts: Dict[str, int] = {
+            "nodes": int(self.connection.execute(
+                "SELECT COUNT(DISTINCT node_id) FROM nodes").fetchone()[0]),
+            "events": int(self.connection.execute(
+                "SELECT COUNT(DISTINCT event_id) FROM events").fetchone()[0]),
+            "relation_provenance": int(self.connection.execute(
+                "SELECT COUNT(DISTINCT relation_id) FROM relation_provenance").fetchone()[0]),
+        }
+        counts["relations"] = self.current_row_count("relations")
+        return counts
+
+    def node_by_id(self, node_id: str) -> Optional[Dict[str, Any]]:
+        """Current revision of a node, as a plain dict."""
+        row = self._latest_row("nodes", "node_id", node_id)
+        return dict(row) if row is not None else None
+
+    def event_by_id(self, event_id: str) -> Optional[Dict[str, Any]]:
+        """A first-class event, as a plain dict."""
+        row = self.connection.execute(
+            "SELECT * FROM events WHERE event_id = ?", (event_id,)).fetchone()
+        return dict(row) if row is not None else None
+
+    def relation_record_by_id(self, relation_id: str) -> Optional[RelationRecord]:
+        """Current revision as a ``RelationRecord`` (legacy rows may be partial)."""
+        row = self._latest_row("relations", "relation_id", relation_id)
+        if row is None:
+            return None
+        chain_ref = None
+        if row["chain_id"] is not None and row["block_number"] is not None:
+            chain_ref = ChainRef(chain_id=int(row["chain_id"]),
+                                 block=int(row["block_number"]),
+                                 tx_hash=row["tx_hash"] or "")
+        return RelationRecord(
+            relation_id=row["relation_id"], family=row["family"], kind=row["kind"],
+            src=row["src"], dst=row["dst"], src_kind=row["src_kind"],
+            dst_kind=row["dst_kind"], mechanism=row["mechanism"],
+            sign_prior=row["sign_prior"], conditions=row["conditions"],
+            regime_scope=row["regime_scope"], horizon_scope=row["horizon_scope"],
+            epistemic_status=row["epistemic_status"], lifecycle=row["lifecycle"],
+            validation_status=row["validation_status"], valid_from=row["valid_from"],
+            valid_to=row["valid_to"], revision=int(row["revision"]),
+            inserted_at=row["inserted_at"], superseded_by=row["superseded_by"],
+            provenance_refs=tuple(json.loads(row["provenance_refs"] or "[]")),
+            source_family_id=row["source_family_id"],
+            extract_method=row["extract_method"], model_version=row["model_version"],
+            run_id=row["run_id"], chain_ref=chain_ref,
+            confidence=float(row["confidence"]),
+            payload=json.loads(row["payload"] or "{}"))
 
     def insert_hypothesis(self, hypothesis: Hypothesis) -> int:
         """Append a revision of ``hypothesis``; returns the new row id."""
@@ -438,6 +847,10 @@ class GraphStore:
         ``counts`` counts logical entities (current revision per id);
         ``rows_total`` counts every physical row, superseded revisions
         included — that is what an append-only store looks like.
+
+        This legacy snapshot covers the six proof-layer tables. Use
+        :meth:`snapshot_v2` when the world layer (nodes/events/provenance) must
+        be part of the hash.
         """
         rows = self._current_rows()
         counts = {}
@@ -448,6 +861,35 @@ class GraphStore:
             "schema_version": SCHEMA_VERSION,
             "hash": snapshot_hash(rows),
             "counts": counts,
+            "rows_total": self._table_row_counts(),
+        }
+
+    def snapshot_v2(self) -> Dict[str, object]:
+        """Snapshot the proof layer + the world layer (nodes/events/provenance)."""
+        rows = list(self._current_rows())
+        current_nodes = self.connection.execute(
+            "SELECT * FROM nodes WHERE row_id IN "
+            "(SELECT MAX(row_id) FROM nodes GROUP BY node_id) ORDER BY node_id")
+        for row in current_nodes:
+            payload = dict(row)
+            payload["_table"] = "nodes"
+            rows.append(payload)
+        for row in self.connection.execute(
+                "SELECT * FROM events ORDER BY event_id"):
+            payload = dict(row)
+            payload["_table"] = "events"
+            rows.append(payload)
+        for row in self.connection.execute(
+                "SELECT * FROM relation_provenance "
+                "ORDER BY relation_id, revision, ref_id"):
+            payload = dict(row)
+            payload["_table"] = "relation_provenance"
+            rows.append(payload)
+        return {
+            "graph_version": GRAPH_VERSION,
+            "schema_version": SCHEMA_VERSION,
+            "hash": snapshot_hash(rows),
+            "counts": self.graph_counts(),
             "rows_total": self._table_row_counts(),
         }
 
