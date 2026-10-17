@@ -43,7 +43,10 @@ DEFAULT_ENV_FILES = (os.path.join(HERE, ".env"), os.path.join(HERE, "owners.env"
 
 SECRET_KEYS = ("ORVYREN_PRIVATE_KEY", "ORVYREN_OWNER1_PRIVATE_KEY",
                "ORVYREN_OWNER2_PRIVATE_KEY", "ORVYREN_OWNER3_PRIVATE_KEY",
-               "ORVYREN_SIGNER_KEY", "ORVYREN_MNEMONIC", "ORVYREN_SEED")
+               "ORVYREN_SIGNER_KEY", "ORVYREN_MNEMONIC", "ORVYREN_SEED",
+               # Clés LLM du mode live (FREEZE_V2 A2) — surveillées comme les autres.
+               "ORVYREN_DEEPSEEK_API_KEY", "ORVYREN_MIMO_API_KEY",
+               "ORVYREN_ZHIPU_API_KEY", "ORVYREN_MOONSHOT_API_KEY")
 MAX_SCAN_BYTES = 8 * 1024 * 1024
 
 EXIT_OK = 0
