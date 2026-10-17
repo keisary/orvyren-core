@@ -134,7 +134,11 @@ def loss_for_actions(actions: Sequence[dict], points: Sequence[Tuple[str, float]
         size = min(size, remaining)
         if size < float(action.get("amount_usdc") or 0.0):
             notes.append("action plafonnée à l'exposition restante (%.2f)" % remaining)
-        price = _value_at(points, action.get("triggered_at_utc"))
+        triggered_at = action.get("triggered_at_utc")
+        if not triggered_at:
+            raise HarnessError("action sans triggered_at_utc — P_exec non datable, "
+                               "L(a) refusée (jamais de prix inventé)")
+        price = _value_at(points, triggered_at)
         if price is None:
             price = p_ref
             notes.append("aucune observation ≤ action — prix de référence utilisé (déclaré)")
@@ -169,6 +173,14 @@ def regret_pair(loss_value: float, oracle_loss: float) -> Dict[str, Any]:
     regret = loss_mod.regret(loss_value, oracle_loss)
     return {"R": regret, "R_plus": max(regret, 0.0), "R_minus": min(regret, 0.0),
             "note": "R⁻ et R⁺ ne sont jamais moyennés ensemble (règle de langage B7 §e.5)"}
+
+
+def _b0_quantiles(ordered: Sequence[float]) -> Dict[str, float]:
+    """Declared quantiles of a sorted sample — one convention: rank ``int(p·m)-1`` (clamped)."""
+    m = len(ordered)
+    return {"p05": ordered[max(0, int(0.05 * m) - 1)],
+            "p50": ordered[max(0, int(0.50 * m) - 1)],
+            "p95": ordered[max(0, int(0.95 * m) - 1)]}
 
 
 # --------------------------------------------------------------------------- #
@@ -243,13 +255,10 @@ def run_window(window, *, decision_path: str = DEFAULT_DECISION,
                                          draws=b0_draws)
         losses = [loss_for_actions(draw, points, p_terminal=p_terminal)["loss"] for draw in draws]
         regrets = [loss_mod.regret(value, oracle["loss"]) for value in losses]
-        distribution = comparators_mod.b0_regret_distribution(draws, lambda _draw: 0.0)
         ordered = sorted(regrets)
         distribution = {"m": len(ordered), "mean": sum(ordered) / len(ordered),
                         "min": ordered[0], "max": ordered[-1], "median": ordered[len(ordered) // 2],
-                        "quantiles": {"p05": ordered[max(0, int(0.05 * len(ordered)) - 1)],
-                                      "p50": ordered[max(0, int(0.50 * len(ordered)) - 1)],
-                                      "p95": ordered[min(len(ordered) - 1, int(0.95 * len(ordered)))]},
+                        "quantiles": _b0_quantiles(ordered),
                         "seed": comparators_mod.B0_SEED, "draws": b0_draws,
                         "paired_with": paired_label,
                         "note": ("B0 apparié à %s (%s)" % (paired_label,

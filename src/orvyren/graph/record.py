@@ -41,6 +41,7 @@ __all__ = [
     "FIELD_GROUP_COUNT",
     "GRANT_PROOF_KINDS",
     "ONCHAIN_KINDS",
+    "PROPAGATION_KINDS",
     "QUANTITY_KEYS",
     "parse_ts",
     "validate_relation_record",
@@ -167,6 +168,10 @@ GRANT_PROOF_KINDS = frozenset({"AUTHORIZES", "REVOKES", "MEMBER_OF", "ALLOWS"})
 #: Kinds whose facts are on-chain by construction (need chain_ref).
 ONCHAIN_KINDS = frozenset({"MEMBER_OF"})  # B2 §3.2: "on-chain fact `AssignRoles`"
 
+#: Kinds that propagate (B2 §6.3): their sign is composed along a path, so an
+#: ambiguous sign would propagate an undefined direction (engine guardrail G5).
+PROPAGATION_KINDS = frozenset({"DEPENDS_ON", "AFFECTS"})
+
 #: Payload keys that denote a quantity (family 2 golden rule: a quantity
 #: without unit/date is invalid).
 QUANTITY_KEYS = frozenset({"amount", "quantity", "montant", "weight", "poids",
@@ -289,6 +294,14 @@ def validate_relation_record(record: RelationRecord) -> Tuple[str, ...]:
     # -- CORRELATES_WITH: "STATISTICAL status mandatory, never causal".
     if record.kind == "CORRELATES_WITH" and record.epistemic_status != "STATISTICAL":
         reject("E_CORRELATION_NOT_STATISTICAL")
+
+    # -- Propagation sign (engine guardrail G5 parity): a propagatable edge
+    #    composes its sign along a path, so it must carry one — 'ambigu' would
+    #    propagate an undefined direction. Without this rule a conform-looking
+    #    record reached the SQL layer and died on the storage trigger with a
+    #    raw ``sqlite3.IntegrityError`` instead of the ``E_*`` contract.
+    if record.kind in PROPAGATION_KINDS and record.sign_prior == "ambigu":
+        reject("E_DEPENDENCY_SIGN_AMBIGUOUS")
 
     # -- Family 2 golden rule (B2 §3.1): a quantity without unit/date is
     #    invalid. Any numeric payload value is a quantity.

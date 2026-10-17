@@ -216,38 +216,53 @@ def check_a1_chains(root: str, manifest: Dict[str, Any]) -> List[Dict[str, Any]]
             detail["first_bad"] = state.get("first_bad")
             detail["reason"] = state.get("reason")
         tail_note = None
-        if ok and stream_id == "exec" and isinstance(expected_count, int):
-            # B6 §1.4: after the manifest-time head, exec carries 3 LINK + 1 SEAL.
-            head_at = _chain_state(records[:expected_count])
-            if not head_at.get("ok") or head_at.get("head") != expected_head:
+        if ok and stream_id == "exec":
+            if not isinstance(expected_count, int):
+                # Without the manifest-time count the LINK/SEAL junction cannot be
+                # located: never pass silently on the chain alone (B6 §1.4).
                 ok = False
-                detail["reason"] = "head before LINK/SEAL does not match the manifest"
-                detail["head_at_%d" % expected_count] = head_at.get("head")
-            tail = records[expected_count:]
-            kinds = [record.get("kind") for record in tail if isinstance(record, dict)]
-            if kinds != ["LINK", "LINK", "LINK", "SEAL"]:
-                ok = False
-                detail["tail_kinds"] = kinds
-                detail["reason"] = detail.get("reason") or "tail must be 3 LINK + 1 SEAL"
+                detail["reason"] = ("exec stream declared without an integer "
+                                    "records count: LINK/SEAL junction not verifiable")
             else:
-                seal = tail[-1]
-                manifest_bytes = open(os.path.join(root, "manifest.json"), "rb").read()
-                seal_expected = sha256_hex(manifest_bytes)
-                seal_found = (seal.get("payload") or {}).get("manifest_sha256")
-                links = {link.get("payload", {}).get("stream"): link.get("payload", {})
-                         for link in tail[:3]}
-                graph_head = (streams.get("graph") or {}).get("head_hash")
-                link_ok = (links.get("graph", {}).get("head_hash") == graph_head
-                           and links.get("decision", {}).get("sha256")
-                           == (manifest.get("decision") or {}).get("sha256"))
-                tail_note = {"seal_ok": seal_found == seal_expected, "links_ok": link_ok}
-                if seal_found != seal_expected or not link_ok:
+                # B6 §1.4: after the manifest-time head, exec carries 3 LINK + 1 SEAL.
+                head_at = _chain_state(records[:expected_count])
+                if not head_at.get("ok") or head_at.get("head") != expected_head:
                     ok = False
-                    detail["reason"] = detail.get("reason") or "LINK/SEAL junction mismatch"
-        if ok and stream_id == "graph" and isinstance(expected_count, int):
-            if len(records) != expected_count:
+                    detail["reason"] = "head before LINK/SEAL does not match the manifest"
+                    detail["head_at_%d" % expected_count] = head_at.get("head")
+                tail = records[expected_count:]
+                kinds = [record.get("kind") for record in tail if isinstance(record, dict)]
+                if kinds != ["LINK", "LINK", "LINK", "SEAL"]:
+                    ok = False
+                    detail["tail_kinds"] = kinds
+                    detail["reason"] = detail.get("reason") or "tail must be 3 LINK + 1 SEAL"
+                else:
+                    seal = tail[-1]
+                    with open(os.path.join(root, "manifest.json"), "rb") as handle:
+                        manifest_bytes = handle.read()
+                    seal_expected = sha256_hex(manifest_bytes)
+                    seal_found = (seal.get("payload") or {}).get("manifest_sha256")
+                    links = {link.get("payload", {}).get("stream"): link.get("payload", {})
+                             for link in tail[:3]}
+                    graph_head = (streams.get("graph") or {}).get("head_hash")
+                    link_ok = (links.get("graph", {}).get("head_hash") == graph_head
+                               and links.get("decision", {}).get("sha256")
+                               == (manifest.get("decision") or {}).get("sha256"))
+                    tail_note = {"seal_ok": seal_found == seal_expected, "links_ok": link_ok}
+                    if seal_found != seal_expected or not link_ok:
+                        ok = False
+                        detail["reason"] = detail.get("reason") or "LINK/SEAL junction mismatch"
+        if ok and stream_id in ("graph", "agent"):
+            # The manifest-declared head is part of the contract for these
+            # streams: a stream rewritten end-to-end (recomputed per-record
+            # hashes, same length) must still fail on the head (B6 §2.4 A1).
+            if isinstance(expected_count, int) and len(records) != expected_count:
                 ok = False
-                detail["reason"] = "graph records count mismatch"
+                detail["reason"] = "%s records count mismatch" % stream_id
+            if state.get("head") != expected_head:
+                ok = False
+                detail["reason"] = detail.get("reason") or (
+                    "%s head_hash does not match the manifest" % stream_id)
         if tail_note:
             detail.update(tail_note)
         checks.append(new_check("A1.%s.chain" % stream_id, "A", ok, detail))
@@ -273,7 +288,11 @@ def recompute_self_hash(path: str, pattern: re.Pattern) -> Dict[str, Any]:
     if not match:
         return {"ok": False, "reason": "self-hash row not found"}
     declared = match.group(1)
-    zeroed = text.replace(declared, GENESIS, 1)
+    # Zero the self field **at its own position** (the matched row): the hash may
+    # legitimately appear earlier in the file (input table, embedded data) and a
+    # first-occurrence substitution would then zero the wrong place (the producer
+    # stamps the field positionally too — audit/dossier.py:_stamp_self_hash).
+    zeroed = text[:match.start(1)] + GENESIS + text[match.end(1):]
     computed = sha256_hex(zeroed.encode("utf-8"))
     return {"ok": declared == computed, "declared": declared, "computed": computed}
 
@@ -399,6 +418,11 @@ def check_a4_rerender(root: str, manifest: Dict[str, Any]) -> List[Dict[str, Any
     import tempfile as _tempfile
     out_dir = _tempfile.mkdtemp(prefix="orvyren_a4_")
     staging = _tempfile.mkdtemp(prefix="orvyren_a4_in_")
+    # The staging display root is module-global state: save it and restore it in
+    # the finally block, or every later dossier build in this process (other
+    # tests, other packets) resolves its displayed paths against a dead staging.
+    had_repo_root = hasattr(_dossier_mod, "_REPO_ROOT")
+    previous_repo_root = getattr(_dossier_mod, "_REPO_ROOT", None)
     try:
         # The producer built the packet dossier with the packet root as both
         # its display root and its output directory. Reproduce both: stage the
@@ -444,6 +468,10 @@ def check_a4_rerender(root: str, manifest: Dict[str, Any]) -> List[Dict[str, Any
                                      {"problems": problems, "generated_at": generated_at}))
         return results
     finally:
+        if had_repo_root:
+            _dossier_mod._REPO_ROOT = previous_repo_root
+        elif hasattr(_dossier_mod, "_REPO_ROOT"):
+            del _dossier_mod._REPO_ROOT
         shutil.rmtree(out_dir, ignore_errors=True)
         shutil.rmtree(staging, ignore_errors=True)
 
@@ -488,11 +516,18 @@ def check_a5_policy(root: str, manifest: Dict[str, Any]) -> List[Dict[str, Any]]
                           {"reason": "no POLICY records in the journal"})]
 
     allowed_recipients, source = _resolve_recipients(root, policy_data, intents)
-    ttl_minutes = int(policy_data.get("ttl_intent_minutes", 15))
-    ttl_hours = int(policy_data.get("permission_ttl_hours", 24))
-    max_per_tx = float(policy_data.get("max_per_tx", 100.0))
-    max_cumulative = float(policy_data.get("max_cumulative_24h", 300.0))
-    chain_id = int(policy_data.get("chain_id", 0))
+    try:
+        ttl_minutes = int(policy_data.get("ttl_intent_minutes", 15))
+        ttl_hours = int(policy_data.get("permission_ttl_hours", 24))
+        max_per_tx = float(policy_data.get("max_per_tx", 100.0))
+        max_cumulative = float(policy_data.get("max_cumulative_24h", 300.0))
+        chain_id = int(policy_data.get("chain_id", 0))
+    except (TypeError, ValueError) as exc:
+        # Honesty rule: an invalid policy field is named in the report, never
+        # raised out of the verifier.
+        return [new_check("A5.policy.verdicts", "A", False,
+                          {"reason": "unreadable numeric field in %s: %s"
+                                     % (policy_rel, exc)})]
     asset = str(policy_data.get("asset", ""))
 
     intents_by_id = {}
@@ -521,7 +556,12 @@ def check_a5_policy(root: str, manifest: Dict[str, Any]) -> List[Dict[str, Any]]
         moment = parse_iso(payload.get("decided_at")) or expiry
         created_at = (expiry - dt.timedelta(minutes=ttl_minutes)) if expiry else moment
         context = payload.get("context_used") or {}
-        cumulative = float(context.get("cumulative_spent", rolling_amount))
+        try:
+            cumulative = float(context.get("cumulative_spent", rolling_amount))
+        except (TypeError, ValueError) as exc:
+            results.append({"intent_id": intent_id, "ok": False,
+                            "reason": "unreadable context_used.cumulative_spent: %s" % exc})
+            continue
         try:
             intent_obj = _policy_mod.Intent(
                 intent_id=str(intent_id), action=str(intent.get("action", "transfer")),
@@ -599,6 +639,9 @@ def _recompute_signals(corpus_path: str, window_start: str, window_end: str):
     import csv as _csv
     start = parse_iso(window_start)
     end = parse_iso(window_end)
+    if start is None or end is None:
+        raise ValueError("decision window missing or unparsable bounds (%r, %r)"
+                         % (window_start, window_end))
     # independent venues only (the aggregator is not an independent venue)
     prices = {"bitstamp": "close_usd", "binance": "close_usdcusdt"}
     venue_hours: Dict[str, set] = {venue: set() for venue in prices}
@@ -619,6 +662,9 @@ def _recompute_signals(corpus_path: str, window_start: str, window_end: str):
     for previous, current in zip(supply, supply[1:]):
         hours = (current[0] - previous[0]).total_seconds() / 3600.0
         if 0 < hours <= 24:
+            if previous[1] == 0:
+                raise ValueError("zero supply baseline at %s: percentage change "
+                                 "undefined" % previous[0].isoformat())
             change = (current[1] - previous[1]) / previous[1] * 100.0
             max_drop = change if max_drop is None or change < max_drop else max_drop
     per_hour: Dict[Any, int] = {}
@@ -645,11 +691,16 @@ def check_a7_fixtures(root: str, manifest: Dict[str, Any]) -> List[Dict[str, Any
     try:
         recomputed = _recompute_signals(os.path.join(root, corpus_rel),
                                         window.get("start"), window.get("end"))
-    except (OSError, KeyError, ValueError) as exc:
+    except (OSError, KeyError, ValueError, TypeError, ZeroDivisionError) as exc:
         return [new_check("A7.fixtures.signals", "A", False,
                           {"reason": "recompute failed: %s" % exc})]
-    recorded_h2 = (((decision.get("hypothesis_verdicts") or {}).get("H2") or {})
-                   .get("criteria_evaluated") or [{}])[0].get("computed") or {}
+    h2 = ((decision.get("hypothesis_verdicts") or {}).get("H2")) or {}
+    criteria_evaluated = h2.get("criteria_evaluated")
+    first_criterion = (criteria_evaluated[0]
+                       if isinstance(criteria_evaluated, list) and criteria_evaluated
+                       else None)
+    recorded_h2 = ((first_criterion.get("computed") or {})
+                   if isinstance(first_criterion, dict) else {})
     comparisons = {
         "max_24h_supply_drop_pct": {
             "recorded": recorded_h2.get("max_24h_supply_drop_pct"),
@@ -753,7 +804,12 @@ def check_a8_receipts(root: str, manifest: Dict[str, Any]) -> List[Dict[str, Any
                 problems.append(entry)
                 continue
             to_address = _topic_address(transfer["topics"][2])
-            value = int(str(transfer.get("data", "0x0")), 16)
+            try:
+                value = int(str(transfer.get("data", "0x0")), 16)
+            except (TypeError, ValueError):
+                entry["reason"] = "LOG_DATA_UNREADABLE"
+                problems.append(entry)
+                continue
             mismatches = []
             if str(transfer.get("address", "")).lower() != str(intent.get("asset", "")).lower():
                 mismatches.append("TOKEN_CONTRACT_MISMATCH")
@@ -823,7 +879,15 @@ def check_b_chain(root: str, manifest: Dict[str, Any], rpc_url: str) -> Tuple[Li
             continue
         detail = {"status": {"journal": payload.get("status"), "chain": receipt.get("status")},
                   "block": {"journal": payload.get("block_number"),
-                            "chain": int(str(receipt.get("blockNumber", "0x0")), 16)}}
+                            "chain": receipt.get("blockNumber")}}
+        try:
+            detail["block"]["chain"] = int(str(receipt.get("blockNumber", "0x0")), 16)
+        except (TypeError, ValueError):
+            checks.append(new_check("B1.receipt.%s" % tx_hash[:12], "B", False,
+                                    {"reason": "unreadable blockNumber from rpc: %r"
+                                               % receipt.get("blockNumber")},
+                                    status="SKIPPED"))
+            continue
         ok = (str(receipt.get("status")) == str(payload.get("status"))
               and detail["block"]["chain"] == payload.get("block_number"))
         checks.append(new_check("B1.receipt.%s" % tx_hash[:12], "B", ok, detail))
@@ -851,7 +915,7 @@ def check_c_coverage(root: str, manifest: Dict[str, Any]) -> List[Dict[str, Any]
                if isinstance(record, dict)]
     intent_ids = {(record.get("payload") or {}).get("intent_id")
                   for record in records if record.get("kind") == "INTENT"}
-    submitters = {record.get("refs", {}).get("intent_id")
+    submitters = {(record.get("refs") or {}).get("intent_id")
                   for record in records if record.get("kind") in ("SUBMIT", "RECEIPT")}
     dangling: List[Dict[str, Any]] = []
     declared_gaps: List[Dict[str, Any]] = []
@@ -948,7 +1012,10 @@ def run_mutations(root: str, manifest: Dict[str, Any]) -> Tuple[List[Dict[str, A
         records = read_jsonl(path)
         if len(records) < 2 or not isinstance(records[1], dict):
             return False
-        records[1]["payload"]["__tampered__"] = True
+        payload = records[1].get("payload")
+        if not isinstance(payload, dict):
+            return False
+        payload["__tampered__"] = True
         with open(path, "w", encoding="utf-8", newline="\n") as handle:
             for record in records:
                 handle.write(canonical_json(record) + "\n")
@@ -1082,7 +1149,7 @@ def verify_packet(target: str, *, rpc_url: Optional[str] = None,
         if with_mutations and isinstance(manifest, dict):
             mutations, mutations_ok = run_mutations(root, manifest)
             if not mutations_ok:
-                verdict = "FAIL" if verdict != "OFFLINE_PASS" else "FAIL"
+                verdict = "FAIL"
         summary = {
             "A": sum(1 for check in checks if check["class"] == "A"),
             "B": sum(1 for check in checks if check["class"] == "B"),

@@ -124,8 +124,12 @@ class FTSMemory:
             "INSERT OR REPLACE INTO memory VALUES (?,?,?,?,?)",
             (entry.memory_id, entry.kind, entry.text,
              json.dumps(list(entry.refs)), entry.ts_utc))
+        # FTS5 carries no unique key on memory_id: a replaced entry MUST drop
+        # its old rows first, or recall would return stale/duplicate text.
+        self.con.execute("DELETE FROM memory_fts WHERE memory_id = ?",
+                         (entry.memory_id,))
         self.con.execute(
-            "INSERT OR REPLACE INTO memory_fts(body, memory_id) VALUES (?,?)",
+            "INSERT INTO memory_fts(body, memory_id) VALUES (?,?)",
             (entry.text, entry.memory_id))
         self.con.commit()
         return entry

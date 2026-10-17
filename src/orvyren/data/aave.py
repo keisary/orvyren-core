@@ -96,7 +96,16 @@ class ReserveConfig:
 
     @classmethod
     def from_word(cls, word: int) -> "ReserveConfig":
-        """Decode the configuration word (bit layout of ``ReserveConfiguration``)."""
+        """Decode the configuration word (bit layout of ``ReserveConfiguration``).
+
+        Field widths follow the on-chain library exactly
+        (``ReserveConfiguration.sol``: ``MAX_VALID_BORROW_CAP``/
+        ``MAX_VALID_SUPPLY_CAP`` = 2**36-1, ``MAX_VALID_EMODE_CATEGORY`` = 255):
+        the caps are **36-bit** fields and the e-mode category is **8-bit**.  A
+        32-bit cap mask truncates any cap >= 2**32, and a 16-bit e-mode mask
+        bleeds the low bits of the unbacked mint cap (bits 176-183) into the
+        category.
+        """
         value = int(word)
         return cls(
             raw=value,
@@ -109,9 +118,9 @@ class ReserveConfig:
             borrowing_enabled=bool((value >> 58) & 1),
             stable_borrow_enabled=bool((value >> 59) & 1),
             is_paused=bool((value >> 60) & 1),
-            borrow_cap=(value >> 80) & 0xFFFFFFFF,
-            supply_cap=(value >> 116) & 0xFFFFFFFF,
-            e_mode_category=(value >> 168) & 0xFFFF,
+            borrow_cap=(value >> 80) & 0xFFFFFFFFF,
+            supply_cap=(value >> 116) & 0xFFFFFFFFF,
+            e_mode_category=(value >> 168) & 0xFF,
             liquidation_protocol_fee_bps=(value >> 152) & 0xFFFF,
         )
 

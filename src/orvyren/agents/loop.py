@@ -449,7 +449,12 @@ class BoundedLoop:
                                                       attempt, MAX_TOOL_ATTEMPTS)))
             self._usage.spend_tool()
             started = self._clock.monotonic()
-            result = tool.run(dict(task.args or {}), deadline_s=deadline)
+            try:
+                result = tool.run(dict(task.args or {}), deadline_s=deadline)
+            except Exception as exc:  # a tool failure is data, never a crash
+                result = contracts.ToolResult(
+                    ok=False, status="FAILED",
+                    error="E_TOOL_RUNTIME:%s" % type(exc).__name__)
             self._usage.spend_wall(self._clock.monotonic() - started)
             self._journal.append_dict(self._line(
                 kind="TOOL_RESULT", refs=_observation_refs(task.outil, result),

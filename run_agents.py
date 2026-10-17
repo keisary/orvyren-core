@@ -34,6 +34,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import math
 import os
 import subprocess
 import sys
@@ -129,9 +130,18 @@ def _spawn(role: str, run_dir: str, timeout_s: float) -> int:
     env["PYTHONIOENCODING"] = "utf-8"
     cmd = [sys.executable, "-m", "orvyren.agents.worker",
            "--role", role, "--run-dir", run_dir]
-    completed = subprocess.run(cmd, cwd=REPO_ROOT, env=env, capture_output=True,
-                               text=True, encoding="utf-8", errors="replace",
-                               timeout=timeout_s)
+    try:
+        completed = subprocess.run(cmd, cwd=REPO_ROOT, env=env, capture_output=True,
+                                   text=True, encoding="utf-8", errors="replace",
+                                   timeout=timeout_s)
+    except subprocess.TimeoutExpired as exc:
+        # A hung worker is a failed worker: report it like one (the caller
+        # raises E_WORKER_<ROLE>) instead of crashing with a raw traceback.
+        for line in ((exc.stdout or "") if isinstance(exc.stdout, str)
+                     else (exc.stdout or b"").decode("utf-8", "replace")).splitlines():
+            print("    %s" % line)
+        print("    [stderr] worker %s exceeded --timeout-s %.0fs" % (role, timeout_s))
+        return 124
     for line in (completed.stdout or "").splitlines():
         print("    %s" % line)
     if completed.returncode != 0:
@@ -193,9 +203,10 @@ def collect_and_finish(*, run_dir: str, case_id: str, mode: str) -> dict:
     return final
 
 
-def _print_summary(final: dict) -> None:
+def _print_summary(final: dict, budget: dict = None) -> None:
     outcome = final["outcome"]
     budgets = outcome.get("budget_used", {})
+    caps = budget or {}
     print()
     print("  ==== run summary %s (%s) ====" % (final["case_id"], final["mode"]))
     for role, info in final["journals"].items():
@@ -203,9 +214,13 @@ def _print_summary(final: dict) -> None:
               % (role, info["lines"], ",".join(info["agent_ids"]) or "-", "OK"))
     print("    stop           : %s %s" % (outcome.get("stop_condition") or "-",
                                          ("(abstention)" if outcome.get("inconclusive") else "")))
-    print("    budget         : llm %.0f/30 · tools %.0f/12 · %.0fs/600 · $%.4f/0.10"
-          % (budgets.get("llm_calls", 0), budgets.get("tool_calls", 0),
-             budgets.get("wall_seconds", 0), budgets.get("cost_usd", 0.0)))
+    # Ceilings shown are the ones this run was actually bounded by (--budget-*),
+    # not the frozen maxima (A5) — otherwise a --budget-llm 10 run would print /30.
+    print("    budget         : llm %.0f/%.0f · tools %.0f/%.0f · %.0fs/%.0fs · $%.4f/$%.2f"
+          % (budgets.get("llm_calls", 0), caps.get("llm_calls", 30),
+             budgets.get("tool_calls", 0), caps.get("tool_calls", 12),
+             budgets.get("wall_seconds", 0), caps.get("wall_seconds", 600),
+             budgets.get("cost_usd", 0.0), caps.get("cost_usd", 0.10)))
     verdict = (final.get("critique") or {}).get("verdict_lecture", "—")
     print("    critique       : %s" % verdict)
     if final.get("escalation"):
@@ -241,7 +256,7 @@ def main(argv=None) -> int:
 
     for name, value, ceiling in (("llm", args.budget_llm, 30), ("tools", args.budget_tools, 12),
                                  ("wall", args.budget_wall, 600), ("usd", args.budget_usd, 0.10)):
-        if value <= 0 or value > ceiling:
+        if not math.isfinite(value) or value <= 0 or value > ceiling:
             raise SystemExit("E_BUDGET: --budget-%s must be within ]0, %s] (A5 frozen ceilings)"
                              % (name, ceiling))
 
@@ -273,7 +288,7 @@ def main(argv=None) -> int:
             raise SystemExit("E_WORKER_%s: code %d — see the output above" % (role.upper(), code))
 
     final = collect_and_finish(run_dir=run_dir, case_id=args.case, mode=args.replay)
-    _print_summary(final)
+    _print_summary(final, budget)
     return 0
 
 

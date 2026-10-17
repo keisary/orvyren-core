@@ -23,7 +23,7 @@ import re
 import sqlite3
 import warnings
 from datetime import datetime, timezone
-from typing import Dict, Iterable, List, Mapping, Optional, Sequence
+from typing import Any, Dict, Iterable, List, Mapping, Optional, Sequence
 
 from orvyren.graph import models
 from orvyren.graph.catalog import EXTRACT_METHOD, KIND_CLASS
@@ -546,14 +546,26 @@ class GraphStore:
             DeprecationWarning, stacklevel=2)
         if relation.extract_method and relation.extract_method not in EXTRACT_METHOD:
             raise ValueError("unknown extract_method: %s" % relation.extract_method)
+        # The legacy columns carry no sign/epistemic field, so the guardrail
+        # triggers (G1/G2/G5) would always abort these kinds with a raw
+        # sqlite3.IntegrityError (their column defaults are REPORTED/ambigu).
+        # Refuse explicitly instead: the full record writer is mandatory.
+        if relation.kind in ("CORRELATES_WITH", "DEPENDS_ON", "AFFECTS"):
+            raise ValueError(
+                "insert_relation cannot satisfy the guardrails of %s "
+                "(no sign/status column); use insert_relation_record" % relation.kind)
         revision = self._next_revision("relations", "relation_id", relation.id)
-        cursor = self.connection.execute(
-            "INSERT INTO relations (relation_id, revision, src, dst, kind, "
-            "source_family_id, extract_method, inserted_at) "
-            "VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
-            (relation.id, revision, relation.src, relation.dst, relation.kind,
-             relation.source_family_id, relation.extract_method, _now_iso()))
-        self.connection.commit()
+        try:
+            cursor = self.connection.execute(
+                "INSERT INTO relations (relation_id, revision, src, dst, kind, "
+                "source_family_id, extract_method, inserted_at) "
+                "VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+                (relation.id, revision, relation.src, relation.dst, relation.kind,
+                 relation.source_family_id, relation.extract_method, _now_iso()))
+            self.connection.commit()
+        except sqlite3.Error:
+            self.connection.rollback()
+            raise
         return int(cursor.lastrowid)
 
     # -- graph-v2 writes -----------------------------------------------------
@@ -648,47 +660,63 @@ class GraphStore:
         errors = validate_relation_record(record)
         if errors:
             raise ValueError("invalid relation record: %s" % ", ".join(errors))
-        self._ensure_node(record.src, record.src_kind)
-        self._ensure_node(record.dst, record.dst_kind)
-        revision = self._next_revision("relations", "relation_id", record.relation_id)
-        refs = json.dumps(list(record.provenance_refs))
-        body = json.dumps(dict(record.payload), sort_keys=True, default=str)
-        chain_ref = record.chain_ref
-        cursor = self.connection.execute(
-            "INSERT INTO relations (relation_id, revision, family, kind, src, dst, "
-            "src_kind, dst_kind, mechanism, sign_prior, conditions, regime_scope, "
-            "horizon_scope, epistemic_status, lifecycle, validation_status, "
-            "valid_from, valid_to, valid_from_block, valid_to_block, superseded_by, "
-            "provenance_refs, source_family_id, extract_method, model_version, run_id, "
-            "chain_id, block_number, block_hash, tx_hash, log_index, finality, "
-            "confidence, payload, inserted_at) "
-            "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, "
-            "?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
-            (record.relation_id, revision, record.family, record.kind, record.src,
-             record.dst, record.src_kind, record.dst_kind, record.mechanism,
-             record.sign_prior, record.conditions, record.regime_scope,
-             record.horizon_scope, record.epistemic_status, record.lifecycle,
-             record.validation_status, record.valid_from, record.valid_to,
-             (record.valid_from_block if record.valid_from_block is not None
-              else record.payload.get("valid_from_block")),
-             (record.valid_to_block if record.valid_to_block is not None
-              else record.payload.get("valid_to_block")),
-             record.superseded_by, refs, record.source_family_id, record.extract_method,
-             record.model_version, record.run_id,
-             chain_ref.chain_id if chain_ref else None,
-             chain_ref.block if chain_ref else None,
-             None, chain_ref.tx_hash if chain_ref else None,
-             record.payload.get("log_index"),
-             str(record.payload.get("finality", "PENDING")),
-             float(record.confidence), body, record.inserted_at))
-        for ref in record.provenance_refs:
-            self.connection.execute(
-                "INSERT OR IGNORE INTO relation_provenance (relation_id, revision, "
-                "ref_id, ref_kind, source_family_id, extract_method, run_id) "
-                "VALUES (?, ?, ?, ?, ?, ?, ?)",
-                (record.relation_id, revision, ref, self._ref_kind(ref),
-                 record.source_family_id, record.extract_method, record.run_id))
-        self.connection.commit()
+        # Engine guardrail parity (G2): the catalogue validator (deliberately)
+        # accepts any sign on a CORRELATES_WITH — its row says "never causal",
+        # not "ambiguous sign" — but the storage trigger G2 refuses anything
+        # but 'ambigu'. Refuse here with the documented ``ValueError``/``E_*``
+        # contract so a caller never sees a raw ``sqlite3.IntegrityError``.
+        if record.kind == "CORRELATES_WITH" and record.sign_prior != "ambigu":
+            raise ValueError("invalid relation record: "
+                             "E_CORRELATION_SIGN_NOT_AMBIGUOUS")
+        try:
+            self._ensure_node(record.src, record.src_kind)
+            self._ensure_node(record.dst, record.dst_kind)
+            revision = self._next_revision("relations", "relation_id",
+                                           record.relation_id)
+            refs = json.dumps(list(record.provenance_refs))
+            body = json.dumps(dict(record.payload), sort_keys=True, default=str)
+            chain_ref = record.chain_ref
+            cursor = self.connection.execute(
+                "INSERT INTO relations (relation_id, revision, family, kind, src, dst, "
+                "src_kind, dst_kind, mechanism, sign_prior, conditions, regime_scope, "
+                "horizon_scope, epistemic_status, lifecycle, validation_status, "
+                "valid_from, valid_to, valid_from_block, valid_to_block, superseded_by, "
+                "provenance_refs, source_family_id, extract_method, model_version, run_id, "
+                "chain_id, block_number, block_hash, tx_hash, log_index, finality, "
+                "confidence, payload, inserted_at) "
+                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, "
+                "?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                (record.relation_id, revision, record.family, record.kind, record.src,
+                 record.dst, record.src_kind, record.dst_kind, record.mechanism,
+                 record.sign_prior, record.conditions, record.regime_scope,
+                 record.horizon_scope, record.epistemic_status, record.lifecycle,
+                 record.validation_status, record.valid_from, record.valid_to,
+                 (record.valid_from_block if record.valid_from_block is not None
+                  else record.payload.get("valid_from_block")),
+                 (record.valid_to_block if record.valid_to_block is not None
+                  else record.payload.get("valid_to_block")),
+                 record.superseded_by, refs, record.source_family_id, record.extract_method,
+                 record.model_version, record.run_id,
+                 chain_ref.chain_id if chain_ref else None,
+                 chain_ref.block if chain_ref else None,
+                 None, chain_ref.tx_hash if chain_ref else None,
+                 record.payload.get("log_index"),
+                 str(record.payload.get("finality", "PENDING")),
+                 float(record.confidence), body, record.inserted_at))
+            for ref in record.provenance_refs:
+                self.connection.execute(
+                    "INSERT OR IGNORE INTO relation_provenance (relation_id, revision, "
+                    "ref_id, ref_kind, source_family_id, extract_method, run_id) "
+                    "VALUES (?, ?, ?, ?, ?, ?, ?)",
+                    (record.relation_id, revision, ref, self._ref_kind(ref),
+                     record.source_family_id, record.extract_method, record.run_id))
+            self.connection.commit()
+        except sqlite3.Error:
+            # Atomic append: a refused insert must leave no node/provenance
+            # row behind (they would otherwise ride along with the *next*
+            # successful commit of this connection).
+            self.connection.rollback()
+            raise
         return int(cursor.lastrowid)
 
     def insert_source_family(self, source_family_id: str, description: str,

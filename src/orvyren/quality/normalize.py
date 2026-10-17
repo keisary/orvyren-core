@@ -7,6 +7,7 @@ kept and reported as flagged, so an auditor can decide what to do with them.
 Rules
 -----
 * missing or non-numeric ``value``            -> REJECTED
+* non-finite ``value`` (``nan`` / ``inf``)    -> REJECTED
 * metric whose unit is not declared           -> REJECTED
 * missing venue, or unparsable timestamp      -> REJECTED
 * price outside [0.50, 1.50]                  -> FLAG_PRICE_RANGE (kept)
@@ -31,6 +32,7 @@ Standard library only.
 from __future__ import annotations
 
 import csv
+import math
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from typing import Dict, List, Optional, Tuple
@@ -182,6 +184,9 @@ def load_observations(csv_path: str) -> Tuple[List[Observation], Dict[str, objec
                 value = float(raw_value)
             except ValueError:
                 _reject(report, row_no, "non_numeric_value:%s" % raw_value)
+                continue
+            if not math.isfinite(value):
+                _reject(report, row_no, "non_finite_value:%s" % raw_value)
                 continue
 
             venue = (row.get("venue") or "").strip()

@@ -178,19 +178,20 @@ def validate_hypothesis(record: HypothesisRecord) -> Tuple[str, ...]:
         errors.append(code)
 
     # Fields 1–3.
-    if not record.id.strip():
+    if not str(record.id or "").strip():
         reject("E_HYP_ID_EMPTY")
-    if not record.case_id.strip():
+    if not str(record.case_id or "").strip():
         reject("E_HYP_CASE_EMPTY")
-    if not record.enonce.strip():
+    if not str(record.enonce or "").strip():
         reject("E_HYP_ENONCE_EMPTY")
 
     # Field 4 — >= 1 S criterion and >= 1 R criterion, each complete.
     noms = set()
     for criterion in record.criteres:
         noms.add(criterion.nom)
-        if (not criterion.predicat.strip() or not criterion.seuil.strip()
-                or not criterion.sources or not criterion.fenetre.strip()):
+        if (not str(criterion.predicat or "").strip()
+                or not str(criterion.seuil or "").strip()
+                or not criterion.sources or not str(criterion.fenetre or "").strip()):
             reject("E_HYP_CRITERION_INCOMPLETE")
     if "soutien" not in noms:
         reject("E_HYP_NO_SUPPORT_CRITERION")
@@ -209,13 +210,13 @@ def validate_hypothesis(record: HypothesisRecord) -> Tuple[str, ...]:
     if record.p is not None:
         if not isinstance(record.p, str) or record.p not in P_LABELS:
             reject("E_HYP_P_NOT_LABEL")
-        if not record.p_gel_ref.strip():
+        if not str(record.p_gel_ref or "").strip():
             reject("E_HYP_P_NO_GEL_REF")
 
     # Field 10 — append-only history, every entry complete.
     for entry in record.histoire:
-        if (not entry.utc.strip() or not entry.transition.strip()
-                or not entry.raison.strip()):
+        if (not str(entry.utc or "").strip() or not str(entry.transition or "").strip()
+                or not str(entry.raison or "").strip()):
             reject("E_HYP_HISTORY_INCOMPLETE")
 
     # Field 11 — provenance: logical author (role name), version, date.
@@ -275,23 +276,23 @@ def record_from_dict(data: Mapping[str, Any]) -> HypothesisRecord:
         enonce=data["enonce"],
         criteres=tuple(
             Criterion(nom=c["nom"], predicat=c["predicat"], seuil=c["seuil"],
-                      sources=tuple(c["sources"]), fenetre=c["fenetre"])
-            for c in data.get("criteres", ())
+                      sources=tuple(c["sources"] or ()), fenetre=c["fenetre"])
+            for c in (data.get("criteres") or ())
         ),
-        preuves_pour=tuple(data.get("preuves_pour", ())),
-        preuves_contre=tuple(data.get("preuves_contre", ())),
-        inconnues=tuple(data.get("inconnues", ())),
+        preuves_pour=tuple(data.get("preuves_pour") or ()),
+        preuves_contre=tuple(data.get("preuves_contre") or ()),
+        inconnues=tuple(data.get("inconnues") or ()),
         etat=data.get("etat", "CREATED"),
         p=data.get("p"),
         p_gel_ref=data.get("p_gel_ref", ""),
         histoire=tuple(
             HistoryEntry(utc=e["utc"], transition=e["transition"],
-                         raison=e["raison"], refs=tuple(e.get("refs", ())),
+                         raison=e["raison"], refs=tuple(e.get("refs") or ()),
                          dossier_hash=e.get("dossier_hash", ""))
-            for e in data.get("histoire", ())
+            for e in (data.get("histoire") or ())
         ),
-        provenance=dict(data.get("provenance", {})),
-        relations=tuple(data.get("relations", ())),
+        provenance=dict(data.get("provenance") or {}),
+        relations=tuple(data.get("relations") or ()),
     )
 
 
@@ -432,5 +433,10 @@ class HypothesisRegistry:
             for line in handle:
                 if line.strip():
                     record = record_from_dict(json.loads(line))
+                    if record.id in registry._records:
+                        # §a.3 field 1: an id is never reused — a duplicated
+                        # line is a traceability break, never a silent overwrite.
+                        raise ValueError("E_HYP_ID_TAKEN: %s (duplicate line in %s)"
+                                         % (record.id, path))
                     registry._records[record.id] = record
         return registry

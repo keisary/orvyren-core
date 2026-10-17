@@ -79,6 +79,13 @@ class Predicate:
             # |value| and the first registered threshold is the drop threshold.
             return (self.class_labels[1] if -value >= self.thresholds[0]
                     else self.class_labels[0])
+        if self.predicate_id == "P-PERS":
+            # the labels are "<=12 h" / ">12 h": a span of EXACTLY 12 h belongs
+            # to the first class. The generic strict '<' loop below would file
+            # it under ">12 h", contradicting the label and the "<=12 h"
+            # injector (which deliberately produces exactly 12 h spans).
+            return (self.class_labels[0] if value <= self.thresholds[0]
+                    else self.class_labels[1])
         for index, threshold in enumerate(self.thresholds):
             if value < threshold:
                 return self.class_labels[index]
@@ -169,6 +176,11 @@ def _max_24h_supply_drop(observations, window_start, window_end, horizon):
         SUPPLY_VENUE)
     best = None
     for previous, current in zip(supply, supply[1:]):
+        if previous.value <= 0:
+            # non-positive supply row: flagged by H3's integrity check, and the
+            # ratio below would divide by zero (crash) on exactly the corrupt
+            # data the case is designed to detect
+            continue
         delta_hours = (current.ts - previous.ts).total_seconds() / _HOUR
         if 0 < delta_hours <= SUPPLY_WINDOW_HOURS:
             change = (current.value - previous.value) / previous.value * 100.0
@@ -282,7 +294,8 @@ def inject_outcome(predicate_id, class_label, observations, window_start,
         for venue in INDEPENDENT_VENUES:
             venue_series = _price_series(kept, venue)
             episodes = contiguous_episodes(
-                venue_series, lambda o: deviation_exceeds(o.value, SUPPLY_DROP_PCT))
+                venue_series,
+                lambda o: deviation_exceeds(o.value, DEVIATION_ALERT_PCT))
             for episode in episodes:
                 first, last = episode[0], episode[-1]
                 if class_label == ">12 h":

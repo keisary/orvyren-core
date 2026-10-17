@@ -126,9 +126,6 @@ class TestPorteDeGel(unittest.TestCase):
                 F.append_forecast(path, make_forecast(), frozen_dir=package)
 
     def test_validation_des_champs(self):
-        record = make_forecast()
-        broken = copy.deepcopy(record)
-        broken["p_origin"] = ""
         with self.assertRaises(F.ForecastError):
             F.build_forecast(
                 forecast_id="x", run_id="r", episode_id="e", set_label="dev", persona="dao",

@@ -50,13 +50,15 @@ class TestAgentBoundary(unittest.TestCase):
             "sys.path.insert(0, r'%s')\n"
             "import importlib\n"
             "loaded = []\n"
+            "failed = []\n"
             "for name in ('contracts', 'journal', 'prompts', 'store', 'llm',\n"
             "             'tools', 'loop', 'worker'):\n"
             "    try:\n"
             "        importlib.import_module('orvyren.agents.' + name)\n"
             "        loaded.append(name)\n"
-            "    except ImportError:\n"
-            "        pass\n"
+            "    except ImportError as exc:\n"
+            "        failed.append('%%s: %%s' %% (name, exc))\n"
+            "assert not failed, 'agent modules failed to import: %%r' %% failed\n"
             "assert 'orvyren.policy' not in sys.modules, 'policy loaded by agents'\n"
             "assert 'orvyren.execution' not in sys.modules, 'execution loaded by agents'\n"
             "print('BOUNDARY_OK', ','.join(loaded))\n" % SRC
@@ -64,8 +66,11 @@ class TestAgentBoundary(unittest.TestCase):
         done = subprocess.run([sys.executable, "-c", code], capture_output=True,
                               text=True, encoding="utf-8", errors="replace")
         self.assertIn("BOUNDARY_OK", done.stdout, done.stdout + done.stderr)
-        self.assertIn("contracts", done.stdout)
-        self.assertIn("journal", done.stdout)
+        # every module of the loop must really have been imported — otherwise the
+        # boundary check above would silently skip its lazy imports
+        for name in ("contracts", "journal", "prompts", "store", "llm",
+                     "tools", "loop", "worker"):
+            self.assertIn(name, done.stdout, done.stdout + done.stderr)
 
 
 if __name__ == "__main__":

@@ -152,8 +152,12 @@ def main(argv: Optional[list] = None, env: Optional[Mapping[str, str]] = None,
     if not os.path.exists(policy_path):
         print("ERROR: policy_v1.yaml not found: {}".format(policy_path), file=sys.stderr)
         return executor.EXIT_USAGE
-    if args.fixture and not os.path.exists(args.fixture):
-        print("ERROR: envelope fixture not found: {}".format(args.fixture), file=sys.stderr)
+    # Same resolution rule as --policy: relative CLI paths resolve against the
+    # repository root, never against the caller's working directory.
+    fixture_path = args.fixture if (args.fixture is None or os.path.isabs(args.fixture)) \
+        else os.path.join(ROOT, args.fixture)
+    if fixture_path and not os.path.exists(fixture_path):
+        print("ERROR: envelope fixture not found: {}".format(fixture_path), file=sys.stderr)
         return executor.EXIT_USAGE
 
     try:
@@ -205,7 +209,7 @@ def main(argv: Optional[list] = None, env: Optional[Mapping[str, str]] = None,
             dry_run=not args.execute,
             max_usd=args.max_usd,
             policy_path=policy_path,
-            fixture_path=args.fixture,
+            fixture_path=fixture_path,
             env=effective_env,
             clock=now_fn,
             signer=signer,

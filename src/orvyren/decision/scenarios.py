@@ -510,6 +510,10 @@ def _supply_changes(supply_series):
     """24 h supply changes on consecutive daily observations (order preserved)."""
     changes = []
     for previous, current in zip(supply_series, supply_series[1:]):
+        if previous.value <= 0:
+            # non-positive supply row: integrity-flagged (H3), and the ratio
+            # below would divide by zero instead of classifying the artifact
+            continue
         delta_hours = (current.ts - previous.ts).total_seconds() / _HOUR
         if 0 < delta_hours <= SUPPLY_WINDOW_HOURS:
             changes.append(

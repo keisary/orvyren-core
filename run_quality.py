@@ -203,7 +203,10 @@ def main() -> int:
     # 3. evidence graph ------------------------------------------------------
     if os.path.exists(DB_PATH):
         os.remove(DB_PATH)  # build artifact: rebuilt from the corpus each run
-    sources = build_sources(observations, now_iso)
+    # Deterministic dating: a source with no rows must NOT fall back to the run
+    # time (two runs on the same corpus must hold the same snapshot hash), so
+    # the fallback is the corpus collection time like the demo claims.
+    sources = build_sources(observations, claims_created_at)
     claims = build_claims(observations, claims_created_at)
     hypothesis = Hypothesis(
         id="H1-usdc-disclosure-disorder",

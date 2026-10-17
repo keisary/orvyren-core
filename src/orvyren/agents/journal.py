@@ -139,27 +139,42 @@ def entry_hash(entry: JournalEntry) -> str:
 def deterministic_validator(entry: JournalEntry) -> ValidationResult:
     """The deterministic gate of B1 §3.4 / B3 R1 — no LLM involved.
 
-    - ``schema_ok``: required columns present, enums closed, and an LLM line
-      pins its prompt/response hashes (reproducibility);
+    - ``schema_ok``: required columns present (with their types), enums closed,
+      and an LLM line pins its prompt/response hashes (reproducibility);
     - ``no_number_ok``: a proposal line (``PROPOSAL_KINDS``) carries no figure
       in its text — decision figures arrive through ``refs`` to observations;
     - ``provenance_ok``: role version present, and an LLM line documents its
       provider / model / pinned version / temperature.
+
+    Never raises: a mistyped column is a **schema failure** (the line is
+    rejected but stays visible), never a crash of the caller.
     """
-    if (not entry.journal_id.strip() or not entry.agent_id.strip()
-            or not entry.ts_utc.strip() or entry.kind not in JOURNAL_KINDS
-            or entry.status not in JOURNAL_STATUSES or entry.step_index < 0):
+    llm = entry.llm
+    try:
+        schema_ok = (isinstance(entry.journal_id, str) and bool(entry.journal_id.strip())
+                     and isinstance(entry.agent_id, str) and bool(entry.agent_id.strip())
+                     and isinstance(entry.ts_utc, str) and bool(entry.ts_utc.strip())
+                     and isinstance(entry.role_version, str)
+                     and entry.kind in JOURNAL_KINDS
+                     and entry.status in JOURNAL_STATUSES
+                     and isinstance(entry.step_index, int)
+                     and not isinstance(entry.step_index, bool)
+                     and entry.step_index >= 0
+                     and (isinstance(llm, Mapping) or not llm))
+    except (TypeError, ValueError):
+        schema_ok = False
+    if not schema_ok:
         return ValidationResult(False, True, False, "schema: missing or closed field")
-    if entry.llm and not (entry.prompt_hash and entry.response_hash):
+    if llm and not (entry.prompt_hash and entry.response_hash):
         return ValidationResult(False, True, False,
                                 "schema: LLM line without prompt/response hash")
     no_number_ok = True
-    if entry.kind in PROPOSAL_KINDS and any(ch.isdigit() for ch in entry.content):
-        no_number_ok = False
+    if entry.kind in PROPOSAL_KINDS:
+        no_number_ok = not any(ch.isdigit() for ch in str(entry.content))
     provenance_ok = bool(entry.role_version.strip())
-    if entry.llm:
+    if llm:
         provenance_ok = provenance_ok and all(
-            str(entry.llm.get(key, "")).strip()
+            str(llm.get(key, "")).strip()
             for key in ("provider", "model", "model_version_pinned", "temperature"))
     if not no_number_ok:
         return ValidationResult(False, False, provenance_ok,

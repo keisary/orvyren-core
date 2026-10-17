@@ -21,6 +21,7 @@ never enters the catalogue.
 
 from __future__ import annotations
 
+import math
 import os
 from dataclasses import dataclass
 from typing import Any, Dict, List, Mapping, Optional, Sequence, Tuple
@@ -150,7 +151,16 @@ def catalog_for(persona: str) -> Tuple[ActionRecord, ...]:
 
 def bounded_size(x_max: float, depth_eps: float, x_threshold: float) -> float:
     """x* = min(role x_max, measured execution depth, size at the economic
-    threshold) — B3 §d.1. Never negative."""
+    threshold) — B3 §d.1. Never negative.
+
+    Fail-safe on unreadable numbers: a NaN depth or threshold falls out of
+    float comparisons (``min(x, nan)`` keeps ``x``) and would widen the bound
+    — any non-finite input yields 0.0 instead.
+    """
+    for value in (x_max, depth_eps, x_threshold):
+        if not (isinstance(value, (int, float)) and not isinstance(value, bool)
+                and math.isfinite(value)):
+            return 0.0
     return max(0.0, min(x_max, depth_eps, x_threshold))
 
 

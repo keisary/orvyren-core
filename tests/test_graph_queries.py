@@ -148,9 +148,16 @@ class TestQ2DependencyPaths(unittest.TestCase):
         self.assertEqual(paths[0]["channels"], ["GOVERNANCE"])
 
     def test_forbidden_kinds_are_never_traversed(self):
+        counts = {}
         for case in ("usdc_2023-03", "steth_2022-06", "rseth_2026-04"):
-            for path in q2_dependency_paths(load_case(case), "asset:rseth"):
+            paths = q2_dependency_paths(load_case(case), "asset:rseth")
+            counts[case] = len(paths)
+            for path in paths:
                 self.assertTrue(set(path["kinds"]) <= DEPENDENCY_KINDS)
+        # The fixture loop must not be vacuous: the rsETH fixture really carries
+        # one DEPENDS_ON path into asset:rseth (the two other fixtures hold no
+        # such node and contribute zero paths).
+        self.assertEqual(counts["rseth_2026-04"], 1, counts)
         # in-test decoy: a SUPPORTS edge into the node must not create a path
         records = (
             _rec(relation_id="decoy", kind="SUPPORTS", family="PROOF_DERIVATION",

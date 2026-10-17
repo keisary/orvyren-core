@@ -61,6 +61,11 @@ RELATION_SUPPORT_KINDS = ("supports", "refutes")
 def _json_default(value: Any) -> Any:
     """Serialise non-JSON-native values deterministically."""
     if isinstance(value, datetime):
+        # Naive = UTC (project convention, see record.parse_ts): serialising a
+        # naive datetime through astimezone() would read it as *local* time and
+        # make the fingerprint depend on the host timezone.
+        if value.tzinfo is None:
+            value = value.replace(tzinfo=timezone.utc)
         return value.astimezone(timezone.utc).isoformat()
     if isinstance(value, (set, frozenset)):
         return sorted(value)

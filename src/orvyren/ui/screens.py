@@ -63,6 +63,10 @@ class Ctx:
 
 
 def _esc(value):
+    # A missing field renders as "—" (see the page footer), never as "None":
+    # JSON nulls must not leak into the screens as literal text.
+    if value is None:
+        return "—"
     return html.escape(str(value), quote=True)
 
 
@@ -85,14 +89,18 @@ def _sha256_short(path, length=16):
 
 
 def _read_json(path):
+    if not path:
+        return None
     try:
         with open(path, "r", encoding="utf-8") as handle:
             return json.load(handle)
-    except (OSError, json.JSONDecodeError, ValueError):
+    except (OSError, TypeError, json.JSONDecodeError, ValueError):
         return None
 
 
 def _read_jsonl(path, limit=None):
+    if not path:
+        return None
     rows = []
     try:
         with open(path, "r", encoding="utf-8") as handle:
@@ -267,7 +275,10 @@ def _demo_session_dir(ctx):
 
 
 def _s2_graphe(ctx):
-    snapshots = sorted(glob.glob(ctx.evidence_path("graph_snapshots", "*")))
+    # Only snapshot directories are cases: a stray file in the directory must
+    # not render as a phantom snapshot row.
+    snapshots = sorted(p for p in glob.glob(ctx.evidence_path("graph_snapshots", "*"))
+                       if os.path.isdir(p))
     rows = []
     sources = []
     for snap_dir in snapshots:
@@ -291,13 +302,52 @@ def _s2_graphe(ctx):
             "clock_sim": None, "body": body, "sources": sources}
 
 
+def _trace_row(step):
+    """One RDOF trace row for screen 3.
+
+    The trace schema varies with ``rdof_version`` (the frozen dossier uses
+    ``iteration``/``question``/``chosen``/``chosen_name``/``verdicts_after``…),
+    so each display slot accepts several source keys. Values are copied from
+    the record only — an absent field renders as an empty cell, never as an
+    invented one and never as a literal ``None``.
+    """
+    if not isinstance(step, dict):
+        return (str(step)[:160], "", "", "")
+
+    def pick(*keys):
+        for key in keys:
+            value = step.get(key)
+            if value is not None:
+                return value
+        return None
+
+    def cell(value):
+        if value is None:
+            return ""
+        if isinstance(value, (dict, list)):
+            return json.dumps(value, ensure_ascii=False, sort_keys=True)
+        return str(value)
+
+    row = (
+        cell(pick("step", "iteration")),
+        cell(pick("kind", "chosen_name", "chosen")),
+        cell(pick("verdict", "verdicts_after", "outcome")),
+        cell(pick("note", "question", "why")),
+    )
+    if not any(row):
+        # Unknown trace shape: show the raw step verbatim instead of blanks.
+        row = ("", "", "", json.dumps(step, ensure_ascii=False, sort_keys=True))
+    return tuple(part[:90] for part in row)
+
+
 def _s3_branches(ctx):
     record_path = ctx.evidence_path("decision_record_usdc-2023-03.json")
     record = _read_json(record_path) or {}
     rows = []
     registry = record.get("hypotheses_registry") or {}
     for hyp in registry.get("ids") or []:
-        rows.append((hyp, ", ".join(registry.get("etats") or ["—"])))
+        rows.append((hyp, ", ".join("—" if e is None else str(e)
+                                   for e in (registry.get("etats") or ["—"]))))
     body = _exists_note(ctx, record_path)
     body += "<p>Branches (hypotheses) of dossier <code>%s</code> and trace of the RDOF decision process:</p>" % _esc(record.get("case", "—"))
     body += _table(["hypothesis", "state"], rows)
@@ -306,16 +356,15 @@ def _s3_branches(ctx):
     if isinstance(trace, list) and trace:
         trace_rows = []
         for step in trace:
-            if isinstance(step, dict):
-                trace_rows.append(tuple(str(step.get(k, ""))[:90] for k in ("step", "kind", "verdict", "note")))
-            else:
-                trace_rows.append((str(step)[:160], "", "", ""))
+            trace_rows.append(_trace_row(step))
         body += "<h2>RDOF trace</h2>"
         body += _table(["step", "kind", "verdict", "note"], trace_rows, cap=16)
     body += "<h2>Stop &amp; research budget</h2>"
+    dominant = rdof.get("dominant_final")
     body += _table(["stop", "rule", "final dominant"], [(
         rdof.get("stop", "—"), rdof.get("stop_rule", "—"),
-        json.dumps(rdof.get("dominant_final"), ensure_ascii=False)[:120])])
+        "—" if dominant is None
+        else json.dumps(dominant, ensure_ascii=False)[:120])])
     abstention = record.get("abstention")
     if abstention is not None:
         body += "<p>Abstention (A1-A5): <code>%s</code></p>" % _esc(json.dumps(abstention, ensure_ascii=False)[:200])

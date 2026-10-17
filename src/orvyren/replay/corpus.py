@@ -72,7 +72,9 @@ def load_manifest(path: str = DEFAULT_MANIFEST, *, verify: bool = True) -> dict:
     for entry in files:
         rel = entry.get("path")
         digest = entry.get("sha256")
-        target = rel if os.path.isabs(str(rel)) else os.path.join(REPO_ROOT, rel)
+        if not isinstance(rel, str) or not rel.strip():
+            raise CorpusError("corpus manifest entry without a usable path: %r" % (entry,))
+        target = rel if os.path.isabs(rel) else os.path.join(REPO_ROOT, rel)
         if not os.path.isfile(target):
             raise CorpusError("corpus file missing: %s" % rel)
         actual = sha256_file(target)
@@ -268,9 +270,11 @@ def block_for(anchors: Optional[dict], stamp_utc: str) -> Optional[int]:
         return None
     day = _parse_utc(stamp_utc).strftime("%Y-%m-%d")
     direct = anchors.get(day)
-    if isinstance(direct, int):
+    if isinstance(direct, int) and not isinstance(direct, bool):
         return direct
-    resolved = sorted(key for key in anchors if key <= day and isinstance(anchors[key], int))
+    resolved = sorted(key for key in anchors
+                      if key <= day and isinstance(anchors[key], int)
+                      and not isinstance(anchors[key], bool))
     return anchors[resolved[-1]] if resolved else None
 
 

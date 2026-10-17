@@ -9,11 +9,14 @@ tree (including .git, so reviewers keep history), plus inside the archive:
   - PACKAGE_INFO.txt       : what this snapshot is, when it was built,
                              what it excludes, and the archive's own hash.
 
-Excluded from the archive: __pycache__, *.pyc, dist/, .venv, OS noise, and a
-deny-list of secret-bearing names (.env, id_*, *.pem, *.key, secrets/) -- a
-`.gitignore` does not constrain a zip built by walking a working tree (Astra
-review F08). The finished zip is re-scanned and a forbidden name inside aborts
-the build. The archive itself is written to dist/ and its sha256 is printed.
+Excluded from the archive: __pycache__, *.pyc, *.pyo, dist/, .venv, OS noise,
+*.zip and *.log (so the nested audit-packet archives under evidence/ do not
+travel inside this one), and a deny-list of secret-bearing names (.env,
+*.env except *.example.env, config.env, owners.env, id_*, *.pem, *.key,
+secrets/) -- a `.gitignore` does not constrain a zip built by walking a working
+tree (Astra review F08). The finished zip is re-scanned and a forbidden name
+inside aborts the build. The archive itself is written to dist/ and its sha256
+is printed.
 """
 
 import datetime as dt
@@ -30,6 +33,8 @@ SKIP_SUFFIXES = (".pyc", ".pyo", ".zip", ".log")
 #: and .gitignore does not constrain a zip built from the working tree (F08).
 FORBIDDEN_BASENAMES = {
     ".env",
+    # secret-bearing names created by scripts/demo/ (signer + RPC credentials):
+    "config.env", "owners.env",
     "id_ed25519", "id_ed25519.pub", "id_rsa", "id_rsa.pub", "id_ecdsa",
     "google_client_secret.json", "google_token.json",
 }
@@ -47,6 +52,10 @@ def is_forbidden(rel):
     if name in FORBIDDEN_BASENAMES:
         return True
     if name.startswith(FORBIDDEN_PREFIXES) and name != ".env.example":
+        return True
+    # Any *.env is secret-bearing unless it is an explicit example file
+    # (.env.example, config.example.env...).
+    if name.endswith(".env") and "example" not in name:
         return True
     return name.endswith(FORBIDDEN_SUFFIXES)
 
@@ -104,8 +113,10 @@ def main():
         f"files: {len(working)} working files, hashed in MANIFEST.sha256 "
         f"(+ .git history: {len(files) - len(working)} git files)",
         "verify: sha256sum -c MANIFEST.sha256",
-        "excludes: __pycache__, *.pyc, dist/, caches, and a secret deny-list "
-        "(.env, id_*, *.pem, *.key, secrets/). Corpus AND evidence are included on purpose (they are proofs).",
+        "excludes: __pycache__, *.pyc, *.pyo, *.zip, *.log, dist/, caches, and a secret deny-list "
+        "(.env, *.env except *.example.env, id_*, *.pem, *.key, secrets/). Corpus and evidence text "
+        "artefacts are included on purpose (they are proofs); the audit-packet .zip archives stay out "
+        "(delivered separately, see evidence/audit_packets/README.md).",
     ]
 
     with zipfile.ZipFile(zip_path, "w", zipfile.ZIP_DEFLATED) as zf:

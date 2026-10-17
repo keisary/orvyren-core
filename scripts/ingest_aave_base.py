@@ -314,9 +314,25 @@ def decode_and_write(
     *,
     max_events: Optional[int] = None,
     written: int = 0,
-) -> int:
+) -> Tuple[int, Optional[int]]:
+    """Decode ``logs`` into events/relations; returns ``(written, cut_block)``.
+
+    ``cut_block`` is ``None`` when the whole chunk was processed. On a
+    ``--max-events`` cut it is the block of the first skipped log: the caller
+    must never advance the ingestion watermark past it, or a later ``--resume``
+    would silently skip the unprocessed tail of the chunk. Re-processing a
+    block is safe (event/relation ids are deterministic).
+    """
+    cut_block: Optional[int] = None
+    last_seen_block: Optional[int] = None
     for log in logs:
         if max_events is not None and written >= max_events:
+            try:
+                cut_block = int(log.get("blockNumber", "0x0"), 16)
+            except (TypeError, ValueError):
+                # Unknown position: stay conservative, re-run from the last
+                # block actually seen (idempotent) instead of skipping ahead.
+                cut_block = (last_seen_block + 1) if last_seen_block is not None else 0
             break
         topics = log.get("topics") or []
         if not topics:
@@ -327,6 +343,7 @@ def decode_and_write(
             block = int(log.get("blockNumber", "0x0"), 16)
         except (TypeError, ValueError):
             continue
+        last_seen_block = block
         if not tx:
             continue
         timestamp = int(timestamps.get(block, 0)) or int(time.time())
@@ -335,7 +352,10 @@ def decode_and_write(
         event_type = decoded["event_type"]
         payload = dict(decoded["payload"])
         payload["block_time_source"] = "chunk_interpolated"
-        reserve = payload.get("reserve")
+        # LIQUIDATION carries no "reserve": its structural asset is the
+        # collateral. Without this the guard below skipped every liquidation
+        # and the LIQUIDATED_IN branch was unreachable dead code.
+        reserve = payload.get("reserve") or payload.get("collateral_asset")
         user = payload.get("user") or payload.get("on_behalf_of")
         event_node = eid
 
@@ -432,11 +452,12 @@ def decode_and_write(
                       "MARCHE", "liquidation", "-",
                       {"debt_asset": debt_asset, "debt_symbol": debt_symbol,
                        "amount": debt_amount, "unit": debt_symbol,
+                       "decimals": debt_decimals,
                        "liquidator": payload.get("liquidator"),
                        "collateral_asset": reserve,
                        "collateral_amount_raw": payload.get("collateral_amount_raw")})
         written += 1
-    return written
+    return written, cut_block
 
 
 def write_raw(raw_dir: str, from_block: int, to_block: int,
@@ -448,7 +469,8 @@ def write_raw(raw_dir: str, from_block: int, to_block: int,
     with gzip.open(path, "wt", encoding="utf-8", newline="\n") as handle:
         for log in logs:
             handle.write(json.dumps(log, sort_keys=True, separators=(",", ":")) + "\n")
-    digest = hashlib.sha256(open(path, "rb").read()).hexdigest()
+    with open(path, "rb") as handle:
+        digest = hashlib.sha256(handle.read()).hexdigest()
     return {"path": path, "sha256": digest, "count": len(logs)}
 
 
@@ -532,13 +554,17 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
                               "retrieved_at": now_iso()})
                 manifest.append(entry)
                 write_manifest(manifest_path, manifest)
-            total_events = decode_and_write(
+            total_events, cut_block = decode_and_write(
                 store, rpc, logs, timestamps,
                 max_events=args.max_events, written=total_events)
             last_hash = None
-            if logs:
+            if logs and cut_block is None:
                 last_hash = logs[-1].get("blockHash")
-            store.set_watermark(SOURCE_ID, stop, last_hash, now_iso())
+            # On an --max-events cut the watermark stops at the last fully
+            # ingested block so --resume cannot skip the tail of this chunk.
+            watermark_block = (stop if cut_block is None
+                               else max(cursor - 1, min(stop, cut_block - 1)))
+            store.set_watermark(SOURCE_ID, watermark_block, last_hash, now_iso())
             print(f"[{cursor}-{stop}] logs={len(logs)} events_total={total_events} "
                   f"elapsed={time.time() - started:.1f}s", flush=True)
             cursor = stop + 1

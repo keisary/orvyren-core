@@ -15,7 +15,7 @@ it read from the node before calling. Expected shape:
                 "chain_id": 84532, "decimals": 6}   # chain_id / decimals optional
 """
 
-from decimal import Decimal, InvalidOperation
+from decimal import Decimal
 
 from orvyren.policy import ALLOWED_CHAIN_ID
 
@@ -43,8 +43,12 @@ def value_to_base_units(amount, decimals=DEFAULT_DECIMALS):
     """
     try:
         scaled = Decimal(str(amount)).scaleb(int(decimals))
-    except (InvalidOperation, ValueError, TypeError) as exc:
+    except (ArithmeticError, ValueError, TypeError) as exc:
         raise ValueError("invalid amount: {!r}".format(amount)) from exc
+    if not scaled.is_finite():
+        # Decimal('Infinity') is "integral", so the check below would let it
+        # through and int() would raise OverflowError instead of ValueError.
+        raise ValueError("invalid amount: {!r}".format(amount))
     if scaled != scaled.to_integral_value():
         raise ValueError("amount {!r} has more than {} decimals".format(amount, decimals))
     return int(scaled)
@@ -160,7 +164,9 @@ def verify_receipt(receipt, expected):
         raise ValueError("expected is missing: {}".format(", ".join(missing)))
 
     decimals = int(expected.get("decimals", DEFAULT_DECIMALS))
-    chain_id = int(expected.get("chain_id", ALLOWED_CHAIN_ID))
+    # Same hex-tolerant parsing as the receipt side: an expected chain id given
+    # as "0x14a34" must not fail on int(, 10).
+    chain_id = _parse_chain_id(expected.get("chain_id", ALLOWED_CHAIN_ID))
     token = _address(expected["token"]) or str(expected["token"])
     sender = _address(expected["from"]) or str(expected["from"])
     recipient = _address(expected["to"]) or str(expected["to"])

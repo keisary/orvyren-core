@@ -82,7 +82,11 @@ def rpc(url, method, params=None, timeout=DEFAULT_TIMEOUT_SECONDS):
     if not isinstance(body, dict):
         raise ChainError("malformed JSON-RPC response from {} for {}".format(safe_url, method))
     if body.get("error") is not None:
-        error = body["error"] or {}
+        raw_error = body["error"]
+        # A conforming node sends an error OBJECT; proxies and gateways have
+        # been seen sending strings. Never AttributeError out of this function:
+        # normalise whatever arrived and raise the typed RpcError.
+        error = raw_error if isinstance(raw_error, dict) else {"message": str(raw_error)}
         raise RpcError(method, error.get("code"), error.get("message"), error.get("data"))
     if "result" not in body:
         raise ChainError("JSON-RPC response from {} has no result for {}".format(safe_url, method))

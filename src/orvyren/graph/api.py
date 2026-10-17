@@ -68,6 +68,14 @@ def _active(alias: str) -> List[str]:
     return [f"{alias}.lifecycle = 'ACTIVE'", f"{alias}.validation_status = 'VALIDATED'"]
 
 
+#: Current revision of each relation. The store is append-only: a correction
+#: inserts a new revision of the same ``relation_id``, and a read must see the
+#: latest one only — otherwise superseded rows double-count in every sum.
+#: Revision-based (not row_id) so the queries also run on minimal schemas.
+_CURRENT = ("r.revision = (SELECT MAX(r2.revision) FROM relations r2 "
+            "WHERE r2.relation_id = r.relation_id)")
+
+
 def exposure(db: Optional[str] = None, holder: str = "", *,
              as_of: Optional[str] = None, as_of_block: Optional[int] = None,
              max_depth: int = 3) -> Dict[str, Any]:
@@ -75,7 +83,7 @@ def exposure(db: Optional[str] = None, holder: str = "", *,
     holder_id = _node_id(holder, "addr")
     started = time.perf_counter()
     valid, vparams = _validity("r", as_of, as_of_block)
-    direct_where = ["r.src = ?", "r.kind = 'HOLDS'"] + _active("r") + valid
+    direct_where = ["r.src = ?", "r.kind = 'HOLDS'"] + _active("r") + [_CURRENT] + valid
     walk_valid, walk_params = _validity("r", as_of, as_of_block)
     sql = f"""
         WITH RECURSIVE direct(asset, amount, unit) AS (
@@ -93,7 +101,7 @@ def exposure(db: Optional[str] = None, holder: str = "", *,
             JOIN relations r ON r.src = w.asset
             WHERE w.depth < ?
               AND r.kind IN ('DEPOSITED_IN', 'COLLATERALIZES', 'REHYPOTHECATED_TO')
-              AND {' AND '.join(_active('r') + walk_valid)}
+              AND {' AND '.join(_active('r') + [_CURRENT] + walk_valid)}
         )
         SELECT w.asset, MIN(w.depth) AS depth,
                COALESCE(SUM(d.amount), 0.0) AS amount,
@@ -139,9 +147,9 @@ def dependency_paths(db: Optional[str] = None, src: str = "", dst: str = "",
     depth = max(1, min(int(max_depth), 8))
     started = time.perf_counter()
     valid, vparams = _validity("r", as_of, as_of_block)
-    kind_clause = "r.kind IN (%s)" % ",".join("?" for _ in selected)
-    initial = (["r.src = ?", kind_clause] + _active("r") + valid)
-    recursive = (["w.depth < ?", kind_clause] + _active("r") + valid +
+    kind_clause = "r.kind IN (%s)" % ", ".join("?" for _ in selected)
+    initial = (["r.src = ?", kind_clause] + _active("r") + [_CURRENT] + valid)
+    recursive = (["w.depth < ?", kind_clause] + _active("r") + [_CURRENT] + valid +
                  ["instr(w.path, '/' || r.dst || '/') = 0"])
     sql = f"""
         WITH RECURSIVE walk(node, depth, negative, ambiguous, path) AS (
@@ -190,7 +198,7 @@ def pit(db: Optional[str] = None, *, as_of: Optional[str] = None,
     """Q4 — facts true and known at a point in time."""
     started = time.perf_counter()
     valid, params = _validity("r", as_of, as_of_block)
-    where = _active("r") + valid
+    where = _active("r") + [_CURRENT] + valid
     con = _connect(db)
     try:
         count = con.execute(
@@ -261,7 +269,8 @@ def concentration(db: Optional[str] = None, asset: str = "", *,
     asset_id = _node_id(asset, "asset")
     started = time.perf_counter()
     valid, params = _validity("r", as_of, as_of_block)
-    where = ["r.dst = ?", "r.kind IN ('OWES', 'COLLATERALIZES')"] + _active("r") + valid
+    where = ["r.dst = ?", "r.kind IN ('OWES', 'COLLATERALIZES')"] \
+        + _active("r") + [_CURRENT] + valid
     con = _connect(db)
     try:
         rows = [dict(row) for row in con.execute(
@@ -288,7 +297,8 @@ def permissions(db: Optional[str] = None, subject: str = "", *,
     started = time.perf_counter()
     valid, params = _validity("r", as_of, as_of_block)
     where = ["(r.src = ? OR r.dst = ?)",
-             "r.kind IN ('MEMBER_OF', 'ALLOWS', 'REVOKES')"] + _active("r") + valid
+             "r.kind IN ('MEMBER_OF', 'ALLOWS', 'REVOKES')"] \
+        + _active("r") + [_CURRENT] + valid
     con = _connect(db)
     try:
         rows = [dict(row) for row in con.execute(
@@ -307,17 +317,28 @@ def permissions(db: Optional[str] = None, subject: str = "", *,
 
 def snapshot(db: Optional[str] = None, *, as_of: Optional[str] = None,
              as_of_block: Optional[int] = None) -> Dict[str, Any]:
-    """Counts and a deterministic hash of the current graph slice."""
+    """Counts and a deterministic hash of the current graph slice.
+
+    The relations slice is the current revision of every relation, PIT-filtered
+    when ``as_of`` / ``as_of_block`` are given (the args change the result).
+    ``nodes`` / ``events`` / ``relation_provenance`` counts stay whole-table:
+    those tables carry no superseded revisions here.
+    """
     started = time.perf_counter()
     con = _connect(db)
     try:
+        valid, vparams = _validity("r", as_of, as_of_block)
+        where = [_CURRENT] + valid
+        slice_from = " FROM relations r WHERE " + " AND ".join(where)
         counts = {
-            table: con.execute("SELECT COUNT(*) FROM " + table).fetchone()[0]
-            for table in ("relations", "nodes", "events", "relation_provenance")
+            "relations": int(con.execute(
+                "SELECT COUNT(*)" + slice_from, vparams).fetchone()[0]),
+            **{table: con.execute("SELECT COUNT(*) FROM " + table).fetchone()[0]
+               for table in ("nodes", "events", "relation_provenance")},
         }
         rows = con.execute(
-            "SELECT relation_id, revision, kind, src, dst FROM relations "
-            "ORDER BY relation_id, revision").fetchall()
+            "SELECT r.relation_id, r.revision, r.kind, r.src, r.dst" + slice_from +
+            " ORDER BY r.relation_id, r.revision", vparams).fetchall()
         digest = hashlib.sha256()
         for row in rows:
             digest.update(("|".join(str(row[key]) for key in row.keys()) + "\n").encode())

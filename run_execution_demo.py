@@ -264,6 +264,14 @@ def build_report(config, now, tx_hash=None, clock=DEMO_CLOCK, env=None):
 
     if tx_hash and allowed_intent is not None:
         receipt_verification = verify_on_chain(config, allowed_intent, tx_hash)
+    elif tx_hash:
+        # Truthful status: a hash WAS provided, but no intent was ALLOWed, so
+        # there is nothing it could be verified against.
+        receipt_verification = {
+            "tx_hash": tx_hash,
+            "status": "a transaction hash was provided but no intent was ALLOWed: "
+                      "nothing to verify it against",
+        }
     else:
         receipt_verification = {"status": PENDING_VERIFICATION}
 
@@ -397,7 +405,9 @@ def main(argv=None):
     try:
         report = build_report(config, now, tx_hash=tx_hash)
     except Exception as exc:  # noqa: BLE001 — policy or fixture unavailable: clean refusal
-        print("ERROR: {}".format(exc), file=sys.stderr)
+        # Keep the refusal clean but name the failure class: an unexplained
+        # "ERROR: ..." must not hide which kind of problem occurred.
+        print("ERROR: {}: {}".format(type(exc).__name__, exc), file=sys.stderr)
         return 2
 
     out_path = args.out

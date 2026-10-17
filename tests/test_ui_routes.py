@@ -120,8 +120,15 @@ class UiRoutesTests(unittest.TestCase):
         self.assertEqual(status, 200)
 
     def test_screens_never_invent_missing_sources(self):
-        built = screens.build_screen(10, screens.Ctx(_ROOT, os.path.join(_ROOT, "evidence")))
-        self.assertIn(b"MODE:", built)
+        # Against an empty evidence dir, screen 10 must declare its missing
+        # source instead of inventing one (mode + no fabricated digest).
+        import tempfile
+        with tempfile.TemporaryDirectory(prefix="orvyren_empty_evidence_") as empty:
+            built = screens.build_screen(10, screens.Ctx(_ROOT, empty)).decode("utf-8")
+        self.assertIn("MODE:", built)
+        self.assertNotIn("RENDER ERROR", built)
+        self.assertIn("SOURCE MISSING", built)
+        self.assertNotIn("sha256:", built, "a missing source must not yield a hash")
 
 
 if __name__ == "__main__":

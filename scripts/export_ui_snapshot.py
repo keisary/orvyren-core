@@ -36,8 +36,8 @@ def _latest(db: str) -> Dict[str, Any]:
     con = _connect(db)
     try:
         row = con.execute(
-            "SELECT MAX(block_number) AS block, MAX(valid_from) AS as_of "
-            "FROM relations").fetchone()
+            "SELECT block_number AS block, valid_from AS as_of "
+            "FROM relations ORDER BY block_number DESC, row_id DESC LIMIT 1").fetchone()
         holder = con.execute(
             "SELECT src, COUNT(*) AS n FROM relations WHERE kind='HOLDS' "
             "GROUP BY src ORDER BY n DESC, src LIMIT 1").fetchone()
@@ -108,7 +108,9 @@ def main(argv=None) -> int:
     parser.add_argument("--asset", default=None)
     args = parser.parse_args(argv)
     data = build(args.db, holder=args.holder, asset=args.asset)
-    os.makedirs(os.path.dirname(args.out), exist_ok=True)
+    out_dir = os.path.dirname(args.out)
+    if out_dir:
+        os.makedirs(out_dir, exist_ok=True)
     tmp = args.out + ".tmp"
     with open(tmp, "w", encoding="utf-8", newline="\n") as handle:
         json.dump(data, handle, indent=2, ensure_ascii=False)

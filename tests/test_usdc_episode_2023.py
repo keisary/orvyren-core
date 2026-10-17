@@ -279,7 +279,8 @@ class BlockIndexTest(unittest.TestCase):
         for h in hours:
             b = resolved[h]
             self.assertLessEqual(_synth_ts(b), h)
-            self.assertLess(_synth_ts(b + 1), h + 10 ** 9)
+            # bracket: b is the LAST block with ts <= h, so ts(b+1) > h
+            self.assertGreater(_synth_ts(b + 1), h)
             self.assertEqual(b, _synth_true_block(h))
         self.assertGreater(counters["batch"], 0)
         self.assertGreater(len(idx.cache), 40)

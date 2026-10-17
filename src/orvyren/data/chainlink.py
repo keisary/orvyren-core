@@ -33,7 +33,8 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any, Dict, Optional
 
-from orvyren.data.rpc import ArchiveRpc, RpcError, decode_string, decode_uint
+from orvyren.data.rpc import (ArchiveRpc, RpcError, decode_int, decode_string,
+                              decode_uint)
 
 __all__ = [
     "SEL_LATEST_ROUND_DATA",
@@ -138,7 +139,11 @@ class ChainlinkFeed:
         if self._decimals is not None:
             return self._decimals
         value = decode_uint(self.rpc.eth_call(self.address, SEL_DECIMALS, block))
-        self._decimals = value
+        if block == "latest":
+            # Only a ``latest`` read may be cached: pinning the value read at a
+            # historical block would silently answer every later call (at any
+            # other block) with that first reading — same rule as description().
+            self._decimals = value
         return value
 
     # -- answers ------------------------------------------------------------ #
@@ -146,19 +151,24 @@ class ChainlinkFeed:
         """``latestRoundData()`` -- raises :class:`FeedError` when unsupported."""
         try:
             raw = self.rpc.eth_call(self.address, SEL_LATEST_ROUND_DATA, block)
-        except RpcError as exc:
+            # AggregatorV3: (uint80 roundId, int256 answer, uint256 startedAt,
+            # uint256 updatedAt, uint80 answeredInRound). Only ``answer`` is
+            # signed: decoding it as unsigned turns any negative price into a
+            # ~2**256 garbage value.
+            words = [decode_uint(raw, i) for i in range(5)]
+            answer_raw = decode_int(raw, 1)
+        except (RpcError, ValueError) as exc:
             raise FeedError(
                 f"{self.name}: latestRoundData() unavailable at block {block} "
                 f"(Aave's capped feeds expose latestAnswer() only): {exc}"
             ) from exc
-        words = [decode_uint(raw, i) for i in range(5)]
         try:
             label: Optional[str] = self.description(block)
-        except RpcError:
+        except (RpcError, ValueError):
             label = None
         return RoundData(
             round_id=words[0],
-            answer_raw=words[1],
+            answer_raw=answer_raw,
             started_at=words[2],
             updated_at=words[3],
             answered_in_round=words[4],
@@ -167,8 +177,8 @@ class ChainlinkFeed:
         )
 
     def latest_answer(self, block: Any = "latest") -> int:
-        """``latestAnswer()`` (raw integer) -- the capped feed's only readable answer."""
-        return decode_uint(self.rpc.eth_call(self.address, SEL_LATEST_ANSWER, block))
+        """``latestAnswer()`` (raw int256) -- the capped feed's only readable answer."""
+        return decode_int(self.rpc.eth_call(self.address, SEL_LATEST_ANSWER, block))
 
     def price(self, block: Any = "latest", *, block_timestamp: Optional[int] = None) -> Dict[str, Any]:
         """Best available answer for ``block``, with its provenance.
@@ -186,12 +196,18 @@ class ChainlinkFeed:
             round_data = self.latest_round_data(block)
         except FeedError:
             decimals = self.decimals(block)
+            # Same tolerance as latest_round_data(): a feed without
+            # description() must not lose its price because the label failed.
+            try:
+                label: Optional[str] = self.description(block)
+            except (RpcError, ValueError):
+                label = None
             payload.update(
                 {
                     "price": self.latest_answer(block) / 10 ** decimals,
                     "method": "latestAnswer",
                     "decimals": decimals,
-                    "description": self.description(block),
+                    "description": label,
                     "updated_at": None,
                     "age_seconds": None,
                 }

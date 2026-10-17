@@ -141,6 +141,11 @@ def authorization_via_policy(amount_usdc, reserve_recipient, created_at=None,
                 "intent_id": None, "evaluated": False}
     from orvyren.policy import ALLOWED_ASSET, ALLOWED_CHAIN_ID, Intent, default_config, evaluate
     moment = created_at or dt.datetime.now(dt.timezone.utc)
+    if moment.tzinfo is None:
+        moment = moment.replace(tzinfo=dt.timezone.utc)   # naive = UTC (policy rule)
+    moment = moment.astimezone(dt.timezone.utc)
+    # the intent_id stamps the instant as ...Z: only truthful on UTC — a
+    # non-UTC `created_at` previously labelled local wall time as Z
     intent = Intent(
         intent_id=intent_id or ("decision-%s" % moment.strftime("%Y%m%dT%H%M%SZ")),
         action=action,

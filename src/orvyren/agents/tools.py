@@ -329,8 +329,10 @@ class JournalWriteTool:
     ``journal_id`` in the observations. Line identity (``run_id``, ``agent_id``,
     ``step_index``, ``ts_utc``, ``role_version``, ...) may be pinned through
     ``args`` so a replay reproduces the line; unbound fields get non-empty
-    defaults. A missing ``content`` is the only data error (``E_TOOL_NO_DATA``);
-    a non-conforming line is still appended and reported ``REJECTED`` /
+    defaults. A missing ``content`` is the data error (``E_TOOL_NO_DATA``) and
+    a mistyped ``refs`` / ``step_index`` is refused (``E_TOOL_ARGS_TYPE`` — a
+    bare string would be iterated character by character); a non-conforming
+    line is still appended and reported ``REJECTED`` /
     ``QUARANTINED`` by the journal — the refusal stays visible.
     """
 
@@ -351,6 +353,15 @@ class JournalWriteTool:
             return _no_data()
         kind = str(supplied.pop("kind", "") or "REFLECTION")
         refs = supplied.pop("refs", ())
+        if refs is not None and not isinstance(refs, (list, tuple)):
+            # A bare string would be iterated character by character and pollute
+            # the journal refs with one-character "references".
+            return contracts.ToolResult(ok=False, status="FAILED",
+                                        error="E_TOOL_ARGS_TYPE:refs")
+        if "step_index" in supplied and (isinstance(supplied["step_index"], bool)
+                                         or not isinstance(supplied["step_index"], int)):
+            return contracts.ToolResult(ok=False, status="FAILED",
+                                        error="E_TOOL_ARGS_TYPE:step_index")
         self._counter += 1
         # Unknown keys are NOT dropped here: the journal quarantines them, so
         # the refusal stays visible ("never a filter that deletes silently",

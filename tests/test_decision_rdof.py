@@ -57,6 +57,9 @@ class TestPredicateCatalogue(unittest.TestCase):
         predicate = BY_ID["P-6.3"]
         self.assertEqual(predicate.class_of(-7.172196), ">=1 %")
         self.assertEqual(predicate.class_of(-0.2), "<1 %")
+        # boundary is inclusive: exactly -1.00 % belongs to ">=1 %", just below does not
+        self.assertEqual(predicate.class_of(-1.0), ">=1 %")
+        self.assertEqual(predicate.class_of(-0.9999), "<1 %")
 
     def test_supply_drop_reproduces_the_published_figure(self):
         fact = evaluate_predicate("P-6.3", load(), MAIN_WINDOW[0], MAIN_WINDOW[1])

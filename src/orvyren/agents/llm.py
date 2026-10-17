@@ -262,10 +262,29 @@ class RecordedBackend(contracts.LLMBackend):
                  config: Optional[Mapping[str, Any]] = None) -> None:
         self.store = store
         self.config = config if config is not None else load_models_config()
+        self._consumed: Dict[str, int] = {}
 
     def find_call(self, prompt_hash: str) -> Optional[Dict[str, Any]]:
         """The call line recorded for this prompt hash, or ``None``."""
         return self.store.find_call(prompt_hash)
+
+    def _next_call(self, prompt_hash: str) -> Optional[Dict[str, Any]]:
+        """The next recorded call for this prompt hash, in **recorded order**.
+
+        A run may ask the same prompt several times (the bounded loop retries
+        a transport failure with the very same payload); a replay must walk
+        the same sequence — fail then success stays fail then success — or the
+        replayed journal diverges from the recorded one. When the recorded
+        sequence is exhausted, the **last** call answers every further
+        identical request (one recording, many identical reads).
+        """
+        entries = [entry for entry in self.store.calls()
+                   if entry.get("prompt_hash") == prompt_hash]
+        if not entries:
+            return None
+        index = self._consumed.get(prompt_hash, 0)
+        self._consumed[prompt_hash] = index + 1
+        return entries[index] if index < len(entries) else entries[-1]
 
     def complete(self, *, role: str, role_version: str, schema_id: str,
                  system_prompt: str, payload: Mapping[str, Any],
@@ -276,7 +295,7 @@ class RecordedBackend(contracts.LLMBackend):
             return contracts.LLMResult(ok=False, error="E_LLM_UNKNOWN_ROLE:%s" % role)
         p_hash = self.store.hash_prompt(role, role_version, schema_id,
                                         system_prompt, payload)
-        entry = self.store.find_call(p_hash)
+        entry = self._next_call(p_hash)
         if entry is None:
             return contracts.LLMResult(
                 ok=False, error="E_LLM_NOT_RECORDED:%s" % p_hash,
@@ -288,6 +307,24 @@ class RecordedBackend(contracts.LLMBackend):
             return contracts.LLMResult(
                 ok=False, error="E_LLM_MISSING_BLOB:%s" % r_hash,
                 prompt_hash=p_hash, response_hash=r_hash, **meta)
+        recorded_error = str(entry.get("error", "") or "")
+        if recorded_error:
+            # A recorded failure replays as the same failure (same code,
+            # same accounting) — never as a surprise success.
+            return contracts.LLMResult(
+                ok=False, raw=raw, data=None, error=recorded_error,
+                provider=str(entry.get("provider", meta["provider"])),
+                model=str(entry.get("model", meta["model"])),
+                model_version_pinned=str(
+                    entry.get("model_version_pinned", meta["model_version_pinned"])),
+                temperature=float(entry.get("temperature", meta["temperature"])),
+                tokens_in=int(entry.get("tokens_in", 0) or 0),
+                cached_in=int(entry.get("cached_in", 0) or 0),
+                tokens_out=int(entry.get("tokens_out", 0) or 0),
+                cost_usd=float(entry.get("cost_usd", 0.0) or 0.0),
+                latency_ms=int(entry.get("latency_ms", 0) or 0),
+                prompt_hash=p_hash, response_hash=r_hash,
+                ts_utc=str(entry.get("ts_utc", "")))
         try:
             data = json.loads(raw)
         except (json.JSONDecodeError, ValueError):
@@ -396,8 +433,11 @@ class LiveBackend(contracts.LLMBackend):
                 return result
             failures.append("%s:%s" % (model_key, motif))
         error = "E_LLM_NO_KEY" if not had_key else "E_LLM_ALL_PROVIDERS_FAILED"
-        return contracts.LLMResult(ok=False, error=error, prompt_hash=p_hash,
-                                   **meta)
+        # The terminal failure is archived like a content failure: a replay
+        # must reproduce the SAME failure (same code, same accounting) instead
+        # of failing with E_LLM_NOT_RECORDED — the recorded journal carries the
+        # error line, so the replayed journal has to carry it too.
+        return self._record_failure(ctx, "", error, meta)
 
     # -- one candidate model -------------------------------------------------
     def _call_model(self, model_key: str, model_cfg: Mapping[str, Any],
@@ -469,9 +509,7 @@ class LiveBackend(contracts.LLMBackend):
             if isinstance(envelope.get("usage"), dict):
                 usage = envelope["usage"]
         if not isinstance(message, Mapping):
-            return contracts.LLMResult(
-                ok=False, raw=str(text), error="E_LLM_BAD_RESPONSE",
-                prompt_hash=ctx["prompt_hash"], **meta)
+            return self._record_failure(ctx, str(text), "E_LLM_BAD_RESPONSE", meta)
         tokens_in = int(usage.get("prompt_tokens") or 0)
         cached_in = int(usage.get("prompt_cache_hit_tokens") or 0)
         tokens_out = int(usage.get("completion_tokens") or 0)
@@ -501,28 +539,22 @@ class LiveBackend(contracts.LLMBackend):
                 ts_utc=ts_utc)
         content = message.get("content")
         if content is None:
-            return contracts.LLMResult(
-                ok=False, raw=str(text), error="E_LLM_BAD_RESPONSE",
-                prompt_hash=ctx["prompt_hash"], **meta)
+            return self._record_failure(ctx, str(text), "E_LLM_BAD_RESPONSE", meta)
         content = str(content)
         if not content.strip():
             # Documented DeepSeek pitfall: a 200 with empty content is
             # non-conforming (DOC2 §5.2.4) — never a guess downstream.
-            return contracts.LLMResult(
-                ok=False, raw=content, error="E_LLM_EMPTY_RESPONSE",
-                tokens_in=tokens_in, cached_in=cached_in, tokens_out=tokens_out,
-                cost_usd=cost_usd, latency_ms=latency_ms,
-                prompt_hash=ctx["prompt_hash"], **meta)
+            return self._record_failure(
+                ctx, content, "E_LLM_EMPTY_RESPONSE", meta,
+                tokens_in, cached_in, tokens_out, cost_usd, latency_ms)
         try:
             data = json.loads(content)
         except (json.JSONDecodeError, ValueError):
             data = None
         if not isinstance(data, dict):
-            return contracts.LLMResult(
-                ok=False, raw=content, error="E_LLM_BAD_JSON",
-                tokens_in=tokens_in, cached_in=cached_in, tokens_out=tokens_out,
-                cost_usd=cost_usd, latency_ms=latency_ms,
-                prompt_hash=ctx["prompt_hash"], **meta)
+            return self._record_failure(
+                ctx, content, "E_LLM_BAD_JSON", meta,
+                tokens_in, cached_in, tokens_out, cost_usd, latency_ms)
         ts_utc = _utc_now()
         r_hash = response_hash(content)
         if self.store is not None:
@@ -538,10 +570,38 @@ class LiveBackend(contracts.LLMBackend):
             prompt_hash=ctx["prompt_hash"], response_hash=r_hash,
             ts_utc=ts_utc)
 
+    def _record_failure(self, ctx: Mapping[str, Any], raw: str, error: str,
+                        meta: Mapping[str, Any], tokens_in: int = 0,
+                        cached_in: int = 0, tokens_out: int = 0,
+                        cost_usd: float = 0.0, latency_ms: int = 0
+                        ) -> contracts.LLMResult:
+        """Archive a failed exchange too — a replay must reproduce failures.
+
+        The raw body is stored like a success, and the call line carries the
+        error code, so :class:`RecordedBackend` can return the exact same
+        failure (same code, same accounting, same hashes).
+        """
+        ts_utc = _utc_now()
+        r_hash = response_hash(raw)
+        if self.store is not None:
+            self._archive(ctx, r_hash, raw, ts_utc, meta,
+                          tokens_in, cached_in, tokens_out, cost_usd,
+                          latency_ms, error=error)
+        return contracts.LLMResult(
+            ok=False, raw=raw, data=None, error=error,
+            provider=meta["provider"], model=meta["model"],
+            model_version_pinned=meta["model_version_pinned"],
+            temperature=meta["temperature"],
+            tokens_in=tokens_in, cached_in=cached_in, tokens_out=tokens_out,
+            cost_usd=cost_usd, latency_ms=latency_ms,
+            prompt_hash=ctx["prompt_hash"], response_hash=r_hash,
+            ts_utc=ts_utc)
+
     def _archive(self, ctx: Mapping[str, Any], r_hash: str, raw: str,
                  ts_utc: str, meta: Mapping[str, Any],
                  tokens_in: int, cached_in: int, tokens_out: int,
-                 cost_usd: float, latency_ms: int) -> None:
+                 cost_usd: float, latency_ms: int,
+                 error: str = "") -> None:
         """Archive prompt, raw answer and call line (the replay material)."""
         self.store.save_prompt(ctx["prompt_hash"], ctx["system_prompt"],
                                ctx["payload"])
@@ -563,6 +623,7 @@ class LiveBackend(contracts.LLMBackend):
             "tokens_out": tokens_out,
             "cost_usd": cost_usd,
             "latency_ms": latency_ms,
+            "error": error,
         })
 
 
@@ -644,11 +705,24 @@ def parse_tool_calls(raw: Any) -> Optional[Tuple[contracts.ToolCall, ...]]:
     return tuple(calls)
 
 
+#: Spec ``type`` → accepted Python types (bool is NOT an integer here).
+_ARG_TYPES: Mapping[str, Any] = {
+    "string": str,
+    "integer": int,
+    "number": (int, float),
+    "boolean": bool,
+    "array": (list, tuple),
+    "object": Mapping,
+}
+
+
 def _check_call_args(spec: Mapping[str, Any], args: Mapping[str, Any]) -> List[str]:
     """Validate call args against a strict tool spec (closed object).
 
     Unknown key → ``E_TOOL_ARGS_UNKNOWN:<key>``; missing required key →
-    ``E_TOOL_ARGS_REQUIRED:<key>``. Nothing is silently ignored.
+    ``E_TOOL_ARGS_REQUIRED:<key>``; wrong JSON type → ``E_TOOL_ARGS_TYPE:<key>``
+    (a string where an array is expected must never reach a tool: it would be
+    iterated character by character). Nothing is silently ignored.
     """
     parameters = ((spec.get("function") or {}).get("parameters")
                   or spec.get("parameters") or {})
@@ -659,6 +733,15 @@ def _check_call_args(spec: Mapping[str, Any], args: Mapping[str, Any]) -> List[s
     for key in parameters.get("required", ()):
         if key not in args:
             errors.append("E_TOOL_ARGS_REQUIRED:%s" % key)
+    for key, value in args.items():
+        expected = (properties.get(key) or {}).get("type")
+        checker = _ARG_TYPES.get(str(expected or ""))
+        if checker is None:
+            continue
+        if isinstance(value, bool) and expected in ("integer", "number"):
+            errors.append("E_TOOL_ARGS_TYPE:%s" % key)
+        elif not isinstance(value, checker):
+            errors.append("E_TOOL_ARGS_TYPE:%s" % key)
     return errors
 
 
@@ -693,6 +776,19 @@ class ToolTurnRunner:
         self.clock = clock if clock is not None else time.monotonic
         self._step = 0
 
+    def _now_iso(self) -> str:
+        """Journal timestamp of one line.
+
+        The injected ``clock`` wins when it carries ``now_iso`` (the
+        ``loop.SystemClock`` / ``worker.VirtualClock`` shape): a replayed turn
+        must rewrite byte-identical journal lines, so the wall clock is only
+        the live-mode default — never a hidden input of the hash chain.
+        """
+        now_iso = getattr(self.clock, "now_iso", None)
+        if callable(now_iso):
+            return str(now_iso())
+        return datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+
     # -- journal -----------------------------------------------------------
     def _journal(self, kind: str, content: str,
                  result: Optional[contracts.LLMResult] = None) -> None:
@@ -705,7 +801,7 @@ class ToolTurnRunner:
             "agent_id": self.agent_id,
             "role_version": "toolturn/v1",
             "step_index": self._step,
-            "ts_utc": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+            "ts_utc": self._now_iso(),
             "kind": kind,
             "content": content,
         }
@@ -847,11 +943,16 @@ class ToolTurnRunner:
             first_motif = propose.error or "E_TOOLCALL_PROPOSE_FAILED"
             errors.append(first_motif)
 
-        # Fallback: strict JSON, no tools offered (journaled).
+        # Fallback: strict JSON, no tools offered (journaled). The payload
+        # carries the fallback marker: the retry MUST hash differently from
+        # the failed propose call (same schema/prompt otherwise), or a replay
+        # could not tell the two calls apart (E_LLM_NOT_RECORDED / wrong blob).
+        retry_payload = dict(payload_tools)
+        retry_payload["reprise_fallback"] = first_motif
         retry = self.backend.complete(
             role=role, role_version=role_version,
             schema_id=contracts.TOOLCALL_SCHEMA_ID, system_prompt=system,
-            payload=payload_tools)
+            payload=retry_payload)
         llm_lines.append(retry.to_dict())
         if retry.ok and isinstance(retry.data, Mapping):
             ok, envelope_errors = contracts.validate_toolcall_output(retry.data)
