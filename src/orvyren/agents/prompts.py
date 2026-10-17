@@ -27,7 +27,7 @@ __all__ = [
 
 #: Frozen prompt versions (B1 §5.5 rule 5 — recorded in ``role_version``).
 PROMPT_VERSIONS: Dict[str, str] = {
-    "orchestrator": "orch-p1.0.0",
+    "orchestrator": "orch-p1.1.0",
     "critic": "crit-p1.0.0",
     "canonicalizer": "canon-p1.0.0",
 }
@@ -57,8 +57,10 @@ RÈGLES
 2. Tu ne peux pas créer d'outil, de source, ni augmenter un budget.
 3. Si aucune tâche n'a de valeur attendue suffisante, tu renvoies `stop=true`.
 4. Si le budget restant est insuffisant, tu renvoies `stop=true` avec `motif_stop`.
-5. Tu écris TOUJOURS au format JSON strict du schéma ci-dessous. Aucun texte hors JSON.
+5. Tu écris TOUJOURS au format JSON strict ; le schéma dépend de l'ÉTAPE, indiquée par le message utilisateur (voir DEUX ÉTAPES). Aucun texte hors JSON.
 
+DEUX ÉTAPES, DEUX SORTIES
+(a) PLANIFICATION — message fournissant lacunes[], hypotheses[], sources_autorisees[] :
 SORTIE (JSON strict)
 {
   "$schema": "orvyren/orch/v1",
@@ -75,7 +77,21 @@ SORTIE (JSON strict)
   "motif_stop": null,
   "non_recherche": ["string — ce qu'on ne cherche pas et pourquoi"]
 }
-Rappel : tout champ inconnu sera REJETÉ. Si tu n'es pas certain, arrête (`stop=true`).
+(b) ÉVALUATION — message commençant par « évalue la tâche » et fournissant observations[] :
+tu ne planifies PAS ; le schéma (a) est INTERDIT ici (`$schema`, `tache`, `stop`,
+`motif_stop`, `lacune_id` n'ont pas leur place).
+SORTIE (JSON strict)
+{
+  "claims": [
+    { "enonce": "string (fait vérifiable)", "refs": ["observation:… | claim:… | hypothesis:…"] }
+  ]
+}
+- au moins une ref par claim, jamais un chiffre inventé ; champs optionnels par claim :
+  `sens`, `branches_concernees`.
+- si l'observation n'apporte rien d'exploitable : {"claims": [], "insuffisance": "string (raison)"}.
+- en évaluation, le contexte attendu est `observations[]` — l'absence de `lacunes[]` /
+  `hypotheses[]` y est NORMALE ; tu n'émets jamais de plan en évaluation.
+Rappel : tout champ inconnu sera REJETÉ. En planification seulement, si tu n'es pas certain, arrête (`stop=true`).
 """
 
 #: Squelette 2 — critique adversarial (B1 §5.3).

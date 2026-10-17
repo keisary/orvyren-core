@@ -2,7 +2,7 @@
 
 # Rapport d'évaluation ORVYREN — DEV
 
-*hash de contenu* : `b3ef5eab4d26b540ed5046938c420ba580d3181396b58f6b985b095a7e7d5fbf` · *généré* : 2026-10-17T00:14:08Z · *fenêtres sautées* : 0
+*hash de contenu* : `b3ef5eab4d26b540ed5046938c420ba580d3181396b58f6b985b095a7e7d5fbf` · *généré* : 2026-10-17T01:24:24Z · *fenêtres sautées* : 0
 
 **Paramètres** : q = 100.0 · p_ref = 1.0 · k = 0.0 · tirages B0 = 200
 

@@ -1,6 +1,6 @@
 {
  "case": "usdc-2023-03",
- "created_at": "2026-10-16T21:35:15.331808+00:00",
+ "created_at": "2026-10-17T01:27:36.152623+00:00",
  "kind": "scripted-demo",
  "note": "Réponses SCRIPTÉES (démo hors-ligne) enregistrées par le chemin LiveBackend réel. Remplacer par une session live quand les clés existent : python run_agents.py --case usdc-2023-03 --replay live",
  "records": 6

@@ -19,7 +19,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."
 from orvyren.agents import prompts  # noqa: E402
 
 EXPECTED_VERSIONS = {
-    "orchestrator": "orch-p1.0.0",
+    "orchestrator": "orch-p1.1.0",
     "critic": "crit-p1.0.0",
     "canonicalizer": "canon-p1.0.0",
 }

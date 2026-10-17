@@ -4,7 +4,7 @@
   "note": "mode journal — séquences enregistrées, horloge non consommée (aucun événement futur admis)",
   "run_id": "replay-journal",
   "steps": 0,
-  "ts_wall_utc": "2026-10-17T00:14:10Z",
+  "ts_wall_utc": "2026-10-17T01:28:04Z",
   "valid": true,
   "violations": [],
   "window": {
@@ -12,15 +12,15 @@
    "t_sim_start_utc": "2023-03-09T00:00:00Z"
   }
  },
- "content_sha256": "291276a1a66ff4c7799ba90a3c0a634b664fed5eb248fb5c99e44676b543d93b",
- "duration_s": 0.648,
+ "content_sha256": "07514112b9033085d1bfd34596f6a220c14439443b691e815561acfffbe40fb8",
+ "duration_s": 0.912,
  "journals": {
   "critic": {
    "chain_head": "0c69bc8788ee9140ef6575ed6023cdafe5fce70cbb6cb8718f6bb2923161d01b",
    "lines": 1
   },
   "orchestrator": {
-   "chain_head": "ae93e0c6faa2bb4f85d14bdad676c67759b35910fede1375d95b940a4e689bc6",
+   "chain_head": "1647b767b4c9ec25cf7fc042379166cd1248db5a084073a6d8f55d679e82f7d4",
    "lines": 11
   }
  },
@@ -29,12 +29,12 @@
   "code_hash": "e7ed0daaa6bf547b44c1252d9f9099dfdfe013f1aa21b98824b45fc76c3ac350",
   "corpus_hash": "a64cbea0c93e3b196cacf6a40ba6a0ba60baa90540455532fb9e96e665b026d7",
   "mode": "REPLAY-JOURNAL",
-  "replay_id": "usdc-2023-03-journal-20261017T001410Z",
+  "replay_id": "usdc-2023-03-journal-20261017T012804Z",
   "t_sim_end": "2023-03-14T00:00:00Z",
   "t_sim_start": "2023-03-10T00:00:00Z"
  },
  "run_id": "demo-usdc-2023-03",
  "schema": "orvyren.replay-dossier/v1",
- "transcript_hash": "b985001e924f23dd8a8999d566117ff483aecb92fd4efd18400d0a4bab55ab9d",
- "ts_wall_utc": "2026-10-17T00:14:10Z"
+ "transcript_hash": "01c2a0387c2875c6597bdd19bf0b4fad9ce2c0e40607f5d8e2c7dcafe53b6bfc",
+ "ts_wall_utc": "2026-10-17T01:28:04Z"
 }

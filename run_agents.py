@@ -71,7 +71,7 @@ def load_case_inputs(case_id: str) -> dict:
 
 
 def prepare_run(*, case_id: str, mode: str, session_dir: str, inputs: dict,
-                store_dir: str, budget: dict) -> str:
+                store_dir: str, budget: dict, record_live: bool = False) -> str:
     """Create the run directory + ``run.json``; returns the run directory."""
     stamp = _utc_stamp()
     # Journal mode: the run_id is PINNED ("demo-<case>") so the journal
@@ -100,6 +100,8 @@ def prepare_run(*, case_id: str, mode: str, session_dir: str, inputs: dict,
         "store_dir": os.path.abspath(store_dir),
         "created_at": created_at,
     }
+    if record_live:
+        spec["record_live"] = True
     _write_json(os.path.join(run_dir, "run.json"), spec)
     return run_dir
 
@@ -209,6 +211,9 @@ def main(argv=None) -> int:
                         help="répertoire de session (défaut : demo_runs/agents/<case>)")
     parser.add_argument("--store", default=None,
                         help="magasin de réponses (défaut : fixtures/agents/store_<case>)")
+    parser.add_argument("--record-live", action="store_true",
+                        help="enregistre les réponses LIVE dans <run_dir>/store_live "
+                             "(scellées par hash ; rejeu bit-à-bit ultérieur via --store)")
     parser.add_argument("--budget-llm", type=float, default=30)
     parser.add_argument("--budget-tools", type=float, default=12)
     parser.add_argument("--budget-wall", type=float, default=600)
@@ -237,9 +242,12 @@ def main(argv=None) -> int:
     budget = {"llm_calls": args.budget_llm, "tool_calls": args.budget_tools,
               "wall_seconds": args.budget_wall, "cost_usd": args.budget_usd}
     run_dir = prepare_run(case_id=args.case, mode=args.replay, session_dir=session,
-                          inputs=inputs, store_dir=store, budget=budget)
+                          inputs=inputs, store_dir=store, budget=budget,
+                          record_live=args.record_live)
     print("ORVYREN — run_agents · %s · mode %s" % (args.case, args.replay))
     print("  run       : %s" % run_dir)
+    if args.record_live:
+        print("  store live: %s" % os.path.join(run_dir, "store_live"))
 
     for role in ("orchestrator", "critic"):
         print("  [%s] processus lancé…" % role)

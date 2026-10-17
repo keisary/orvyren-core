@@ -193,7 +193,7 @@ def make_scenario(script, **overrides):
         backend=backend, tools=tools, journal=journal,
         budget=overrides.pop("budget", None),
         clock=overrides.pop("clock", None) or FakeClock(),
-        prompt_version="orch-p1.0.0",
+        prompt_version="orch-p1.1.0",
         system_prompt=overrides.pop("system_prompt", "SYS-INJECTE"),
         snapshot=overrides.pop("snapshot", data["snapshot"]),
         lacunes=overrides.pop("lacunes", [{"lacune_id": "L-1", "question": QUESTION_PRICES}]),
@@ -223,7 +223,7 @@ class InterfaceTest(unittest.TestCase):
         for name in list(parameters)[1:]:
             self.assertEqual(parameters[name].kind, inspect.Parameter.KEYWORD_ONLY, name)
         self.assertEqual(parameters["agent_id"].default, "orchestrator")
-        self.assertEqual(parameters["prompt_version"].default, "orch-p1.0.0")
+        self.assertEqual(parameters["prompt_version"].default, "orch-p1.1.0")
         for name in ("budget", "clock", "system_prompt", "on_promotion",
                      "sufficient_evidence", "net_voi"):
             self.assertIsNone(parameters[name].default, name)
@@ -260,7 +260,7 @@ class InterfaceTest(unittest.TestCase):
         loop, journal, backend, _ = make_scenario([llm_ok(plan_stop_data(), n=1)])
         loop.run()
         self.assertEqual(backend.calls[0]["role"], "orchestrator")
-        self.assertEqual(backend.calls[0]["role_version"], "orch-p1.0.0")
+        self.assertEqual(backend.calls[0]["role_version"], "orch-p1.1.0")
         self.assertEqual(backend.calls[0]["system_prompt"], "SYS-INJECTE")
 
     def test_the_default_system_prompt_is_never_empty(self):

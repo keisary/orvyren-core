@@ -1,0 +1,61 @@
+{
+ "archive_report": {
+  "alias": "LIVE-REPLAY (B1 §6.3)",
+  "case_id": "usdc-2023-03",
+  "identical_decisions": false,
+  "k": 3,
+  "mode": "REPLAY-ARCHIVE",
+  "note": "« même décision, texte différent » est le résultat attendu et publié (B7 §c.2) — la distribution des sorties est reportée telle quelle.",
+  "outcomes": [
+   {
+    "inconclusive": true,
+    "run_dir": "C:\\Users\\User\\AppData\\Local\\Temp\\orvyren_replay_archive_4eimf03a\\archive_00\\usdc-2023-03_live_20261017T013541Z",
+    "stop_condition": "ARRET-2",
+    "verdict": null
+   },
+   {
+    "inconclusive": true,
+    "run_dir": "C:\\Users\\User\\AppData\\Local\\Temp\\orvyren_replay_archive_4eimf03a\\archive_01\\usdc-2023-03_live_20261017T014146Z",
+    "stop_condition": "ARRET-2",
+    "verdict": null
+   },
+   {
+    "inconclusive": true,
+    "run_dir": "C:\\Users\\User\\AppData\\Local\\Temp\\orvyren_replay_archive_4eimf03a\\archive_02\\usdc-2023-03_live_20261017T014817Z",
+    "stop_condition": "ARRET-3",
+    "verdict": "INCOHERENTE"
+   }
+  ],
+  "run_dirs": [
+   "C:\\Users\\User\\AppData\\Local\\Temp\\orvyren_replay_archive_4eimf03a\\archive_00\\usdc-2023-03_live_20261017T013541Z",
+   "C:\\Users\\User\\AppData\\Local\\Temp\\orvyren_replay_archive_4eimf03a\\archive_01\\usdc-2023-03_live_20261017T014146Z",
+   "C:\\Users\\User\\AppData\\Local\\Temp\\orvyren_replay_archive_4eimf03a\\archive_02\\usdc-2023-03_live_20261017T014817Z"
+  ]
+ },
+ "banner": "REPLAY — données archivées — REPLAY-ARCHIVE — usdc-2023-03 — t_sim=2023-03-10T00:00:00Z→2023-03-14T00:00:00Z",
+ "clock_audit": {
+  "run_id": "replay-archive",
+  "steps": 0,
+  "ts_wall_utc": "2026-10-17T01:52:00Z",
+  "valid": true,
+  "violations": [],
+  "window": {
+   "t_sim_end_utc": "2023-03-14T00:00:00Z",
+   "t_sim_start_utc": "2023-03-09T00:00:00Z"
+  }
+ },
+ "content_sha256": "3be3cfc72bd22cd04d4458678c720e199ccb036143ccea0b65f62d0f596232b2",
+ "duration_s": null,
+ "provenance": {
+  "alias": "LIVE-REPLAY (B1 §6.3)",
+  "code_hash": "e7ed0daaa6bf547b44c1252d9f9099dfdfe013f1aa21b98824b45fc76c3ac350",
+  "corpus_hash": "a64cbea0c93e3b196cacf6a40ba6a0ba60baa90540455532fb9e96e665b026d7",
+  "mode": "REPLAY-ARCHIVE",
+  "replay_id": "usdc-2023-03-archive-20261017T015200Z",
+  "t_sim_end": "2023-03-14T00:00:00Z",
+  "t_sim_start": "2023-03-10T00:00:00Z"
+ },
+ "run_id": "usdc-2023-03-archive",
+ "schema": "orvyren.replay-dossier/v1",
+ "ts_wall_utc": "2026-10-17T01:52:00Z"
+}

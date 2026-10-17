@@ -1,7 +1,7 @@
 {
   "schema": "orvyren/models-config/v1",
   "verified_at": "2026-10-15",
-  "note": "Identifiants épinglés du gel A2 : deepseek-flash (= DeepSeek-V4.1-Flash) principal, mimo-v2.6-pro (2e famille) pour le critique adversarial. Dépréciations observées au 2026-10-15 : redirection DeepSeek V4->V4.1 ; IDs MiMo V2.5 invalidés le 2026-10-21 (surveiller). Un test de fumée (tests/test_agents_llm.py) échoue si ce fichier n'est plus conforme. JSON (pas YAML) : le paquet agents ne doit jamais importer le paquet policy (test de frontière) ; le mini-YAML du projet reste réservé à policy_v1.yaml.",
+  "note": "Identifiants épinglés du gel A2 : deepseek-flash (= DeepSeek-V4.1-Flash) principal, mimo-v2.6-pro (2e famille) pour le critique adversarial. Dépréciations observées au 2026-10-15 : redirection DeepSeek V4->V4.1 ; IDs MiMo V2.5 invalidés le 2026-10-21 (surveiller). Base URL MiMo = Token Plan régional sgp de l'équipe (clé tp-…, mesuré 2026-10-17 : 8 modèles + chat OK) ; les clés pay-as-you-go (sk-…) utilisent api.xiaomimimo.com/v1. Un test de fumée (tests/test_agents_llm.py) échoue si ce fichier n'est plus conforme. JSON (pas YAML) : le paquet agents ne doit jamais importer le paquet policy (test de frontière) ; le mini-YAML du projet reste réservé à policy_v1.yaml.",
   "roles": {
     "orchestrator": { "model_key": "deepseek-flash", "fallbacks": ["mimo-v2.6-flash", "glm-5.3-flash"] },
     "explorer": { "model_key": "deepseek-flash", "fallbacks": ["mimo-v2.6-flash", "glm-5.3-flash"] },
@@ -26,7 +26,7 @@
       "provider": "mimo",
       "api_model": "mimo-v2.6-pro",
       "pinned_version": "V2.6",
-      "base_url": "https://api.xiaomimimo.com/v1",
+      "base_url": "https://token-plan-sgp.xiaomimimo.com/v1",
       "api_key_env": "ORVYREN_MIMO_API_KEY",
       "temperature": 0.0,
       "context_window": 1000000,
@@ -39,7 +39,7 @@
       "provider": "mimo",
       "api_model": "mimo-v2.6-flash",
       "pinned_version": "V2.6",
-      "base_url": "https://api.xiaomimimo.com/v1",
+      "base_url": "https://token-plan-sgp.xiaomimimo.com/v1",
       "api_key_env": "ORVYREN_MIMO_API_KEY",
       "temperature": 0.0,
       "context_window": 1000000,
