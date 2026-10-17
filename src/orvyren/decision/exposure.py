@@ -14,6 +14,9 @@ The 100 USDC action size comes from the frozen decision D8 of FREEZE_V1.md
 wallet").
 """
 
+from __future__ import annotations
+
+import math
 from dataclasses import dataclass
 
 # --- demonstration parameters (not a real portfolio) ------------------------
@@ -29,6 +32,12 @@ DEMO_NOTE = (
 )
 
 
+def _finite(value) -> bool:
+    """True for a real, finite number (bool excluded)."""
+    return isinstance(value, (int, float)) and not isinstance(value, bool) \
+        and math.isfinite(value)
+
+
 def available_to_move(exposure, floor, desired):
     """Pure function: how much can be moved without crossing the floor.
 
@@ -36,7 +45,13 @@ def available_to_move(exposure, floor, desired):
     capped both by what remains above the floor and by the desired action
     size. Never returns a negative number: an exposure already below the
     floor yields 0.0, never a forced move.
+
+    Fail-safe on unreadable numbers: a NaN exposure or floor would silently
+    fall out of float comparisons (``min(x, nan)`` keeps ``x``) and widen the
+    movable amount — any non-finite input yields 0.0 instead.
     """
+    if not (_finite(exposure) and _finite(floor) and _finite(desired)):
+        return 0.0
     return max(0.0, min(desired, exposure - floor))
 
 

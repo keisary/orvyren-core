@@ -40,6 +40,7 @@ import math
 import os
 
 from dataclasses import dataclass, field
+from decimal import Decimal
 from datetime import datetime, timedelta, timezone
 from typing import Iterable, Optional
 
@@ -190,15 +191,34 @@ def _aware(moment: datetime) -> datetime:
     return moment if moment.tzinfo is not None else moment.replace(tzinfo=timezone.utc)
 
 
+def _dec(value) -> Decimal:
+    """Exact decimal reading of an int/float (str round-trip = declared value).
+
+    Money comparisons (per-tx cap, rolling cumulative, floor, exposure cap,
+    decision budget) must be exact at the boundary: in float space
+    ``0.1 + 0.2 > 0.3`` is True and ``0.3 - 0.1 < 0.2`` is True, so an intent
+    sitting exactly on a cap would be denied (or a floor falsely breached).
+    ``Decimal(str(value))`` restores each operand's declared decimal value.
+    """
+    return Decimal(str(value))
+
+
 def _base_units(amount: float, decimals: int | None) -> Optional[int]:
-    """Amount in the token's base units, or None if not exactly representable."""
+    """Amount in the token's base units, or None if not exactly representable.
+
+    Exact decimal arithmetic: the float form ``amount * 10 ** decimals`` with
+    a 1e-6 absolute tolerance accepted off-grid amounts (e.g.
+    100.00000000000001 at 6 decimals is 1.4e-14 token units off the grid yet
+    passed the tolerance), letting two distinct amounts share one base-unit
+    fingerprint in P10. An amount outside the token's grid is never
+    representable — the caller denies it (P5).
+    """
     if decimals is None or not _finite_number(amount):
         return None
-    scaled = amount * (10 ** decimals)
-    nearest = round(scaled)
-    if abs(scaled - nearest) > 1e-6:
+    scaled = _dec(amount) * (Decimal(10) ** decimals)
+    if scaled != scaled.to_integral_value():
         return None
-    return int(nearest)
+    return int(scaled)
 
 
 def intent_fingerprint(intent: Intent, decimals: int | None = None) -> str:
@@ -277,18 +297,33 @@ def load_policy(path, recipients: Optional[dict] = None) -> PolicyBundle:
         functions.add((target, selector))
         calls[operation] = (target, selector)
 
+    try:
+        max_per_tx = float(str(data.get("max_per_tx", MAX_PER_TX)))
+        max_cumulative = float(str(data.get("max_cumulative_24h", MAX_CUMULATIVE)))
+    except ValueError:
+        raise MiniYamlError("policy_v1.yaml: 'max_per_tx'/'max_cumulative_24h' must be numbers")
+    # A non-finite or non-positive cap would silently disable the comparison
+    # (NaN never satisfies `> cap`): refuse it at load time, fail-closed.
+    if not _finite_number(max_per_tx) or max_per_tx <= 0:
+        raise MiniYamlError("policy_v1.yaml: 'max_per_tx' must be finite and > 0")
+    if not _finite_number(max_cumulative) or max_cumulative <= 0:
+        raise MiniYamlError("policy_v1.yaml: 'max_cumulative_24h' must be finite and > 0")
+    asset_decimals = (int(data["asset_decimals"])
+                      if data.get("asset_decimals") is not None else None)
+    if asset_decimals is not None and asset_decimals < 0:
+        raise MiniYamlError("policy_v1.yaml: 'asset_decimals' must be an integer >= 0")
+
     config = PolicyConfig(
         allowed_chain_ids=frozenset(int(c) for c in chains),
         allowed_assets=frozenset(_norm(a) for a in assets),
         allowed_recipients=frozenset(resolved),
-        max_per_tx=float(str(data.get("max_per_tx", MAX_PER_TX))),
-        max_cumulative=float(str(data.get("max_cumulative_24h", MAX_CUMULATIVE))),
+        max_per_tx=max_per_tx,
+        max_cumulative=max_cumulative,
         intent_ttl=(timedelta(minutes=int(data["ttl_intent_minutes"]))
                     if data.get("ttl_intent_minutes") is not None else None),
         clock_skew=timedelta(seconds=int(data.get("clock_skew_seconds",
                                                   int(CLOCK_SKEW_TOLERANCE.total_seconds())))),
-        asset_decimals=(int(data["asset_decimals"])
-                        if data.get("asset_decimals") is not None else None),
+        asset_decimals=asset_decimals,
         allowed_operations=frozenset(operations),
         allowed_targets=frozenset(targets),
         allowed_functions=frozenset(functions),
@@ -400,7 +435,10 @@ def evaluate(intent: Intent, config: PolicyConfig, now: datetime | None = None,
     elif config.asset_decimals is not None and _base_units(intent.amount, config.asset_decimals) is None:
         fail("P5-amount", "AMOUNT_INVALID",
              f"amount not exactly representable in base units ({config.asset_decimals} decimals)")
-    elif intent.amount > config.max_per_tx:
+    elif not _finite_number(config.max_per_tx) or config.max_per_tx <= 0:
+        fail("P5-amount", "AMOUNT_ABOVE_TX_CAP",
+             "max_per_tx unreadable (non-finite or non-positive) — fail closed")
+    elif _dec(intent.amount) > _dec(config.max_per_tx):
         fail("P5-amount", "AMOUNT_ABOVE_TX_CAP")
     else:
         ok("P5-amount", f"{intent.amount} <= {config.max_per_tx}")
@@ -411,7 +449,10 @@ def evaluate(intent: Intent, config: PolicyConfig, now: datetime | None = None,
     elif not _finite_number(intent.amount):
         evaluated.append({"rule": "P6-cumulative", "result": "SKIPPED",
                           "note": "amount not finite (see P5-amount)"})
-    elif cumulative_spent + max(intent.amount, 0) > config.max_cumulative:
+    elif not _finite_number(config.max_cumulative) or config.max_cumulative <= 0:
+        fail("P6-cumulative", "AMOUNT_ABOVE_PERIOD_CAP",
+             "max_cumulative unreadable (non-finite or non-positive) — fail closed")
+    elif _dec(cumulative_spent) + _dec(max(intent.amount, 0)) > _dec(config.max_cumulative):
         fail("P6-cumulative", "AMOUNT_ABOVE_PERIOD_CAP")
     else:
         ok("P6-cumulative", f"{cumulative_spent + max(intent.amount, 0)} <= {config.max_cumulative}")
@@ -426,16 +467,19 @@ def evaluate(intent: Intent, config: PolicyConfig, now: datetime | None = None,
         elif not _finite_number(intent.amount):
             skip("P7-exposure", "amount not finite (see P5-amount)")
         else:
-            if intent.amount > balance:
+            if _dec(intent.amount) > _dec(balance):
                 fail("P7-exposure", "BALANCE_INSUFFICIENT")
-            elif state.floor_balance is not None and _finite_number(state.floor_balance) \
-                    and (balance - intent.amount) < state.floor_balance:
+            elif state.floor_balance is not None and not _finite_number(state.floor_balance):
+                fail("P7-exposure", "BALANCE_UNREADABLE",
+                     "floor_balance unreadable — fail closed")
+            elif state.floor_balance is not None \
+                    and (_dec(balance) - _dec(intent.amount)) < _dec(state.floor_balance):
                 fail("P7-exposure", "FLOOR_BREACH")
             elif state.exposure_cap is not None:
                 if state.exposure is None or not _finite_number(state.exposure) \
                         or not _finite_number(state.exposure_cap):
                     fail("P7-exposure", "BALANCE_UNREADABLE", "exposure unreadable")
-                elif state.exposure + intent.amount > state.exposure_cap:
+                elif _dec(state.exposure) + _dec(intent.amount) > _dec(state.exposure_cap):
                     fail("P7-exposure", "EXPOSURE_ABOVE_CAP")
                 else:
                     ok("P7-exposure", f"balance {balance}; exposure {state.exposure} + {intent.amount} <= {state.exposure_cap}")
@@ -445,7 +489,7 @@ def evaluate(intent: Intent, config: PolicyConfig, now: datetime | None = None,
     # P8 — permission (mandate) active
     if config.permission_expires_at is None:
         fail("P8-permission", "PERMISSION_MISSING")
-    elif now >= config.permission_expires_at:
+    elif now >= _aware(config.permission_expires_at):
         fail("P8-permission", "PERMISSION_EXPIRED")
     else:
         ok("P8-permission", config.permission_expires_at.isoformat())
@@ -513,7 +557,7 @@ def evaluate(intent: Intent, config: PolicyConfig, now: datetime | None = None,
         if spent is None or cap is None or not _finite_number(spent) or not _finite_number(cap) \
                 or spent < 0 or cap <= 0:
             fail("P14-budget", "BUDGET_UNREADABLE")
-        elif spent >= cap:
+        elif _dec(spent) >= _dec(cap):
             fail("P14-budget", "BUDGET_EXCEEDED", f"{spent} >= {cap}")
         else:
             ok("P14-budget", f"{spent} < {cap}")
@@ -538,7 +582,7 @@ def evaluate(intent: Intent, config: PolicyConfig, now: datetime | None = None,
 def default_config(reserve_recipient: str, ttl_hours: int = 24,
                    now: datetime | None = None) -> PolicyConfig:
     """Demo configuration: one chain, one asset, one recipient, one expiry."""
-    now = now or datetime.now(timezone.utc)
+    now = _aware(now or datetime.now(timezone.utc))
     return PolicyConfig(
         allowed_recipients=frozenset({_norm(reserve_recipient)}),
         permission_expires_at=now + timedelta(hours=ttl_hours),

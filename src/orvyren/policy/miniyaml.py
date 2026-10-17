@@ -72,6 +72,14 @@ def _strip_inline_comment(text: str) -> str:
 def _parse_scalar(text: str, lineno: int):
     if FORBIDDEN_RE.match(text):
         raise MiniYamlError(f"line {lineno}: '&', '*', '!', '|', '>' forbidden (outside the subset)")
+    if text == "[]":
+        return []
+    if text == "{}":
+        return {}
+    if text.startswith("[") or text.startswith("{"):
+        # nested flow style is refused (see the module docstring): silently
+        # returning "[84532]" as a *string* would misparse lists downstream
+        raise MiniYamlError(f"line {lineno}: nested flow style forbidden (outside the subset)")
     if text.startswith('"'):
         if len(text) < 2 or not text.endswith('"'):
             raise MiniYamlError(f"line {lineno}: unterminated double quote")
