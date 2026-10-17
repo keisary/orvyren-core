@@ -86,7 +86,11 @@ def verify(frozen_dir: str, repo_root: str, recalc: bool = True) -> bool:
         print(f"[OK]   outcomes_dev.jsonl: {len(ids_out)} outcomes, chain verified")
         by_id = {record["forecast_id"]: record for record in records}
         for outcome in outcomes:
-            outcomes_mod.check_link(by_id[outcome["forecast_id"]], outcome)
+            linked = by_id.get(outcome["forecast_id"])
+            if linked is None:
+                raise KeyError("outcome links to unknown forecast %r (forecasts loaded: %d)"
+                               % (outcome["forecast_id"], len(records)))
+            outcomes_mod.check_link(linked, outcome)
         print(f"[OK]   forecast <-> outcome link by fingerprint: {len(outcomes)}/{len(records)}")
     except Exception as exc:  # noqa: BLE001
         print(f"[KO]   outcomes_dev.jsonl: {exc}")

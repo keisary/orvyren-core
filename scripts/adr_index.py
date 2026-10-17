@@ -30,6 +30,7 @@ REPO_ROOT = os.path.dirname(HERE)
 DEFAULT_DIR = os.path.join(REPO_ROOT, "docs", "decisions")
 
 _TITLE_RE = re.compile(r"^#\s+ADR-(\d{4})\s+—\s+(.+?)\s*$", re.MULTILINE)
+_FILE_NUMBER_RE = re.compile(r"^ADR-(\d{4})")
 _DATE_RE = re.compile(r"\*\*Date\s*:\*\*\s*(\d{4}-\d{2}-\d{2})")
 _STATUS_RE = re.compile(r"\*\*Statut\s*:\s*(.+?)(?:·|\n|$)")
 _README_ROW_RE = re.compile(
@@ -58,7 +59,12 @@ def scan(decisions_dir):
         title_match = _TITLE_RE.search(head)
         date_match = _DATE_RE.search(head)
         status_match = _STATUS_RE.search(head)
-        number = int(title_match.group(1)) if title_match else int(name[4:8])
+        file_number_match = _FILE_NUMBER_RE.match(name)
+        if title_match is None and file_number_match is None:
+            # Odd file (e.g. "ADR-INDEX.md"): cannot be numbered — scan() must
+            # never raise on odd files, so it is left out of the registry.
+            continue
+        number = int(title_match.group(1)) if title_match else int(file_number_match.group(1))
         title = title_match.group(2) if title_match else name
         status_raw = status_match.group(1).strip() if status_match else STATUS_MISSING
         status_raw = re.sub(r"\*+", "", status_raw).strip()

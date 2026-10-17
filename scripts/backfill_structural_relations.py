@@ -85,12 +85,14 @@ def main(argv=None) -> int:
         if store.node_by_id(pool) is None:
             store.insert_node(pool, "POOL", label="Aave v3 Pool (Base)")
 
-        # Latest block/time for structural anchors.
+        # Latest block/time for structural anchors (same event row for both, so
+        # block and timestamp cannot come from two different events).
         row = store.connection.execute(
-            "SELECT MAX(block_number) AS block, MAX(event_time) AS ts FROM events").fetchone()
-        block = int(row["block"] or 0)
+            "SELECT block_number AS block, event_time AS ts FROM events "
+            "ORDER BY block_number DESC LIMIT 1").fetchone()
+        block = int(row["block"] or 0) if row else 0
         timestamp = 0
-        if row["ts"]:
+        if row and row["ts"]:
             timestamp = int(datetime.fromisoformat(row["ts"]).timestamp())
 
         for market in markets:
@@ -128,6 +130,16 @@ def main(argv=None) -> int:
             "SELECT event_id, block_number, event_time, payload FROM events "
             "WHERE event_type='RESERVE_DATA_UPDATED' ORDER BY block_number DESC, event_id"
         ).fetchall()
+        # "Latest" per reserve = highest (block, log_index) — event_id is
+        # ``event:eip155:<chain>:<tx>:<log_index>`` and its lexicographic order
+        # follows the tx hash, not the log order, so sort explicitly here.
+        def _log_order(event_id: str) -> int:
+            try:
+                return int(event_id.rsplit(":", 1)[1])
+            except (IndexError, ValueError):
+                return -1
+        rows = sorted(rows, key=lambda r: (int(r["block_number"]), _log_order(r["event_id"])),
+                      reverse=True)
         seen = set()
         for row in rows:
             payload = json.loads(row["payload"] or "{}")
@@ -150,7 +162,10 @@ def main(argv=None) -> int:
                 value = float(raw) if raw is not None else 0.0
             except (TypeError, ValueError):
                 value = 0.0
-            ts = int(datetime.fromisoformat(row["event_time"]).timestamp())
+            if row["event_time"]:
+                ts = int(datetime.fromisoformat(row["event_time"]).timestamp())
+            else:
+                ts = 0
             store.insert_relation_record(record(
                 rid=rid, kind="CONSTRAINS", family="CONSTRAINT_PERMISSION",
                 src=param_id, src_kind="PARAMETRE", dst=market_id, dst_kind="MARCHE",

@@ -113,19 +113,29 @@ def load_partial(path: str, *, mode: str, grid_key: str) -> Dict[str, Any]:
 
 
 def merge_provenance(primary: ArchiveRpc, others: Sequence[ArchiveRpc] = ()) -> Dict[str, Any]:
-    """Aggregate the call counts of every client used by a run."""
+    """Aggregate the call counts of every client used by a run.
+
+    Endpoint URLs go through ``ArchiveRpc.provenance()`` masking (F08): this
+    payload lands verbatim in evidence files, so a credential-bearing URL must
+    never survive it — the raw ``urls``/``url_hits``/``last_url`` attributes
+    are NOT safe to archive as-is.
+    """
     clients = [primary] + [client for client in others if client is not primary]
     hits: Dict[str, int] = {}
+    endpoints: List[str] = []
     for client in clients:
-        for url, count in client.url_hits.items():
+        for endpoint in client.provenance()["endpoints"]:
+            if endpoint not in endpoints:
+                endpoints.append(endpoint)
+        for url, count in client.provenance()["hits"].items():
             hits[url] = hits.get(url, 0) + count
     return {
-        "endpoints": list(primary.urls),
+        "endpoints": endpoints,
         "clients": len(clients),
         "calls": sum(client.calls for client in clients),
         "errors": sum(client.errors for client in clients),
         "hits": dict(sorted(hits.items())),
-        "last_url": primary.last_url,
+        "last_url": primary.provenance()["last_url"],
     }
 
 
@@ -306,4 +316,6 @@ def parallel_measure(
             results[item] = payload
             if on_result is not None:
                 on_result(item, payload)
-    return results
+    # Return in INPUT order: as_completed() finishes in thread order, and a
+    # caller that iterates the result would write a non-deterministic artefact.
+    return {item: results[item] for item in items if item in results}

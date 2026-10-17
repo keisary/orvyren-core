@@ -108,13 +108,11 @@ def copy_if_exists(source: str, destination: str) -> bool:
 
 
 def chain_head(records: Sequence[Dict[str, Any]]) -> str:
+    """Head extraction only — chain verification is verify_chain()'s job."""
     head = GENESIS
     for record in records:
         body = {key: value for key, value in record.items() if key != "record_hash"}
         head = sha256_hex(canonical_json(body).encode("utf-8"))
-        if record.get("record_hash") != head or record.get("prev_hash") != (
-                GENESIS if head == record.get("record_hash") and False else record.get("prev_hash")):
-            pass  # verification is the verifier's job; head extraction stays simple
     return head
 
 
@@ -486,8 +484,6 @@ def build_packet(*, session_dir: str, case: str, evidence_dir: str,
     manifest_sha = sha256_file(manifest_path)
 
     # --- LINK x3 + SEAL junction (B6 §1.4, appended after the manifest) ------
-    intents = [record.get("payload", {}).get("intent_id") for record in session_records
-               if record.get("kind") == "INTENT"]
     base_seq = max((record.get("seq") or 0) for record in session_records) + 1
     junction = [
         {"v": 1, "stream": "exec", "seq": base_seq, "run_id": run_id, "episode": case,
@@ -512,20 +508,6 @@ def build_packet(*, session_dir: str, case: str, evidence_dir: str,
     ]
     packet_journal = os.path.join(staging, cli_journal_rel)
     append_chained(packet_journal, session_head, junction)
-
-    # --- README (inventory is complete at this point) ------------------------
-    inventory = []
-    for dirpath, _dirnames, filenames in os.walk(staging):
-        for entry in sorted(filenames):
-            rel = os.path.relpath(os.path.join(dirpath, entry), staging).replace(os.sep, "/")
-            if rel in ("README_AUDIT.md", "HASHES.txt"):
-                continue
-            inventory.append(rel)
-    inventory = sorted(inventory)
-    write_text(os.path.join(staging, "README_AUDIT.md"), README_TEMPLATE.format(
-        case=case, run8=run8, run_id=run_id, chain_id=chain_id, name=name,
-        txt_proves=TXT_PROVES, txt_not_proves=TXT_NOT_PROVES,
-        inventory="\n".join("- `%s`" % rel for rel in inventory) or "- (none)"))
 
     # --- HASHES (two-file layout: HASHES.txt pure + BUNDLE_DIGEST.txt) -------
     def walk_packet_files() -> List[List[str]]:
@@ -571,6 +553,22 @@ def build_packet(*, session_dir: str, case: str, evidence_dir: str,
     detected = sum(1 for entry in mutations if entry.get("detected"))
     write_json(os.path.join(frozen_root, "MUTATE_TEST_RESULTS.json"),
                {"detected": detected, "total": len(mutations), "results": mutations})
+
+    # --- README (built once every generated file exists; BUNDLE_DIGEST.txt is
+    # written by finalize_hashes() just below and is listed as such) ----------
+    inventory = []
+    for dirpath, _dirnames, filenames in os.walk(staging):
+        for entry in sorted(filenames):
+            rel = os.path.relpath(os.path.join(dirpath, entry), staging).replace(os.sep, "/")
+            if rel in ("README_AUDIT.md", "HASHES.txt"):
+                continue
+            inventory.append(rel)
+    inventory.append("BUNDLE_DIGEST.txt")
+    inventory = sorted(set(inventory))
+    write_text(os.path.join(staging, "README_AUDIT.md"), README_TEMPLATE.format(
+        case=case, run8=run8, run_id=run_id, chain_id=chain_id, name=name,
+        txt_proves=TXT_PROVES, txt_not_proves=TXT_NOT_PROVES,
+        inventory="\n".join("- `%s`" % rel for rel in inventory) or "- (none)"))
 
     files, bundle_digest = finalize_hashes()
 
