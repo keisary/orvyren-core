@@ -87,9 +87,9 @@ def build_replay_dossier(*, episode: str, mode: str, mode_slug: str, run_id: str
                   "corpus_hash": corpus_manifest.get("manifest_sha256"),
                   "code_hash": code_hash(),
                   "alias": "LIVE-REPLAY (B1 §6.3)" if mode == "REPLAY-ARCHIVE" else None}
-    content = {"schema": "orvyren.replay-dossier/v1",
-               "banner": banner, "provenance": provenance,
-               "run_id": run_id, "clock_audit": clock_audit}
+    content: Dict[str, Any] = {"schema": "orvyren.replay-dossier/v1",
+                               "banner": banner, "provenance": provenance,
+                               "run_id": run_id, "clock_audit": clock_audit}
     if transcript is not None:
         import orvyren.replay.journal as journal_mod
         content["transcript_hash"] = journal_mod.transcript_hash(transcript)

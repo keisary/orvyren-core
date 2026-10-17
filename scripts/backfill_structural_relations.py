@@ -94,6 +94,10 @@ def main(argv=None) -> int:
         timestamp = 0
         if row and row["ts"]:
             timestamp = int(datetime.fromisoformat(row["ts"]).timestamp())
+        if block <= 0 or timestamp <= 0:
+            raise RuntimeError(
+                "structural backfill needs at least one timestamped event "
+                "(block=%s, timestamp=%s)" % (block, timestamp))
 
         for market in markets:
             market_id = market["node_id"]

@@ -650,6 +650,7 @@ def check_a5_policy(root: str, manifest: Dict[str, Any]) -> List[Dict[str, Any]]
                             "reason": "missing decided_at/expiry: policy clock cannot be recomputed"})
             continue
         try:
+            assert created_at is not None
             intent_obj = _policy_mod.Intent(
                 intent_id=str(intent_id), action=str(intent.get("action", "transfer")),
                 chain_id=chain_id, asset=str(intent.get("asset", asset)),
@@ -755,8 +756,8 @@ def _recompute_signals(corpus_path: str, window_start: str, window_end: str):
             change = (current[1] - previous[1]) / previous[1] * 100.0
             max_drop = change if max_drop is None or change < max_drop else max_drop
     per_hour: Dict[Any, int] = {}
-    for hours in venue_hours.values():
-        for hour in hours:
+    for hours_set in venue_hours.values():
+        for hour in hours_set:
             per_hour[hour] = per_hour.get(hour, 0) + 1
     simultaneous = sum(1 for count in per_hour.values() if count >= 2)
     return {"max_24h_supply_drop_pct": None if max_drop is None else round(max_drop, 6),
@@ -856,7 +857,7 @@ def check_a8_receipts(root: str, manifest: Dict[str, Any]) -> List[Dict[str, Any
             entry["reason"] = "raw receipt file missing or unsafe"
             problems.append(entry)
             continue
-        raw = load_json(raw_path)
+        raw = load_json(raw_path) if raw_path else None
         if not isinstance(raw, dict):
             entry["reason"] = "raw receipt unreadable"
             problems.append(entry)
@@ -1184,8 +1185,8 @@ def verify_packet(target: str, *, rpc_url: Optional[str] = None,
                   manifest_only: bool = False, strict: bool = False,
                   with_mutations: bool = False) -> Dict[str, Any]:
     root, cleanup, error = resolve_target(target)
-    if error:
-        return {"usage_error": error}
+    if error or root is None:
+        return {"usage_error": error or "target resolution failed"}
     timeline: Dict[str, Any] = {}
     try:
         manifest = load_json(os.path.join(root, "manifest.json"))
