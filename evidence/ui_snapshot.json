@@ -1,0 +1,872 @@
+{
+  "schema": "orvyren-ui-snapshot/v1",
+  "generated_at": "2026-10-17T12:37:34.354254+00:00",
+  "mode": "LIVE",
+  "db": "D:/orvyren_10h_2026-10-17/graph_v3.sqlite",
+  "as_of": "2026-10-17T11:12:57+00:00",
+  "as_of_block": 52723115,
+  "holder": "addr:eip155:8453:0xbe00a0de23a02a85d7fb7451ab9b69d84fd61fe3",
+  "asset": "asset:eip155:8453:0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+  "q7_asset": "debt:eip155:8453:0xa238dd80c259a72e81d7e4664a9801593f98d1c5:0x4200000000000000000000000000000000000006",
+  "counts": {
+    "relations": 12937,
+    "nodes": 16174,
+    "events": 15000,
+    "relation_provenance": 12937
+  },
+  "graph_hash": "016d6af64fa15b0d58a48550404a455362be374cf0d8e36b52bf0f68ce428c3c",
+  "q1": {
+    "query": "Q1",
+    "holder": "addr:eip155:8453:0xbe00a0de23a02a85d7fb7451ab9b69d84fd61fe3",
+    "as_of": "2026-10-17T11:12:57+00:00",
+    "as_of_block": 52723115,
+    "rows": [
+      {
+        "asset": "asset:eip155:8453:0x4200000000000000000000000000000000000006",
+        "depth": 0,
+        "amount": 474.0717107819323,
+        "unit": "WETH"
+      },
+      {
+        "asset": "asset:eip155:8453:0xcbb7c0000ab88b473b1f5afd9ef808440eed33bf",
+        "depth": 0,
+        "amount": 50.77396044,
+        "unit": "cbBTC"
+      },
+      {
+        "asset": "market:eip155:8453:0xa238dd80c259a72e81d7e4664a9801593f98d1c5:0x4200000000000000000000000000000000000006",
+        "depth": 1,
+        "amount": 0.0,
+        "unit": ""
+      },
+      {
+        "asset": "market:eip155:8453:0xa238dd80c259a72e81d7e4664a9801593f98d1c5:0xcbb7c0000ab88b473b1f5afd9ef808440eed33bf",
+        "depth": 1,
+        "amount": 0.0,
+        "unit": ""
+      }
+    ],
+    "count": 4,
+    "latency_ms": null,
+    "mode": "LIVE"
+  },
+  "q4": {
+    "query": "Q4",
+    "as_of": "2026-10-17T11:12:57+00:00",
+    "as_of_block": 52723115,
+    "count": 12937,
+    "rows": [
+      {
+        "relation_id": "rel:0x0003a0bf0e263e32ffa4a0c3c3cf2de7e622017acc82626221091f68005b605f:429:debt",
+        "kind": "OWES",
+        "src": "position:eip155:8453:0x2b8ce2c87c166d8e24e186e7e4253c11fc805427:0x4200000000000000000000000000000000000006",
+        "dst": "debt:eip155:8453:0xa238dd80c259a72e81d7e4664a9801593f98d1c5:0x4200000000000000000000000000000000000006",
+        "valid_from": "2026-10-17T02:04:35+00:00",
+        "valid_to": null,
+        "valid_from_block": 52706664,
+        "valid_to_block": null,
+        "epistemic_status": "FACT",
+        "source_family_id": "SF-AAVE-BASE-RPC"
+      },
+      {
+        "relation_id": "rel:0x000c6c4ad136eb6b95f5724cb9c97f874ca89ec74709635939f5d82ae5b35e62:346:debt",
+        "kind": "OWES",
+        "src": "position:eip155:8453:0x2b8ce2c87c166d8e24e186e7e4253c11fc805427:0xcbb7c0000ab88b473b1f5afd9ef808440eed33bf",
+        "dst": "debt:eip155:8453:0xa238dd80c259a72e81d7e4664a9801593f98d1c5:0xcbb7c0000ab88b473b1f5afd9ef808440eed33bf",
+        "valid_from": "2026-10-16T20:39:01+00:00",
+        "valid_to": null,
+        "valid_from_block": 52696897,
+        "valid_to_block": null,
+        "epistemic_status": "FACT",
+        "source_family_id": "SF-AAVE-BASE-RPC"
+      },
+      {
+        "relation_id": "rel:0x00130087489d1898048bac0d203806d9f11dac50f282c1376c4842f838690b07:591:deposit",
+        "kind": "DEPOSITED_IN",
+        "src": "asset:eip155:8453:0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+        "dst": "market:eip155:8453:0xa238dd80c259a72e81d7e4664a9801593f98d1c5:0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+        "valid_from": "2026-10-16T20:11:03+00:00",
+        "valid_to": null,
+        "valid_from_block": 52696058,
+        "valid_to_block": null,
+        "epistemic_status": "FACT",
+        "source_family_id": "SF-AAVE-BASE-RPC"
+      },
+      {
+        "relation_id": "rel:0x00130087489d1898048bac0d203806d9f11dac50f282c1376c4842f838690b07:591:holds",
+        "kind": "HOLDS",
+        "src": "addr:eip155:8453:0x82904927b7f526cf21683cb616f73b4b0e30e6ec",
+        "dst": "asset:eip155:8453:0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+        "valid_from": "2026-10-16T20:11:03+00:00",
+        "valid_to": null,
+        "valid_from_block": 52696058,
+        "valid_to_block": null,
+        "epistemic_status": "FACT",
+        "source_family_id": "SF-AAVE-BASE-RPC"
+      },
+      {
+        "relation_id": "rel:0x001d7dd0bf27b9a6c68b8b487b7a46a64588445fbf094e828a91723fdb8c081d:154:debt",
+        "kind": "OWES",
+        "src": "position:eip155:8453:0x8b1c8fc76f6bd4f74204cbe6f0974303c8e3057b:0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+        "dst": "debt:eip155:8453:0xa238dd80c259a72e81d7e4664a9801593f98d1c5:0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+        "valid_from": "2026-10-17T10:35:41+00:00",
+        "valid_to": null,
+        "valid_from_block": 52721997,
+        "valid_to_block": null,
+        "epistemic_status": "FACT",
+        "source_family_id": "SF-AAVE-BASE-RPC"
+      },
+      {
+        "relation_id": "rel:0x002a102f5be4dc7fa28aa13b855438956d2a3ad1425f755680c735dc83a427ac:437:collateral",
+        "kind": "COLLATERALIZES",
+        "src": "asset:eip155:8453:0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+        "dst": "market:eip155:8453:0xa238dd80c259a72e81d7e4664a9801593f98d1c5:0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+        "valid_from": "2026-10-16T20:09:05+00:00",
+        "valid_to": null,
+        "valid_from_block": 52695999,
+        "valid_to_block": null,
+        "epistemic_status": "FACT",
+        "source_family_id": "SF-AAVE-BASE-RPC"
+      },
+      {
+        "relation_id": "rel:0x002a102f5be4dc7fa28aa13b855438956d2a3ad1425f755680c735dc83a427ac:438:deposit",
+        "kind": "DEPOSITED_IN",
+        "src": "asset:eip155:8453:0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+        "dst": "market:eip155:8453:0xa238dd80c259a72e81d7e4664a9801593f98d1c5:0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+        "valid_from": "2026-10-16T20:09:05+00:00",
+        "valid_to": null,
+        "valid_from_block": 52695999,
+        "valid_to_block": null,
+        "epistemic_status": "FACT",
+        "source_family_id": "SF-AAVE-BASE-RPC"
+      },
+      {
+        "relation_id": "rel:0x002a102f5be4dc7fa28aa13b855438956d2a3ad1425f755680c735dc83a427ac:438:holds",
+        "kind": "HOLDS",
+        "src": "addr:eip155:8453:0x9941b31a16294fdac8aa867552f60251b4d02813",
+        "dst": "asset:eip155:8453:0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+        "valid_from": "2026-10-16T20:09:05+00:00",
+        "valid_to": null,
+        "valid_from_block": 52695999,
+        "valid_to_block": null,
+        "epistemic_status": "FACT",
+        "source_family_id": "SF-AAVE-BASE-RPC"
+      },
+      {
+        "relation_id": "rel:0x003d07ced5afcfb31d43ca41bbce460e15995364c53e2f6637ecc06bf67862e2:121:debt",
+        "kind": "OWES",
+        "src": "position:eip155:8453:0x2b8ce2c87c166d8e24e186e7e4253c11fc805427:0xcbb7c0000ab88b473b1f5afd9ef808440eed33bf",
+        "dst": "debt:eip155:8453:0xa238dd80c259a72e81d7e4664a9801593f98d1c5:0xcbb7c0000ab88b473b1f5afd9ef808440eed33bf",
+        "valid_from": "2026-10-17T07:56:55+00:00",
+        "valid_to": null,
+        "valid_from_block": 52717234,
+        "valid_to_block": null,
+        "epistemic_status": "FACT",
+        "source_family_id": "SF-AAVE-BASE-RPC"
+      },
+      {
+        "relation_id": "rel:0x003eaf995571006cadb5553109d0fe90f9c4390f5017332500845ce5f9377ee2:401:collateral",
+        "kind": "COLLATERALIZES",
+        "src": "asset:eip155:8453:0x4200000000000000000000000000000000000006",
+        "dst": "market:eip155:8453:0xa238dd80c259a72e81d7e4664a9801593f98d1c5:0x4200000000000000000000000000000000000006",
+        "valid_from": "2026-10-17T07:34:29+00:00",
+        "valid_to": null,
+        "valid_from_block": 52716561,
+        "valid_to_block": null,
+        "epistemic_status": "FACT",
+        "source_family_id": "SF-AAVE-BASE-RPC"
+      },
+      {
+        "relation_id": "rel:0x003eaf995571006cadb5553109d0fe90f9c4390f5017332500845ce5f9377ee2:402:deposit",
+        "kind": "DEPOSITED_IN",
+        "src": "asset:eip155:8453:0x4200000000000000000000000000000000000006",
+        "dst": "market:eip155:8453:0xa238dd80c259a72e81d7e4664a9801593f98d1c5:0x4200000000000000000000000000000000000006",
+        "valid_from": "2026-10-17T07:34:29+00:00",
+        "valid_to": null,
+        "valid_from_block": 52716561,
+        "valid_to_block": null,
+        "epistemic_status": "FACT",
+        "source_family_id": "SF-AAVE-BASE-RPC"
+      },
+      {
+        "relation_id": "rel:0x003eaf995571006cadb5553109d0fe90f9c4390f5017332500845ce5f9377ee2:402:holds",
+        "kind": "HOLDS",
+        "src": "addr:eip155:8453:0xa7ac810c71781482427ebd7d98255acb0e0375d6",
+        "dst": "asset:eip155:8453:0x4200000000000000000000000000000000000006",
+        "valid_from": "2026-10-17T07:34:29+00:00",
+        "valid_to": null,
+        "valid_from_block": 52716561,
+        "valid_to_block": null,
+        "epistemic_status": "FACT",
+        "source_family_id": "SF-AAVE-BASE-RPC"
+      },
+      {
+        "relation_id": "rel:0x003eaf995571006cadb5553109d0fe90f9c4390f5017332500845ce5f9377ee2:408:collateral",
+        "kind": "COLLATERALIZES",
+        "src": "asset:eip155:8453:0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+        "dst": "market:eip155:8453:0xa238dd80c259a72e81d7e4664a9801593f98d1c5:0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+        "valid_from": "2026-10-17T07:34:29+00:00",
+        "valid_to": null,
+        "valid_from_block": 52716561,
+        "valid_to_block": null,
+        "epistemic_status": "FACT",
+        "source_family_id": "SF-AAVE-BASE-RPC"
+      },
+      {
+        "relation_id": "rel:0x003eaf995571006cadb5553109d0fe90f9c4390f5017332500845ce5f9377ee2:409:deposit",
+        "kind": "DEPOSITED_IN",
+        "src": "asset:eip155:8453:0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+        "dst": "market:eip155:8453:0xa238dd80c259a72e81d7e4664a9801593f98d1c5:0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+        "valid_from": "2026-10-17T07:34:29+00:00",
+        "valid_to": null,
+        "valid_from_block": 52716561,
+        "valid_to_block": null,
+        "epistemic_status": "FACT",
+        "source_family_id": "SF-AAVE-BASE-RPC"
+      },
+      {
+        "relation_id": "rel:0x003eaf995571006cadb5553109d0fe90f9c4390f5017332500845ce5f9377ee2:409:holds",
+        "kind": "HOLDS",
+        "src": "addr:eip155:8453:0xa7ac810c71781482427ebd7d98255acb0e0375d6",
+        "dst": "asset:eip155:8453:0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+        "valid_from": "2026-10-17T07:34:29+00:00",
+        "valid_to": null,
+        "valid_from_block": 52716561,
+        "valid_to_block": null,
+        "epistemic_status": "FACT",
+        "source_family_id": "SF-AAVE-BASE-RPC"
+      },
+      {
+        "relation_id": "rel:0x003eaf995571006cadb5553109d0fe90f9c4390f5017332500845ce5f9377ee2:414:debt",
+        "kind": "OWES",
+        "src": "position:eip155:8453:0xa7ac810c71781482427ebd7d98255acb0e0375d6:0x4200000000000000000000000000000000000006",
+        "dst": "debt:eip155:8453:0xa238dd80c259a72e81d7e4664a9801593f98d1c5:0x4200000000000000000000000000000000000006",
+        "valid_from": "2026-10-17T07:34:29+00:00",
+        "valid_to": null,
+        "valid_from_block": 52716561,
+        "valid_to_block": null,
+        "epistemic_status": "FACT",
+        "source_family_id": "SF-AAVE-BASE-RPC"
+      },
+      {
+        "relation_id": "rel:0x005dc5dcd8d945bcab494d20b6f1609dd7fd192a95595e01fc26af8d99e8c112:181:deposit",
+        "kind": "DEPOSITED_IN",
+        "src": "asset:eip155:8453:0x4200000000000000000000000000000000000006",
+        "dst": "market:eip155:8453:0xa238dd80c259a72e81d7e4664a9801593f98d1c5:0x4200000000000000000000000000000000000006",
+        "valid_from": "2026-10-16T20:58:39+00:00",
+        "valid_to": null,
+        "valid_from_block": 52697486,
+        "valid_to_block": null,
+        "epistemic_status": "FACT",
+        "source_family_id": "SF-AAVE-BASE-RPC"
+      },
+      {
+        "relation_id": "rel:0x005dc5dcd8d945bcab494d20b6f1609dd7fd192a95595e01fc26af8d99e8c112:181:holds",
+        "kind": "HOLDS",
+        "src": "addr:eip155:8453:0x0a7fcb938b2c9ab0449b567bb689ad054fe269f3",
+        "dst": "asset:eip155:8453:0x4200000000000000000000000000000000000006",
+        "valid_from": "2026-10-16T20:58:39+00:00",
+        "valid_to": null,
+        "valid_from_block": 52697486,
+        "valid_to_block": null,
+        "epistemic_status": "FACT",
+        "source_family_id": "SF-AAVE-BASE-RPC"
+      },
+      {
+        "relation_id": "rel:0x0063dbb4a473449f6b62d68d0967ca3c6b577337310d19866f30eaa50118f73b:569:deposit",
+        "kind": "DEPOSITED_IN",
+        "src": "asset:eip155:8453:0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+        "dst": "market:eip155:8453:0xa238dd80c259a72e81d7e4664a9801593f98d1c5:0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+        "valid_from": "2026-10-17T00:10:57+00:00",
+        "valid_to": null,
+        "valid_from_block": 52703255,
+        "valid_to_block": null,
+        "epistemic_status": "FACT",
+        "source_family_id": "SF-AAVE-BASE-RPC"
+      },
+      {
+        "relation_id": "rel:0x0063dbb4a473449f6b62d68d0967ca3c6b577337310d19866f30eaa50118f73b:569:holds",
+        "kind": "HOLDS",
+        "src": "addr:eip155:8453:0x043072c87d5cdf4f504cd1ab4b95d30b34051f2a",
+        "dst": "asset:eip155:8453:0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+        "valid_from": "2026-10-17T00:10:57+00:00",
+        "valid_to": null,
+        "valid_from_block": 52703255,
+        "valid_to_block": null,
+        "epistemic_status": "FACT",
+        "source_family_id": "SF-AAVE-BASE-RPC"
+      },
+      {
+        "relation_id": "rel:0x0065916683a7801929ddf67d498d1b2a6a739215d433a7f64401d1096df1d975:973:deposit",
+        "kind": "DEPOSITED_IN",
+        "src": "asset:eip155:8453:0xcbb7c0000ab88b473b1f5afd9ef808440eed33bf",
+        "dst": "market:eip155:8453:0xa238dd80c259a72e81d7e4664a9801593f98d1c5:0xcbb7c0000ab88b473b1f5afd9ef808440eed33bf",
+        "valid_from": "2026-10-16T21:14:03+00:00",
+        "valid_to": null,
+        "valid_from_block": 52697948,
+        "valid_to_block": null,
+        "epistemic_status": "FACT",
+        "source_family_id": "SF-AAVE-BASE-RPC"
+      },
+      {
+        "relation_id": "rel:0x0065916683a7801929ddf67d498d1b2a6a739215d433a7f64401d1096df1d975:973:holds",
+        "kind": "HOLDS",
+        "src": "addr:eip155:8453:0xbe00a0de23a02a85d7fb7451ab9b69d84fd61fe3",
+        "dst": "asset:eip155:8453:0xcbb7c0000ab88b473b1f5afd9ef808440eed33bf",
+        "valid_from": "2026-10-16T21:14:03+00:00",
+        "valid_to": null,
+        "valid_from_block": 52697948,
+        "valid_to_block": null,
+        "epistemic_status": "FACT",
+        "source_family_id": "SF-AAVE-BASE-RPC"
+      },
+      {
+        "relation_id": "rel:0x0067a375a1c33a0f755bc41f5a7dd876b6379ecbcb53bf916a15d95181abc01d:328:debt",
+        "kind": "OWES",
+        "src": "position:eip155:8453:0x97ece16286b7df5f699272f22023ab928709a494:0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+        "dst": "debt:eip155:8453:0xa238dd80c259a72e81d7e4664a9801593f98d1c5:0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+        "valid_from": "2026-10-16T23:54:09+00:00",
+        "valid_to": null,
+        "valid_from_block": 52702751,
+        "valid_to_block": null,
+        "epistemic_status": "FACT",
+        "source_family_id": "SF-AAVE-BASE-RPC"
+      },
+      {
+        "relation_id": "rel:0x0078a508ec1e17b9e517f22e560c97095f82e0911db08966ba2b9b2def69fd58:277:deposit",
+        "kind": "DEPOSITED_IN",
+        "src": "asset:eip155:8453:0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+        "dst": "market:eip155:8453:0xa238dd80c259a72e81d7e4664a9801593f98d1c5:0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+        "valid_from": "2026-10-17T03:12:57+00:00",
+        "valid_to": null,
+        "valid_from_block": 52708715,
+        "valid_to_block": null,
+        "epistemic_status": "FACT",
+        "source_family_id": "SF-AAVE-BASE-RPC"
+      },
+      {
+        "relation_id": "rel:0x0078a508ec1e17b9e517f22e560c97095f82e0911db08966ba2b9b2def69fd58:277:holds",
+        "kind": "HOLDS",
+        "src": "addr:eip155:8453:0xcff32c4990f3bb94ddab6929b5f9d54c9215e044",
+        "dst": "asset:eip155:8453:0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+        "valid_from": "2026-10-17T03:12:57+00:00",
+        "valid_to": null,
+        "valid_from_block": 52708715,
+        "valid_to_block": null,
+        "epistemic_status": "FACT",
+        "source_family_id": "SF-AAVE-BASE-RPC"
+      },
+      {
+        "relation_id": "rel:0x008119462b99507f2fca5e24c0a61d6b5665c56f5141574cdb254b0048d68bda:610:deposit",
+        "kind": "DEPOSITED_IN",
+        "src": "asset:eip155:8453:0x4200000000000000000000000000000000000006",
+        "dst": "market:eip155:8453:0xa238dd80c259a72e81d7e4664a9801593f98d1c5:0x4200000000000000000000000000000000000006",
+        "valid_from": "2026-10-17T10:06:23+00:00",
+        "valid_to": null,
+        "valid_from_block": 52721118,
+        "valid_to_block": null,
+        "epistemic_status": "FACT",
+        "source_family_id": "SF-AAVE-BASE-RPC"
+      },
+      {
+        "relation_id": "rel:0x008119462b99507f2fca5e24c0a61d6b5665c56f5141574cdb254b0048d68bda:610:holds",
+        "kind": "HOLDS",
+        "src": "addr:eip155:8453:0x46fd5cfb4c12d87acd3a13e92baa53240c661d93",
+        "dst": "asset:eip155:8453:0x4200000000000000000000000000000000000006",
+        "valid_from": "2026-10-17T10:06:23+00:00",
+        "valid_to": null,
+        "valid_from_block": 52721118,
+        "valid_to_block": null,
+        "epistemic_status": "FACT",
+        "source_family_id": "SF-AAVE-BASE-RPC"
+      },
+      {
+        "relation_id": "rel:0x0090d78a610d09e8ae0f216aa7a8f29b21362f17e0b45c6d5dfb72cc22174a98:93:deposit",
+        "kind": "DEPOSITED_IN",
+        "src": "asset:eip155:8453:0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+        "dst": "market:eip155:8453:0xa238dd80c259a72e81d7e4664a9801593f98d1c5:0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+        "valid_from": "2026-10-17T02:52:51+00:00",
+        "valid_to": null,
+        "valid_from_block": 52708112,
+        "valid_to_block": null,
+        "epistemic_status": "FACT",
+        "source_family_id": "SF-AAVE-BASE-RPC"
+      },
+      {
+        "relation_id": "rel:0x0090d78a610d09e8ae0f216aa7a8f29b21362f17e0b45c6d5dfb72cc22174a98:93:holds",
+        "kind": "HOLDS",
+        "src": "addr:eip155:8453:0xcff32c4990f3bb94ddab6929b5f9d54c9215e044",
+        "dst": "asset:eip155:8453:0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+        "valid_from": "2026-10-17T02:52:51+00:00",
+        "valid_to": null,
+        "valid_from_block": 52708112,
+        "valid_to_block": null,
+        "epistemic_status": "FACT",
+        "source_family_id": "SF-AAVE-BASE-RPC"
+      },
+      {
+        "relation_id": "rel:0x009af8a129f75fe54c55de78ff47538b6e870dc5494482fcdddc1b3dcc6db0fa:271:debt",
+        "kind": "OWES",
+        "src": "position:eip155:8453:0x2b8ce2c87c166d8e24e186e7e4253c11fc805427:0x4200000000000000000000000000000000000006",
+        "dst": "debt:eip155:8453:0xa238dd80c259a72e81d7e4664a9801593f98d1c5:0x4200000000000000000000000000000000000006",
+        "valid_from": "2026-10-17T04:53:01+00:00",
+        "valid_to": null,
+        "valid_from_block": 52711717,
+        "valid_to_block": null,
+        "epistemic_status": "FACT",
+        "source_family_id": "SF-AAVE-BASE-RPC"
+      },
+      {
+        "relation_id": "rel:0x009d10ae2da0c81f27aa5c3e1b6b219590359ca7de903b66aa5a6015f79d1f9a:388:debt",
+        "kind": "OWES",
+        "src": "position:eip155:8453:0x2b8ce2c87c166d8e24e186e7e4253c11fc805427:0xcbb7c0000ab88b473b1f5afd9ef808440eed33bf",
+        "dst": "debt:eip155:8453:0xa238dd80c259a72e81d7e4664a9801593f98d1c5:0xcbb7c0000ab88b473b1f5afd9ef808440eed33bf",
+        "valid_from": "2026-10-17T07:38:49+00:00",
+        "valid_to": null,
+        "valid_from_block": 52716691,
+        "valid_to_block": null,
+        "epistemic_status": "FACT",
+        "source_family_id": "SF-AAVE-BASE-RPC"
+      },
+      {
+        "relation_id": "rel:0x00a2291c094df1a54312a4ded2a14937f21524eebc17dcfac99155b866779095:398:deposit",
+        "kind": "DEPOSITED_IN",
+        "src": "asset:eip155:8453:0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+        "dst": "market:eip155:8453:0xa238dd80c259a72e81d7e4664a9801593f98d1c5:0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+        "valid_from": "2026-10-17T07:22:35+00:00",
+        "valid_to": null,
+        "valid_from_block": 52716204,
+        "valid_to_block": null,
+        "epistemic_status": "FACT",
+        "source_family_id": "SF-AAVE-BASE-RPC"
+      },
+      {
+        "relation_id": "rel:0x00a2291c094df1a54312a4ded2a14937f21524eebc17dcfac99155b866779095:398:holds",
+        "kind": "HOLDS",
+        "src": "addr:eip155:8453:0xe5ec006540be4f7cbb2cbc7be79708a6d96f90dc",
+        "dst": "asset:eip155:8453:0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+        "valid_from": "2026-10-17T07:22:35+00:00",
+        "valid_to": null,
+        "valid_from_block": 52716204,
+        "valid_to_block": null,
+        "epistemic_status": "FACT",
+        "source_family_id": "SF-AAVE-BASE-RPC"
+      },
+      {
+        "relation_id": "rel:0x00a2291c094df1a54312a4ded2a14937f21524eebc17dcfac99155b866779095:403:debt",
+        "kind": "OWES",
+        "src": "position:eip155:8453:0xe5ec006540be4f7cbb2cbc7be79708a6d96f90dc:0x4200000000000000000000000000000000000006",
+        "dst": "debt:eip155:8453:0xa238dd80c259a72e81d7e4664a9801593f98d1c5:0x4200000000000000000000000000000000000006",
+        "valid_from": "2026-10-17T07:22:35+00:00",
+        "valid_to": null,
+        "valid_from_block": 52716204,
+        "valid_to_block": null,
+        "epistemic_status": "FACT",
+        "source_family_id": "SF-AAVE-BASE-RPC"
+      },
+      {
+        "relation_id": "rel:0x00aec9eb28a3ffbdcdcb1391216705a68c52643dff15688520f98ffd057f6852:620:debt",
+        "kind": "OWES",
+        "src": "position:eip155:8453:0xb9b0fc8f7a9f9519f8c8647277ea925f85d26c9b:0x4200000000000000000000000000000000000006",
+        "dst": "debt:eip155:8453:0xa238dd80c259a72e81d7e4664a9801593f98d1c5:0x4200000000000000000000000000000000000006",
+        "valid_from": "2026-10-16T20:00:49+00:00",
+        "valid_to": null,
+        "valid_from_block": 52695751,
+        "valid_to_block": null,
+        "epistemic_status": "FACT",
+        "source_family_id": "SF-AAVE-BASE-RPC"
+      },
+      {
+        "relation_id": "rel:0x00b1873223705131d65223d0850918acfdca685b9fa8220c41b5d03b9c9a8426:447:deposit",
+        "kind": "DEPOSITED_IN",
+        "src": "asset:eip155:8453:0x4200000000000000000000000000000000000006",
+        "dst": "market:eip155:8453:0xa238dd80c259a72e81d7e4664a9801593f98d1c5:0x4200000000000000000000000000000000000006",
+        "valid_from": "2026-10-17T01:54:39+00:00",
+        "valid_to": null,
+        "valid_from_block": 52706366,
+        "valid_to_block": null,
+        "epistemic_status": "FACT",
+        "source_family_id": "SF-AAVE-BASE-RPC"
+      },
+      {
+        "relation_id": "rel:0x00b1873223705131d65223d0850918acfdca685b9fa8220c41b5d03b9c9a8426:447:holds",
+        "kind": "HOLDS",
+        "src": "addr:eip155:8453:0xe298b938631f750dd409fb18227c4a23dcdaab9b",
+        "dst": "asset:eip155:8453:0x4200000000000000000000000000000000000006",
+        "valid_from": "2026-10-17T01:54:39+00:00",
+        "valid_to": null,
+        "valid_from_block": 52706366,
+        "valid_to_block": null,
+        "epistemic_status": "FACT",
+        "source_family_id": "SF-AAVE-BASE-RPC"
+      },
+      {
+        "relation_id": "rel:0x00b8c8c233ef2c920a5bd0497189fa858850e1cb5eef291f374831dd9691f050:518:deposit",
+        "kind": "DEPOSITED_IN",
+        "src": "asset:eip155:8453:0x4200000000000000000000000000000000000006",
+        "dst": "market:eip155:8453:0xa238dd80c259a72e81d7e4664a9801593f98d1c5:0x4200000000000000000000000000000000000006",
+        "valid_from": "2026-10-16T20:53:33+00:00",
+        "valid_to": null,
+        "valid_from_block": 52697333,
+        "valid_to_block": null,
+        "epistemic_status": "FACT",
+        "source_family_id": "SF-AAVE-BASE-RPC"
+      },
+      {
+        "relation_id": "rel:0x00b8c8c233ef2c920a5bd0497189fa858850e1cb5eef291f374831dd9691f050:518:holds",
+        "kind": "HOLDS",
+        "src": "addr:eip155:8453:0xa0d9c1e9e48ca30c8d8c3b5d69ff5dc1f6dffc24",
+        "dst": "asset:eip155:8453:0x4200000000000000000000000000000000000006",
+        "valid_from": "2026-10-16T20:53:33+00:00",
+        "valid_to": null,
+        "valid_from_block": 52697333,
+        "valid_to_block": null,
+        "epistemic_status": "FACT",
+        "source_family_id": "SF-AAVE-BASE-RPC"
+      },
+      {
+        "relation_id": "rel:0x00b9bb173d2761834031272d83198e58056cfcac5ce4263c70d80d812f443b2f:358:collateral",
+        "kind": "COLLATERALIZES",
+        "src": "asset:eip155:8453:0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+        "dst": "market:eip155:8453:0xa238dd80c259a72e81d7e4664a9801593f98d1c5:0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+        "valid_from": "2026-10-17T09:59:09+00:00",
+        "valid_to": null,
+        "valid_from_block": 52720901,
+        "valid_to_block": null,
+        "epistemic_status": "FACT",
+        "source_family_id": "SF-AAVE-BASE-RPC"
+      },
+      {
+        "relation_id": "rel:0x00b9bb173d2761834031272d83198e58056cfcac5ce4263c70d80d812f443b2f:359:deposit",
+        "kind": "DEPOSITED_IN",
+        "src": "asset:eip155:8453:0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+        "dst": "market:eip155:8453:0xa238dd80c259a72e81d7e4664a9801593f98d1c5:0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+        "valid_from": "2026-10-17T09:59:09+00:00",
+        "valid_to": null,
+        "valid_from_block": 52720901,
+        "valid_to_block": null,
+        "epistemic_status": "FACT",
+        "source_family_id": "SF-AAVE-BASE-RPC"
+      },
+      {
+        "relation_id": "rel:0x00b9bb173d2761834031272d83198e58056cfcac5ce4263c70d80d812f443b2f:359:holds",
+        "kind": "HOLDS",
+        "src": "addr:eip155:8453:0x3bd92bcfe2d33610405107c4ef75d18cf387753c",
+        "dst": "asset:eip155:8453:0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+        "valid_from": "2026-10-17T09:59:09+00:00",
+        "valid_to": null,
+        "valid_from_block": 52720901,
+        "valid_to_block": null,
+        "epistemic_status": "FACT",
+        "source_family_id": "SF-AAVE-BASE-RPC"
+      },
+      {
+        "relation_id": "rel:0x00b9bb173d2761834031272d83198e58056cfcac5ce4263c70d80d812f443b2f:363:collateral",
+        "kind": "COLLATERALIZES",
+        "src": "asset:eip155:8453:0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+        "dst": "market:eip155:8453:0xa238dd80c259a72e81d7e4664a9801593f98d1c5:0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+        "valid_from": "2026-10-17T09:59:09+00:00",
+        "valid_to": null,
+        "valid_from_block": 52720901,
+        "valid_to_block": null,
+        "epistemic_status": "FACT",
+        "source_family_id": "SF-AAVE-BASE-RPC"
+      },
+      {
+        "relation_id": "rel:0x00bd359277f4f6296368cd3529dcc498ee22b72f01f5ea26eda761193cc9c099:488:deposit",
+        "kind": "DEPOSITED_IN",
+        "src": "asset:eip155:8453:0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+        "dst": "market:eip155:8453:0xa238dd80c259a72e81d7e4664a9801593f98d1c5:0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+        "valid_from": "2026-10-17T07:47:55+00:00",
+        "valid_to": null,
+        "valid_from_block": 52716964,
+        "valid_to_block": null,
+        "epistemic_status": "FACT",
+        "source_family_id": "SF-AAVE-BASE-RPC"
+      },
+      {
+        "relation_id": "rel:0x00bd359277f4f6296368cd3529dcc498ee22b72f01f5ea26eda761193cc9c099:488:holds",
+        "kind": "HOLDS",
+        "src": "addr:eip155:8453:0xcff32c4990f3bb94ddab6929b5f9d54c9215e044",
+        "dst": "asset:eip155:8453:0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+        "valid_from": "2026-10-17T07:47:55+00:00",
+        "valid_to": null,
+        "valid_from_block": 52716964,
+        "valid_to_block": null,
+        "epistemic_status": "FACT",
+        "source_family_id": "SF-AAVE-BASE-RPC"
+      },
+      {
+        "relation_id": "rel:0x00cf53221a80c0a2455e8f842bee1e900847736c2690591109afdf0071cda621:1289:deposit",
+        "kind": "DEPOSITED_IN",
+        "src": "asset:eip155:8453:0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+        "dst": "market:eip155:8453:0xa238dd80c259a72e81d7e4664a9801593f98d1c5:0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+        "valid_from": "2026-10-17T08:51:47+00:00",
+        "valid_to": null,
+        "valid_from_block": 52718880,
+        "valid_to_block": null,
+        "epistemic_status": "FACT",
+        "source_family_id": "SF-AAVE-BASE-RPC"
+      },
+      {
+        "relation_id": "rel:0x00cf53221a80c0a2455e8f842bee1e900847736c2690591109afdf0071cda621:1289:holds",
+        "kind": "HOLDS",
+        "src": "addr:eip155:8453:0x61761b4ff620607295e894f7c529a4de35dec3b4",
+        "dst": "asset:eip155:8453:0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+        "valid_from": "2026-10-17T08:51:47+00:00",
+        "valid_to": null,
+        "valid_from_block": 52718880,
+        "valid_to_block": null,
+        "epistemic_status": "FACT",
+        "source_family_id": "SF-AAVE-BASE-RPC"
+      },
+      {
+        "relation_id": "rel:0x00db57d406b5757bb1e9b698f70dea4c52bd53958384552270ff8f7b7f5b84fc:827:deposit",
+        "kind": "DEPOSITED_IN",
+        "src": "asset:eip155:8453:0x6bb7a212910682dcfdbd5bcbb3e28fb4e8da10ee",
+        "dst": "market:eip155:8453:0xa238dd80c259a72e81d7e4664a9801593f98d1c5:0x6bb7a212910682dcfdbd5bcbb3e28fb4e8da10ee",
+        "valid_from": "2026-10-17T10:03:33+00:00",
+        "valid_to": null,
+        "valid_from_block": 52721033,
+        "valid_to_block": null,
+        "epistemic_status": "FACT",
+        "source_family_id": "SF-AAVE-BASE-RPC"
+      },
+      {
+        "relation_id": "rel:0x00db57d406b5757bb1e9b698f70dea4c52bd53958384552270ff8f7b7f5b84fc:827:holds",
+        "kind": "HOLDS",
+        "src": "addr:eip155:8453:0x88b1cd4b430d95b406e382c3cdbae54697a0286e",
+        "dst": "asset:eip155:8453:0x6bb7a212910682dcfdbd5bcbb3e28fb4e8da10ee",
+        "valid_from": "2026-10-17T10:03:33+00:00",
+        "valid_to": null,
+        "valid_from_block": 52721033,
+        "valid_to_block": null,
+        "epistemic_status": "FACT",
+        "source_family_id": "SF-AAVE-BASE-RPC"
+      },
+      {
+        "relation_id": "rel:0x00db57d406b5757bb1e9b698f70dea4c52bd53958384552270ff8f7b7f5b84fc:838:deposit",
+        "kind": "DEPOSITED_IN",
+        "src": "asset:eip155:8453:0x60a3e35cc302bfa44cb288bc5a4f316fdb1adb42",
+        "dst": "market:eip155:8453:0xa238dd80c259a72e81d7e4664a9801593f98d1c5:0x60a3e35cc302bfa44cb288bc5a4f316fdb1adb42",
+        "valid_from": "2026-10-17T10:03:33+00:00",
+        "valid_to": null,
+        "valid_from_block": 52721033,
+        "valid_to_block": null,
+        "epistemic_status": "FACT",
+        "source_family_id": "SF-AAVE-BASE-RPC"
+      }
+    ],
+    "mode": "LIVE"
+  },
+  "q6": {
+    "query": "Q6",
+    "relation_id": "struct:constrains:0xecac9c5f704e954931349da37f60e39f515c11c1",
+    "rows": [
+      {
+        "relation_id": "struct:constrains:0xecac9c5f704e954931349da37f60e39f515c11c1",
+        "revision": 1,
+        "ref_id": "event:eip155:8453:0x2effc9d58b96224aeaf4dbee4725b7409ebe92e02e2eb914baf7194ab77b3c96:790",
+        "ref_kind": "EVENT",
+        "source_family_id": "SF-AAVE-BASE-RPC",
+        "extract_method": "ONCHAIN_READ",
+        "run_id": ""
+      }
+    ],
+    "count": 1,
+    "mode": "LIVE"
+  },
+  "q7": {
+    "query": "Q7",
+    "asset": "debt:eip155:8453:0xa238dd80c259a72e81d7e4664a9801593f98d1c5:0x4200000000000000000000000000000000000006",
+    "as_of": "2026-10-17T11:12:57+00:00",
+    "as_of_block": 52723115,
+    "counterparties": 44,
+    "total": 2015.6828374374352,
+    "hhi": 0.29739028631918696,
+    "rows": [
+      {
+        "src": "position:eip155:8453:0xbe00a0de23a02a85d7fb7451ab9b69d84fd61fe3:0x4200000000000000000000000000000000000006",
+        "amount": 767.2067119600241
+      },
+      {
+        "src": "position:eip155:8453:0x3cf6454d5468fc769dcfc8dc65f4d19d4d8eedd8:0x4200000000000000000000000000000000000006",
+        "amount": 761.8228819799078
+      },
+      {
+        "src": "position:eip155:8453:0x7aa5c8470653653dd178916e8b0223a2d4e49d8f:0x4200000000000000000000000000000000000006",
+        "amount": 152.0
+      },
+      {
+        "src": "position:eip155:8453:0xe883426b4fc84a7f5cc86415cabbef43e73a4cc8:0x4200000000000000000000000000000000000006",
+        "amount": 86.1949594107681
+      },
+      {
+        "src": "position:eip155:8453:0x2b8ce2c87c166d8e24e186e7e4253c11fc805427:0x4200000000000000000000000000000000000006",
+        "amount": 70.77428045303918
+      },
+      {
+        "src": "position:eip155:8453:0xa0d9c1e9e48ca30c8d8c3b5d69ff5dc1f6dffc24:0x4200000000000000000000000000000000000006",
+        "amount": 46.16792
+      },
+      {
+        "src": "position:eip155:8453:0x4cff826ed74ecf74374f691fe454c2c847645f75:0x4200000000000000000000000000000000000006",
+        "amount": 23.359316538652145
+      },
+      {
+        "src": "position:eip155:8453:0xe5ec006540be4f7cbb2cbc7be79708a6d96f90dc:0x4200000000000000000000000000000000000006",
+        "amount": 19.157536626057787
+      },
+      {
+        "src": "position:eip155:8453:0x9452ed6da616783786c6d8aaf73047ecad126c57:0x4200000000000000000000000000000000000006",
+        "amount": 13.563989797459335
+      },
+      {
+        "src": "position:eip155:8453:0x065c8c2cabf489b80634a16269df7a4935c788ce:0x4200000000000000000000000000000000000006",
+        "amount": 12.166111413234873
+      },
+      {
+        "src": "position:eip155:8453:0x1193d890e906bbb94889b9cc94d0b8168fa7cf47:0x4200000000000000000000000000000000000006",
+        "amount": 10.47903486596201
+      },
+      {
+        "src": "position:eip155:8453:0xb549ca43c6c650cc9430e6a39d1a518f5bb22990:0x4200000000000000000000000000000000000006",
+        "amount": 8.89169879460192
+      },
+      {
+        "src": "position:eip155:8453:0xf7e0874f53cb4c1113bfd4f7206c0a20127082fa:0x4200000000000000000000000000000000000006",
+        "amount": 7.170968134188003
+      },
+      {
+        "src": "position:eip155:8453:0xe853bb8d09e52e952ff8e2872c9b27cc9b46f250:0x4200000000000000000000000000000000000006",
+        "amount": 5.603479487719487
+      },
+      {
+        "src": "position:eip155:8453:0x5900c3b72458f12967dc1bef35b92d271f5cdbc1:0x4200000000000000000000000000000000000006",
+        "amount": 5.54119718264924
+      },
+      {
+        "src": "position:eip155:8453:0x86db8b311c8dfd8a7e6eeb68ae74f152cfbe1c15:0x4200000000000000000000000000000000000006",
+        "amount": 5.5
+      },
+      {
+        "src": "position:eip155:8453:0x93a732a1900697d5f51c77fe09275486bb0bb83d:0x4200000000000000000000000000000000000006",
+        "amount": 4.300574225360833
+      },
+      {
+        "src": "position:eip155:8453:0xceb485955890264366f0e9d1a84bc1eec51fc8cb:0x4200000000000000000000000000000000000006",
+        "amount": 4.3
+      },
+      {
+        "src": "position:eip155:8453:0xc4c00d8b323f37527eeda27c87412378be9f68ec:0x4200000000000000000000000000000000000006",
+        "amount": 3.5481133139691607
+      },
+      {
+        "src": "position:eip155:8453:0xa83a8e4a4923eee175170df78b59103d254f86ef:0x4200000000000000000000000000000000000006",
+        "amount": 1.5937906763764285
+      },
+      {
+        "src": "position:eip155:8453:0x47b513fb5f7b18358e6809f1a0b9096e1471ef91:0x4200000000000000000000000000000000000006",
+        "amount": 1.50045
+      },
+      {
+        "src": "position:eip155:8453:0xc7f90a147b669b6f6e0dd95079f5eb201368adb7:0x4200000000000000000000000000000000000006",
+        "amount": 1.483
+      },
+      {
+        "src": "position:eip155:8453:0x1076c2cfb8d1f3aa5bf050d8c0d6d128175bfeee:0x4200000000000000000000000000000000000006",
+        "amount": 1.0000001435937471
+      },
+      {
+        "src": "position:eip155:8453:0x4f79aeff85d9653c718040c3d7fd37f0c59b8118:0x4200000000000000000000000000000000000006",
+        "amount": 0.5549302208970783
+      },
+      {
+        "src": "position:eip155:8453:0xbb1bc1e0611c0696cb0af5c65a45ef151e856ad1:0x4200000000000000000000000000000000000006",
+        "amount": 0.48
+      },
+      {
+        "src": "position:eip155:8453:0x91ab30668f61b46237035e4aea4f047a9c82a46d:0x4200000000000000000000000000000000000006",
+        "amount": 0.3611341481740923
+      },
+      {
+        "src": "position:eip155:8453:0xd8f416b8ffa84a2e9e69546d052e375d73114100:0x4200000000000000000000000000000000000006",
+        "amount": 0.30009
+      },
+      {
+        "src": "position:eip155:8453:0x793e989fca7fa1a841599b38939adb05e9f1b29a:0x4200000000000000000000000000000000000006",
+        "amount": 0.12607218972282178
+      },
+      {
+        "src": "position:eip155:8453:0xe0a6bd7cea6c506e5143c1d2af7b415d7a7f536c:0x4200000000000000000000000000000000000006",
+        "amount": 0.11660596613862234
+      },
+      {
+        "src": "position:eip155:8453:0x4c77173c87caaeaafa1089b99f3483c82278279a:0x4200000000000000000000000000000000000006",
+        "amount": 0.11080539242595103
+      },
+      {
+        "src": "position:eip155:8453:0xa7ac810c71781482427ebd7d98255acb0e0375d6:0x4200000000000000000000000000000000000006",
+        "amount": 0.07041694821427305
+      },
+      {
+        "src": "position:eip155:8453:0x54ae2bd7787a89aaaeee03ebb1a4f189c0f82441:0x4200000000000000000000000000000000000006",
+        "amount": 0.054754168486384515
+      },
+      {
+        "src": "position:eip155:8453:0x2dc90c8049768a2e96329454a63fb6ab88adeaeb:0x4200000000000000000000000000000000000006",
+        "amount": 0.054754163575743024
+      },
+      {
+        "src": "position:eip155:8453:0xbc90066926040d9dab24e2d5daa4b035b1fb31c0:0x4200000000000000000000000000000000000006",
+        "amount": 0.0400000005991781
+      },
+      {
+        "src": "position:eip155:8453:0x09808f01210b9f91061e533c86df41c75edde03a:0x4200000000000000000000000000000000000006",
+        "amount": 0.0305
+      },
+      {
+        "src": "position:eip155:8453:0x37a11477c1da2a3819f637d81b18354b267f338c:0x4200000000000000000000000000000000000006",
+        "amount": 0.021
+      },
+      {
+        "src": "position:eip155:8453:0x8021be1828e89a8e1a285024d91ef020ad153b61:0x4200000000000000000000000000000000000006",
+        "amount": 0.018
+      },
+      {
+        "src": "position:eip155:8453:0x8464b0a72652b66af9ca9f37a357050ef99f461d:0x4200000000000000000000000000000000000006",
+        "amount": 0.0076978738634127285
+      },
+      {
+        "src": "position:eip155:8453:0xc6807c8f7e1a3d0090b0c6a33b7773b3c82e55bb:0x4200000000000000000000000000000000000006",
+        "amount": 0.004804779126504791
+      },
+      {
+        "src": "position:eip155:8453:0xb9b0fc8f7a9f9519f8c8647277ea925f85d26c9b:0x4200000000000000000000000000000000000006",
+        "amount": 0.0043
+      },
+      {
+        "src": "position:eip155:8453:0xfdf1bff1850f05641075588e380622d25774a7ec:0x4200000000000000000000000000000000000006",
+        "amount": 0.00049
+      },
+      {
+        "src": "position:eip155:8453:0xa8a71a6bea7b6f3a49faec559c63e5fe726ac85a:0x4200000000000000000000000000000000000006",
+        "amount": 0.000363402918481565
+      },
+      {
+        "src": "position:eip155:8453:0xdf6913a919b94b4367778cfdb8e49115ff3b283b:0x4200000000000000000000000000000000000006",
+        "amount": 0.000102
+      },
+      {
+        "src": "position:eip155:8453:0xc30b67a08e962b40f1fa0a4c1052c118ac0a61c6:0x4200000000000000000000000000000000000006",
+        "amount": 1.179727769539e-06
+      }
+    ],
+    "mode": "LIVE"
+  },
+  "limits": [
+    "event times are interpolated between two exact block timestamps",
+    "Q8 is NOT_INGESTED unless Safe/Zodiac permissions were ingested",
+    "the snapshot is read-only; no private key is involved"
+  ]
+}

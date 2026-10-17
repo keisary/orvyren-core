@@ -44,6 +44,9 @@ def _latest(db: str) -> Dict[str, Any]:
         asset = con.execute(
             "SELECT dst, COUNT(*) AS n FROM relations WHERE kind='HOLDS' "
             "GROUP BY dst ORDER BY n DESC, dst LIMIT 1").fetchone()
+        debt_asset = con.execute(
+            "SELECT dst, COUNT(*) AS n FROM relations WHERE kind='OWES' "
+            "GROUP BY dst ORDER BY n DESC, dst LIMIT 1").fetchone()
         relation = con.execute(
             "SELECT relation_id FROM relations ORDER BY row_id DESC LIMIT 1").fetchone()
     finally:
@@ -53,6 +56,7 @@ def _latest(db: str) -> Dict[str, Any]:
         "as_of": row["as_of"] if row else None,
         "holder": holder["src"] if holder else None,
         "asset": asset["dst"] if asset else None,
+        "debt_asset": debt_asset["dst"] if debt_asset else None,
         "relation_id": relation["relation_id"] if relation else None,
     }
 
@@ -62,12 +66,13 @@ def build(db: str, *, holder: Optional[str] = None,
     latest = _latest(db)
     holder = holder or latest["holder"]
     asset = asset or latest["asset"]
+    q7_asset = latest.get("debt_asset") or asset
     as_of = latest["as_of"]
     as_of_block = latest["block"]
     snap = api.snapshot(db, as_of=as_of, as_of_block=as_of_block)
     q1 = api.exposure(db, holder, as_of=as_of, as_of_block=as_of_block) if holder else None
     q4 = api.pit(db, as_of=as_of, as_of_block=as_of_block, limit=50)
-    q7 = api.concentration(db, asset, as_of=as_of, as_of_block=as_of_block) if asset else None
+    q7 = api.concentration(db, q7_asset, as_of=as_of, as_of_block=as_of_block) if q7_asset else None
     q6 = api.provenance(db, latest["relation_id"]) if latest["relation_id"] else None
     return {
         "schema": "orvyren-ui-snapshot/v1",
@@ -78,6 +83,7 @@ def build(db: str, *, holder: Optional[str] = None,
         "as_of_block": as_of_block,
         "holder": holder,
         "asset": asset,
+        "q7_asset": q7_asset,
         "counts": snap["counts"],
         "graph_hash": snap["graph_hash"],
         "q1": q1,

@@ -87,6 +87,7 @@ KNOWN_RESERVES: Dict[str, Tuple[str, int, str]] = {
     "0x2ae3f1ec7f1f5012cfeab0185bfc7aa3cf0dec22": ("cbETH", 18, "LST"),
     "0x60a3e35cc302bfa44cb288bc5a4f316fdb1adb42": ("EURC", 6, "STABLECOIN"),
     "0xd9aaec86b65d86f6a7b5b1b0c42ffa531710b6ca": ("USDbC", 6, "STABLECOIN"),
+    "0xcbb7c0000ab88b473b1f5afd9ef808440eed33bf": ("cbBTC", 8, "ACTIF"),
 }
 
 _TS_CACHE: Dict[int, int] = {}
@@ -147,8 +148,11 @@ def reserve_meta(rpc: ArchiveRpc, reserve: str, block: int) -> Tuple[str, int, s
             if len(words) >= 2:
                 offset = words[0]
                 length = words[1]
-                body = raw[2 + offset * 2:2 + offset * 2 + length * 2]
+                start = 2 + offset * 2 + 64
+                body = raw[start:start + length * 2]
                 symbol = bytes.fromhex(body).decode("utf-8", "replace") or symbol
+                if not symbol.isprintable():
+                    symbol = "UNKNOWN"
     except Exception:
         pass
     try:
