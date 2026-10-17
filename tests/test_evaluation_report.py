@@ -74,8 +74,6 @@ class EvaluationReportTest(unittest.TestCase):
         with open(paths["md_path"], "r", encoding="utf-8") as handle:
             first_line = handle.readline()
         self.assertTrue(first_line.startswith("> **DEV**"), first_line)
-        with open(paths["md_path"], "r", encoding="utf-8") as handle:
-            body = handle.read()
         self.assertIn("N = 1", first_line)
         second = report_mod.render_evaluation_report(content=_minimal_content(),
                                                      out_dir=self.tmp)

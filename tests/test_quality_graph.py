@@ -56,6 +56,8 @@ def read_corpus_rows():
 
 def local_hour_floor(ts):
     """Floor to the UTC hour without using ``orvyren.quality.checks``."""
+    if ts.tzinfo is None:
+        ts = ts.replace(tzinfo=timezone.utc)  # naive = UTC (project convention)
     return ts.astimezone(timezone.utc).replace(minute=0, second=0, microsecond=0)
 
 

@@ -57,7 +57,14 @@ class TestCalmWindows(unittest.TestCase):
     def test_sources_and_bounds(self):
         for label, window in self.series["windows"].items():
             start, end = _parse(window["start"]), _parse(window["end"])
-            self.assertIn("binance" not in window["unavailable"], (False, True))
+            # a source is either measured or explicitly declared unavailable —
+            # never both, and an unavailability is always declared (status + note)
+            self.assertEqual("binance" in window["unavailable"],
+                             "binance" not in window["sources"], label)
+            for name, entry in window["unavailable"].items():
+                self.assertNotIn(name, window["sources"], (label, name))
+                self.assertTrue(str(entry.get("status", "")).strip(), (label, name))
+                self.assertTrue(str(entry.get("note", "")).strip(), (label, name))
             for name, source in window["sources"].items():
                 self.assertGreaterEqual(source["records"], MIN_POINTS, (label, name))
                 for observation in source["observations"]:

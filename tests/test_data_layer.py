@@ -800,12 +800,15 @@ class EvidenceFileTests(unittest.TestCase):
         flags = [(utc, entry["rsETH"].get("is_frozen"))
                  for utc, entry in series.items() if isinstance(entry.get("rsETH"), dict)]
         flags = [(utc, flag) for utc, flag in flags if flag is not None]
+        self.assertTrue(flags, "the series must carry the rsETH frozen flag")
         transitions = [index for index in range(1, len(flags)) if flags[index][1] != flags[index - 1][1]]
-        self.assertLessEqual(len(transitions), 1, "the frozen flag must flip at most once")
-        if transitions:
-            flip_utc, flip_flag = flags[transitions[0]]
-            self.assertTrue(flip_flag)
-            self.assertEqual(utc_iso(parse_utc(flip_utc)), flip_utc)
+        self.assertEqual(len(transitions), 1,
+                         "the frozen flag must flip exactly once (the freeze is the episode)")
+        flip_utc, flip_flag = flags[transitions[0]]
+        self.assertTrue(flip_flag)
+        self.assertEqual(flip_utc, FREEZE_FIRST_UTC,
+                         "the flip must land on the measured freeze second")
+        self.assertEqual(utc_iso(parse_utc(flip_utc)), flip_utc)
 
         for utc, entry in series.items():
             state = entry.get("rsETH") or {}

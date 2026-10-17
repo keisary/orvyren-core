@@ -180,8 +180,10 @@ class TestPinnedBuildIsReproducible(unittest.TestCase):
         match = re.search(r"dossier \(self, md\) \| [^|]+ \| `([0-9a-f]{64})`", text)
         self.assertIsNotNone(match, "self-hash row not found in the dossier")
         digest = match.group(1)
-        recomputed = hashlib.sha256(
-            text.replace(digest, "0" * 64, 1).encode("utf-8")).hexdigest()
+        # Zero the self-hash FIELD positionally: zeroing the first textual
+        # occurrence of the digest could hit earlier data (A2 bug class).
+        zeroed = text[:match.start(1)] + "0" * 64 + text[match.end(1):]
+        recomputed = hashlib.sha256(zeroed.encode("utf-8")).hexdigest()
         self.assertEqual(digest, recomputed,
                          "the committed dossier's self-hash does not recompute")
 

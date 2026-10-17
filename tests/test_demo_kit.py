@@ -26,6 +26,7 @@ import sys
 import tempfile
 import unittest
 import zipfile
+import ast
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(HERE)
@@ -991,6 +992,29 @@ class TestKitConstraints(unittest.TestCase):
     NON_STDLIB = ("eth_account", "eth_keys", "web3", "requests", "yaml", "numpy",
                   "pandas", "httpx", "aiohttp", "coincurve")
 
+    @staticmethod
+    def _top_level_imports(source):
+        """Module-level imports only (a lazy import inside a callable is not a
+        hard dependency: generate_signer_key/setup_chain defer eth_account)."""
+        found = set()
+
+        def walk(nodes):
+            for node in nodes:
+                if isinstance(node, ast.Import):
+                    found.update(alias.name for alias in node.names)
+                elif isinstance(node, ast.ImportFrom):
+                    if node.module:
+                        found.add(node.module)
+                elif isinstance(node, (ast.If, ast.Try)):
+                    walk(node.body)
+                    walk(getattr(node, "orelse", []))
+                    walk(getattr(node, "finalbody", []))
+                    for handler in getattr(node, "handlers", []):
+                        walk(handler.body)
+
+        walk(ast.parse(source).body)
+        return found
+
     def test_only_signer_may_import_external_libraries(self):
         for name in sorted(os.listdir(DEMO_DIR)):
             if not name.endswith(".py") or name == "signer.py":
@@ -999,6 +1023,14 @@ class TestKitConstraints(unittest.TestCase):
             for module in self.NON_STDLIB:
                 self.assertNotIn("import {}".format(module), source,
                                  "{} imports {}".format(name, module))
+            # the textual pattern above misses `from X import ...`: the module-level
+            # scan catches it (a top-level import IS a hard dependency)
+            top_level = self._top_level_imports(source)
+            for module in self.NON_STDLIB:
+                self.assertFalse(
+                    any(found == module or found.startswith(module + ".")
+                        for found in top_level),
+                    "{} imports {} at module level".format(name, module))
 
     def test_scripts_expose_help_and_exit_codes(self):
         for script in ("demo.py", "preflight.py", "signer.py", "verify_receipt.py",

@@ -183,7 +183,6 @@ class TestBaselineA0(unittest.TestCase):
     def test_control_window_signals_are_false_signal_count(self):
         report = self.report
         self.assertEqual(len(report["signals_control"]), report["false_signals_control"])
-        self.assertGreaterEqual(report["false_signals_control"], 0)
         # Observed on the frozen corpus: the single one-hour dip of 16 Feb 2023
         # (0.988011) is filtered out by the two-consecutive-observations clause.
         self.assertEqual(0, report["false_signals_control"])
@@ -227,9 +226,9 @@ class TestEngineRealCorpus(unittest.TestCase):
         self.assertEqual(expected, decision["verdict"])
         if expected == ACTION_RECOMMENDED:
             self.assertIsNotNone(decision["action"])
+            self.assertEqual([], decision["missing_inputs"])
         else:
             self.assertIsNone(decision["action"])
-        self.assertEqual([], decision["missing_inputs"] if expected == ACTION_RECOMMENDED else [])
 
     def test_action_shape_when_recommended(self):
         action = self.case["decision"]["action"]

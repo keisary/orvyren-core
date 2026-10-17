@@ -312,10 +312,17 @@ class TestPolicyV1Rules(unittest.TestCase):
         cases = [
             evaluate(intent(), default_config(RESERVE, now=NOW), now=NOW),
             evaluate(intent(action="swap"), default_config(RESERVE, now=NOW), now=NOW),
+            evaluate(intent(recipient="0xdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef"),
+                     default_config(RESERVE, now=NOW), now=NOW),
         ]
+        seen = set()
         for decision in cases:
             for code in decision.reasons:
+                seen.add(code)
                 self.assertIn(code, DENY_CODES_V1 | {"ACTION_NEEDS_HUMAN_APPROVAL"})
+        # Non-vacuity: the DENY path is really exercised (an ALLOW decision has
+        # no reason at all and would make the loop above check nothing).
+        self.assertIn("RECIPIENT_NOT_ALLOWED", seen)
 
 
 class TestPolicyBoundary(unittest.TestCase):

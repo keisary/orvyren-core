@@ -242,10 +242,12 @@ class GraphV2SchemaTest(unittest.TestCase):
             self.assertEqual(first["counts"]["events"], 1)
 
     def test_fixture_records_are_accepted(self):
+        graphs_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+                                  "fixtures", "graphs")
         with GraphStore(":memory:") as store:
             total = 0
             for name in ("usdc_2023-03", "steth_2022-06", "rseth_2026-04"):
-                for record in load_fixture_records("fixtures/graphs/%s.json" % name):
+                for record in load_fixture_records(os.path.join(graphs_dir, "%s.json" % name)):
                     store.insert_relation_record(record)
                     total += 1
             self.assertEqual(total, 20)
