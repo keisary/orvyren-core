@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-10-16T12:40:11.986695+00:00",
+  "generated_at": "2026-10-17T04:34:01.272554+00:00",
   "corpus": {
     "csv": "corpus/usdc_observations.csv",
     "rows": 520,
@@ -189,8 +189,8 @@
     },
     "snapshot": {
       "graph_version": "orvyren-graph-v1",
-      "schema_version": 1,
-      "hash": "6c02b63403aad46942c46060b9fa643f9e7683a7138164eeac7c712ab50f7294",
+      "schema_version": 2,
+      "hash": "f21556f58dc8de0663dfa009f7810622ab0128eb59b61e27e01a5d914c8e2d66",
       "counts": {
         "sources": 4,
         "observations": 520,

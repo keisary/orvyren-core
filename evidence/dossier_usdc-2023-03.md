@@ -6,7 +6,7 @@
 | --- | --- |
 | Case | usdc-2023-03 |
 | Window | 2023-03-09T00:00:00+00:00 → 2023-03-15T00:00:00+00:00 |
-| Generated (UTC) | 2026-10-16T12:40:12Z |
+| Generated (UTC) | 2026-10-17T04:34:02Z |
 | Engine | ORVYREN-Core 0.1 |
 
 ## Decision
@@ -93,6 +93,8 @@ Control signals (0):
         "to": "0x036cbd53842c5426634e7929541eC2318f3dCF7e"
       },
       "intent_id": "I1",
+      "policy_hash": "b8d2e92e2d9233010c392b553df63f9014b25b36891307e4178f1b4d6ac580ad",
+      "policy_version": "v1.0",
       "recipient": "0x1111111111111111111111111111111111111111",
       "rules_evaluated": [
         {
@@ -111,8 +113,8 @@ Control signals (0):
           "rule": "P3-recipient"
         },
         {
-          "note": "registre de fonctions non configuré (legacy)",
-          "result": "SKIPPED",
+          "note": "transfer -> (0x036cbd53842c5426634e7929541ec2318f3dcf7e, 0xa9059cbb)",
+          "result": "OK",
           "rule": "P4-function"
         },
         {
@@ -126,8 +128,8 @@ Control signals (0):
           "rule": "P6-cumulative"
         },
         {
-          "note": "state non fourni (appel legacy)",
-          "result": "SKIPPED",
+          "note": "balance 1000.0 (floor/exposure not configured)",
+          "result": "OK",
           "rule": "P7-exposure"
         },
         {
@@ -136,8 +138,8 @@ Control signals (0):
           "rule": "P8-permission"
         },
         {
-          "note": "TTL d'intention non configuré (legacy)",
-          "result": "SKIPPED",
+          "note": "age 0:00:00",
+          "result": "OK",
           "rule": "P9-freshness"
         },
         {
@@ -146,18 +148,18 @@ Control signals (0):
           "rule": "P10-idempotency"
         },
         {
-          "note": "state non fourni (appel legacy)",
-          "result": "SKIPPED",
+          "note": "",
+          "result": "OK",
           "rule": "P11-pause"
         },
         {
-          "note": "state non fourni (appel legacy)",
-          "result": "SKIPPED",
+          "note": "",
+          "result": "OK",
           "rule": "P12-envelope"
         },
         {
-          "note": "state non fourni (appel legacy)",
-          "result": "SKIPPED",
+          "note": "0.0 < 0.1",
+          "result": "OK",
           "rule": "P14-budget"
         },
         {
@@ -166,6 +168,7 @@ Control signals (0):
           "rule": "P13-action"
         }
       ],
+      "skipped_rules": [],
       "verdict": "ALLOW"
     },
     {
@@ -177,6 +180,8 @@ Control signals (0):
       ],
       "instruction": null,
       "intent_id": "I2",
+      "policy_hash": "b8d2e92e2d9233010c392b553df63f9014b25b36891307e4178f1b4d6ac580ad",
+      "policy_version": "v1.0",
       "recipient": "0x1111111111111111111111111111111111111111",
       "rules_evaluated": [
         {
@@ -195,8 +200,8 @@ Control signals (0):
           "rule": "P3-recipient"
         },
         {
-          "note": "registre de fonctions non configuré (legacy)",
-          "result": "SKIPPED",
+          "note": "transfer -> (0x036cbd53842c5426634e7929541ec2318f3dcf7e, 0xa9059cbb)",
+          "result": "OK",
           "rule": "P4-function"
         },
         {
@@ -210,8 +215,8 @@ Control signals (0):
           "rule": "P6-cumulative"
         },
         {
-          "note": "state non fourni (appel legacy)",
-          "result": "SKIPPED",
+          "note": "balance 1000.0 (floor/exposure not configured)",
+          "result": "OK",
           "rule": "P7-exposure"
         },
         {
@@ -220,8 +225,8 @@ Control signals (0):
           "rule": "P8-permission"
         },
         {
-          "note": "TTL d'intention non configuré (legacy)",
-          "result": "SKIPPED",
+          "note": "age 0:00:00",
+          "result": "OK",
           "rule": "P9-freshness"
         },
         {
@@ -230,21 +235,22 @@ Control signals (0):
           "rule": "P10-idempotency"
         },
         {
-          "note": "state non fourni (appel legacy)",
-          "result": "SKIPPED",
+          "note": "",
+          "result": "OK",
           "rule": "P11-pause"
         },
         {
-          "note": "state non fourni (appel legacy)",
-          "result": "SKIPPED",
+          "note": "",
+          "result": "OK",
           "rule": "P12-envelope"
         },
         {
-          "note": "state non fourni (appel legacy)",
-          "result": "SKIPPED",
+          "note": "0.0 < 0.1",
+          "result": "OK",
           "rule": "P14-budget"
         }
       ],
+      "skipped_rules": [],
       "verdict": "DENY"
     },
     {
@@ -255,6 +261,8 @@ Control signals (0):
       ],
       "instruction": null,
       "intent_id": "I3",
+      "policy_hash": "b8d2e92e2d9233010c392b553df63f9014b25b36891307e4178f1b4d6ac580ad",
+      "policy_version": "v1.0",
       "recipient": "0x1111111111111111111111111111111111111111",
       "rules_evaluated": [
         {
@@ -273,7 +281,7 @@ Control signals (0):
           "rule": "P3-recipient"
         },
         {
-          "note": "registre de fonctions non configuré (legacy)",
+          "note": "approval-only action — no direct call in v1",
           "result": "SKIPPED",
           "rule": "P4-function"
         },
@@ -283,13 +291,13 @@ Control signals (0):
           "rule": "P5-amount"
         },
         {
-          "note": "100.0 <= 300.0",
+          "note": "200.0 <= 300.0",
           "result": "OK",
           "rule": "P6-cumulative"
         },
         {
-          "note": "state non fourni (appel legacy)",
-          "result": "SKIPPED",
+          "note": "balance 1000.0 (floor/exposure not configured)",
+          "result": "OK",
           "rule": "P7-exposure"
         },
         {
@@ -298,8 +306,8 @@ Control signals (0):
           "rule": "P8-permission"
         },
         {
-          "note": "TTL d'intention non configuré (legacy)",
-          "result": "SKIPPED",
+          "note": "age 0:00:00",
+          "result": "OK",
           "rule": "P9-freshness"
         },
         {
@@ -308,18 +316,18 @@ Control signals (0):
           "rule": "P10-idempotency"
         },
         {
-          "note": "state non fourni (appel legacy)",
-          "result": "SKIPPED",
+          "note": "",
+          "result": "OK",
           "rule": "P11-pause"
         },
         {
-          "note": "state non fourni (appel legacy)",
-          "result": "SKIPPED",
+          "note": "",
+          "result": "OK",
           "rule": "P12-envelope"
         },
         {
-          "note": "state non fourni (appel legacy)",
-          "result": "SKIPPED",
+          "note": "0.0 < 0.1",
+          "result": "OK",
           "rule": "P14-budget"
         },
         {
@@ -328,10 +336,17 @@ Control signals (0):
           "rule": "P13-action"
         }
       ],
+      "skipped_rules": [
+        "P4-function"
+      ],
       "verdict": "REQUIRE_APPROVAL"
     }
   ],
   "chain": "Base Sepolia (84532)",
+  "demo_defaults": {
+    "agent_member": true,
+    "available_balance": true
+  },
   "execution_config": {
     "agent_holds_key": false,
     "dry_run": true,
@@ -344,12 +359,143 @@ Control signals (0):
     "timeout_seconds": 30,
     "treasury_address": "0x2222222222222222222222222222222222222222"
   },
-  "generated_at": "2026-10-16T12:40:12+00:00",
+  "generated_at": "2026-10-17T04:34:02+00:00",
   "guard_blocks": [
     "I2: execution blocked: policy verdict 'DENY' — the instruction is refused (reason codes: AMOUNT_ABOVE_TX_CAP, AMOUNT_ABOVE_PERIOD_CAP)",
     "I3: execution blocked: policy verdict 'REQUIRE_APPROVAL' — a human approval is required before this instruction may be prepared (reason codes: ACTION_NEEDS_HUMAN_APPROVAL)"
   ],
   "mode": "unsigned instruction + human execution + on-chain receipt verification",
+  "period_cap_check": {
+    "amount_usdc": 100.0,
+    "fourth_deny_codes": [
+      "AMOUNT_ABOVE_PERIOD_CAP"
+    ],
+    "fourth_verdict": "DENY",
+    "ledger_entries_after_restart": 3,
+    "max_cumulative_24h": 300.0,
+    "restart_simulated": true,
+    "spent_24h_after_restart": 300.0,
+    "verdicts": [
+      {
+        "attempt": 1,
+        "deny_codes": [],
+        "intent_id": "period-cap-demo-1",
+        "verdict": "ALLOW"
+      },
+      {
+        "attempt": 2,
+        "deny_codes": [],
+        "intent_id": "period-cap-demo-2",
+        "verdict": "ALLOW"
+      },
+      {
+        "attempt": 3,
+        "deny_codes": [],
+        "intent_id": "period-cap-demo-3",
+        "verdict": "ALLOW"
+      },
+      {
+        "attempt": 4,
+        "deny_codes": [
+          "AMOUNT_ABOVE_PERIOD_CAP"
+        ],
+        "intent_id": "period-cap-demo-4",
+        "verdict": "DENY"
+      }
+    ]
+  },
+  "policy": {
+    "path": "policy_v1.yaml",
+    "policy_hash": "b8d2e92e2d9233010c392b553df63f9014b25b36891307e4178f1b4d6ac580ad",
+    "recipients_resolved": [
+      "B"
+    ],
+    "unresolved_recipients": [
+      "C"
+    ],
+    "version": "v1.0",
+    "yaml_sha256": "b99ad99bc2d32184fd4e1b45fb136f0424e972f40d71cafeab622ae11acc0c03"
+  },
+  "policy_state": {
+    "agent_member": true,
+    "available_balance": 1000.0,
+    "budget_cap_usd": 0.1,
+    "cumulative_spent_24h": 100.0,
+    "envelope_checks": [
+      {
+        "detail": {
+          "chain_id": 84532
+        },
+        "id": "D1",
+        "name": "chain",
+        "status": "PASS"
+      },
+      {
+        "detail": {},
+        "id": "D3",
+        "name": "role key",
+        "status": "PASS"
+      },
+      {
+        "detail": {
+          "targets": [
+            "0x036cbd53842c5426634e7929541ec2318f3dcf7e"
+          ]
+        },
+        "id": "D4",
+        "name": "role targets",
+        "status": "PASS"
+      },
+      {
+        "detail": {
+          "functions": [
+            [
+              "0x036cbd53842c5426634e7929541ec2318f3dcf7e",
+              "0xa9059cbb"
+            ]
+          ]
+        },
+        "id": "D5",
+        "name": "role functions",
+        "status": "PASS"
+      },
+      {
+        "detail": {
+          "fixture": 300000000,
+          "mismatches": [],
+          "policy": 300000000
+        },
+        "id": "D7",
+        "name": "allowance",
+        "status": "PASS"
+      },
+      {
+        "detail": {
+          "fixture": 10,
+          "policy": 10
+        },
+        "id": "D8",
+        "name": "call quota",
+        "status": "PASS"
+      },
+      {
+        "detail": {},
+        "id": "D9",
+        "name": "scheduled revocation",
+        "status": "PASS"
+      },
+      {
+        "detail": {},
+        "id": "D10",
+        "name": "asset",
+        "status": "PASS"
+      }
+    ],
+    "envelope_fixture": "fixtures/roles_agent_config.json",
+    "envelope_source": "fixture",
+    "envelope_status": "PASS",
+    "paused": false
+  },
   "receipt_verification": {
     "status": "no transaction hash provided yet (pending human execution)"
   },
@@ -556,7 +702,7 @@ Control signals (0):
       "venues_present": []
     }
   ],
-  "generated_at": "2026-10-16T12:40:11.986695+00:00",
+  "generated_at": "2026-10-17T04:34:01.272554+00:00",
   "graph": {
     "claims_inserted": 4,
     "counts": {
@@ -580,7 +726,7 @@ Control signals (0):
         "sources": 4
       },
       "graph_version": "orvyren-graph-v1",
-      "hash": "6c02b63403aad46942c46060b9fa643f9e7683a7138164eeac7c712ab50f7294",
+      "hash": "f21556f58dc8de0663dfa009f7810622ab0128eb59b61e27e01a5d914c8e2d66",
       "rows_total": {
         "claims": 4,
         "decision_nodes": 0,
@@ -589,7 +735,7 @@ Control signals (0):
         "relations": 4,
         "sources": 4
       },
-      "schema_version": 1
+      "schema_version": 2
     },
     "sources": [
       "binance",
@@ -688,14 +834,14 @@ Control signals (0):
 
 | Input | Path | SHA-256 |
 | --- | --- | --- |
-| decision | evidence/decision_usdc-2023-03.json | `b65c0634be924b18954258dedb93e7f8965ae2728fb129f1dd56c39c01b76bbd` |
+| decision | evidence/decision_usdc-2023-03.json | `acd3f227018f396f6c92873cf3c4c48df74ac6e98428c64974033f27f2ebf49c` |
 | baseline_report | evidence/baseline_report.json | `fa68d11f36232719f5400b5aab1d1cfab19b7808aaeb3e01297bd7bf4f868ae8` |
-| policy_execution_demo | evidence/policy_execution_demo.json | `cd55f7f71911a7b15e4bc9f4f9be7622a7db72371a034ea5205b9142ab8da5f0` |
-| quality_report | evidence/quality_report.json | `5bade796b4e1909d373aa3aaad663a4a3de2ca68c30c2affb5cc5aaff255e20a` |
-| dossier (self, md) | evidence/dossier_usdc-2023-03.md | `100747df7a36ca2b040d3fae699fd332ef43e79870775a8eabde667a0c08e4c1` |
+| policy_execution_demo | evidence/policy_execution_demo.json | `5d6b64e04a04056acdb8dd7ab1f57368328677b82b73f8bd6b55e29bda14ffae` |
+| quality_report | evidence/quality_report.json | `3422567ea2de3ee1ac54fa7a72b84c3f7fbd94eca76b72fb11b7ba19bff82730` |
+| dossier (self, md) | evidence/dossier_usdc-2023-03.md | `6959bd3197c13803c0486fe417e2c17bc3daf8a751c3f9e56a7383a998e86443` |
 
 Self-hash rule: the `dossier (self, md)` row is the SHA-256 of this Markdown file computed with its own 64-hex-character self-hash field zeroed (64 `0` characters). It is reproducible with any SHA-256 tool: replace that field with zeros and hash the file. With identical inputs and build time this dossier is byte-identical.
 
 ---
 
-produced by ORVYREN-Core v0.1 — deterministic engine, no human edit · ORVYREN-Core v0.1 · generated 2026-10-16T12:40:12Z (UTC)
+produced by ORVYREN-Core v0.1 — deterministic engine, no human edit · ORVYREN-Core v0.1 · generated 2026-10-17T04:34:02Z (UTC)

@@ -1,11 +1,11 @@
 {
   "schema": "orvyren-envelope-drift-report/v1",
-  "generated_at": "2026-10-16T21:10:12Z",
-  "mode": "rpc",
+  "generated_at": "2026-10-17T04:34:13Z",
+  "mode": "offline",
   "policy": {
     "path": "D:\\orvyren_core\\policy_v1.yaml",
     "version": "v1.0",
-    "policy_hash": "7911f616f64e28f1eab2e33e106a3b7421686e066c818c016c8070034f87d7c5",
+    "policy_hash": "b8d2e92e2d9233010c392b553df63f9014b25b36891307e4178f1b4d6ac580ad",
     "yaml_sha256": "b99ad99bc2d32184fd4e1b45fb136f0424e972f40d71cafeab622ae11acc0c03"
   },
   "fixture": {
@@ -18,36 +18,18 @@
       "id": "D1",
       "family": "drift",
       "name": "chaîne (eth_chainId)",
-      "status": "PASS",
+      "status": "SKIPPED",
       "detail": {
-        "chain_id": 84532
+        "note": "mode --offline : lecture chaîne non demandée"
       }
     },
     {
       "id": "D2",
       "family": "drift",
       "name": "module (code + empreinte épinglée)",
-      "status": "PASS",
+      "status": "SKIPPED",
       "detail": {
-        "observed": {
-          "module": {
-            "size": 45,
-            "sha256": "09bfac6bbbcc2243f8768c9967697a3599bb1274d71154cca75b4cd910cf2c14"
-          },
-          "singleton": {
-            "size": 24409,
-            "sha256": "89c5dc3313b5669f669232de7033734b4ee10339297cdf523bee5eb1b093cd05"
-          },
-          "safe": {
-            "size": 171,
-            "sha256": "a8a0fbd3cdf49e751346664e01b529a58322a814cf8df8d85deb20e63bd6415e"
-          },
-          "usdc_circle_base_sepolia": {
-            "size": 1798,
-            "sha256": "e878b99fc0c17354c86c7edeb999c70c18cfd925abb0958496f027cbad996d28"
-          }
-        },
-        "mismatches": []
+        "note": "mode --offline : lecture chaîne non demandée"
       }
     },
     {
@@ -58,16 +40,7 @@
       "detail": {
         "role_key_fixture": "0x4147454e54000000000000000000000000000000000000000000000000000000",
         "role_key_policy": "0x4147454e54000000000000000000000000000000000000000000000000000000",
-        "note": "sonde comportementale d'appartenance exécutée en mode --rpc",
-        "probes": [
-          {
-            "probe": "members.agent.behavioural",
-            "outcome": "revert",
-            "revert_selector": "0xd0a9bf58",
-            "expected": "0xd0a9bf58",
-            "ok": true
-          }
-        ]
+        "note": "sonde comportementale d'appartenance exécutée en mode --rpc"
       }
     },
     {
@@ -108,16 +81,7 @@
           "B",
           "C"
         ],
-        "pending": "destinataires non résolus (labels sans adresse de session) — à vérifier au montage",
-        "probes": [
-          {
-            "probe": "members.agent.behavioural",
-            "outcome": "revert",
-            "revert_selector": "0xd0a9bf58",
-            "expected": "0xd0a9bf58",
-            "ok": true
-          }
-        ]
+        "pending": "destinataires non résolus (labels sans adresse de session) — à vérifier au montage"
       }
     },
     {
@@ -128,16 +92,7 @@
       "detail": {
         "refill": 300000000,
         "max_refill": 300000000,
-        "period_seconds": 86400,
-        "probes": [
-          {
-            "probe": "condition.allowance",
-            "outcome": "revert",
-            "revert_selector": "0xd0a9bf58",
-            "expected": "0xd0a9bf58",
-            "ok": true
-          }
-        ]
+        "period_seconds": 86400
       }
     },
     {
@@ -171,10 +126,10 @@
     }
   ],
   "summary": {
-    "PASS": 9,
+    "PASS": 7,
     "DRIFT": 0,
     "UNVERIFIED": 0,
-    "SKIPPED": 1
+    "SKIPPED": 3
   },
   "verdict": "PASS",
   "safe_mode": false,
@@ -182,6 +137,5 @@
   "pending": [
     "Relecture directe des cibles/fonctions/conditions/allowances via getters du module — à confirmer (B4 §d.3 annexe 4) ; la conformité actuelle s'appuie sur la capture du montage.",
     "Version/avis de sécurité du singleton : non suivis — l'empreinte du bytecode épinglée (D2) sert de garde."
-  ],
-  "rpc_url": "https://sepolia.base.org"
+  ]
 }
