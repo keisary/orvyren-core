@@ -23,7 +23,7 @@
 * **p = 0.299492** — origine : estimateur explicite — comptage empirique des fenêtres de calibration DEV de même durée/grille, fenêtre cible exclue (LOO) — B7 §a.4 : p = 59/197 = 0.299492 ; corpus figé (corpus/usdc_observations.csv, sha256 c31088b3de428a35…)
 * **Règle de résolution** : `sustained_depeg_v1` · `resolve_not_before` = 2023-02-16T06:00:00Z
 * **Résolution (déterministe)** : y = **0** — observé : {"rule": "sustained_depeg_v1", "ecart_pct": 1.0, "persistance_obs": 2, "max_gap_minutes": 90, "n_observations": 7, "min_price": 0.999701, "max_discount_pct": 0.0299, "first_violation_utc": "2023-02-16T03:00:00Z", "sustained_runs": 0, "longest_run_obs": 0, "first_sustained_utc": null}
-* **Provenance/hash** : sha256 `d80c4159c7c8ff3636bd84854669939f…` · prev_hash `0000000000000000…` · outcome `dev-usdc-2023-03.h-calme-1.h_class`
+* **Provenance/hash** : sha256 `fe17c6055b7626e3bc4fd034253a3b93…` · prev_hash `0000000000000000…` · outcome `dev-usdc-2023-03.h-calme-1.h_class`
 
 ### `dev-usdc-2023-03.h-calme-2` — Fenêtre témoin USDC, 17/02/2023 00:00Z
 
@@ -32,7 +32,7 @@
 * **p = 0.299492** — origine : estimateur explicite — comptage empirique des fenêtres de calibration DEV de même durée/grille, fenêtre cible exclue (LOO) — B7 §a.4 : p = 59/197 = 0.299492 ; corpus figé (corpus/usdc_observations.csv, sha256 c31088b3de428a35…)
 * **Règle de résolution** : `sustained_depeg_v1` · `resolve_not_before` = 2023-02-17T06:00:00Z
 * **Résolution (déterministe)** : y = **0** — observé : {"rule": "sustained_depeg_v1", "ecart_pct": 1.0, "persistance_obs": 2, "max_gap_minutes": 90, "n_observations": 7, "min_price": 0.999157, "max_discount_pct": 0.0843, "first_violation_utc": "2023-02-17T05:00:00Z", "sustained_runs": 0, "longest_run_obs": 0, "first_sustained_utc": null}
-* **Provenance/hash** : sha256 `d7c2dcbeb30b980b07997e3e6a053020…` · prev_hash `d80c4159c7c8ff36…` · outcome `dev-usdc-2023-03.h-calme-2.h_class`
+* **Provenance/hash** : sha256 `9e91d1a94fbd8a3a8bd2d7b21ebe505b…` · prev_hash `fe17c6055b7626e3…` · outcome `dev-usdc-2023-03.h-calme-2.h_class`
 
 ### `dev-usdc-2023-03.h-pre-crise` — USDC, veille du dépeg (10/03/2023 12:00Z)
 
@@ -41,7 +41,7 @@
 * **p = 0.299492** — origine : estimateur explicite — comptage empirique des fenêtres de calibration DEV de même durée/grille, fenêtre cible exclue (LOO) — B7 §a.4 : p = 59/197 = 0.299492 ; corpus figé (corpus/usdc_observations.csv, sha256 c31088b3de428a35…)
 * **Règle de résolution** : `sustained_depeg_v1` · `resolve_not_before` = 2023-03-10T18:00:00Z
 * **Résolution (déterministe)** : y = **0** — observé : {"rule": "sustained_depeg_v1", "ecart_pct": 1.0, "persistance_obs": 2, "max_gap_minutes": 90, "n_observations": 7, "min_price": 0.99558, "max_discount_pct": 0.442, "first_violation_utc": "2023-03-10T14:00:00Z", "sustained_runs": 0, "longest_run_obs": 0, "first_sustained_utc": null}
-* **Provenance/hash** : sha256 `b051327c08a3043dbe72e27799e57b13…` · prev_hash `d7c2dcbeb30b980b…` · outcome `dev-usdc-2023-03.h-pre-crise.h_class`
+* **Provenance/hash** : sha256 `9223887fa5e88e70793b399477c22708…` · prev_hash `9e91d1a94fbd8a3a…` · outcome `dev-usdc-2023-03.h-pre-crise.h_class`
 
 ### `dev-usdc-2023-03.h-crise` — USDC, cœur de crise (11/03/2023 04:00Z)
 
@@ -50,7 +50,7 @@
 * **p = 0.243655** — origine : estimateur explicite — comptage empirique des fenêtres de calibration DEV de même durée/grille, fenêtre cible exclue (LOO) — B7 §a.4 : p = 48/197 = 0.243655 ; corpus figé (corpus/usdc_observations.csv, sha256 c31088b3de428a35…)
 * **Règle de résolution** : `sustained_depeg_v1` · `resolve_not_before` = 2023-03-11T10:00:00Z
 * **Résolution (déterministe)** : y = **1** — observé : {"rule": "sustained_depeg_v1", "ecart_pct": 1.0, "persistance_obs": 2, "max_gap_minutes": 90, "n_observations": 7, "min_price": 0.876675, "max_discount_pct": 12.3325, "first_violation_utc": "2023-03-11T08:00:00Z", "sustained_runs": 1, "longest_run_obs": 7, "first_sustained_utc": "2023-03-11T10:00:00Z"}
-* **Provenance/hash** : sha256 `ed738a33bea74a09a18a1b578625d5d7…` · prev_hash `b051327c08a3043d…` · outcome `dev-usdc-2023-03.h-crise.h_class`
+* **Provenance/hash** : sha256 `17b99a81cab01aecf126d1a51dcfd136…` · prev_hash `9223887fa5e88e70…` · outcome `dev-usdc-2023-03.h-crise.h_class`
 
 ### `dev-usdc-2023-03.h-post-crise` — USDC, retour vers la parité (13/03/2023 12:00Z)
 
@@ -59,7 +59,7 @@
 * **p = 0.289340** — origine : estimateur explicite — comptage empirique des fenêtres de calibration DEV de même durée/grille, fenêtre cible exclue (LOO) — B7 §a.4 : p = 57/197 = 0.289340 ; corpus figé (corpus/usdc_observations.csv, sha256 c31088b3de428a35…)
 * **Règle de résolution** : `sustained_depeg_v1` · `resolve_not_before` = 2023-03-13T18:00:00Z
 * **Résolution (déterministe)** : y = **0** — observé : {"rule": "sustained_depeg_v1", "ecart_pct": 1.0, "persistance_obs": 2, "max_gap_minutes": 90, "n_observations": 7, "min_price": 0.99102079028018, "max_discount_pct": 0.897921, "first_violation_utc": "2023-03-13T12:00:00Z", "sustained_runs": 0, "longest_run_obs": 0, "first_sustained_utc": null}
-* **Provenance/hash** : sha256 `c6099b02a50f21c33788ed2db56b9589…` · prev_hash `ed738a33bea74a09…` · outcome `dev-usdc-2023-03.h-post-crise.h_class`
+* **Provenance/hash** : sha256 `5c937a3a8e6d6b7bd618cfdbc611387b…` · prev_hash `17b99a81cab01aec…` · outcome `dev-usdc-2023-03.h-post-crise.h_class`
 
 ### `dev-steth-2022-05.t-calme` — stETH, fenêtre calme (critère CALME gelé)
 
@@ -68,7 +68,7 @@
 * **p = 0.008130** — origine : estimateur explicite — comptage empirique des fenêtres de calibration DEV de même durée/grille, fenêtre cible exclue (LOO) — B7 §a.4 : p = 2/246 = 0.008130 ; corpus figé (evidence/episode_steth_2022-06.json, sha256 22fb64ee37081175…)
 * **Règle de résolution** : `calm_window_v1` · `resolve_not_before` = 2022-05-08T00:00:00Z
 * **Résolution (déterministe)** : y = **1** — observé : {"rule": "calm_window_v1", "tolerance_pct": 0.5, "n_observations": 4, "max_abs_deviation_pct": 0.222689, "worst_observation_utc": "2022-05-08T00:00:00Z", "worst_price": 0.9977731075831178}
-* **Provenance/hash** : sha256 `1b337e40dc4e5b442c061658f1653b45…` · prev_hash `c6099b02a50f21c3…` · outcome `dev-steth-2022-05.t-calme.t`
+* **Provenance/hash** : sha256 `01d34e99f137328d1465cf5cfeff6e6c…` · prev_hash `5c937a3a8e6d6b7b…` · outcome `dev-steth-2022-05.t-calme.t`
 
 ### `dev-steth-2022-05.t-rupture` — stETH, ouverture de la décote (13–21/05/2022)
 
@@ -77,7 +77,7 @@
 * **p = 0.978632** — origine : estimateur explicite — comptage empirique des fenêtres de calibration DEV de même durée/grille, fenêtre cible exclue (LOO) — B7 §a.4 : p = 229/234 = 0.978632 ; corpus figé (evidence/episode_steth_2022-06.json, sha256 22fb64ee37081175…)
 * **Règle de résolution** : `sustained_depeg_v1` · `resolve_not_before` = 2022-05-19T00:00:00Z
 * **Résolution (déterministe)** : y = **1** — observé : {"rule": "sustained_depeg_v1", "ecart_pct": 1.0, "persistance_obs": 2, "max_gap_minutes": 1500, "n_observations": 8, "min_price": 0.9759097579306899, "max_discount_pct": 2.409024, "first_violation_utc": "2022-05-14T00:00:00Z", "sustained_runs": 1, "longest_run_obs": 7, "first_sustained_utc": "2022-05-19T00:00:00Z"}
-* **Provenance/hash** : sha256 `ba17cd7389b70327fc5dd350844393dd…` · prev_hash `1b337e40dc4e5b44…` · outcome `dev-steth-2022-05.t-rupture.t`
+* **Provenance/hash** : sha256 `792ff1c6433248361d109fc09e4313de…` · prev_hash `01d34e99f137328d…` · outcome `dev-steth-2022-05.t-rupture.t`
 
 ### `dev-steth-2022-06.h-crise` — stETH, fenêtre horaire 10→17/06/2022 (gel des retraits Celsius)
 
@@ -86,7 +86,7 @@
 * **p = 1.000000** — origine : estimateur explicite — comptage empirique des fenêtres de calibration DEV de même durée/grille, fenêtre cible exclue (LOO) — B7 §a.4 : p = 153/153 = 1.000000 ; corpus figé (evidence/episode_steth_2022-06.json, sha256 22fb64ee37081175…)
 * **Règle de résolution** : `sustained_depeg_v1` · `resolve_not_before` = 2022-06-13T06:00:00Z
 * **Résolution (déterministe)** : y = **1** — observé : {"rule": "sustained_depeg_v1", "ecart_pct": 1.0, "persistance_obs": 2, "max_gap_minutes": 90, "n_observations": 7, "min_price": 0.9471168317600716, "max_discount_pct": 5.288317, "first_violation_utc": "2022-06-13T03:00:00Z", "sustained_runs": 1, "longest_run_obs": 7, "first_sustained_utc": "2022-06-13T06:00:00Z"}
-* **Provenance/hash** : sha256 `a6d3491fb42554965600a296cbcb99bc…` · prev_hash `ba17cd7389b70327…` · outcome `dev-steth-2022-06.h-crise.h_class`
+* **Provenance/hash** : sha256 `78c6a7e49ddde3eef4cb280a33d471ff…` · prev_hash `792ff1c643324836…` · outcome `dev-steth-2022-06.h-crise.h_class`
 
 ## Ce qui n'est PAS revendiqué
 

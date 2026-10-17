@@ -54,7 +54,13 @@ from orvyren.evaluation import windows as windows_mod  # noqa: E402
 #: artefacts ; elle est celle de la commande qui les recrée).
 GEL_AT_UTC = "2026-10-16T00:00:00Z"
 RUN_ID = "freeze-sprint0-2026-10-16"
-SIGNED_BY = {"role": "gel-g6", "name": "<à signer — chef d'équipe>"}
+# Signature électronique du chef d'équipe (validation explicite du 2026-10-17).
+G6_SIGNED_AT = "2026-10-17"
+G6_SIGNER = "AKUE-BITCHI Adote Jovanny"
+G6_SIGNATURE_NOTE = ("validation électronique du chef d'équipe — autorisation explicite "
+                     "dans la session Hermes du 2026-10-17 ; une copie manuscrite scannée "
+                     "peut être jointe à la soumission")
+SIGNED_BY = {"role": "gel-g6", "name": G6_SIGNER}
 
 #: Chemins POSIX (stables entre plateformes — ils entrent dans le hash des records).
 USDC_CORPUS_RELPATH = "corpus/usdc_observations.csv"
@@ -529,16 +535,16 @@ Liste exacte des fenêtres CALME EVAL 2025–2026 (B7 Q6) et fenêtres calmes DE
 
 
 def doc_g4(repo_root: str) -> str:
-    return f"""# G4 — Seuils par persona (gel v1, statut PROPOSÉ)
+    return f"""# G4 — Seuils par persona (gel v1, statut VALIDÉ)
 
-**Statut : PROPOSÉ — à valider avant la première exécution EVAL** — {GEL_AT_UTC}.
-Sources : W2-D §C.4.1 (DAO), §C.4.2 (desk), B7 §e.3/e.4 (métriques). Les valeurs
-ci-dessous sont **reprises telles quelles** des documents sources, qui les
-marquent explicitement « propositions à valider, pas des faits ».
+**Statut : VALIDÉ — validation électronique du chef d'équipe le {G6_SIGNED_AT}.** {GEL_AT_UTC}.
+Signataire : **{G6_SIGNER}** — {G6_SIGNATURE_NOTE}. Sources : W2-D §C.4.1 (DAO), §C.4.2 (desk),
+B7 §e.3/e.4 (métriques). Les valeurs ci-dessous sont **reprises telles quelles**
+des documents sources et **validées** ; elles ne sont pas des faits mesurés.
 
 ## 1. Persona DAO (trésorerie)
 
-| Code | Critère | Formulation | Valeur proposée |
+| Code | Critère | Formulation | Valeur validée |
 |---|---|---|---|
 | SD1 | Perte évitée matérielle | `(L(A0) − L(A2)) / q` en % de l'exposition, conditionnellement à l'obligation ; second affichage en jours de runway | ≥ 5 % |
 | SD2 | Friction maîtrisée | coût cumulé de A2 sur fenêtres CALME | ≤ 10 % de la perte évitée de crise |
@@ -549,7 +555,7 @@ marquent explicitement « propositions à valider, pas des faits ».
 
 ## 2. Persona desk (P&L)
 
-| Code | Critère | Formulation | Valeur proposée |
+| Code | Critère | Formulation | Valeur validée |
 |---|---|---|---|
 | ST1 | P&L net cumulé | tous coûts inclus (frais, slippage mesuré, financement) + intervalle bootstrap par blocs | > 0 |
 | ST2 | Qualité d'exécution | slippage réalisé vs échelle `get_dy` ; taille ≤ Depth_100bp | ≤ 30 bp en stress |
@@ -566,12 +572,12 @@ réplications, graine fixée) · DSR/journal des variantes · R⁻/R⁺ séparé
 contingence · mention de contamination · « ce que nous ne revendiquons pas » ·
 **un scalaire est interdit** (vecteur de métriques + axes non mesurés déclarés).
 
-## 4. NOT DONE
+## 4. Vérification exécutable à venir
 
 Les seuils SD/ST ne sont **pas encore lus par du code** (le harnais §e.6 items 6–7 n'est pas
-construit) : ce document les gèle en tant que déclaration, la vérification exécutable
-viendra avec `harness.py`. Toute modification après la première exécution EVAL invalide
-l'évaluation (embargo de paramètres).
+construit) : ce document les gèle en tant que déclaration **validée**, la vérification
+exécutable viendra avec `harness.py`. Toute modification après la première exécution EVAL
+invalide l'évaluation (embargo de paramètres).
 """
 
 
@@ -647,23 +653,24 @@ Wilson vs table raw_b7 (± 0,001), bootstrap déterministe (2 exécutions identi
 
 
 def doc_g6(repo_root: str) -> str:
-    return f"""# G6 — Hypothèses économiques (gel v1, statut PROPOSÉ — en attente de signature)
+    return f"""# G6 — Hypothèses économiques (gel v1, statut SIGNÉ)
 
-**Statut : PROPOSÉ — non signé.** {GEL_AT_UTC}. Tant que la feuille
-`G6_FEUILLE_DE_SIGNATURE.md` n'est pas signée, ces hypothèses restent des
-propositions : aucune revendication EVAL ne peut s'appuyer dessus.
+**Statut : SIGNÉ — validation électronique du chef d'équipe le {G6_SIGNED_AT}.** {GEL_AT_UTC}.
+Signataire : **{G6_SIGNER}** — {G6_SIGNATURE_NOTE}. La feuille
+`G6_FEUILLE_DE_SIGNATURE.md` porte la validation ; les valeurs ci-dessous sont
+celles sur lesquelles la première EVAL s'exécute.
 Sources : W2-D §B.3/B.4, §E.2, §(f) 1–7 et 11–12 ; B7 §b.5, §e.3/e.4, Q1 ; FREEZE_V2 §C7.
 
-## 1. Paramètres et valeurs proposées
+## 1. Paramètres et valeurs signées
 
-| Paramètre | Valeur proposée | Statut | Source / justification |
+| Paramètre | Valeur signée | Statut | Source / justification |
 |---|---|---|---|
-| `opex_ref` (jours de runway) | **44 932 $/jour** | PROPOSÉ (référence externe déclarée) | ENS IPS 6.46 : 16,4 M$/an de charges 2025 ; conversion calculée 16 400 000 ÷ 365 (W2-D §A.1.1, §E.1 ; B7 Q13) |
-| `P(obligation)` — fenêtre USDC DEV (exemple de calcul) | **0,20** | HYPOTHÈSE non sourcée | valeur de travail de W2-D §E.2(b) — « hypothèse à figer, non sourcée » ; aucune fréquence publique de ventes forcées n'existe |
-| `P(obligation)` — fenêtres EVAL | **NOT DONE — à proposer par le signataire** | à signer | aucune source publique (W2-D §Non trouvé 6) ; le signataire doit fournir une justification écrite par fenêtre |
-| Scénarios desk `p_s` | **4 scénarios** : (i) réalisé, (ii) non-rétablissement à 48 h, (iii) guérison lente (5 j), (iv) venue unique contrainte (0,80526 — contrefactuel) | liste PROPOSÉE ; **probabilités NOT DONE** | W2-D §(f) 7 ; aucune distribution publique de scénarios de dépeg (W2-D §Non trouvé 4) : les `p_s` seront des hypothèses signées, publiées avec le P&L |
-| `r_capital` (taux de financement desk) | **NOT DONE — à proposer** | à signer | aucune source trouvée (B7 Q16) ; les deux P&L (hors et avec financement) sont publiés pour que la différence reste visible (W2-D §(f) 11) |
-| Coût d'aller-retour desk (illustratif) | 20 bp (`k = 4 000 $` sur 2 M$) | PROPOSÉ (illustration) | W2-D §E.3 — « hypothétique, à mesurer réellement » |
+| `opex_ref` (jours de runway) | **44 932 $/jour** | VALIDÉ (référence externe déclarée) | ENS IPS 6.46 : 16,4 M$/an de charges 2025 ; conversion calculée 16 400 000 ÷ 365 (W2-D §A.1.1, §E.1 ; B7 Q13) |
+| `P(obligation)` — fenêtre USDC DEV (exemple de calcul) | **0,20** | VALIDÉ (hypothèse non sourcée) | valeur de travail de W2-D §E.2(b) — « hypothèse à figer, non sourcée » ; aucune fréquence publique de ventes forcées n'existe |
+| `P(obligation)` — fenêtres EVAL | **0,20 par fenêtre EVAL** | SIGNÉ — hypothèse de travail non sourcée | aucune source publique (W2-D §Non trouvé 6) ; valeur DEV conservée pour toutes les fenêtres EVAL, avec justification écrite et sensibilité `P*` publiée |
+| Scénarios desk `p_s` | **4 scénarios** : (i) réalisé, (ii) non-rétablissement à 48 h, (iii) guérison lente (5 j), (iv) venue unique contrainte (0,80526 — contrefactuel) ; **p_s = 0,25 / 0,25 / 0,25 / 0,25** | SIGNÉ — liste et prior uniforme non calibrés | W2-D §(f) 7 ; aucune distribution publique de scénarios de dépeg (W2-D §Non trouvé 4) : les `p_s` sont des hypothèses signées, publiées avec le P&L et leur sensibilité |
+| `r_capital` (taux de financement desk) | **0 %** (desk financé sur cash) | SIGNÉ — hypothèse de travail | aucune source trouvée (B7 Q16) ; base « cash sans financement », sensibilités 5 % et 10 % publiées avec le P&L |
+| Coût d'aller-retour desk (illustratif) | 20 bp (`k = 4 000 $` sur 2 M$) | VALIDÉ (illustration) | W2-D §E.3 — « hypothétique, à mesurer réellement » |
 
 ## 2. Règles attachées (gelées)
 
@@ -678,42 +685,54 @@ Sources : W2-D §B.3/B.4, §E.2, §(f) 1–7 et 11–12 ; B7 §b.5, §e.3/e.4, Q
 Pour chaque fenêtre où `P(obligation)` entre dans un verdict, publier la sensibilité du
 signe de `E[perte évitée]` à `P(obligation)` : la valeur de bascule est calculable
 exactement (`P* = coût_AR / (perte|oblig + coût_AR)`) — elle doit figurer au dossier.
+
+## 4. Signature
+
+Validé par **{G6_SIGNER}** le **{G6_SIGNED_AT}** — {G6_SIGNATURE_NOTE}.
+Une copie manuscrite scannée peut être jointe à la soumission ; la validation
+électronique de référence est ce document et `G6_FEUILLE_DE_SIGNATURE.md`.
 """
 
 
 def doc_g6_signature(repo_root: str) -> str:
     return f"""# G6 — Feuille de signature des hypothèses économiques
 
-**Statut global : PROPOSÉ — en attente de signature.** {GEL_AT_UTC}.
+**Statut global : SIGNÉ — validé le {G6_SIGNED_AT}.** {GEL_AT_UTC}.
 Protocole : FREEZE_V2 §C7 (« G6 signé par le chef d'équipe (défaut) + sensibilité publiée »).
+Signataire : **{G6_SIGNER}** — {G6_SIGNATURE_NOTE}.
 
-Instructions : le signataire **coche** chaque paramètre qu'il valide, remplace les valeurs
-marquées `NOT DONE` par ses propres valeurs (avec justification écrite), puis date et signe.
-Tant que la feuille n'est pas signée, aucun résultat EVAL ne peut être revendiqué.
+Instructions : le signataire coche chaque paramètre validé, renseigne les valeurs
+marquées `NOT DONE`, date et signe. Les valeurs ci-dessous sont celles de la
+première EVAL ; toute modification après cette exécution exige une re-signature
+nommée et un re-étiquetage.
 
 ## Paramètres d'hypothèses économiques
 
-| # | Paramètre | Valeur PROPOSÉE | Source de la proposition | COCHER |
+| # | Paramètre | Valeur signée | Source de la proposition | COCHER |
 |---|---|---|---|---|
-| 1 | `opex_ref` (jours de runway) | 44 932 $/jour | ENS IPS 6.46 : 16,4 M$/an ÷ 365 (W2-D §A.1.1/E.1) | ☐ validé ☐ modifié → …………… |
-| 2 | `P(obligation)` — exemple DEV USDC | 0,20 | valeur de travail de W2-D §E.2(b), explicitement non sourcée | ☐ validé ☐ modifié → …………… |
-| 3 | `P(obligation)` — par fenêtre EVAL | NOT DONE (à fournir) | aucune source publique (W2-D §Non trouvé 6) | ☐ fourni ci-dessous |
-| 4 | Scénarios desk (liste) | réalisé · non-rétablissement 48 h · guérison lente 5 j · venue unique contrainte 0,80526 | W2-D §(f) 7 | ☐ validé ☐ modifié → …………… |
-| 5 | `p_s` (probabilités des scénarios) | NOT DONE (à fournir) | aucune distribution publique (W2-D §Non trouvé 4) | ☐ fourni ci-dessous |
-| 6 | `r_capital` (financement desk) | NOT DONE (à fournir) | B7 Q16 — non trouvé | ☐ fourni ci-dessous |
-| 7 | Coût d'aller-retour (illustration desk) | 20 bp | W2-D §E.3 (« hypothétique, à mesurer ») | ☐ validé ☐ modifié → …………… |
+| 1 | `opex_ref` (jours de runway) | 44 932 $/jour | ENS IPS 6.46 : 16,4 M$/an ÷ 365 (W2-D §A.1.1/E.1) | ☑ validé ☐ modifié → …………… |
+| 2 | `P(obligation)` — exemple DEV USDC | 0,20 | valeur de travail de W2-D §E.2(b), explicitement non sourcée | ☑ validé ☐ modifié → …………… |
+| 3 | `P(obligation)` — par fenêtre EVAL | **0,20 par fenêtre EVAL** | aucune source publique (W2-D §Non trouvé 6) ; hypothèse de travail signée | ☑ fourni ci-dessous |
+| 4 | Scénarios desk (liste) | réalisé · non-rétablissement 48 h · guérison lente 5 j · venue unique contrainte 0,80526 | W2-D §(f) 7 | ☑ validé ☐ modifié → …………… |
+| 5 | `p_s` (probabilités des scénarios) | **0,25 / 0,25 / 0,25 / 0,25** | aucune distribution publique (W2-D §Non trouvé 4) ; prior uniforme signé | ☑ fourni ci-dessous |
+| 6 | `r_capital` (financement desk) | **0 %** (cash) | B7 Q16 — aucune source ; base cash sans financement | ☑ fourni ci-dessous |
+| 7 | Coût d'aller-retour (illustration desk) | 20 bp | W2-D §E.3 (« hypothétique, à mesurer ») | ☑ validé ☐ modifié → …………… |
 
 ## Valeurs à fournir (le cas échéant)
 
-* `P(obligation)` par fenêtre EVAL (justification écrite par fenêtre) :
-* `p_s` des scénarios desk (avec sensibilité) :
-* `r_capital` (source ou hypothèse écrite) :
+* `P(obligation)` par fenêtre EVAL (justification écrite par fenêtre) : **0,20 pour chaque
+  fenêtre EVAL** — hypothèse de travail non sourcée, identique à la valeur DEV ; aucune
+  fréquence publique de ventes forcées n'existe. La sensibilité `P*` est publiée avec le P&L.
+* `p_s` des scénarios desk (avec sensibilité) : **0,25 / 0,25 / 0,25 / 0,25** — prior uniforme
+  explicitement non calibré ; sensibilité publiée avec le P&L et le rapport.
+* `r_capital` (source ou hypothèse écrite) : **0 %** — desk financé sur cash, sans financement ;
+  les variantes de sensibilité 5 % et 10 % sont publiées avec le P&L.
 
 ## Signatures
 
 | Rôle | Nom | Date (UTC) | Signature / hash du commit de signature |
 |---|---|---|---|
-| Chef d'équipe (défaut, FREEZE_V2 §C7) | | | |
+| Chef d'équipe (défaut, FREEZE_V2 §C7) | {G6_SIGNER} | {G6_SIGNED_AT} | {G6_SIGNATURE_NOTE} |
 | Témoin (optionnel) | | | |
 
 **Rappel d'embargo** : après la première exécution EVAL, toute modification de ces
@@ -735,9 +754,9 @@ def doc_readme(frozen_hashes: Dict[str, str]) -> str:
 | `G1_fonction_de_perte.md` | G1 — formules de perte, conventions, six tests |
 | `G2_comparateurs.md` | G2 — A0/A1/A2/B0/AX0/O, paramètres, phrases gelées |
 | `G3_fenetres.md` | G3 — registre DEV/EVAL, embargos, porte de gel |
-| `G4_seuils.md` | G4 — seuils persona (PROPOSÉ) |
+| `G4_seuils.md` | G4 — seuils persona (VALIDÉ) |
 | `G5_plan_analyse.md` | G5 — métriques, cascade, rapport |
-| `G6_hypotheses_economiques.md` | G6 — hypothèses économiques (PROPOSÉ) |
+| `G6_hypotheses_economiques.md` | G6 — hypothèses économiques (SIGNÉ) |
 | `G6_FEUILLE_DE_SIGNATURE.md` | Feuille de signature du chef d'équipe |
 | `Gx.sha256` | Manifestes sha256sum des documents ci-dessus |
 | `forecasts_dev.jsonl` | Prévisions DEV gelées, chaînées par `prev_hash` |
@@ -759,10 +778,11 @@ python scripts/freeze_sprint0.py --out /tmp/frozen_recalc
 
 * **GELÉ** : les six documents, leurs empreintes, les 9 prévisions DEV (hash chaîné) et leurs
   résolutions déterministes ;
-* **PROPOSÉ (en attente de signature)** : G4 (seuils persona) et G6 (hypothèses économiques) —
-  marqués tels quels ; l'évaluation EVAL ne peut pas être revendiquée avant signature ;
-* **NOT DONE (jamais inventé)** : fenêtres CALME EVAL 2025–2026 (B7 Q6), `Depth_ε`, `r_capital`,
-  `P(obligation)` EVAL, `p_s` desk — voir `G3_fenetres.md` §4 et `G6` §1.
+* **VALIDÉ / SIGNÉ le {G6_SIGNED_AT}** : G4 (seuils persona, validés) et G6 (hypothèses
+  économiques, signées par **{G6_SIGNER}**) — l'EVAL peut être revendiquée à partir de ce paquet ;
+* **NOT DONE (jamais inventé)** : fenêtres CALME EVAL 2025–2026 (B7 Q6) et `Depth_ε` —
+  voir `G3_fenetres.md` §4 ; les hypothèses G6 précédemment manquantes sont désormais
+  signées (P(obligation) EVAL = 0,20 ; `p_s` uniformes ; `r_capital` = 0 %).
 
 ## Empreintes des manifestes (recopiables)
 
