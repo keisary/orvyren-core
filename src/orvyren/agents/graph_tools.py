@@ -47,7 +47,7 @@ GRAPH_TOOL_NAMES: Tuple[str, ...] = (
 #: Query codes the API answers today (H2 handoff A → B).
 GRAPH_QUERIES: Tuple[str, ...] = ("Q1", "Q4", "Q6", "Q7", "Q8")
 
-#: Honest failure of a tool whose backing query is not published yet.
+#: Honest failure of a tool whose backing query is absent from the injected API.
 NO_API_CODE = "E_TOOL_NO_API"
 
 #: Per-query required argument (the rest is optional cadrage).
