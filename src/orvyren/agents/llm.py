@@ -46,6 +46,7 @@ from pathlib import Path
 from typing import Any, Dict, List, Mapping, Optional, Sequence, Tuple
 
 from . import contracts
+from .memory import refs_from_observations
 from .store import ResponseStore, prompt_hash, response_hash
 
 __all__ = [
@@ -678,10 +679,13 @@ class ToolTurnRunner:
     def __init__(self, backend: Any, registry: Any, journal: Any = None,
                  *, agent_id: str = "tool-turn", run_id: str = "run",
                  episode_id: str = "episode", deadline_s: float = 20.0,
+                 memory: Any = None, max_tool_calls: int = 3,
                  clock=None) -> None:
         self.backend = backend
         self.registry = registry
         self.journal = journal
+        self.memory = memory
+        self.max_tool_calls = max(1, int(max_tool_calls))
         self.agent_id = str(agent_id)
         self.run_id = str(run_id)
         self.episode_id = str(episode_id)
@@ -721,6 +725,25 @@ class ToolTurnRunner:
         self._step += 1
         self.journal.append_dict(line)
 
+    def _remember(self, call: contracts.ToolCall,
+                  result: contracts.ToolResult) -> None:
+        """Remember one tool result, refs included (M9).
+
+        A result without observable refs is **not** remembered: an entry
+        without refs cannot be used later, and an unusable entry is noise.
+        """
+        if self.memory is None or not result.observations:
+            return
+        refs = refs_from_observations(result.observations)
+        if not refs:
+            return
+        self.memory.remember(
+            "mem-%s-%s" % (self.agent_id, call.call_id),
+            contracts.canonical_json(
+                {"name": call.name, "args": call.args,
+                 "observations": list(result.observations)}),
+            refs, kind="TOOL_RESULT")
+
     # -- one tooled turn ---------------------------------------------------
     def run_turn(self, *, role: str, role_version: str, schema_id: str,
                  system_prompt: str, payload: Mapping[str, Any],
@@ -746,10 +769,19 @@ class ToolTurnRunner:
                                                           payload_tools, errors,
                                                           llm_lines)
 
-        # 2 — validate + execute through the allow-list registry.
+        # 2 — validate + execute through the allow-list registry. The chain
+        # is bounded (M9: au plus ``max_tool_calls`` exécutions par tour) and
+        # every remembered result carries its refs (sans refs, pas de mémoire).
         results: List[Dict[str, Any]] = []
+        executed = 0
         for call in calls:
-            result = self._execute(call, by_name)
+            if executed >= self.max_tool_calls:
+                result = contracts.ToolResult(
+                    ok=False, status="FAILED",
+                    error="E_TOOL_CHAIN_LIMIT:%d" % self.max_tool_calls)
+            else:
+                result = self._execute(call, by_name)
+                executed += 1
             results.append({"call_id": call.call_id, "name": call.name,
                             "args": dict(call.args),
                             "result": result.to_dict()})
@@ -758,6 +790,7 @@ class ToolTurnRunner:
                              call.source))
             self._journal("TOOL_RESULT", "%s -> %s"
                           % (call.name, result.status))
+            self._remember(call, result)
 
         # 3 — finalise: strict JSON answer carrying the tool results.
         final_payload = dict(payload_tools)
