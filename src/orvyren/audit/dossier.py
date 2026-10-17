@@ -733,6 +733,21 @@ def render_html(ctx):
 # Public API
 # --------------------------------------------------------------------------- #
 
+def _stamp_self_hash(template, self_hash):
+    """Insert ``self_hash`` into the rendered template's self-hash field.
+
+    The field is the **last** 64-zero run of the template: hashed input data
+    rendered above the Evidence & integrity section can legitimately contain
+    64 zeros, and a first-match substitution would then stamp the hash inside
+    the data instead of the self-hash field (silently breaking the
+    reproducible self-hash rule).
+    """
+    idx = template.rfind(SELF_HASH_ZERO)
+    if idx < 0:
+        return template
+    return template[:idx] + self_hash + template[idx + len(SELF_HASH_ZERO):]
+
+
 def build(decision_path, out_dir, extra_paths=None, generated_at=None):
     """Build the one-page decision dossier.
 
@@ -808,11 +823,11 @@ def build(decision_path, out_dir, extra_paths=None, generated_at=None):
 
     md_template = render_markdown(ctx)
     md_self_hash = hashlib.sha256(md_template.encode("utf-8")).hexdigest()
-    md_final = md_template.replace(SELF_HASH_ZERO, md_self_hash, 1)
+    md_final = _stamp_self_hash(md_template, md_self_hash)
 
     html_template = render_html(ctx)
     html_self_hash = hashlib.sha256(html_template.encode("utf-8")).hexdigest()
-    html_final = html_template.replace(SELF_HASH_ZERO, html_self_hash, 1)
+    html_final = _stamp_self_hash(html_template, html_self_hash)
 
     with open(md_path, "w", encoding="utf-8", newline="\n") as handle:
         handle.write(md_final)

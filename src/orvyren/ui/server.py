@@ -72,6 +72,18 @@ def _latest_decision_json(evidence_dir):
         return max(candidates, key=os.path.basename)
 
 
+def _safe_case_token(case):
+    """Filesystem-safe case token for ``decision_<case>.json``.
+
+    The case string is read back from a rendered dossier's metadata, which is
+    not trusted for path building: separators and traversal segments must
+    never escape the evidence directory.
+    """
+    token = str(case).replace("\\", "/").split("/")[-1]
+    token = "".join(ch if (ch.isalnum() or ch in "._-") else "-" for ch in token)
+    return token.strip("-.") or "unknown"
+
+
 def build_dossier_api_payload(evidence_dir):
     """JSON-able payload returned by ``GET /api/dossier``."""
     html_path = dossier.find_latest_dossier(evidence_dir)
@@ -91,7 +103,7 @@ def build_dossier_api_payload(evidence_dir):
             "generated_at": meta.get("generated_at"),
             "verdict": meta.get("verdict"),
         }
-        decision_path = os.path.join(evidence_dir, f"decision_{case}.json")
+        decision_path = os.path.join(evidence_dir, f"decision_{_safe_case_token(case)}.json")
         if os.path.isfile(decision_path):
             try:
                 with open(decision_path, "r", encoding="utf-8") as handle:

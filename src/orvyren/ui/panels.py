@@ -160,9 +160,14 @@ def panels_payload(ctx: Any = None, *, live: bool = False,
     situation = chosen.get("situation") or {}
     if not isinstance(situation, Mapping):
         situation = {}
-    banner_data = (fixture or snapshot or {}).get("banner", {}) \
-        if isinstance((fixture or snapshot or {}).get("banner"), Mapping) else {}
-    data_mode = (snapshot or fixture or {}).get("mode")
+    banner_src = snapshot if snapshot is not None else fixture
+    raw_banner = banner_src.get("banner") if isinstance(banner_src, Mapping) else None
+    banner_data = raw_banner if isinstance(raw_banner, Mapping) else {}
+    # The data's own mode stamp: taken from the chosen source only (mixing the
+    # fixture's banner into a REPLAY page would display values that do not
+    # belong to the rendered source).
+    data_mode = (situation.get("mode") or (banner_src or {}).get("mode")
+                 or banner_data.get("mode"))
     graph_hash = situation.get("graph_hash") or banner_data.get("graph_hash") or MISSING
     as_of = (situation.get("as_of") or banner_data.get("as_of")
              or (snapshot or {}).get("as_of") or MISSING)
