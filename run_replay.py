@@ -42,6 +42,19 @@ EXIT_USAGE = 2
 EXIT_UNAVAILABLE = 3
 
 
+def _configure_stdio() -> None:
+    """Force UTF-8 sur stdout/stderr : une console Windows cp1252 ne doit
+    jamais faire échouer le CLI sur un caractère non représentable."""
+    for stream in (sys.stdout, sys.stderr):
+        reconfigure = getattr(stream, "reconfigure", None)
+        if reconfigure is None:
+            continue
+        try:
+            reconfigure(encoding="utf-8", errors="replace")
+        except (ValueError, OSError):  # flux non reconfigurable (capture de test, pipe)
+            pass
+
+
 def _find_window_for_episode(episode: str):
     for window in tuple(windows_mod.DEV_WINDOWS) + tuple(windows_mod.EVAL_WINDOWS):
         if window.episode_id == episode or window.window_id == episode:
@@ -70,7 +83,7 @@ def cmd_inspect(args) -> int:
             gaps = corpus_mod.find_gaps(points)
             print("  série      : %s — %d points, %d trou(s)" % (label, len(points), len(gaps)))
             for gap in gaps[:3]:
-                print("    trou: %s → %s (%.1f min)" % (gap["after_utc"], gap["before_utc"],
+                print("    trou: %s -> %s (%.1f min)" % (gap["after_utc"], gap["before_utc"],
                                                         gap["gap_minutes"]))
         except corpus_mod.CorpusError as exc:
             print("  série      : NON RÉSOLUE — %s" % exc)
@@ -147,7 +160,9 @@ def cmd_verify(args) -> int:
     if args.dossier:
         verdict = dossier_mod.verify_replay_dossier(args.dossier)
         print("dossier %s — hash %s (%s)" % (args.dossier, verdict["computed"],
-                                             "OK" if verdict["verdict"] == "OK" else "MISMATCH"))
+                                            verdict["verdict"]))
+        if verdict.get("error"):
+            print("  %s" % verdict["error"], file=sys.stderr)
         if verdict["verdict"] != "OK":
             return EXIT_FAIL
     if args.run_dir:
@@ -165,6 +180,7 @@ def cmd_verify(args) -> int:
 
 
 def main(argv=None) -> int:
+    _configure_stdio()
     parser = argparse.ArgumentParser(
         prog="run_replay.py",
         description="ORVYREN — moteur de rejeu : REPLAY-JOURNAL (bit-à-bit) et "
@@ -199,6 +215,9 @@ def main(argv=None) -> int:
     p.set_defaults(func=cmd_verify)
 
     args = parser.parse_args(argv)
+    if args.command == "verify" and not (args.dossier or args.run_dir):
+        parser.error("« verify » exige --run-dir DIR et/ou --dossier FILE "
+                     "(sans cible, aucun contrôle ne serait effectué : refus explicite)")
     return args.func(args)
 
 

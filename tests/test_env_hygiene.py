@@ -29,6 +29,12 @@ sys.path.insert(0, os.path.join(ROOT, "scripts"))
 
 from demo import check_env_hygiene, faucet_check, generate_signer_key, verify_addresses  # noqa: E402
 
+try:  # dépendance optionnelle, isolée au signataire — le skip doit rester VISIBLE
+    import eth_account  # noqa: F401
+    HAVE_ETH_ACCOUNT = True
+except ImportError:  # pragma: no cover - environnement sans la dépendance optionnelle
+    HAVE_ETH_ACCOUNT = False
+
 GOOD_SAFE = "0x000e11a54daadf202542a0136f974f24d7c38be0"
 GOOD_AGENT = "0xe1039e345fa2ad9ecceab7bb160fd5e53f58f01c"
 GOOD_MODULE = "0x7e2b7798ab4b4db837b30107f0d2a3ffb24e95e8"
@@ -146,15 +152,8 @@ class FaucetOfflineTest(unittest.TestCase):
                              faucet_check.EXIT_OK)
 
 
-@unittest.skipUnless(generate_signer_key._require_eth_account, "eth-account requis")
+@unittest.skipUnless(HAVE_ETH_ACCOUNT, "eth-account requis pour générer une clé")
 class GenerateSignerKeyTest(unittest.TestCase):
-    @classmethod
-    def setUpClass(cls):
-        try:
-            from eth_account import Account  # noqa: F401
-        except ImportError:
-            raise unittest.SkipTest("eth-account requis")
-
     def test_generate_and_check_roundtrip(self):
         from eth_account import Account
         with tempfile.TemporaryDirectory(prefix="orvyren_key_") as tmp:

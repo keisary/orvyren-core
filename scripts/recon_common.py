@@ -87,7 +87,7 @@ def dump_json_atomic(path: str, payload: Any) -> None:
     directory = os.path.dirname(os.path.abspath(path))
     os.makedirs(directory, exist_ok=True)
     temporary = f"{path}.tmp"
-    with open(temporary, "w", encoding="utf-8") as handle:
+    with open(temporary, "w", encoding="utf-8", newline="\n") as handle:
         json.dump(payload, handle, indent=1, ensure_ascii=False)
         handle.write("\n")
         handle.flush()

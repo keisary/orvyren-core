@@ -32,7 +32,9 @@ sys.path.insert(0, ROOT)
 
 from orvyren.verify.engine import verify_packet  # noqa: E402
 
-SESSION_DIR = os.path.join(ROOT, "evidence", "demo_runs", "rseth")
+# Micro-chaîne PUBLIQUE versionnée (extrait de la session rseth réelle) : elle
+# rend ces tests exécutables sur un clone, où evidence/demo_runs/ est git-ignoré.
+SESSION_DIR = os.path.join(ROOT, "evidence", "demo_chain", "rseth")
 EVIDENCE_DIR = os.path.join(ROOT, "evidence")
 CORPUS = os.path.join(ROOT, "corpus", "usdc_observations.csv")
 BUILDER = os.path.join(ROOT, "scripts", "build_audit_packet.py")
@@ -44,7 +46,7 @@ INPUTS_PRESENT = (
 )
 
 
-@unittest.skipUnless(INPUTS_PRESENT, "entrées de session absentes (evidence/demo_runs/rseth)")
+@unittest.skipUnless(INPUTS_PRESENT, "entrées de session absentes (evidence/demo_chain/rseth)")
 class VerifyEngineEndToEndTest(unittest.TestCase):
     packet_dir = None
     build_stdout = ""

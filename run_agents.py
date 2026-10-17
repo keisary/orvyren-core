@@ -50,12 +50,25 @@ from orvyren.agents import worker as worker_mod  # noqa: E402
 __all__ = ["main", "prepare_run", "collect_and_finish", "apply_fragility_rule"]
 
 
+def _configure_stdio() -> None:
+    """Force UTF-8 sur stdout/stderr : une console Windows cp1252 ne doit
+    jamais faire échouer l'orchestrateur sur un caractère non représentable."""
+    for stream in (sys.stdout, sys.stderr):
+        reconfigure = getattr(stream, "reconfigure", None)
+        if reconfigure is None:
+            continue
+        try:
+            reconfigure(encoding="utf-8", errors="replace")
+        except (ValueError, OSError):  # flux non reconfigurable (capture de test, pipe)
+            pass
+
+
 def _utc_stamp() -> str:
     return datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
 
 
 def _write_json(path: str, payload) -> None:
-    with open(path, "w", encoding="utf-8") as handle:
+    with open(path, "w", encoding="utf-8", newline="\n") as handle:
         json.dump(payload, handle, ensure_ascii=False, indent=1, sort_keys=True)
 
 
@@ -110,7 +123,10 @@ def _spawn(role: str, run_dir: str, timeout_s: float) -> int:
     """Spawn one worker process; echo its output; return its exit code."""
     env = dict(os.environ)
     env["PYTHONPATH"] = SRC_DIR + os.pathsep + env.get("PYTHONPATH", "")
-    env.setdefault("PYTHONIOENCODING", "utf-8")
+    # The parent decodes worker output as UTF-8: force it even when the outer
+    # console declares cp1252 (Windows), otherwise a non-cp1252 dash becomes
+    # U+FFFD in the captured output.
+    env["PYTHONIOENCODING"] = "utf-8"
     cmd = [sys.executable, "-m", "orvyren.agents.worker",
            "--role", role, "--run-dir", run_dir]
     completed = subprocess.run(cmd, cwd=REPO_ROOT, env=env, capture_output=True,
@@ -181,7 +197,7 @@ def _print_summary(final: dict) -> None:
     outcome = final["outcome"]
     budgets = outcome.get("budget_used", {})
     print()
-    print("  ════ bilan du run %s (%s) ════" % (final["case_id"], final["mode"]))
+    print("  ==== bilan du run %s (%s) ====" % (final["case_id"], final["mode"]))
     for role, info in final["journals"].items():
         print("    %-13s %3d lignes — agent_id:%s — chaîne %s"
               % (role, info["lines"], ",".join(info["agent_ids"]) or "-", "OK"))
@@ -201,6 +217,7 @@ def _print_summary(final: dict) -> None:
 
 
 def main(argv=None) -> int:
+    _configure_stdio()
     parser = argparse.ArgumentParser(
         prog="run_agents.py",
         description="ORVYREN — coordinateur MA-B : orchestrateur + critique en processus séparés "

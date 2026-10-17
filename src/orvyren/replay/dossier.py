@@ -168,7 +168,13 @@ def require_banner(document: dict) -> str:
 
 
 def verify_replay_dossier(path: str, *, runs_log: str = DEFAULT_RUNS_LOG) -> Dict[str, Any]:
-    """T10 : recalcule le hash de contenu et compare au journal des rejeux."""
+    """T10 : recalcule le hash de contenu et compare au journal des rejeux.
+
+    Fail-closed : un dossier dont le ``replay_id`` n'apparaît **pas** dans
+    ``runs.jsonl`` est déclaré ``NOT_REGISTERED`` avec une erreur explicite —
+    jamais ``OK``. Un dossier isolé ne prouve pas qu'un rejeu a eu lieu ; seul
+    le journal append-only atteste de son existence.
+    """
     with open(path, "r", encoding="utf-8") as handle:
         document = json.load(handle)
     banner = require_banner(document)
@@ -176,7 +182,9 @@ def verify_replay_dossier(path: str, *, runs_log: str = DEFAULT_RUNS_LOG) -> Dic
     stripped = {key: value for key, value in document.items()
                 if key not in ("content_sha256", "ts_wall_utc", "duration_s")}
     computed = hashlib.sha256(canonical_json(_strip_wall(stripped)).encode("utf-8")).hexdigest()
+    replay_id = document.get("provenance", {}).get("replay_id")
     logged = None
+    registered = False
     if os.path.isfile(runs_log):
         with open(runs_log, "r", encoding="utf-8") as handle:
             for line in handle:
@@ -184,8 +192,23 @@ def verify_replay_dossier(path: str, *, runs_log: str = DEFAULT_RUNS_LOG) -> Dic
                 if not line:
                     continue
                 entry = json.loads(line)
-                if entry.get("replay_id") == document.get("provenance", {}).get("replay_id"):
+                if entry.get("replay_id") == replay_id:
+                    registered = True
                     logged = entry.get("content_sha256")
+                    break
+    error = None
+    if not registered:
+        verdict = "NOT_REGISTERED"
+        error = ("replay_id %r absent de %s — dossier non journalisé : aucun rejeu "
+                 "ne l'atteste" % (replay_id, runs_log))
+    elif computed != stored:
+        verdict = "MISMATCH"
+        error = "content_sha256 recalculé != content_sha256 stocké"
+    elif logged != stored:
+        verdict = "MISMATCH"
+        error = "content_sha256 journalisé != content_sha256 stocké"
+    else:
+        verdict = "OK"
     return {"banner": banner, "stored": stored, "computed": computed,
-            "logged": logged,
-            "verdict": "OK" if computed == stored and (logged in (None, stored)) else "MISMATCH"}
+            "logged": logged, "registered": registered,
+            "verdict": verdict, "error": error}

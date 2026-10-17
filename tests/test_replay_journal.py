@@ -17,6 +17,7 @@ Run: python -m pytest tests/test_replay_journal.py -q
 import json
 import os
 import shutil
+import subprocess
 import sys
 import tempfile
 import unittest
@@ -125,6 +126,43 @@ class ReplayJournalTest(_TempDirMixin):
         verdict = dossier_mod.verify_replay_dossier(result["json_path"],
                                                     runs_log=os.path.join(self.tmp, "runs2.jsonl"))
         self.assertEqual(verdict["verdict"], "MISMATCH")
+
+    def test_dossier_absent_from_the_journal_is_not_registered(self):
+        """Un dossier isolé ne prouve rien : absent de runs.jsonl => NOT_REGISTERED."""
+        manifest = corpus_mod.load_manifest()
+        result = dossier_mod.build_replay_dossier(
+            episode=CASE, mode="REPLAY-JOURNAL", mode_slug="journal",
+            run_id=self.transcript["run_id"],
+            t_sim_start_utc="2023-03-10T00:00:00Z", t_sim_end_utc="2023-03-14T00:00:00Z",
+            corpus_manifest=manifest, clock_audit={"valid": True, "violations": []},
+            transcript=self.transcript, out_dir=os.path.join(self.tmp, "out3"),
+            runs_log=os.path.join(self.tmp, "runs3.jsonl"))
+        verdict = dossier_mod.verify_replay_dossier(
+            result["json_path"], runs_log=os.path.join(self.tmp, "unrelated_runs.jsonl"))
+        self.assertEqual(verdict["verdict"], "NOT_REGISTERED")
+        self.assertFalse(verdict["registered"])
+        self.assertIsNone(verdict["logged"])
+        self.assertIn("absent", verdict["error"])
+
+        # Un hash journalisé divergent est un MISMATCH, jamais un OK.
+        forged_log = os.path.join(self.tmp, "runs_forged.jsonl")
+        with open(forged_log, "w", encoding="utf-8", newline="\n") as handle:
+            handle.write(json.dumps({"replay_id": result["replay_id"],
+                                     "content_sha256": "0" * 64}) + "\n")
+        forged = dossier_mod.verify_replay_dossier(result["json_path"], runs_log=forged_log)
+        self.assertEqual(forged["verdict"], "MISMATCH")
+        self.assertTrue(forged["registered"])
+
+
+class ReplayVerifyCliTest(unittest.TestCase):
+    """``run_replay.py verify`` sans cible : refus explicite (jamais rc=0 muet)."""
+
+    def test_verify_without_target_is_a_usage_error(self):
+        result = subprocess.run([sys.executable, os.path.join(ROOT, "run_replay.py"), "verify"],
+                                cwd=ROOT, capture_output=True, text=True, timeout=120)
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("--run-dir", result.stderr)
+        self.assertIn("verify", result.stderr.lower())
 
 
 if __name__ == "__main__":

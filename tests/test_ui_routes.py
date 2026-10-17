@@ -21,6 +21,8 @@ if _SRC not in sys.path:
 from orvyren.ui import screens  # noqa: E402
 from orvyren.ui import server as ui_server  # noqa: E402
 
+_DEMO_CHAIN = os.path.join(_ROOT, "evidence", "demo_chain", "rseth", "audit.jsonl")
+
 
 class UiRoutesTests(unittest.TestCase):
     """Boot once, hit every route, assert the W8 contract."""
@@ -83,8 +85,24 @@ class UiRoutesTests(unittest.TestCase):
         self.assertIn("REPLAY", body4)
         _, body10 = self._get("/screen/10")
         self.assertIn("LIVE", body10)
-        # Sources render with a short sha when they exist in the checkout.
-        self.assertIn("sha256:", body10)
+        # The public demo chain is versioned in the checkout: screen 10 must
+        # render it with a short sha. Without any source (stripped checkout),
+        # the screen must say so instead of inventing one.
+        source_present = any(
+            os.path.isfile(os.path.join(_ROOT, "evidence", sub, "rseth", "audit.jsonl"))
+            for sub in ("demo_runs", "demo_chain"))
+        if source_present:
+            self.assertIn("sha256:", body10)
+        else:
+            self.assertIn("SOURCE ABSENTE", body10)
+
+    @unittest.skipUnless(os.path.isfile(_DEMO_CHAIN), "micro-chaîne publique absente de ce checkout")
+    def test_screen_10_renders_the_versioned_public_chain(self):
+        _, body10 = self._get("/screen/10")
+        self.assertIn("Événements par type", body10)
+        self.assertIn("Reçus on-chain", body10)
+        self.assertIn("RUN_START", body10)
+        self.assertNotIn('<p class="warn">SOURCE ABSENTE', body10)
 
     # -- robustness ---------------------------------------------------------
 

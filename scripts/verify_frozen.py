@@ -37,6 +37,19 @@ from orvyren.evaluation import outcomes as outcomes_mod  # noqa: E402
 from orvyren.evaluation import windows as windows_mod  # noqa: E402
 
 
+def _configure_stdio() -> None:
+    """Force UTF-8 sur stdout/stderr : une console Windows cp1252 ne doit
+    jamais faire échouer la vérification sur un caractère non représentable."""
+    for stream in (sys.stdout, sys.stderr):
+        reconfigure = getattr(stream, "reconfigure", None)
+        if reconfigure is None:
+            continue
+        try:
+            reconfigure(encoding="utf-8", errors="replace")
+        except (ValueError, OSError):  # flux non reconfigurable (capture de test, pipe)
+            pass
+
+
 def _load_builder():
     spec = importlib.util.spec_from_file_location("freeze_sprint0", os.path.join(SCRIPTS_DIR, "freeze_sprint0.py"))
     builder = importlib.util.module_from_spec(spec)
@@ -74,7 +87,7 @@ def verify(frozen_dir: str, repo_root: str, recalc: bool = True) -> bool:
         by_id = {record["forecast_id"]: record for record in records}
         for outcome in outcomes:
             outcomes_mod.check_link(by_id[outcome["forecast_id"]], outcome)
-        print(f"[OK]   liaison prévision ↔ outcome par empreinte : {len(outcomes)}/{len(records)}")
+        print(f"[OK]   liaison prévision <-> outcome par empreinte : {len(outcomes)}/{len(records)}")
     except Exception as exc:  # noqa: BLE001
         print(f"[KO]   outcomes_dev.jsonl : {exc}")
         ok = False
@@ -118,6 +131,7 @@ def verify(frozen_dir: str, repo_root: str, recalc: bool = True) -> bool:
 
 
 def main(argv: Optional[Sequence[str]] = None) -> int:
+    _configure_stdio()
     parser = argparse.ArgumentParser(description="Vérifie frozen/ : empreintes, chaînes, recalcul hors-ligne.")
     parser.add_argument("--frozen", default=None, help="répertoire du paquet (défaut : <repo>/frozen)")
     parser.add_argument("--repo-root", default=None, help="racine du dépôt (défaut : parent de scripts/)")

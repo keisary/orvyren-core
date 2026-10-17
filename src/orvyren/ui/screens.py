@@ -248,6 +248,24 @@ def _first_glob(pattern):
     return hits[0] if hits else None
 
 
+def _demo_session_dir(ctx):
+    """Session de démonstration lue par les écrans 10-12 (L8.3).
+
+    Priorité à la session locale complète ``evidence/demo_runs/rseth`` (créée
+    par les runs réels, git-ignorée par design) ; à défaut, la **micro-chaîne
+    publique versionnée** ``evidence/demo_chain/rseth`` — c'est elle qui rend
+    ces écrans peuplés sur un clone propre. Si aucune des deux n'existe, le
+    chemin ``demo_chain`` est retourné pour que l'écran déclare honnêtement
+    ``SOURCE ABSENTE`` au lieu d'inventer des données.
+    """
+    candidates = (ctx.evidence_path("demo_runs", "rseth"),
+                  ctx.evidence_path("demo_chain", "rseth"))
+    for candidate in candidates:
+        if os.path.isfile(os.path.join(candidate, "audit.jsonl")):
+            return candidate
+    return candidates[-1]
+
+
 def _s2_graphe(ctx):
     snapshots = sorted(glob.glob(ctx.evidence_path("graph_snapshots", "*")))
     rows = []
@@ -484,7 +502,8 @@ def _s9_cout_decision(ctx):
 
 
 def _s10_runs(ctx):
-    audit_path = ctx.evidence_path("demo_runs", "rseth", "audit.jsonl")
+    session = _demo_session_dir(ctx)
+    audit_path = os.path.join(session, "audit.jsonl")
     records = _read_jsonl(audit_path) or []
     kinds = {}
     run_starts = []
@@ -498,19 +517,22 @@ def _s10_runs(ctx):
                 payload.get("case", "—"), payload.get("journal_records_at_start", "—"),
             ))
     body = _exists_note(ctx, audit_path)
+    if os.path.basename(os.path.dirname(session)) == "demo_chain":
+        body += '<p class="note">Source : micro-chaîne PUBLIQUE versionnée ' \
+                '<code>evidence/demo_chain/rseth</code> (extrait des runs réels du 2026-10-16, sans secret).</p>'
     body += "<p>Chaîne d'exécution réelle (testnet) : chaque événement est enchaîné par hash " \
             "(<code>prev_hash</code> → <code>record_hash</code>).</p>"
     body += _table(["run", "mode", "cas", "enregistrements au départ"], run_starts)
     body += "<h2>Événements par type</h2>"
     body += _table(["type", "nombre"], sorted(kinds.items()))
-    receipts_dir = ctx.evidence_path("demo_runs", "rseth", "receipts")
+    receipts_dir = os.path.join(session, "receipts")
     receipts = sorted(os.listdir(receipts_dir)) if os.path.isdir(receipts_dir) else []
     body += "<h2>Reçus on-chain</h2><p>%d reçus scellés. Exemples :</p>" % len(receipts)
     body += "<ul>" + "".join("<li><code>%s</code></li>" % _esc(name[:26] + "…") for name in receipts[:8]) + "</ul>"
     a_tx = [name for name in receipts if name.startswith("0x82827c")]
     if a_tx:
         body += "<p>RUN A (transfert 100 USDC) : <code>%s</code></p>" % _esc(a_tx[0][:26] + "…")
-    manifest_path = ctx.evidence_path("demo_runs", "rseth", "export", "manifest.json")
+    manifest_path = os.path.join(session, "export", "manifest.json")
     manifest = _read_json(manifest_path) or {}
     if manifest:
         counters = manifest.get("counters") or {}
@@ -526,7 +548,8 @@ def _s10_runs(ctx):
 
 
 def _s11_journal(ctx):
-    audit_path = ctx.evidence_path("demo_runs", "rseth", "audit.jsonl")
+    session = _demo_session_dir(ctx)
+    audit_path = os.path.join(session, "audit.jsonl")
     calls_path = ctx.repo_path("fixtures", "agents", "store_usdc-2023-03", "calls.jsonl")
     replay_path = _first_glob(ctx.evidence_path("replay", "*_replay_journal_*.json"))
     audit_rows = _read_jsonl(audit_path) or []
@@ -554,7 +577,8 @@ def _s11_journal(ctx):
 
 
 def _s12_kill_switch(ctx):
-    audit_path = ctx.evidence_path("demo_runs", "rseth", "audit.jsonl")
+    session = _demo_session_dir(ctx)
+    audit_path = os.path.join(session, "audit.jsonl")
     records = _read_jsonl(audit_path) or []
     sequence = []
     revoke_tx = None
@@ -575,7 +599,7 @@ def _s12_kill_switch(ctx):
         ("K1", "revoke role AGENT (Roles v2)", "≤ 60 min", "RUN D — révocation on-chain"),
         ("reset", "restauration du rôle (reprise)", "—", "RUN D — reset confirmé"),
     ])
-    receipts_dir = ctx.evidence_path("demo_runs", "rseth", "receipts")
+    receipts_dir = os.path.join(session, "receipts")
     receipts = sorted(os.listdir(receipts_dir)) if os.path.isdir(receipts_dir) else []
     revoked = [name for name in receipts if "0fb9" in name]
     if revoked:

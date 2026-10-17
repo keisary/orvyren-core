@@ -443,8 +443,35 @@ def _write_run_artifacts(ctx: DemoContext, run: str, summary: Dict[str, Any],
         print("    [{:>12}] {} — {}".format(criterion["status"], criterion["id"], criterion["description"]))
 
 
+def _criteria_counts(criteria: List[Dict[str, Any]]) -> Dict[str, int]:
+    """Compte les statuts ``met`` / ``pending`` / ``failed`` (et les inconnus)."""
+    statuses = [str(criterion.get("status") or "") for criterion in criteria]
+    met = statuses.count("met")
+    pending = statuses.count("pending")
+    failed = statuses.count("failed")
+    return {"met": met, "pending": pending, "failed": failed,
+            "other": len(statuses) - met - pending - failed}
+
+
 def _criteria_ok(criteria: List[Dict[str, Any]]) -> bool:
-    return all(criterion["status"] not in ("failed",) for criterion in criteria)
+    """Vrai **seulement** si tous les critères sont ``met``.
+
+    ``pending`` n'est pas un succès : un critère non évalué (dry-run) laisse
+    une preuve manquante. Le kit le déclare (``DRY_RUN_PENDING``) au lieu de
+    proclamer « critères OK » — finding E1 de l'audit externe du 17/10.
+    """
+    return bool(criteria) and all(str(criterion.get("status")) == "met"
+                                  for criterion in criteria)
+
+
+def _criteria_label(criteria: List[Dict[str, Any]]) -> str:
+    """Libellé honnête : OK seulement si tout est ``met`` ; sinon PENDING/FAILED."""
+    counts = _criteria_counts(criteria)
+    if not criteria or counts["failed"] or counts["other"]:
+        return "CRITÈRES NON SATISFAITS"
+    if counts["pending"]:
+        return "DRY_RUN_PENDING"
+    return "critères OK"
 
 
 # =============================================================================
@@ -1254,9 +1281,15 @@ def main(argv: Optional[list] = None) -> int:
         return EXIT_PREREQUISITES
 
     criteria = summary.get("criteria") or []
+    counts = _criteria_counts(criteria)
     ok = _criteria_ok(criteria)
     print("")
-    print("  run {} : {} — {}".format(run, summary.get("status"), "critères OK" if ok else "CRITÈRES NON SATISFAITS"))
+    print("  run {} : {} — {} ({}/{} met, {} pending{})".format(
+        run, summary.get("status"), _criteria_label(criteria),
+        counts["met"], len(criteria), counts["pending"],
+        ", {} failed".format(counts["failed"]) if counts["failed"] else ""))
+    if not ok and counts["pending"] and not counts["failed"]:
+        print("  ! critères non évalués en dry-run : aucune preuve « OK » n'est revendiquée.")
     print("  artefacts : {}".format(common.display_path(ctx.run_dir)))
     print("  journal   : {}".format(common.display_path(os.path.join(ctx.session_dir, "audit.jsonl"))))
     return EXIT_OK if ok else EXIT_CRITERIA_FAILED

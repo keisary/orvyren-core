@@ -1070,7 +1070,7 @@ def build_evidence(from_cache=False, raw_dir=RAW_W2B, out_path=DEFAULT_OUT,
     }
     if out_path:
         os.makedirs(os.path.dirname(os.path.abspath(out_path)), exist_ok=True)
-        with open(out_path, "w", encoding="utf-8") as fh:
+        with open(out_path, "w", encoding="utf-8", newline="\n") as fh:
             json.dump(document, fh, indent=1, sort_keys=False, ensure_ascii=False)
             fh.write("\n")
         say(f"[sortie] ecrit: {out_path}")

@@ -229,7 +229,7 @@ def main():
     summary = summarise()
     if stages_run:
         summary["stages"] = stages_run
-    with open(SUMMARY_JSON, "w", encoding="utf-8") as fh:
+    with open(SUMMARY_JSON, "w", encoding="utf-8", newline="\n") as fh:
         json.dump(summary, fh, indent=2, ensure_ascii=False)
     print_summary(summary)
     print(f"\nsummary -> {SUMMARY_JSON}")

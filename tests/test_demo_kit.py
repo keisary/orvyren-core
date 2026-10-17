@@ -40,6 +40,12 @@ from demo import verify_receipt  # noqa: E402
 
 from orvyren.execution import verify as base_verify  # noqa: E402
 
+try:  # dépendance optionnelle du signataire (isolée au module signer)
+    import eth_account  # noqa: F401
+    HAVE_ETH_ACCOUNT = True
+except ImportError:  # pragma: no cover - environnement sans la dépendance optionnelle
+    HAVE_ETH_ACCOUNT = False
+
 DEMO_DIR = os.path.join(ROOT, "scripts", "demo")
 ENVELOPE_EXAMPLE = os.path.join(DEMO_DIR, "envelope.example.json")
 
@@ -501,8 +507,18 @@ class TestRunsDryRun(TempSessionMixin, unittest.TestCase):
         ctx = self.make_context()
         for run in ("A", "B", "C", "D", "E"):
             summary = demo.execute_run(run, ctx)
-            self.assertTrue(demo._criteria_ok(summary["criteria"]),
-                            "run {} : {}".format(run, summary["criteria"]))
+            statuses = [criterion["status"] for criterion in summary["criteria"]]
+            self.assertNotIn("failed", statuses,
+                             "run {} : {}".format(run, summary["criteria"]))
+            if run == "B":  # les 4 critères B sont entièrement évaluables hors chaîne
+                self.assertNotIn("pending", statuses, summary["criteria"])
+                self.assertTrue(demo._criteria_ok(summary["criteria"]),
+                                "run B : {}".format(summary["criteria"]))
+            else:
+                self.assertIn("pending", statuses,
+                              "run {} : un dry-run doit déclarer ses critères non évalués".format(run))
+                self.assertFalse(demo._criteria_ok(summary["criteria"]),
+                                 "run {} : pending ne vaut pas « critères OK »".format(run))
             self.assertEqual(summary["status"], "DRY_RUN_OK")
         # journal : chaîne recalculée OK et aucune clé
         report = ctx.journal.verify()
@@ -518,6 +534,9 @@ class TestRunsDryRun(TempSessionMixin, unittest.TestCase):
         self.assertEqual(statuses["A.4"], "met")           # compteur de signatures +1
         self.assertEqual(statuses["A.1"], "pending")       # pas de reçu en dry-run
         self.assertEqual(statuses["A.5"], "pending")       # dry : RECEIPT/VERIFY impossibles sans chaîne → pending (l'ordre OUTCOME est testé par le run réel --execute)
+        self.assertFalse(demo._criteria_ok(summary["criteria"]),
+                         "5 critères pending ne valent pas « critères OK »")
+        self.assertEqual(demo._criteria_label(summary["criteria"]), "DRY_RUN_PENDING")
         self.assertEqual(ctx.signatures.count(), 1)
         kinds = ctx.journal.kinds(summary["intent_id"])
         self.assertIn("INTENT", kinds)
@@ -528,6 +547,19 @@ class TestRunsDryRun(TempSessionMixin, unittest.TestCase):
                   if record["kind"] == "SUBMIT"][0]
         self.assertTrue(submit["payload"]["simulated"])
         self.assertEqual(submit["payload"]["signatures_count"], 1)
+
+    def test_criteria_statuses_are_not_flattened(self):
+        """E1 : pending n'est jamais un succès ; seuls les 'met' font OK."""
+        self.assertFalse(demo._criteria_ok([]))
+        self.assertFalse(demo._criteria_ok([{"status": "pending"}]))
+        self.assertFalse(demo._criteria_ok([{"status": "met"}, {"status": "pending"}]))
+        self.assertFalse(demo._criteria_ok([{"status": "failed"}]))
+        self.assertTrue(demo._criteria_ok([{"status": "met"}, {"status": "met"}]))
+        self.assertEqual(demo._criteria_label([{"status": "met"}, {"status": "pending"}]),
+                         "DRY_RUN_PENDING")
+        self.assertEqual(demo._criteria_label([{"status": "met"}]), "critères OK")
+        self.assertEqual(demo._criteria_label([{"status": "failed"}]),
+                         "CRITÈRES NON SATISFAITS")
 
     def test_run_b_zero_signatures(self):
         ctx = self.make_context()
@@ -754,10 +786,10 @@ class TestSignerDryRun(unittest.TestCase):
         with self.assertRaises(signer_mod.SignerError):
             signer.sign_transaction({"chainId": 1, "nonce": 0, "to": MODULE, "value": 0, "data": "0x"})
 
+    @unittest.skipIf(HAVE_ETH_ACCOUNT,
+                     "eth-account présent : le chemin « bibliothèque absente » n'est pas testable")
     def test_real_mode_without_library_fails_cleanly(self):
         signer = signer_mod.Signer(dry_run=False, env={})
-        if signer.library_available():
-            self.skipTest("eth-account présent : le chemin « bibliothèque absente » n'est pas testable")
         with self.assertRaises(signer_mod.SignerDependencyError):
             signer.sign_transaction({"chainId": 84532, "nonce": 0, "to": MODULE, "value": 0, "data": "0x"})
 
@@ -773,10 +805,9 @@ class TestSignerDryRun(unittest.TestCase):
 
     # --- régression : casse EIP-55 du champ 'from' (rencontré le 2026-10-16 en exécution réelle) ---
 
+    @unittest.skipUnless(HAVE_ETH_ACCOUNT, "eth-account requis pour signer réellement")
     def test_execute_normalizes_from_to_eip55(self):
         signer = signer_mod.Signer(dry_run=False, env={"ORVYREN_PRIVATE_KEY": "0x" + "22" * 32})
-        if not signer.library_available():
-            self.skipTest("eth-account absent")
         address = signer.address()
         tx = {"chainId": 84532, "nonce": 0, "to": MODULE.lower(), "value": 0, "data": "0x",
               "gas": 21000, "maxFeePerGas": 10 ** 9, "maxPriorityFeePerGas": 10 ** 9,
@@ -787,15 +818,25 @@ class TestSignerDryRun(unittest.TestCase):
         self.assertEqual(tx["from"], address.lower())      # le dict appelant n'est pas muté
         self.assertNotIn("22" * 32, json.dumps(result))    # jamais de clé dans la sortie
 
+    @unittest.skipUnless(HAVE_ETH_ACCOUNT, "eth-account requis pour signer réellement")
     def test_execute_refuses_from_mismatch(self):
         signer = signer_mod.Signer(dry_run=False, env={"ORVYREN_PRIVATE_KEY": "0x" + "22" * 32})
-        if not signer.library_available():
-            self.skipTest("eth-account absent")
         tx = {"chainId": 84532, "nonce": 0, "to": MODULE, "value": 0, "data": "0x",
               "gas": 21000, "maxFeePerGas": 10 ** 9, "maxPriorityFeePerGas": 10 ** 9,
               "type": 2, "from": "0x" + "33" * 20}
         with self.assertRaises(signer_mod.SignerError):
             signer.sign_transaction(tx, intent_id="I-BAD")
+
+    def test_signer_output_never_contains_key_material(self):
+        """Propriété de sécurité testée MÊME sans eth-account (jamais sautée)."""
+        key = "0x" + "22" * 32
+        signer = signer_mod.Signer(dry_run=True, env={"ORVYREN_PRIVATE_KEY": key})
+        result = signer.sign_transaction({"chainId": 84532, "nonce": 0, "to": MODULE,
+                                          "value": 0, "data": "0x"})
+        payload = json.dumps(result)
+        self.assertNotIn("22" * 32, payload)
+        self.assertNotIn(key, payload)
+        self.assertNotIn("22" * 32, json.dumps(signer.safe_dict()))
 
 
 # =============================================================================
