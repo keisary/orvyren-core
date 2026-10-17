@@ -274,13 +274,13 @@ def build_packet(*, session_dir: str, case: str, evidence_dir: str,
     evidence_dir = os.path.abspath(evidence_dir)
     corpus = os.path.abspath(corpus)
     if not os.path.isdir(session_dir):
-        raise SystemExit("E_SESSION: %s absent" % session_dir)
+        raise SystemExit("E_SESSION: %s missing" % session_dir)
 
     session = load_json(os.path.join(session_dir, "session.json"), default={}) or {}
     journal_source = os.path.join(session_dir, "audit.jsonl")
     session_records = read_jsonl(journal_source)
     if not session_records:
-        raise SystemExit("E_JOURNAL: %s absent ou vide" % journal_source)
+        raise SystemExit("E_JOURNAL: %s missing or empty" % journal_source)
     chain_ok, session_head = verify_chain(session_records)
     if not chain_ok:
         raise SystemExit("E_JOURNAL_CHAIN: %s (%s)" % (journal_source, session_head))
@@ -578,8 +578,8 @@ def build_packet(*, session_dir: str, case: str, evidence_dir: str,
     if final_report.get("verdict") not in ("PASS", "OFFLINE_PASS") or detected != len(mutations):
         write_json(os.path.join(os.path.abspath(out_dir), "BUILD_FAILED_REPORT.json"),
                    final_report)
-        raise SystemExit("E_BUILD: OFFLINE_PASS attendu, obtenu %s (mutations %d/%d) — "
-                         "rapport complet dans BUILD_FAILED_REPORT.json"
+        raise SystemExit("E_BUILD: expected OFFLINE_PASS, got %s (mutations %d/%d) — "
+                         "full report in BUILD_FAILED_REPORT.json"
                          % (final_report.get("verdict"), detected, len(mutations)))
 
     # --- zip + published digest ---------------------------------------------
@@ -628,15 +628,15 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
                            evidence_dir=args.evidence, corpus=args.corpus,
                            out_dir=args.out_dir,
                            graph_snapshot_dir=args.graph_snapshot_dir)
-    print("ORVYREN — paquet d'audit v2 assemblé")
-    print("  paquet        : %s (%d fichiers)" % (summary["packet_dir"], summary["files"]))
+    print("ORVYREN — audit packet v2 assembled")
+    print("  packet        : %s (%d files)" % (summary["packet_dir"], summary["files"]))
     print("  zip           : %s" % summary["zip_path"])
     print("  zip sha256    : %s" % summary["zip_sha256"])
     print("  bundle_digest : %s" % summary["bundle_digest"])
-    print("  vérification  : %s (%d contrôles), mutations %s"
+    print("  verification  : %s (%d checks), mutations %s"
           % (summary["verdict"], summary["checks"], summary["mutations"]))
     if summary["missing_pieces"]:
-        print("  pièces absentes déclarées : %d" % len(summary["missing_pieces"]))
+        print("  declared missing pieces: %d" % len(summary["missing_pieces"]))
         for item in summary["missing_pieces"]:
             print("    - %s (%s)" % (item["piece"], item["reason"]))
     return 0

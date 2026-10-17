@@ -1,29 +1,29 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-"""ORVYREN-Core — « une décision complète est une commande » (W3 [DONE]).
+"""ORVYREN-Core — "a full decision is one command" (W3 [DONE]).
 
-    # depuis la racine du dépôt :
+    # from the repository root:
     PYTHONPATH=src python -m orvyren.decide --case usdc-2023-03 --replay
-    # ou, depuis src/ :
+    # or, from src/:
     cd src && python -m orvyren.decide --case usdc-2023-03 --replay
 
-Compose la chaîne complète, hors-ligne et déterministe :
-corpus gelé -> moteur v0 (``run_case``) -> dossier 3 axes (``build_dossier`` :
-RDOF v1 + abstention A1-A5 + convention de prix + politique) ->
-enregistrement des hypothèses falsifiables au registre de W2 (L3.1) ->
-**DecisionRecord** JSON :
+Composes the full chain, offline and deterministic:
+frozen corpus -> v0 engine (``run_case``) -> 3-axis dossier (``build_dossier``:
+RDOF v1 + A1-A5 abstention + price convention + policy) ->
+registration of the falsifiable hypotheses in the W2 registry (L3.1) ->
+**DecisionRecord** JSON:
 
-- 3 axes **séparés** : ``epistemic_verdict`` / ``economic_action`` /
-  ``authorization_verdict`` (jamais fusionnés — « DENY de politique » !=
-  « échec épistémique », DOC2 §5.4.4) ;
-- ``intent`` borné (action, chaîne, actif, montant, destinataire) ou
-  ``NO-ACTION`` / ``INCONCLUSIVE`` ;
-- ``rationale``, ``evidence_refs[]``, coût réel de recherche.
+- 3 **separate** axes: ``epistemic_verdict`` / ``economic_action`` /
+  ``authorization_verdict`` (never fused — a "policy DENY" !=
+  an "epistemic failure", DOC2 §5.4.4);
+- bounded ``intent`` (action, chain, asset, amount, recipient) or
+  ``NO-ACTION`` / ``INCONCLUSIVE``;
+- ``rationale``, ``evidence_refs[]``, real research cost.
 
-Sortie : ``evidence/decision_record_<case>.json`` (ou ``--out``). Le dossier
-machine ``evidence/decision_<case>.json`` reste produit par ``run_decision.py``.
+Output: ``evidence/decision_record_<case>.json`` (or ``--out``). The machine-readable
+``evidence/decision_<case>.json`` is still produced by ``run_decision.py``.
 
-Standard library only, aucun réseau.
+Standard library only, no network.
 """
 
 from __future__ import annotations
@@ -35,7 +35,7 @@ import sys
 
 _REPO_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-if __name__ == "__main__":  # pragma: no cover — invocation directe du fichier
+if __name__ == "__main__":  # pragma: no cover — direct file invocation
     sys.path.insert(0, os.path.join(_REPO_ROOT, "src"))
 
 from orvyren.branches.hypotheses import HypothesisRegistry  # noqa: E402
@@ -52,10 +52,10 @@ DEFAULT_CASE = "usdc-2023-03"
 DEFAULT_CORPUS = "corpus/usdc_observations.csv"
 DEFAULT_OUT_DIR = "evidence"
 
-#: Fenêtre principale gelée du cas (FREEZE_V1 D1), bornes incluses, UTC.
+#: Frozen main window of the case (FREEZE_V1 D1), bounds included, UTC.
 MAIN_WINDOW = ("2023-03-09T00:00:00+00:00", "2023-03-15T00:00:00+00:00")
 
-#: L'action économique qui produit un Intent borné (axes.build_dossier).
+#: The economic action that produces a bounded Intent (axes.build_dossier).
 ECONOMIC_TRANSFER = "CONVERTIR/TRANSFÉRER"
 
 
@@ -82,7 +82,7 @@ def build_decision_record(case_id: str = DEFAULT_CASE, corpus_path: str = None,
     if not os.path.isabs(corpus_abs):
         corpus_abs = os.path.normpath(os.path.join(_REPO_ROOT, corpus_abs))
     if not os.path.exists(corpus_abs):
-        raise FileNotFoundError("corpus introuvable : %s" % corpus_abs)
+        raise FileNotFoundError("corpus not found: %s" % corpus_abs)
 
     case = run_case(corpus_abs, MAIN_WINDOW[0], MAIN_WINDOW[1],
                     case_id=case_id, window_label="main")
@@ -90,8 +90,8 @@ def build_decision_record(case_id: str = DEFAULT_CASE, corpus_path: str = None,
     dossier = build_dossier(case_id, observations, MAIN_WINDOW[0], MAIN_WINDOW[1],
                             reserve_recipient=reserve_recipient)
 
-    # L3.1 — enregistrement des hypothèses falsifiables au registre de W2
-    # (critères S/R obligatoires ; prédicats instrumentés uniquement).
+    # L3.1 — register the falsifiable hypotheses in the W2 registry
+    # (mandatory S/R criteria; instrumented predicates only).
     registry = HypothesisRegistry()
     registered = register_case_hypotheses(registry, case_id,
                                           case["hypothesis_verdicts"],
@@ -101,7 +101,7 @@ def build_decision_record(case_id: str = DEFAULT_CASE, corpus_path: str = None,
     axes = dossier["axes"]
     rdof = dossier["rdof"]
 
-    # L'intent borné — la seule structure qui franchit decision -> policy ([I]).
+    # The bounded intent — the only structure crossing decision -> policy ([I]).
     intent = None
     if axes["economic_action"] == ECONOMIC_TRANSFER:
         from orvyren.policy import ALLOWED_ASSET, ALLOWED_CHAIN_ID
@@ -115,19 +115,19 @@ def build_decision_record(case_id: str = DEFAULT_CASE, corpus_path: str = None,
         }
 
     rationale_parts = [
-        "verdicts : " + ", ".join("%s %s" % (hid, verdicts[hid]["verdict"])
+        "verdicts: " + ", ".join("%s %s" % (hid, verdicts[hid]["verdict"])
                                   for hid in FROZEN_HYPOTHESIS_ORDER),
-        "RDOF : arrêt « %s » après %d recherche(s), coût %s s / %s appel(s)" % (
+        "RDOF: stop \"%s\" after %d search(es), cost %s s / %s call(s)" % (
             rdof["stop"], len(rdof["trace"]),
             rdof["budget"]["consomme"]["secondes"],
             rdof["budget"]["consomme"]["appels"]),
     ]
     if axes["economic_action"]:
-        rationale_parts.append("action : %s (catalogue %s)"
+        rationale_parts.append("action: %s (catalog %s)"
                                % (axes["economic_action"],
                                   dossier["action_catalog_version"]))
     if dossier["abstention"]:
-        rationale_parts.append("abstention : conditions %s"
+        rationale_parts.append("abstention: conditions %s"
                                % ",".join(dossier["abstention"]["conditions_declenchees"]))
 
     evidence_refs = _dedupe_refs(
@@ -165,30 +165,30 @@ def build_decision_record(case_id: str = DEFAULT_CASE, corpus_path: str = None,
 def main(argv=None) -> int:
     parser = argparse.ArgumentParser(
         prog="python -m orvyren.decide",
-        description="ORVYREN-Core — décision complète en une commande "
-                    "(3 axes séparés, RDOF v1, abstention A1-A5) — offline, "
-                    "stdlib, rejouable.")
+        description="ORVYREN-Core — full decision in one command "
+                    "(3 separate axes, RDOF v1, A1-A5 abstention) — offline, "
+                    "stdlib, replayable.")
     parser.add_argument("--case", default=DEFAULT_CASE,
-                        help="identifiant de cas (défaut : %(default)s)")
+                        help="case identifier (default: %(default)s)")
     parser.add_argument("--replay", action="store_true",
-                        help="rejoue le cas gelé depuis le corpus figé "
-                             "(offline, déterministe — le seul mode v1)")
+                        help="replays the frozen case from the frozen corpus "
+                             "(offline, deterministic — the only v1 mode)")
     parser.add_argument("--corpus", default=DEFAULT_CORPUS,
-                        help="corpus CSV, relatif à la racine du dépôt "
-                             "(défaut : %(default)s)")
+                        help="corpus CSV, relative to the repository root "
+                             "(default: %(default)s)")
     parser.add_argument("--out-dir", default=DEFAULT_OUT_DIR,
-                        help="répertoire de sortie (défaut : %(default)s)")
+                        help="output directory (default: %(default)s)")
     parser.add_argument("--out", default=None,
-                        help="chemin de sortie explicite (sinon "
+                        help="explicit output path (otherwise "
                              "decision_record_<case>.json)")
     parser.add_argument("--reserve-recipient", default=None,
-                        help="adresse du destinataire de réserve pour évaluer "
-                             "l'axe 3 via le service de politique ; omis, l'axe "
-                             "reste explicitement « non évalué »")
+                        help="reserve recipient address to evaluate "
+                             "axis 3 through the policy service; when omitted, the axis "
+                             "stays explicitly \"not evaluated\"")
     args = parser.parse_args(argv)
 
     if args.case != DEFAULT_CASE:
-        print("ERREUR : cas non câblé en v1 : %s (seul %s est rejouable)"
+        print("ERROR: case not wired in v1: %s (only %s is replayable)"
               % (args.case, DEFAULT_CASE), file=sys.stderr)
         return 4
 
@@ -196,7 +196,7 @@ def main(argv=None) -> int:
     if not os.path.isabs(corpus_abs):
         corpus_abs = os.path.normpath(os.path.join(_REPO_ROOT, corpus_abs))
     if not os.path.exists(corpus_abs):
-        print("ERREUR : corpus introuvable : %s" % corpus_abs, file=sys.stderr)
+        print("ERROR: corpus not found: %s" % corpus_abs, file=sys.stderr)
         return 2
 
     record = build_decision_record(args.case, corpus_abs, args.reserve_recipient)
@@ -210,14 +210,14 @@ def main(argv=None) -> int:
         json.dump(record, handle, ensure_ascii=False, indent=2)
         handle.write("\n")
 
-    print("ORVYREN — décision (replay) : %s" % args.case)
+    print("ORVYREN — decision (replay): %s" % args.case)
     print("  epistemic_verdict    : %s" % record["epistemic_verdict"])
     print("  economic_action      : %s" % record["economic_action"])
     print("  authorization_verdict: %s" % record["authorization_verdict"])
     print("  intent               : %s" % (json.dumps(record["intent"], ensure_ascii=False)
-                                           if record["intent"] else "aucun"))
+                                           if record["intent"] else "none"))
     print("  rationale            : %s" % record["rationale"])
-    print("  écrit                : %s" % out_path)
+    print("  written              : %s" % out_path)
     return 0
 
 

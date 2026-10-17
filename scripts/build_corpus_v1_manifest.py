@@ -1,19 +1,19 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-"""ORVYREN — L1.5 : manifeste ``replay/corpus_v1.manifest.json`` (contrat B7 §d.3).
+"""ORVYREN — L1.5: ``replay/corpus_v1.manifest.json`` manifest (contract B7 §d.3).
 
-Liste **fichier par fichier** ce que le rejeu (W7) peut consommer : chemins
-relatifs, ``sha256``, taille — plus les fenêtres déclarées (principales,
-contrôle, CALME, séries). Le manifeste est **reconstructible** : ``--check``
-recalcule et compare à l'octet (CI/test).
+Lists **file by file** what the replay (W7) may consume: relative paths,
+``sha256``, byte size — plus the declared windows (main, control, CALM,
+series). The manifest is **rebuildable**: ``--check`` recomputes it and compares
+byte for byte (CI/test).
 
-Ce qui n'est PAS inclus est déclaré en toutes lettres (``missing_declared``) —
-jamais inventé.
+What is NOT included is declared in so many words (``missing_declared``) —
+never invented.
 
-Usage ::
+Usage::
 
-    python scripts/build_corpus_v1_manifest.py           # (ré)écrit le manifeste
-    python scripts/build_corpus_v1_manifest.py --check   # vérifie (rc 0/1)
+    python scripts/build_corpus_v1_manifest.py           # (re)write the manifest
+    python scripts/build_corpus_v1_manifest.py --check   # verify (rc 0/1)
 """
 
 from __future__ import annotations
@@ -35,6 +35,8 @@ FILES_GLOBS = (
     "corpus/series/*.json",
 )
 
+# Content of the manifest (frozen artefact): keep the declared strings as they
+# are published — they are data, not console text.
 MISSING_DECLARED = (
     {"piece": "série xUSD (nov 2025)", "reason": "qualitatif seulement (B7 §8) — non intégré"},
     {"piece": "séries stETH/rsETH horaires", "reason": "vivent dans evidence/épisodes (W3) — à intégrer côté W7 si requis"},
@@ -102,7 +104,7 @@ def _serialize(manifest: dict) -> str:
 def main(argv=None) -> int:
     parser = argparse.ArgumentParser(prog="build_corpus_v1_manifest.py")
     parser.add_argument("--check", action="store_true",
-                        help="vérifie le manifeste sur disque (rc 0 = identique)")
+                        help="verify the manifest on disk (rc 0 = identical)")
     args = parser.parse_args(argv)
     target = os.path.join(REPO_ROOT, "replay", "corpus_v1.manifest.json")
     manifest = build_manifest()
@@ -119,16 +121,16 @@ def main(argv=None) -> int:
             data.pop("built_at", None)
             return json.dumps(data, ensure_ascii=False, indent=1, sort_keys=True)
         if _strip(on_disk) != _strip(text):
-            print("E_MANIFEST_STALE: divergence (relancer sans --check)")
+            print("E_MANIFEST_STALE: divergence (rerun without --check)")
             return 1
-        print("PASS — manifeste à jour (%d fichiers)" % manifest["totals"]["files"])
+        print("PASS — manifest up to date (%d files)" % manifest["totals"]["files"])
         return 0
     os.makedirs(os.path.dirname(target), exist_ok=True)
     with open(target, "w", encoding="utf-8", newline="\n") as handle:
         handle.write(text)
-    print("ORVYREN — corpus v1 manifest écrit : replay/corpus_v1.manifest.json")
-    print("  fichiers : %d (%d octets)" % (manifest["totals"]["files"],
-                                            manifest["totals"]["bytes"]))
+    print("ORVYREN — corpus v1 manifest written: replay/corpus_v1.manifest.json")
+    print("  files    : %d (%d bytes)" % (manifest["totals"]["files"],
+                                         manifest["totals"]["bytes"]))
     print("  sha256   : %s" % manifest["manifest_sha256"][:16])
     return 0
 

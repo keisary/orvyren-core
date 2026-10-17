@@ -1,10 +1,10 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-"""ORVYREN-Core — tests de l'horloge de rejeu (W7, B7 §c.3).
+"""ORVYREN-Core — replay clock tests (W7, B7 §c.3).
 
-Monotonie stricte, pas borné par la fin de fenêtre, avance par événements,
-et surtout la **garde PIT** : admettre un objet futur abandonne le run
-(``PITViolation``) et l'incident est écrit dans l'audit — test obligatoire.
+Strict monotonicity, step capped by the window end, event-driven advance,
+and above all the **PIT guard**: admitting a future object aborts the run
+(``PITViolation``) and the incident is written into the audit — mandatory test.
 
 Run: python -m pytest tests/test_replay_clock.py -q
 """
@@ -32,7 +32,7 @@ class ReplayClockTest(unittest.TestCase):
         self.assertEqual(t0, "2023-03-10T00:00:00Z")
         self.assertEqual(clock.advance(), "2023-03-10T01:00:00Z")
         self.assertEqual(clock.advance(hours=47), "2023-03-12T00:00:00Z")
-        with self.assertRaises(ValueError):  # déjà à la fin
+        with self.assertRaises(ValueError):  # already at the end
             clock.advance()
 
     def test_step_to_next_event(self):
@@ -46,9 +46,9 @@ class ReplayClockTest(unittest.TestCase):
     def test_pit_violation_aborts_and_is_audited(self):
         clock = self._clock()
         clock.advance()  # t_sim = 01:00
-        clock.admit("2023-03-10T00:30:00Z", what="observation passée")  # admis
+        clock.admit("2023-03-10T00:30:00Z", what="past observation")  # admitted
         with self.assertRaises(clock_mod.PITViolation):
-            clock.admit("2023-03-10T02:00:00Z", what="observation future")
+            clock.admit("2023-03-10T02:00:00Z", what="future observation")
         audit = clock.audit()
         self.assertFalse(audit["valid"])
         self.assertEqual(len(audit["violations"]), 1)
@@ -66,7 +66,7 @@ class ReplayClockTest(unittest.TestCase):
 
         window = windows_mod.DEV_WINDOWS[0]
         clock = clock_mod.ReplayClock.from_window(window, run_id="t", init_band_hours=24)
-        self.assertEqual(clock.t_sim_iso(), "2023-03-09T00:00:00Z")  # ouverture − 24 h
+        self.assertEqual(clock.t_sim_iso(), "2023-03-09T00:00:00Z")  # opening − 24 h
         self.assertEqual(clock.window()["t_sim_end_utc"], window.end_utc)
         clock_zero = clock_mod.ReplayClock.from_window(window, run_id="t", init_band_hours=0)
         self.assertEqual(clock_zero.t_sim_iso(), window.start_utc)

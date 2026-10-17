@@ -1,32 +1,32 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-"""ORVYREN — kit de démo testnet (W3-D).
+"""ORVYREN — testnet demo kit (W3-D).
 
-Paquet ``scripts/demo`` : tout ce qui est nécessaire pour exécuter les **5 runs
-de démonstration** (A ALLOW, B DENY hors chaîne, C DENY par la chaîne, D kill
-switch, E journal/audit) sur Base Sepolia (chainId 84532) dès qu'un wallet
-financé existe, **plus** les auto-tests hors chaîne (dry-run) qui tournent
-sans réseau ni clé.
+``scripts/demo`` package: everything needed to run the **5 demo runs**
+(A ALLOW, B off-chain DENY, C chain-level DENY, D kill switch,
+E journal/audit) on Base Sepolia (chainId 84532) as soon as a funded wallet
+exists, **plus** the off-chain self-tests (dry-run) that run
+without network or key.
 
-Règles du kit :
+Kit rules:
 
-* **stdlib uniquement** — le SEUL module autorisé à importer une bibliothèque
-  externe est :mod:`scripts.demo.signer` (``eth-account``, isolé, jamais
-  importé par les autres modules) ;
-* **aucun secret** : la clé ne vit que dans l'environnement du processus de
-  signature (``ORVYREN_PRIVATE_KEY``), jamais dans un fichier, un journal ou
-  une sortie écran ;
-* **aucune transaction n'est envoyée en dry-run** ; en mode ``--execute`` le
-  kit envoie uniquement ce que le préflight a autorisé ;
-* **journal append-only chaîné SHA-256** (format B6 §1.3).
+* **stdlib only** — the ONLY module allowed to import an external library
+  is :mod:`scripts.demo.signer` (``eth-account``, isolated, never
+  imported by the other modules);
+* **no secret**: the key lives only in the signing process environment
+  (``ORVYREN_PRIVATE_KEY``), never in a file, a journal or
+  a screen output;
+* **no transaction is sent in dry-run**; in ``--execute`` mode the
+  kit sends only what the preflight authorized;
+* **SHA-256 chained append-only journal** (format B6 §1.3).
 
-Références : ``FREEZE_V2.md`` E1/E2/E5 · ``research/B5_EXECUTION_ETUDE.md``
-(§b intent, §c préflight 12 contrôles, §d receipt, §e runs) ·
-``research/B4_POLITIQUE_ETUDE.md`` (14 règles, test de dérive 10 contrôles,
-K0-K3) · ``research/B6_AUDIT_ETUDE.md`` (journal 3 flux, paquet 12 pièces) ·
-``research/W2C_enveloppe_execution.md`` §g (montage Safe 2/3 + module Roles).
+References: ``FREEZE_V2.md`` E1/E2/E5 · ``research/B5_EXECUTION_ETUDE.md``
+(§b intent, §c 12-check preflight, §d receipt, §e runs) ·
+``research/B4_POLITIQUE_ETUDE.md`` (14 rules, 10-check drift test,
+K0-K3) · ``research/B6_AUDIT_ETUDE.md`` (3-stream journal, 12-piece packet) ·
+``research/W2C_enveloppe_execution.md`` §g (2/3 Safe setup + Roles module).
 
-Aucun module d'ici n'a d'effet de bord à l'import.
+No module here has an import side effect.
 """
 
 __all__ = ["common", "calls", "intents", "signer", "preflight", "demo", "verify_receipt",

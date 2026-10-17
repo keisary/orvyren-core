@@ -1,18 +1,18 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-"""ORVYREN-Core — tests W6 : vérificateur tiers T10 de bout en bout.
+"""ORVYREN-Core — W6 tests: end-to-end third-party verifier T10.
 
-Chaîne réelle de bout en bout, **hors ligne** : le paquet v2 est assemblé par
-``scripts/build_audit_packet.py`` à partir de la session rseth réellement
-exécutée (preuves versionnées), puis vérifié par le moteur du dépôt ET par le
-vérificateur gelé embarqué dans le paquet :
+Real end-to-end chain, **offline**: the v2 packet is assembled by
+``scripts/build_audit_packet.py`` from the rseth session actually executed
+(versioned evidence), then verified by the repository engine AND by the frozen
+verifier embedded in the packet:
 
-* verdict ``OFFLINE_PASS``, zéro contrôle en échec, ligne B SKIPPED ;
-* mutation-test intégré : 6/6 mutations détectées ;
-* altération du journal → A1 en échec ; reçu supprimé → A3/A8 en échec ;
-* le lanceur gelé ``verify/orvyren_verify.py`` s'exécute seul (imports gelés).
+* verdict ``OFFLINE_PASS``, zero failing checks, B row SKIPPED;
+* built-in mutation test: 6/6 mutations detected;
+* journal tampering → A1 fails; deleted receipt → A3/A8 fail;
+* the frozen launcher ``verify/orvyren_verify.py`` runs standalone (frozen imports).
 
-Les tests se sautent proprement si les entrées de session ne sont pas présentes.
+The tests skip cleanly when the session inputs are not present.
 
 Run: python -m pytest tests/test_verify_engine.py -q
 """
@@ -32,8 +32,8 @@ sys.path.insert(0, ROOT)
 
 from orvyren.verify.engine import verify_packet  # noqa: E402
 
-# Micro-chaîne PUBLIQUE versionnée (extrait de la session rseth réelle) : elle
-# rend ces tests exécutables sur un clone, où evidence/demo_runs/ est git-ignoré.
+# Versioned PUBLIC micro-chain (extract of the real rseth session): it keeps
+# these tests runnable on a clone, where evidence/demo_runs/ is git-ignored.
 SESSION_DIR = os.path.join(ROOT, "evidence", "demo_chain", "rseth")
 EVIDENCE_DIR = os.path.join(ROOT, "evidence")
 CORPUS = os.path.join(ROOT, "corpus", "usdc_observations.csv")
@@ -46,7 +46,7 @@ INPUTS_PRESENT = (
 )
 
 
-@unittest.skipUnless(INPUTS_PRESENT, "entrées de session absentes (evidence/demo_chain/rseth)")
+@unittest.skipUnless(INPUTS_PRESENT, "session inputs missing (evidence/demo_chain/rseth)")
 class VerifyEngineEndToEndTest(unittest.TestCase):
     packet_dir = None
     build_stdout = ""
@@ -60,11 +60,11 @@ class VerifyEngineEndToEndTest(unittest.TestCase):
             cwd=ROOT, capture_output=True, text=True, timeout=600)
         cls.build_stdout = result.stdout + result.stderr
         if result.returncode != 0:
-            raise AssertionError("build_audit_packet.py a échoué :\n%s" % cls.build_stdout)
+            raise AssertionError("build_audit_packet.py failed:\n%s" % cls.build_stdout)
         matches = sorted(glob.glob(os.path.join(cls.tmp, "audit_packet_*")))
         dirs = [path for path in matches if os.path.isdir(path)]
         if not dirs:
-            raise AssertionError("paquet introuvable dans %s" % cls.tmp)
+            raise AssertionError("packet not found in %s" % cls.tmp)
         cls.packet_dir = dirs[0]
 
     @classmethod
@@ -97,7 +97,7 @@ class VerifyEngineEndToEndTest(unittest.TestCase):
         with open(journal, "r", encoding="utf-8") as handle:
             lines = handle.read().split("\n")
         index = next((pos for pos, line in enumerate(lines) if '"mode":"LIVE"' in line), None)
-        self.assertIsNotNone(index, "aucune ligne LIVE dans le journal")
+        self.assertIsNotNone(index, "no LIVE line in the journal")
         lines[index] = lines[index].replace('"mode":"LIVE"', '"mode":"LIVF"', 1)
         with open(journal, "w", encoding="utf-8", newline="\n") as handle:
             handle.write("\n".join(lines))
@@ -126,7 +126,7 @@ class VerifyEngineEndToEndTest(unittest.TestCase):
         self.assertIn("OFFLINE_PASS", result.stdout)
         self.assertFalse(os.path.isdir(os.path.join(self.packet_dir, "verify",
                                                     "_orvyren", "__pycache__")),
-                         "le lanceur ne doit pas écrire de bytecode dans le paquet")
+                         "the launcher must not write bytecode into the packet")
 
     def test_module_invocation_with_pythonpath(self):
         env = dict(os.environ, PYTHONPATH=os.path.join(ROOT, "src"))

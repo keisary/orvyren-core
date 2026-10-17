@@ -1,27 +1,27 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-"""ORVYREN-Core — harnais d'évaluation DEV/EVAL (W7, L7.6 ; B7 §e).
+"""ORVYREN-Core — DEV/EVAL evaluation harness (W7, L7.6; B7 §e).
 
-Boucle §e.2 : pour chaque fenêtre du jeu, pour chaque config
-``A0 / A1 / AX0 / A2 / B0`` — actions, puis ``W_T``, ``L(a)``, ``R(a)`` par la
-fonction de perte **gelée** (G1), agrégats par fenêtre, tests de supériorité et
-bannières obligatoires.
+Loop §e.2: for each window of the dataset, for each config
+``A0 / A1 / AX0 / A2 / B0`` — actions, then ``W_T``, ``L(a)``, ``R(a)`` through
+the **frozen** loss function (G1), per-window aggregates, superiority tests and
+mandatory banners.
 
-Honnêteté des substitutions (toujours écrites, jamais silencieuses) :
+Honesty of substitutions (always written, never silent):
 
-* ``A2`` sur un DEV sans rejeu disponible = dossier déterministe
-  (``evidence/decision_usdc-2023-03.json``) avec horodatage déclaré ;
-* ``P_exec`` = prix observé de la série à l'instant de l'action (aucun modèle
-  de profondeur en DEV) ; ``k = 0`` (coûts non mesurés en DEV) — la mention
-  part dans le rapport ;
-* ``B0`` apparié à A2 (ou à A1 si A2 absent) — substitution déclarée ;
-* toute fenêtre dont la série ne se résout pas est **SKIPPED avec motif**,
-  jamais remplie d'inventé.
+* ``A2`` on a DEV without an available replay = deterministic dossier
+  (``evidence/decision_usdc-2023-03.json``) with a declared timestamp;
+* ``P_exec`` = observed price of the series at the action instant (no depth
+  model in DEV); ``k = 0`` (costs not measured in DEV) — the mention goes into
+  the report;
+* ``B0`` paired with A2 (or with A1 if A2 is absent) — declared substitution;
+* any window whose series does not resolve is **SKIPPED with a reason**, never
+  filled with invented data.
 
-Garde de gel (B7 §d.2.5) : toute écriture exige ``frozen/G1–G6`` concordants ;
-``--set eval`` exige en plus l'absence de ``eval_run.lock`` (sauf ``--force`` +
-mention) et l'absence de chevauchement des fenêtres CALME EVAL avec la période
-de calibration déclarée.
+Freeze gate (B7 §d.2.5): any write requires matching ``frozen/G1–G6``;
+``--set eval`` additionally requires the absence of ``eval_run.lock`` (unless
+``--force`` + mention) and the absence of overlap between CALM EVAL windows and
+the declared calibration period.
 """
 
 from __future__ import annotations
@@ -44,8 +44,8 @@ DEFAULT_CORPUS = os.path.join(REPO_ROOT, "corpus", "usdc_observations.csv")
 DEFAULT_FROZEN_DIR = os.path.join(REPO_ROOT, "frozen")
 DEFAULT_OUT_DIR = os.path.join(REPO_ROOT, "evidence", "evaluation")
 
-#: Paramètres de démonstration DEV — à geler pour l'EVAL (déclarés partout).
-Q_DEV_USDC = 100.0  # montant mobilisable (available_to_move_usdc du dossier)
+#: DEV demonstration parameters — to be frozen for EVAL (declared everywhere).
+Q_DEV_USDC = 100.0  # mobilisable amount (available_to_move_usdc of the dossier)
 P_REF = 1.0
 COST_K = 0.0
 NOTE_PARAMS = ("paramètres de démonstration DEV : q = 100 USDC (montant mobilisable du "
@@ -55,7 +55,7 @@ CONFIG_LABELS = ("A0", "A1", "AX0", "A2", "B0")
 
 
 class HarnessError(RuntimeError):
-    """Exécution du harnais impossible (porte de gel, fenêtre invalide...)."""
+    """Harness execution impossible (freeze gate, invalid window...)."""
 
 
 def _parse_utc(stamp: str) -> _dt.datetime:
@@ -67,7 +67,7 @@ def _parse_utc(stamp: str) -> _dt.datetime:
 
 
 def _value_at(points: Sequence[Tuple[str, float]], moment_utc: str) -> Optional[float]:
-    """Dernière valeur observée **à ou avant** l'instant (jamais après — PIT)."""
+    """Last value observed **at or before** the instant (never after — PIT)."""
     target = _parse_utc(moment_utc)
     value = None
     for stamp, point_value in points:
@@ -79,27 +79,27 @@ def _value_at(points: Sequence[Tuple[str, float]], moment_utc: str) -> Optional[
 
 
 # --------------------------------------------------------------------------- #
-# Actions A2 — dossier déterministe (substitution DEV déclarée)
+# A2 actions — deterministic dossier (declared DEV substitution)
 # --------------------------------------------------------------------------- #
 
 def a2_actions_from_dossier(decision_path: str = DEFAULT_DECISION) -> Tuple[List[dict], List[str]]:
-    """A2 (DEV) : actions issues du dossier déterministe, mapping déclaré.
+    """A2 (DEV): actions from the deterministic dossier, declared mapping.
 
-    * montant : ``decision.action.amount_usdc`` (jamais recalculé) ;
-    * horodatage : dernière observation de ``decision.provenance`` — le dossier
-      ne date pas autrement son action ; substitution écrite dans les notes.
+    * amount: ``decision.action.amount_usdc`` (never recomputed);
+    * timestamp: last observation of ``decision.provenance`` — the dossier
+      does not date its action otherwise; substitution written in the notes.
     """
     with open(decision_path, "r", encoding="utf-8") as handle:
         dossier = json.load(handle)
     action = (dossier.get("decision") or {}).get("action") or {}
     amount = action.get("amount_usdc")
     if not isinstance(amount, (int, float)):
-        raise HarnessError("dossier %s : decision.action.amount_usdc absent" % decision_path)
+        raise HarnessError("dossier %s: decision.action.amount_usdc missing" % decision_path)
     stamps = [item.get("timestamp_utc") for item in (dossier.get("decision") or {}).get(
         "provenance") or [] if isinstance(item, dict)]
     stamps = [stamp for stamp in stamps if stamp]
     if not stamps:
-        raise HarnessError("dossier %s : provenance sans horodatage — action A2 non datable"
+        raise HarnessError("dossier %s: provenance without timestamp — A2 action cannot be dated"
                            % decision_path)
     action_time = max(stamps, key=_parse_utc)
     notes = [
@@ -113,13 +113,13 @@ def a2_actions_from_dossier(decision_path: str = DEFAULT_DECISION) -> Tuple[List
 
 
 # --------------------------------------------------------------------------- #
-# Perte et regret par config (fonction de perte gelée G1)
+# Loss and regret per config (frozen loss function G1)
 # --------------------------------------------------------------------------- #
 
 def loss_for_actions(actions: Sequence[dict], points: Sequence[Tuple[str, float]], *,
                      q: float = Q_DEV_USDC, p_ref: float = P_REF,
                      p_terminal: float, cost_k: float = COST_K) -> Dict[str, Any]:
-    """``L(a)`` — réductions bornées à ``q`` ; ``P_exec`` = série observée (PIT)."""
+    """``L(a)`` — reductions bounded by ``q``; ``P_exec`` = observed series (PIT)."""
     notes: List[str] = []
     total_sold = 0.0
     proceeds = 0.0
@@ -150,7 +150,7 @@ def loss_for_actions(actions: Sequence[dict], points: Sequence[Tuple[str, float]
 def oracle_feasible_loss(points: Sequence[Tuple[str, float]], *, q: float = Q_DEV_USDC,
                          p_ref: float = P_REF, p_terminal: float,
                          x_max: float = comparators_mod.X_MAX_USDC_DEMO) -> Dict[str, Any]:
-    """O — ``min_{b∈F} L(b)``, exécution au **meilleur instant observé** (borné, déclaré)."""
+    """O — ``min_{b∈F} L(b)``, execution at the **best observed instant** (bounded, declared)."""
     best_price = max(value for _stamp, value in points)
     best_stamp = next(stamp for stamp, value in points if value == best_price)
     fractions = loss_mod.feasible_actions(q, x_max=x_max)
@@ -172,12 +172,12 @@ def regret_pair(loss_value: float, oracle_loss: float) -> Dict[str, Any]:
 
 
 # --------------------------------------------------------------------------- #
-# Fenêtre complète
+# Complete window
 # --------------------------------------------------------------------------- #
 
 def run_window(window, *, decision_path: str = DEFAULT_DECISION,
                b0_draws: int = comparators_mod.B0_MIN_DRAWS) -> Dict[str, Any]:
-    """Une fenêtre : actions par config → L, R, placebo B0, note de qualité."""
+    """One window: actions per config → L, R, B0 placebo, quality note."""
     detail: Dict[str, Any] = {"window_id": window.window_id, "episode_id": window.episode_id,
                               "set": window.set_label, "kind": window.kind,
                               "start_utc": window.start_utc, "end_utc": window.end_utc,
@@ -203,11 +203,11 @@ def run_window(window, *, decision_path: str = DEFAULT_DECISION,
     # A0 — NO-ACTION
     configs["A0"] = {"actions": [], **loss_for_actions((), points, p_terminal=p_terminal)}
 
-    # A1 — règle de seuil
+    # A1 — threshold rule
     a1 = comparators_mod.a1_actions(points)
     configs["A1"] = {"actions": a1, **loss_for_actions(a1, points, p_terminal=p_terminal)}
 
-    # AX0 — règle gelée du dépôt (déléguée) — ne s'applique qu'aux fenêtres USDC
+    # AX0 — frozen repository rule (delegated) — only applies to USDC windows
     if corpus_csv and "usdc" in window.episode_id:
         ax0 = comparators_mod.ax0_actions(corpus_csv, (window.start_utc, window.end_utc))
         configs["AX0"] = {"actions": ax0, **loss_for_actions(ax0, points, p_terminal=p_terminal)}
@@ -216,7 +216,7 @@ def run_window(window, *, decision_path: str = DEFAULT_DECISION,
                           "reason": "règle AX0 = règle USDC gelée ; sans portée sur %s"
                                     % window.episode_id}
 
-    # A2 — dossier déterministe (substitution DEV déclarée)
+    # A2 — deterministic dossier (declared DEV substitution)
     if "usdc-2023-03" == window.episode_id and os.path.isfile(decision_path):
         a2, a2_notes = a2_actions_from_dossier(decision_path)
         configs["A2"] = {"actions": a2, "notes": a2_notes,
@@ -226,16 +226,16 @@ def run_window(window, *, decision_path: str = DEFAULT_DECISION,
                          "pas de dossier déterministe pour %s sur DEV — A2 viendra du rejeu "
                          "journal/archive (déclaré)" % window.episode_id}
 
-    # O — oracle faisable
+    # O — feasible oracle
     oracle = oracle_feasible_loss(points, p_terminal=p_terminal)
     detail["oracle"] = oracle
 
-    # R par config disponible
+    # R per available config
     for label, config in configs.items():
         if isinstance(config.get("loss"), (int, float)):
             config["regret"] = regret_pair(config["loss"], oracle["loss"])
 
-    # B0 — placebo apparié (A2 si disponible, sinon A1 — substitution déclarée)
+    # B0 — paired placebo (A2 if available, otherwise A1 — declared substitution)
     paired_label = "A2" if isinstance(configs["A2"].get("loss"), (int, float)) else "A1"
     sizes = [float(action["amount_usdc"]) for action in configs[paired_label]["actions"]]
     if sizes:
@@ -269,7 +269,7 @@ def run_window(window, *, decision_path: str = DEFAULT_DECISION,
 
 
 # --------------------------------------------------------------------------- #
-# Jeu complet + agrégats
+# Complete dataset + aggregates
 # --------------------------------------------------------------------------- #
 
 def runs_for_set(set_label: str):
@@ -277,7 +277,7 @@ def runs_for_set(set_label: str):
         return windows_mod.DEV_WINDOWS
     if set_label == windows_mod.SET_EVAL:
         return windows_mod.EVAL_WINDOWS
-    raise HarnessError("jeu inconnu : %r" % set_label)
+    raise HarnessError("unknown dataset: %r" % set_label)
 
 
 def run_set(set_label: str, *, frozen_dir: str = DEFAULT_FROZEN_DIR,
@@ -285,12 +285,12 @@ def run_set(set_label: str, *, frozen_dir: str = DEFAULT_FROZEN_DIR,
             decision_path: str = DEFAULT_DECISION,
             calibration_periods: Optional[Sequence[str]] = None,
             lock_path: Optional[str] = None, force: bool = False) -> Dict[str, Any]:
-    """Exécute un jeu complet avec **porte de gel** — ou refuse d'écrire.
+    """Run a complete dataset with the **freeze gate** — or refuse to write.
 
-    Renvoie le contenu machine du rapport (hors champs d'exécution réels) ; la
-    bannière et l'écriture passent par ``report.py``.
+    Returns the machine content of the report (real execution fields excluded);
+    the banner and the write go through ``report.py``.
     """
-    frozen_hashes = windows_mod.verify_frozen_package(frozen_dir)  # refuse sans gel
+    frozen_hashes = windows_mod.verify_frozen_package(frozen_dir)  # refuses without a freeze
     forced_mention = None
     if set_label == windows_mod.SET_EVAL:
         forced_mention = windows_mod.eval_run_gate(frozen_dir, lock_path=lock_path, force=force)
@@ -299,7 +299,7 @@ def run_set(set_label: str, *, frozen_dir: str = DEFAULT_FROZEN_DIR,
             violations = windows_mod.cross_calibration_violations(list(calibration_periods),
                                                                   eval_calm)
             if violations:
-                raise HarnessError("chevauchement fenêtres CALME EVAL × période de calibration : %s"
+                raise HarnessError("CALM EVAL window × calibration period overlap: %s"
                                    % violations)
     windows = runs_for_set(set_label)
     window_details = [run_window(window, decision_path=decision_path, b0_draws=b0_draws)
@@ -359,7 +359,7 @@ def run_set(set_label: str, *, frozen_dir: str = DEFAULT_FROZEN_DIR,
 
 
 def content_hash(content: Dict[str, Any]) -> str:
-    """Hash de contenu (champs d'exécution réels exclus) — deux runs ⇒ identique."""
+    """Content hash (real execution fields excluded) — two runs ⇒ identical."""
     stripped = _strip_wall(content)
     return hashlib.sha256(json.dumps(stripped, ensure_ascii=False, sort_keys=True,
                                      separators=(",", ":")).encode("utf-8")).hexdigest()

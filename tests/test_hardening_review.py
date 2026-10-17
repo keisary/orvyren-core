@@ -1,19 +1,19 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-"""Durcissement P0 issu de la revue Astra du 14/10/2026 (findings F03/F05/F07/F08).
+"""P0 hardening from the Astra review of 14/10/2026 (findings F03/F05/F07/F08).
 
-Chaque test épingle un défaut reproduit le soir même, puis corrigé :
+Each test pins a defect reproduced the same evening, then fixed:
 
-  * F07 — `NaN`/infini/bool comme montant atteignaient ALLOW ; des plafonds
-    `nan` étaient acceptés depuis l'environnement ;
-  * F03 — une série requise manquante faisait PLANTER le moteur au lieu de
-    produire l'abstention INCONCLUSIVE promise par sa propre règle 4 ;
-  * F05 — le pipeline continuait les étapes dépendantes après un échec
-    (policy/audit s'exécutaient sur des entrées périmées) ;
-  * F08 — `.env` et autres fichiers sensibles entraient dans le ZIP de revue ;
-    un identifiant placé au début du chemin d'une URL RPC fuyait dans le masque.
+  * F07 — `NaN`/infinity/bool as an amount reached ALLOW; `nan` caps were
+    accepted from the environment;
+  * F03 — a missing required series CRASHED the engine instead of producing
+    the INCONCLUSIVE abstention promised by its own rule 4;
+  * F05 — the pipeline kept running dependent stages after a failure
+    (policy/audit ran on stale inputs);
+  * F08 — `.env` and other sensitive files entered the review ZIP;
+    an identifier placed at the start of an RPC URL path leaked into the mask.
 
-Exécution : python -m unittest discover -s tests -v
+Run: python -m unittest discover -s tests -v
 """
 
 import csv
@@ -104,7 +104,7 @@ class TestPolicyRejectsNonFiniteNumbers(unittest.TestCase):
 
 
 class TestMissingSeriesAbstain(unittest.TestCase):
-    """F03 — série requise absente => INCONCLUSIVE explicite, jamais un crash."""
+    """F03 — missing required series => explicit INCONCLUSIVE, never a crash."""
 
     def _case_without(self, drop_venue=None, keep_one_supply=False):
         rows = _corpus_rows()
@@ -158,7 +158,7 @@ class TestMissingSeriesAbstain(unittest.TestCase):
                         % decision["missing_inputs"])
 
     def test_run_decision_cli_abstains_on_missing_binance(self):
-        """La commande exacte du storyboard vidéo (dérivé sans Binance)."""
+        """The exact command of the video storyboard (derivative without Binance)."""
         with tempfile.TemporaryDirectory() as tmp:
             variant = os.path.join(tmp, "without-binance.csv")
             _write_csv(variant, [r for r in _corpus_rows() if r["venue"] != "binance"])
@@ -176,7 +176,7 @@ class TestMissingSeriesAbstain(unittest.TestCase):
 
 
 class TestPipelineHaltsOnFailure(unittest.TestCase):
-    """F05 — une étape échouée interrompt les étapes dépendantes."""
+    """F05 — a failed stage stops the dependent stages."""
 
     def test_downstream_stages_skipped_after_quality_failure(self):
         with tempfile.TemporaryDirectory() as tmp:
@@ -218,7 +218,7 @@ class TestPackagingAndMasking(unittest.TestCase):
         self.assertIn("/v2/", alchemy)
 
     def test_review_zip_excludes_secret_like_files(self):
-        """Le vrai make_package.py, exécuté dans une arborescence factice."""
+        """The real make_package.py, executed in a fake tree."""
         with tempfile.TemporaryDirectory() as tmp:
             shutil.copy(os.path.join(REPO, "make_package.py"),
                         os.path.join(tmp, "make_package.py"))
@@ -252,7 +252,7 @@ class TestPackagingAndMasking(unittest.TestCase):
 
 
 class TestForbiddenNameRules(unittest.TestCase):
-    """Les règles de la deny-list, testées directement."""
+    """The deny-list rules, tested directly."""
 
     def test_forbidden_and_allowed_names(self):
         for forbidden in (".env", ".env.local", "keys/id_ed25519",

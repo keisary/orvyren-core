@@ -1,35 +1,35 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-"""ORVYREN — kit de démo testnet : **orchestrateur des 5 runs** (W3-D, B5 §e).
+"""ORVYREN — testnet demo kit: **orchestrator for the 5 runs** (W3-D, B5 §e).
 
     python scripts/demo/demo.py --run A --dry-run
     python scripts/demo/demo.py --run A --execute --case rseth
 
-Runs (B5 §e, dérivés de W2C §g) :
+Runs (B5 §e, derived from W2C §g):
 
-* **A — ALLOW dans l'enveloppe** : intent v1 ``transfer 50 USDC`` → politique
-  hors chaîne ``ALLOW`` → préflight (12 contrôles) → signature → reçu →
-  vérification (B5 §d). Critères mesurables : ``status = 0x1``, **un seul** log
-  Transfer exact, Δ soldes ±50 000 000, compteur de signatures = 1, les 7
-  ``kind`` de journal, ``blockHash`` stable après 2 blocs.
-* **B — DENY hors chaîne** : B1 150 USDC, B2 destinataire non listé, B3 rejeu ×3,
-  B4 ``change_policy`` → **0 signature**, nonce inchangé, soldes inchangés.
-* **C — DENY par la chaîne** : calldatas interdits fabriqués directement avec la
-  clé de l'agent (C1 allowance, C2 destinataire, C3 admin, C4 cumul, C5 frontière
-  de période) → revert attendu, sélecteur capturé, gaz perdu enregistré.
-* **D — Kill switch chronométré** : révocation ``assignRoles(false)`` par la Safe
-  (2/3), tentative de l'agent → revert ``NotAuthorized(address)`` ;
-  ``Roles.roles(AGENT).members(agent) == false`` ; Reset.
-* **E — Journal et audit** : export ``audit.jsonl`` chaîné + ``report.md`` +
-  vérification indépendante (relecture des ``tx_hash``) + compteurs
-  (« N exécutions conformes, M refus hors chaîne, K tentatives forcées refusées »).
+* **A — ALLOW inside the envelope**: v1 intent ``transfer 50 USDC`` → off-chain
+  policy ``ALLOW`` → preflight (12 checks) → signature → receipt →
+  verification (B5 §d). Measurable criteria: ``status = 0x1``, **exactly one**
+  matching Transfer log, balance deltas ±50 000 000, signature counter = 1, the 7
+  journal ``kind`` values, ``blockHash`` stable after 2 blocks.
+* **B — off-chain DENY**: B1 150 USDC, B2 unlisted recipient, B3 replay ×3,
+  B4 ``change_policy`` → **0 signatures**, nonce unchanged, balances unchanged.
+* **C — chain-level DENY**: forbidden calldatas built directly with the agent
+  key (C1 allowance, C2 recipient, C3 admin, C4 cumulative, C5 period
+  boundary) → expected revert, selector captured, wasted gas recorded.
+* **D — timed kill switch**: ``assignRoles(false)`` revocation by the Safe
+  (2/3), agent attempt → ``NotAuthorized(address)`` revert;
+  ``Roles.roles(AGENT).members(agent) == false``; Reset.
+* **E — journal and audit**: chained ``audit.jsonl`` export + ``report.md`` +
+  independent verification (re-reading the ``tx_hash`` values) + counters
+  ("N compliant executions, M off-chain refusals, K forced attempts refused").
 
-Modes : ``--dry-run`` (défaut) est une **répétition hors chaîne** — aucune clé
-lue, aucune transaction, hashes factices marqués ``simulated`` ; ``--execute``
-envoie réellement (préflight obligatoire, un seul vol à la fois).
+Modes: ``--dry-run`` (default) is an **off-chain rehearsal** — no key is read,
+no transaction is sent, placeholder hashes tagged ``simulated``; ``--execute``
+really sends (preflight mandatory, one flight at a time).
 
-Sorties : ``<session>/audit.jsonl`` (append-only chaîné), ``runs/<RUN>_<ts>/``
-(summary, criteria, intent, rapports), ``receipts/``, ``export/`` (run E).
+Outputs: ``<session>/audit.jsonl`` (chained append-only), ``runs/<RUN>_<ts>/``
+(summary, criteria, intent, reports), ``receipts/``, ``export/`` (run E).
 """
 
 from __future__ import annotations
@@ -43,7 +43,7 @@ from typing import Any, Dict, List, Optional, Tuple
 
 try:
     from . import calls, common, intents, preflight as preflight_mod, signer as signer_mod, verify_receipt
-except ImportError:  # exécution directe : python scripts/demo/demo.py
+except ImportError:  # direct execution: python scripts/demo/demo.py
     _sys_dir = os.path.dirname(os.path.abspath(__file__))
     if _sys_dir not in sys.path:
         sys.path.insert(0, _sys_dir)
@@ -59,12 +59,12 @@ MODE_EXECUTE = "execute"
 
 RUNS = ("A", "B", "C", "D", "E")
 
-DEFAULT_RECIPIENT_AMOUNT = "100.0"     # RUN A : 100 USDC — décision GELÉE (FREEZE_V2 E2).
+DEFAULT_RECIPIENT_AMOUNT = "100.0"     # RUN A: 100 USDC — FROZEN decision (FREEZE_V2 E2).
 RUN_A_AMOUNT = DEFAULT_RECIPIENT_AMOUNT
 RUN_D_AMOUNT = "100.0"                  # RUN D (B5 §e.4)
-#: Note : l'étude B5 §e.1 écrit 50 USDC et laisse la question ouverte (Q2 §f de B5) ;
-#: l'autorité est FREEZE_V2 (E2 = 100 USDC) — le kit applique le gel, et `--amount`
-#: permet de rejouer la variante si l'équipe tranche autrement.
+#: Note: study B5 §e.1 says 50 USDC and leaves the question open (B5 Q2 §f);
+#: the authority is FREEZE_V2 (E2 = 100 USDC) — the kit applies the freeze, and `--amount`
+#: lets the variant be replayed if the team decides otherwise.
 
 EXIT_OK = 0
 EXIT_CRITERIA_FAILED = 1
@@ -72,7 +72,7 @@ EXIT_USAGE = 2
 EXIT_PREREQUISITES = 3
 EXIT_CONFIG = 4
 
-#: Placeholders du fichier d'exemple (remplacés le jour J ; ``--execute`` les refuse).
+#: Placeholders from the example file (replaced on demo day; ``--execute`` refuses them).
 PLACEHOLDER_ADDRESSES = {
     "0x2222222222222222222222222222222222222222",
     "0x3333333333333333333333333333333333333333",
@@ -82,7 +82,7 @@ PLACEHOLDER_ADDRESSES = {
     "0x1111111111111111111111111111111111111111",
 }
 
-GAS_LIMIT_DEFAULT = 120_000            # borne haute de la tx via le module (mesure le jour J)
+GAS_LIMIT_DEFAULT = 120_000            # upper bound for the tx through the module (measured on demo day)
 
 
 def _short(address: Any) -> str:
@@ -94,7 +94,7 @@ def _now_iso() -> str:
 
 
 class DemoContext:
-    """État partagé d'une session de démonstration (journal, registre, adresses)."""
+    """Shared state of a demo session (journal, registry, addresses)."""
 
     def __init__(self, *, case: str, mode: str, session_dir: str,
                  env_file: Optional[str] = None, policy_path: Optional[str] = None,
@@ -137,7 +137,7 @@ class DemoContext:
                                         dry_run=(mode == MODE_DRY), signature_log=self.signatures,
                                         env=self.session_config.env)
 
-    # --- adresses -------------------------------------------------------------
+    # --- addresses ------------------------------------------------------------
 
     def _addresses(self) -> Dict[str, str]:
         env = self.session_config.env
@@ -169,7 +169,7 @@ class DemoContext:
             else:
                 if self.mode == MODE_EXECUTE:
                     raise common.ConfigurationError(
-                        "{} absente — --execute exige une configuration complète (.env)".format(key))
+                        "{} is missing — --execute requires a complete configuration (.env)".format(key))
                 addresses[label] = common.normalize_address(fallbacks[label], key)
                 self.placeholders_used.append(label)
         self.policy.recipients.setdefault("B", addresses["B"])
@@ -177,25 +177,25 @@ class DemoContext:
         return addresses
 
     def require_execute_prerequisites(self) -> None:
-        """--execute : adresses réelles, bibliothèque de signature, clé présente."""
+        """--execute: real addresses, signing library, key present."""
         if self.mode != MODE_EXECUTE:
             return
-        # Garde-fou chaîne d'abord : la démo est testnet uniquement (Base Sepolia, 84532).
+        # Chain guard first: the demo is testnet only (Base Sepolia, 84532).
         if os.environ.get("ORVYREN_ALLOW_MAINNET") == "1":
             raise common.ConfigurationError(
-                "garde-fou : ORVYREN_ALLOW_MAINNET=1 est posé — la démo est testnet uniquement "
-                "(Base Sepolia, 84532). Retirer la variable.")
+                "safety guard: ORVYREN_ALLOW_MAINNET=1 is set — the demo is testnet only "
+                "(Base Sepolia, 84532). Remove the variable.")
         if self.placeholders_used:
             raise common.ConfigurationError(
-                "--execute refuse les adresses factices ({}): renseigner le .env avec les adresses "
-                "réelles de la session (FREEZE_V2 J2)".format(", ".join(sorted(set(self.placeholders_used)))))
+                "--execute refuses placeholder addresses ({}): fill the .env with the session's "
+                "real addresses (FREEZE_V2 J2)".format(", ".join(sorted(set(self.placeholders_used)))))
         if not self.signer.library_available():
             raise signer_mod.SignerDependencyError(
-                "la signature réelle exige eth-account — python -m pip install eth-account")
+                "real signing requires eth-account — python -m pip install eth-account")
         if not self.signer.key_present():
             raise signer_mod.SignerError(
-                "{} absente : le mode --execute refuse de démarrer sans clé (elle ne vit que dans "
-                "l'environnement du signataire)".format(signer_mod.KEY_ENV_NAME))
+                "{} is missing: --execute mode refuses to start without a key (it only lives in "
+                "the signer's environment)".format(signer_mod.KEY_ENV_NAME))
 
     # --- journal ---------------------------------------------------------------
 
@@ -250,9 +250,9 @@ class DemoContext:
 
     def build_action(self, *, action: str, justification: str, amount: str = "1.0",
                      recipient_label: Optional[str] = None) -> Dict[str, Any]:
-        """Intent d'une action sous approbation : le destinataire reste un ADRESSE AUTORISÉE
-        afin que la demande atteigne la règle de périmètre d'action (R8) — comme I3 du dépôt
-        (``change_policy`` ne déplace aucun fonds ; le destinataire ne sert qu'à satisfaire R3)."""
+        """Intent for an action under approval: the recipient stays an AUTHORIZED ADDRESS
+        so the request reaches the action-scope rule (R8) — same as the repository's I3
+        (``change_policy`` moves no funds; the recipient only serves to satisfy R3)."""
         return intents.build_action_intent(
             action=action,
             chain_id=self.policy.chain_id,
@@ -288,9 +288,9 @@ class DemoContext:
     def execute_tx(self, intent: Dict[str, Any], *, inner_data: Optional[str] = None,
                    target_label: str = "asset", value: int = 0, wait_receipt: bool = True,
                    timeout: int = 180) -> Dict[str, Any]:
-        """Signe (mode réel) et diffuse la transaction passant par le module, attend le reçu.
+        """Signs (real mode) and broadcasts the transaction going through the module, waits for the receipt.
 
-        En dry-run : signature simulée, hash factice, **aucun envoi**.
+        In dry-run: simulated signature, placeholder hash, **nothing sent**.
         """
         inner = inner_data if inner_data is not None else calls.erc20_transfer_data(
             intent["recipient"], int(intent["amount_base_units"]))
@@ -341,8 +341,8 @@ class DemoContext:
 
     def execute_raw_tx(self, intent: Dict[str, Any], *, to: str, data: str,
                        wait_receipt: bool = True, timeout: int = 90) -> Dict[str, Any]:
-        """Émission **brute** (sans l'enveloppe ``exec_with_role``) — cas C3 : l'agent tente une
-        action d'administration directe ; le contrat doit la refuser (``onlyOwner`` / ``GS*``)."""
+        """**Raw** submission (without the ``exec_with_role`` envelope) — case C3: the agent attempts
+        a direct administrative action; the contract must reject it (``onlyOwner`` / ``GS*``)."""
         nonce = 0
         gas = GAS_LIMIT_DEFAULT
         fees = int(preflight_mod.GAS_PRICE_BASELINE_WEI)
@@ -384,7 +384,7 @@ class DemoContext:
                 "nonce": nonce, "gas": gas, "receipt": receipt, "raw_signed": signed["signed_transaction"]}
 
     def journal_receipt(self, intent: Dict[str, Any], receipt: Dict[str, Any], run: str) -> Dict[str, Any]:
-        """Persiste le reçu brut + l'entrée RECEIPT (receipt_sha256, règle B6 M4)."""
+        """Persists the raw receipt + the RECEIPT entry (receipt_sha256, rule B6 M4)."""
         enriched = dict(receipt)
         if "chainId" not in enriched:
             enriched["chainId"] = hex(self.policy.chain_id)
@@ -403,7 +403,7 @@ class DemoContext:
         return {"receipt_sha256": digest, "raw_ref": path}
 
     def _submit_count(self) -> int:
-        """Nombre d'entrées SUBMIT du journal de session (critère B.3)."""
+        """Number of SUBMIT entries in the session journal (criterion B.3)."""
         try:
             return len([record for record in common.read_jsonl(os.path.join(self.session_dir, "audit.jsonl"))
                         if record.get("kind") == "SUBMIT"])
@@ -438,13 +438,13 @@ def _write_run_artifacts(ctx: DemoContext, run: str, summary: Dict[str, Any],
     common.write_json(os.path.join(ctx.run_dir, "summary.json"), summary)
     common.write_json(os.path.join(ctx.run_dir, "criteria.json"), {"run": run, "criteria": criteria})
     print("")
-    print("  critères ({}):".format(run))
+    print("  criteria ({}):".format(run))
     for criterion in criteria:
         print("    [{:>12}] {} — {}".format(criterion["status"], criterion["id"], criterion["description"]))
 
 
 def _criteria_counts(criteria: List[Dict[str, Any]]) -> Dict[str, int]:
-    """Compte les statuts ``met`` / ``pending`` / ``failed`` (et les inconnus)."""
+    """Counts the ``met`` / ``pending`` / ``failed`` statuses (and unknown ones)."""
     statuses = [str(criterion.get("status") or "") for criterion in criteria]
     met = statuses.count("met")
     pending = statuses.count("pending")
@@ -454,24 +454,24 @@ def _criteria_counts(criteria: List[Dict[str, Any]]) -> Dict[str, int]:
 
 
 def _criteria_ok(criteria: List[Dict[str, Any]]) -> bool:
-    """Vrai **seulement** si tous les critères sont ``met``.
+    """True **only** if every criterion is ``met``.
 
-    ``pending`` n'est pas un succès : un critère non évalué (dry-run) laisse
-    une preuve manquante. Le kit le déclare (``DRY_RUN_PENDING``) au lieu de
-    proclamer « critères OK » — finding E1 de l'audit externe du 17/10.
+    ``pending`` is not a success: an unevaluated criterion (dry-run) leaves
+    a missing proof. The kit declares it (``DRY_RUN_PENDING``) instead of
+    claiming "criteria OK" — finding E1 of the external audit of 17/10.
     """
     return bool(criteria) and all(str(criterion.get("status")) == "met"
                                   for criterion in criteria)
 
 
 def _criteria_label(criteria: List[Dict[str, Any]]) -> str:
-    """Libellé honnête : OK seulement si tout est ``met`` ; sinon PENDING/FAILED."""
+    """Honest label: OK only if everything is ``met``; otherwise PENDING/FAILED."""
     counts = _criteria_counts(criteria)
     if not criteria or counts["failed"] or counts["other"]:
-        return "CRITÈRES NON SATISFAITS"
+        return "CRITERIA NOT MET"
     if counts["pending"]:
         return "DRY_RUN_PENDING"
-    return "critères OK"
+    return "criteria OK"
 
 
 # =============================================================================
@@ -479,11 +479,11 @@ def _criteria_label(criteria: List[Dict[str, Any]]) -> str:
 # =============================================================================
 
 def run_a(ctx: DemoContext, amount: str = RUN_A_AMOUNT) -> Dict[str, Any]:
-    """RUN A — ALLOW dans l'enveloppe (les deux verrous disent oui)."""
+    """RUN A — ALLOW inside the envelope (both locks say yes)."""
     ctx.journal_run_start("A")
     signatures_before = ctx.signatures.count()
     intent = ctx.build_transfer(amount=amount, recipient_label="B",
-                                justification="RUN A — transfert {} USDC dans l'enveloppe (ALLOW)".format(amount),
+                                justification="RUN A — {} USDC transfer inside the envelope (ALLOW)".format(amount),
                                 source={"decision_id": common.ulid(), "case": ctx.case})
     common.write_json(os.path.join(ctx.run_dir, "intent.json"), intent)
     ctx.journal_intent(intent, "A")
@@ -492,7 +492,7 @@ def run_a(ctx: DemoContext, amount: str = RUN_A_AMOUNT) -> Dict[str, Any]:
     payload = common.decision_as_dict(decision, intent=intent, policy=ctx.policy,
                                       context={"placeholders": sorted(set(ctx.placeholders_used))})
     ctx.journal_policy(payload, intent, "A")
-    ctx.log("verdict de politique : {} {}".format(decision.verdict, decision.reasons or ""))
+    ctx.log("policy verdict: {} {}".format(decision.verdict, decision.reasons or ""))
 
     criteria: List[Dict[str, Any]] = []
     summary: Dict[str, Any] = {"run": "A", "mode": ctx.mode, "intent_id": intent["intent_id"],
@@ -506,27 +506,27 @@ def run_a(ctx: DemoContext, amount: str = RUN_A_AMOUNT) -> Dict[str, Any]:
         _write_run_artifacts(ctx, "A", summary, [_criterion("A.policy", "verdict ALLOW", "failed", decision.reasons)])
         return summary
 
-    # Le préflight précède la réservation : le registre d'idempotence ne doit pas
-    # voir l'intent de ce run avant que P1/P4 ne l'aient évalué (B5 §c.1).
+    # Preflight precedes reservation: the idempotency registry must not
+    # see this run's intent before P1/P4 have evaluated it (B5 §c.1).
     report = ctx.run_preflight(intent, name="preflight")
     if ctx.mode == MODE_EXECUTE and (report["verdict"] == "FAIL" or report["safe_mode"]):
         ctx.journal_outcome(run="A", intent=intent, outcome="REFUSED_BY_PREFLIGHT",
                             detail={"verdict": report["verdict"], "safe_mode_reasons": report["safe_mode_reasons"]})
         summary["status"] = "REFUSED_BY_PREFLIGHT"
         summary["preflight_verdict"] = report["verdict"]
-        criteria.append(_criterion("A.1", "receipt.status == 0x1", "failed", "préflight refusé"))
+        criteria.append(_criterion("A.1", "receipt.status == 0x1", "failed", "preflight refused"))
         _write_run_artifacts(ctx, "A", summary, criteria)
         return summary
 
     ctx.registry.record(intent_id=intent["intent_id"], idempotency_key=intent["idempotency_key"],
-                        status="RESERVED", note="run A — préflight passé, signature imminente")
+                        status="RESERVED", note="run A — preflight passed, signature imminent")
 
     balances_before = {"safe": ctx.balance_of(ctx.addresses["safe"]),
                        "B": ctx.balance_of(ctx.addresses["B"])} if ctx.mode == MODE_EXECUTE else None
 
     sent = ctx.execute_tx(intent)
     summary["tx"] = {key: value for key, value in sent.items() if key != "receipt"}
-    ctx.log("transaction : {} (simulée={}, envoyée={})".format(sent["tx_hash"][:18] + "…",
+    ctx.log("transaction: {} (simulated={}, sent={})".format(sent["tx_hash"][:18] + "…",
                                                                sent["simulated"], sent["sent"]))
 
     receipt = sent.get("receipt")
@@ -560,13 +560,13 @@ def run_a(ctx: DemoContext, amount: str = RUN_A_AMOUNT) -> Dict[str, Any]:
                     and balances_after["B"] - balances_before["B"] == amount)
     signatures_after = ctx.signatures.count()
 
-    # L'OUTCOME est journalisé AVANT l'évaluation des critères : A.5 compte les 7 kind,
-    # OUTCOME compris — l'ancien ordre (OUTCOME après l'évaluation) le manquait
-    # systématiquement en --execute (mesuré le 2026-10-16).
+    # OUTCOME is journaled BEFORE the criteria are evaluated: A.5 counts the 7 kind
+    # values, OUTCOME included — the old order (OUTCOME after evaluation) missed it
+    # systematically under --execute (measured 2026-10-16).
     if ctx.mode == MODE_DRY:
         ctx.journal_outcome(run="A", intent=intent, outcome="DRY_RUN_SIMULATED",
-                            detail={"note": "aucune transaction envoyée — hash factice ; "
-                                            "les critères 1/2/3/6 seront mesurés en --execute"})
+                            detail={"note": "no transaction sent — placeholder hash; "
+                                            "criteria 1/2/3/6 will be measured under --execute"})
         summary["status"] = "DRY_RUN_OK"
     else:
         outcome = "VERIFIED_OK" if (verification and verification["ok"]) else "EXECUTION_FAILED"
@@ -581,19 +581,19 @@ def run_a(ctx: DemoContext, amount: str = RUN_A_AMOUNT) -> Dict[str, Any]:
     criteria = [
         _criterion("A.1", "receipt.status == 0x1", "met" if (verification and verification["ok"]) else "pending",
                    verification and verification["mismatches"]),
-        _criterion("A.2", "exactement un log Transfer correspondant exactement",
+        _criterion("A.2", "exactly one exactly matching Transfer log",
                    "met" if (verification and verification["log_counts"]["exact_matches"] == 1) else "pending",
                    verification and verification["log_counts"]),
-        _criterion("A.3", "Δ solde Safe = −{} et Δ solde B = +{}".format(units, units),
+        _criterion("A.3", "Δ Safe balance = −{} and Δ B balance = +{}".format(units, units),
                    "met" if delta_ok else "pending",
                    {"before": balances_before, "after": balances_after}),
-        _criterion("A.4", "compteur de signatures = +1 (simulées incluses en dry-run)",
+        _criterion("A.4", "signature counter = +1 (simulated ones included in dry-run)",
                    "met" if signatures_after - signatures_before == 1 else "failed",
                    {"before": signatures_before, "after": signatures_after}),
-        _criterion("A.5", "les 7 kind de journal présents pour l'intent_id",
+        _criterion("A.5", "the 7 journal kind values present for intent_id",
                    "met" if all(kind in kinds for kind in required_kinds) else
                    ("pending" if ctx.mode == MODE_DRY else "failed"), sorted(set(kinds))),
-        _criterion("A.6", "blockHash stable après 2 blocs",
+        _criterion("A.6", "blockHash stable after 2 blocks",
                    "met" if (reorg and reorg.get("status") == "CONFIRMED") else "pending",
                    reorg),
     ]
@@ -607,7 +607,7 @@ def run_a(ctx: DemoContext, amount: str = RUN_A_AMOUNT) -> Dict[str, Any]:
 # =============================================================================
 
 def _find_registered_intent(ctx: DemoContext) -> Optional[Dict[str, Any]]:
-    """Intent déjà enregistré dans la session (pour le rejeu B3), sinon None."""
+    """Intent already recorded in the session (for the B3 replay), else None."""
     runs_dir = os.path.join(ctx.session_dir, "runs")
     if not os.path.isdir(runs_dir):
         return None
@@ -628,7 +628,7 @@ def _find_registered_intent(ctx: DemoContext) -> Optional[Dict[str, Any]]:
 
 
 def run_b(ctx: DemoContext) -> Dict[str, Any]:
-    """RUN B — DENY par la politique hors chaîne (le LLM propose, le système refuse)."""
+    """RUN B — DENY by the off-chain policy (the LLM proposes, the system refuses)."""
     ctx.journal_run_start("B")
     signatures_before = ctx.signatures.count()
     submits_before = ctx._submit_count()
@@ -643,29 +643,29 @@ def run_b(ctx: DemoContext) -> Dict[str, Any]:
     registered = _find_registered_intent(ctx)
     if registered is None:
         registered = ctx.build_transfer(amount="20.0", recipient_label="B",
-                                        justification="RUN B3 — intent de référence enregistré (rejeu)")
+                                        justification="RUN B3 — reference intent recorded (replay)")
         ctx.registry.record(intent_id=registered["intent_id"],
                             idempotency_key=registered["idempotency_key"],
-                            status="REJECTED_DRY_RUN", note="référence B3")
+                            status="REJECTED_DRY_RUN", note="B3 reference")
     else:
         ctx.registry.record(intent_id=registered["intent_id"],
                             idempotency_key=registered["idempotency_key"],
-                            status="REGISTERED", note="rejeu B3 (déjà enregistré)")
+                            status="REGISTERED", note="B3 replay (already recorded)")
 
     definitions = [
-        ("B1", "transfer 150 USDC (plafond par transaction)",
+        ("B1", "transfer 150 USDC (per-transaction cap)",
          ctx.build_transfer(amount="150.0", recipient_label="B",
-                            justification="RUN B1 — 150 USDC : au-delà du plafond par transaction"),
+                            justification="RUN B1 — 150 USDC: above the per-transaction cap"),
          ["AMOUNT_ABOVE_TX_CAP"], "DENY"),
-        ("B2", "destinataire non listé (20 USDC)",
+        ("B2", "unlisted recipient (20 USDC)",
          ctx.build_transfer(amount="20.0", recipient_label="D_unlisted",
-                            justification="RUN B2 — destinataire hors allowlist (attaque #12)"),
+                            justification="RUN B2 — recipient outside the allowlist (attack #12)"),
          ["RECIPIENT_NOT_ALLOWED"], "DENY"),
-        ("B3", "rejeu du même intent (×3, idempotence)",
+        ("B3", "replay of the same intent (×3, idempotency)",
          registered, ["INTENT_ALREADY_PROCESSED"], "DENY"),
-        ("B4", "change_policy (jamais autonome)",
+        ("B4", "change_policy (never autonomous)",
          ctx.build_action(action="change_policy",
-                          justification="RUN B4 — l'agent tente de modifier sa propre enveloppe", amount="100.0"),
+                          justification="RUN B4 — the agent attempts to modify its own envelope", amount="100.0"),
          ["ACTION_NEEDS_HUMAN_APPROVAL"], "REQUIRE_APPROVAL"),
     ]
 
@@ -684,7 +684,7 @@ def run_b(ctx: DemoContext) -> Dict[str, Any]:
                           "verdict": decision.verdict, "reasons": decision.reasons,
                           "expected_verdict": expected_verdict, "expected_codes": expected_codes,
                           "ok": ok_verdict and ok_codes})
-            ctx.log("{} (essai {}) : {} {}".format(case_id, attempt, decision.verdict, decision.reasons))
+            ctx.log("{} (attempt {}): {} {}".format(case_id, attempt, decision.verdict, decision.reasons))
         ctx.journal_outcome(run="B", intent=intent, outcome="DENIED_OFFCHAIN",
                             detail={"case": case_id, "expected": expected_codes})
         if case_id == "B4":
@@ -704,22 +704,22 @@ def run_b(ctx: DemoContext) -> Dict[str, Any]:
     b_intent_ids = sorted({definition[2]["intent_id"] for definition in definitions})
 
     criteria = [
-        _criterion("B.1", "compteur de signatures inchangé sur tout le run",
+        _criterion("B.1", "signature counter unchanged across the whole run",
                    "met" if signatures_after == signatures_before else "failed",
                    {"before": signatures_before, "after": signatures_after}),
-        _criterion("B.2", "nonce de l'agent inchangé",
+        _criterion("B.2", "agent nonce unchanged",
                    "met" if (nonce_before == nonce_after) else ("pending" if nonce_before is None else "failed"),
                    {"before": nonce_before, "after": nonce_after}),
-        _criterion("B.3", "aucun tx_hash émis pendant le run (aucun SUBMIT)",
+        _criterion("B.3", "no tx_hash emitted during the run (no SUBMIT)",
                    "met" if not any_tx_hash else "failed",
                    {"submits_before": submits_before, "submits_after": submits_after,
                     "intents_du_run": b_intent_ids}),
-        _criterion("B.4", "4 cas B1-B4 avec verdicts et codes exacts",
+        _criterion("B.4", "4 cases B1-B4 with exact verdicts and codes",
                    "met" if all(case["ok"] for case in cases) else "failed", cases),
     ]
     if ctx.mode == MODE_DRY:
         ctx.journal_outcome(run="B", intent=None, outcome="DRY_RUN_OK",
-                            detail={"note": "refus hors chaîne exécutés hors ligne (déterministes)"})
+                            detail={"note": "off-chain refusals executed offline (deterministic)"})
     summary = {"run": "B", "mode": ctx.mode, "cases": cases, "status": "DRY_RUN_OK" if ctx.mode == MODE_DRY else "DENIED",
                "signatures_before": signatures_before, "signatures_after": signatures_after,
                "nonce_before": nonce_before, "nonce_after": nonce_after}
@@ -733,62 +733,62 @@ def run_b(ctx: DemoContext) -> Dict[str, Any]:
 # =============================================================================
 
 def _c_for(ctx: DemoContext) -> Dict[str, Any]:
-    """Fabrique les calldatas interdits (C1-C5) — mêmes builders que le chemin nominal."""
+    """Builds the forbidden calldatas (C1-C5) — same builders as the nominal path."""
     asset = ctx.addresses["asset"]
     agent = ctx.addresses["agent"]
     role = ctx.policy.role_key
     allow_refill = ctx.policy.allowance_max_refill
     return {
         "C1": {
-            "label": "transfer 500 USDC via le module (au-delà de l'allowance maxRefill)",
+            "label": "transfer 500 USDC through the module (above the maxRefill allowance)",
             "call": {"to": ctx.addresses["module"],
                      "data": calls.exec_with_role_data(
                          target=asset, value=0,
                          inner_data=calls.erc20_transfer_data(ctx.addresses["B"], 500_000_000),
                          operation=calls.OPERATION_CALL, role_key=role)},
-            "expect": "revert (dépassement d'allowance) ; tx incluse status 0x0, gaz perdu",
+            "expect": "revert (allowance exceeded); tx included with status 0x0, gas wasted",
             "offline_checks": [
-                ("montant 500 000 000 > maxRefill {}".format(allow_refill), 500_000_000 > allow_refill),
+                ("amount 500 000 000 > maxRefill {}".format(allow_refill), 500_000_000 > allow_refill),
             ],
             "revert_expect": ["AllowanceExceeded", "0x"],
         },
         "C2": {
-            "label": "transfer 1 USDC vers un destinataire non listé via le module",
+            "label": "transfer 1 USDC to an unlisted recipient through the module",
             "call": {"to": ctx.addresses["module"],
                      "data": calls.exec_with_role_data(
                          target=asset, value=0,
                          inner_data=calls.erc20_transfer_data(ctx.addresses["D_unlisted"], 1_000_000),
                          operation=calls.OPERATION_CALL, role_key=role)},
-            "expect": "revert (condition de destinataire) ; aucun log Transfer",
+            "expect": "revert (recipient condition); no Transfer log",
             "offline_checks": [
-                ("destinataire hors allowlist",
+                ("recipient outside the allowlist",
                  ctx.addresses["D_unlisted"] not in ctx.policy.allowed_recipients()),
             ],
             "revert_expect": ["ConditionViolation", "0x"],
         },
         "C3a": {
-            "label": "l'agent tente allowTarget (auto-élargissement de sa propre cible)",
+            "label": "the agent attempts allowTarget (self-widening of its own target)",
             "call": {"to": ctx.addresses["module"],
                      "data": calls.allow_target_data(role, asset, calls.CLEARANCE_TARGET)},
-            "expect": "revert onlyOwner (aucun droit d'administration — attaque #7)",
+            "expect": "revert onlyOwner (no administrative rights — attack #7)",
             "offline_checks": [
-                ("sélecteur allowTarget vérifié 0x7b0da5b2", common.SELECTOR_ALLOW_TARGET == "0x7b0da5b2"),
+                ("allowTarget selector verified 0x7b0da5b2", common.SELECTOR_ALLOW_TARGET == "0x7b0da5b2"),
             ],
             "revert_expect": ["OwnableUnauthorizedAccount", "Unauthorized", "0x"],
         },
         "C3b": {
-            "label": "l'agent tente Safe.enableModule (le module a les pleins pouvoirs de la Safe)",
+            "label": "the agent attempts Safe.enableModule (the module has full powers over the Safe)",
             "call": {"to": ctx.addresses["safe"],
                      "data": calls.safe_enable_module_data(agent)},
-            "expect": "revert GS* (seul owner = la Safe elle-même)",
+            "expect": "revert GS* (the only owner is the Safe itself)",
             "offline_checks": [
-                ("sélecteur enableModule(address) calculé localement",
+                ("enableModule(address) selector computed locally",
                  calls.safe_enable_module_selector().startswith("0x")),
             ],
             "revert_expect": ["GS", "0x"],
         },
         "C4": {
-            "label": "boucle 100 + 100 + 100 + 100 (cumul on-chain)",
+            "label": "loop 100 + 100 + 100 + 100 (on-chain accumulation)",
             "calls": [
                 {"to": ctx.addresses["module"],
                  "data": calls.exec_with_role_data(
@@ -797,7 +797,7 @@ def _c_for(ctx: DemoContext) -> Dict[str, Any]:
                      operation=calls.OPERATION_CALL, role_key=role)}
                 for _ in range(4)
             ],
-            "expect": "les 3 premières passent ; la 4ᵉ revert (dépassement cumulé, attaque #8)",
+            "expect": "the first 3 pass; the 4th reverts (cumulative overrun, attack #8)",
             "offline_checks": [
                 ("100+100+100 = 300 000 000 ≤ maxRefill", 300_000_000 <= allow_refill),
                 ("100+100+100+100 = 400 000 000 > maxRefill", 400_000_000 > allow_refill),
@@ -808,7 +808,7 @@ def _c_for(ctx: DemoContext) -> Dict[str, Any]:
 
 
 def run_c(ctx: DemoContext) -> Dict[str, Any]:
-    """RUN C — DENY par la chaîne (on contourne volontairement le verrou hors chaîne)."""
+    """RUN C — DENY by the chain (the off-chain lock is deliberately bypassed)."""
     ctx.journal_run_start("C")
     cases = _c_for(ctx)
     results: List[Dict[str, Any]] = []
@@ -820,7 +820,7 @@ def run_c(ctx: DemoContext) -> Dict[str, Any]:
         entry["offline_checks"] = [{"description": description, "ok": bool(ok)}
                                    for description, ok in spec.get("offline_checks", [])]
 
-        # Contrôle de construction : le calldata doit décoder vers ce qu'on croit avoir fabriqué.
+        # Construction check: the calldata must decode to what we believe we built.
         primary = spec.get("call") or (spec.get("calls") or [{}])[0]
         decoded = None
         if case_id in ("C1", "C2", "C4"):
@@ -830,18 +830,18 @@ def run_c(ctx: DemoContext) -> Dict[str, Any]:
                                 "inner_to": inner["to"], "inner_value": inner["value"],
                                 "operation": decoded["operation"]}
             entry["offline_checks"].append({
-                "description": "aller-retour calldata (exec → transfer) cohérent",
+                "description": "calldata round-trip (exec → transfer) consistent",
                 "ok": decoded["target"].lower() == ctx.addresses["asset"].lower()
                       and decoded["operation"] == 0})
         elif case_id == "C3a":
             decoded = calls.allow_target_data(ctx.policy.role_key, ctx.addresses["asset"],
                                               calls.CLEARANCE_TARGET)
             entry["offline_checks"].append({
-                "description": "calldata allowTarget complet (sélecteur + 3 mots)",
+                "description": "complete allowTarget calldata (selector + 3 words)",
                 "ok": decoded.startswith(common.SELECTOR_ALLOW_TARGET) and len(decoded) == 10 + 3 * 64})
         elif case_id == "C3b":
             entry["offline_checks"].append({
-                "description": "calldata enableModule complet",
+                "description": "complete enableModule calldata",
                 "ok": len(spec["call"]["data"]) == 10 + 64})
 
         ctx.journal.append("INTENT", payload={"case": case_id, "label": spec["label"],
@@ -855,8 +855,8 @@ def run_c(ctx: DemoContext) -> Dict[str, Any]:
             sends = []
             for call in (spec.get("calls") or [spec["call"]]):
                 if case_id in ("C3a", "C3b"):
-                    # C3 : émission brute (sans enveloppe exec_with_role) — l'agent tente une
-                    # action d'administration directe ; le contrat doit la refuser.
+                    # C3: raw submission (without the exec_with_role envelope) — the agent attempts
+                    # a direct administrative action; the contract must reject it.
                     sent = ctx.execute_raw_tx(fake_intent, to=call["to"], data=call["data"])
                 else:
                     inner = calls.decode_exec_with_role(call["data"])["inner_data"]
@@ -884,11 +884,11 @@ def run_c(ctx: DemoContext) -> Dict[str, Any]:
         ctx.journal_outcome(run="C", intent=None, outcome="DRY_RUN_SIMULATED" if ctx.mode == MODE_DRY else "FORCED_ATTEMPT",
                             detail={"case": case_id})
 
-    # C5 — frontière de période : la chaîne laisse passer, le compteur glissant refuse.
+    # C5 — period boundary: the chain lets it through, the rolling counter refuses.
     boundary_first = ctx.build_transfer(amount="100.0", recipient_label="B",
-                                        justification="RUN C5a — dépense à T−1 s de la frontière")
+                                        justification="RUN C5a — spend at T−1 s from the boundary")
     boundary_second = ctx.build_transfer(amount="100.0", recipient_label="B",
-                                         justification="RUN C5b — dépense à T+1 s (compteur glissant)")
+                                         justification="RUN C5b — spend at T+1 s (rolling counter)")
     decision_first = common.evaluate_policy(boundary_first, ctx.policy, cumulative_spent=150.0)
     decision_second = common.evaluate_policy(boundary_second, ctx.policy, cumulative_spent=250.0)
     ctx.journal.append("POLICY", payload=common.decision_as_dict(decision_first, intent=boundary_first,
@@ -901,32 +901,32 @@ def run_c(ctx: DemoContext) -> Dict[str, Any]:
                        refs={"intent_id": boundary_second["intent_id"], "run": "C", "case": "C5b"})
     boundary = {
         "case": "C5",
-        "label": "frontière de période : 2 dépenses de 100 USDC encadrant la frontière",
+        "label": "period boundary: 2 spends of 100 USDC straddling the boundary",
         "first": {"verdict": decision_first.verdict, "reasons": decision_first.reasons,
                   "cumulative_before": 150.0},
         "second": {"verdict": decision_second.verdict, "reasons": decision_second.reasons,
                    "cumulative_before": 250.0},
-        "expect": ("les deux passent on-chain (limite assumée, rafale maxRefill+refill) mais le compteur "
-                   "glissant hors chaîne refuse la seconde"),
+        "expect": ("both pass on-chain (accepted limit, burst of maxRefill+refill) but the off-chain "
+                   "rolling counter refuses the second one"),
         "ok": decision_first.verdict == "ALLOW" and decision_second.verdict == "DENY"
               and "AMOUNT_ABOVE_PERIOD_CAP" in decision_second.reasons,
     }
-    ctx.log("C5 : hors chaîne {} puis {} {}".format(boundary["first"]["verdict"],
+    ctx.log("C5: off-chain {} then {} {}".format(boundary["first"]["verdict"],
                                                     boundary["second"]["verdict"], boundary["second"]["reasons"]))
 
     offline_ok = all(all(check["ok"] for check in entry["offline_checks"]) for entry in results)
     criteria = [
-        _criterion("C.1", "calldatas forcés construits et décodés (C1-C4)", "met" if offline_ok else "failed",
+        _criterion("C.1", "forced calldatas built and decoded (C1-C4)", "met" if offline_ok else "failed",
                    [entry["case"] for entry in results]),
-        _criterion("C.2", "C1/C2/C4 : revert attendu, sélecteur capturé, gaz enregistré",
+        _criterion("C.2", "C1/C2/C4: expected revert, selector captured, gas recorded",
                    "pending" if ctx.mode == MODE_DRY else
                    ("met" if all(entry.get("sends") and all(str(s.get("status")) in ("0x0", "0") for s in entry["sends"])
                                  for entry in results if entry["case"] in ("C1", "C2")) else "failed")),
-        _criterion("C.3", "C3 : l'agent n'a aucun droit d'administration (revert des deux appels)",
+        _criterion("C.3", "C3: the agent has no administrative rights (both calls revert)",
                    "pending" if ctx.mode == MODE_DRY else
                    ("met" if all(entry.get("sends") and all(str(s.get("status")) in ("0x0", "0") for s in entry["sends"])
                                  for entry in results if entry["case"] in ("C3a", "C3b")) else "failed")),
-        _criterion("C.4", "C5 : 2 exécutions chaîne + 1 refus hors chaîne démontrés",
+        _criterion("C.4", "C5: 2 chain executions + 1 off-chain refusal demonstrated",
                    "met" if boundary["ok"] else "failed", boundary),
     ]
     summary = {"run": "C", "mode": ctx.mode, "cases": results, "boundary": boundary,
@@ -941,40 +941,40 @@ def run_c(ctx: DemoContext) -> Dict[str, Any]:
 # =============================================================================
 
 def run_d(ctx: DemoContext, revocation_tx: Optional[str] = None) -> Dict[str, Any]:
-    """RUN D — kill switch chronométré (K1 : assignRoles(false) par la Safe)."""
+    """RUN D — timed kill switch (K1: assignRoles(false) by the Safe)."""
     ctx.journal_run_start("D")
     criteria: List[Dict[str, Any]] = []
     timings: Dict[str, Any] = {"signature_collection": None, "inclusion": None, "effect": None}
     started = common.utc_now()
 
     intent = ctx.build_transfer(amount=RUN_D_AMOUNT, recipient_label="B",
-                                justification="RUN D — intent ALLOW préparé, non envoyé (kill switch)")
+                                justification="RUN D — ALLOW intent prepared, not sent (kill switch)")
     common.write_json(os.path.join(ctx.run_dir, "intent.json"), intent)
     ctx.journal_intent(intent, "D")
     decision = common.evaluate_policy(intent, ctx.policy, seen_intent_ids=ctx.registry.seen_intent_ids())
     ctx.journal_policy(common.decision_as_dict(decision, intent=intent, policy=ctx.policy), intent, "D")
     ctx.registry.record(intent_id=intent["intent_id"], idempotency_key=intent["idempotency_key"],
-                        status="PREPARED", note="RUN D — intent non envoyé (kill switch)")
+                        status="PREPARED", note="RUN D — intent not sent (kill switch)")
 
     revocation = calls.assign_roles_data(ctx.addresses["agent"], [ctx.policy.role_key], [False])
     reset = calls.assign_roles_data(ctx.addresses["agent"], [ctx.policy.role_key], [True])
     instruction = {
         "schema": "orvyren-safe-instruction/v1",
-        "executed_by": "la Safe 2/3 (2 signatures) — JAMAIS par l'agent",
+        "executed_by": "the 2/3 Safe (2 signatures) — NEVER by the agent",
         "to": ctx.addresses["module"],
         "data": revocation,
-        "description": "assignRoles(agent, [AGENT], [false]) — retire le rôle AGENT (K1)",
+        "description": "assignRoles(agent, [AGENT], [false]) — removes the AGENT role (K1)",
         "verify_after": "Roles.roles(AGENT).members(agent) == false (eth_call)",
         "reset": {"to": ctx.addresses["module"], "data": reset,
-                  "description": "assignRoles(agent, [AGENT], [true]) — reset après la démo"},
+                  "description": "assignRoles(agent, [AGENT], [true]) — reset after the demo"},
         "expected_agent_revert": {"selector": common.ERROR_NOT_AUTHORIZED,
-                                  "name": "NotAuthorized(address) — mesuré sur Base Sepolia le 2026-10-15",},
+                                  "name": "NotAuthorized(address) — measured on Base Sepolia on 2026-10-15",},
     }
     common.write_json(os.path.join(ctx.run_dir, "revocation_instruction.json"), instruction)
-    ctx.log("instruction de révocation écrite (à exécuter depuis la Safe) : "
-            "assignRoles(agent, [AGENT], [false]) — sélecteur {}".format(common.SELECTOR_ASSIGN_ROLES))
+    ctx.log("revocation instruction written (to be executed from the Safe): "
+            "assignRoles(agent, [AGENT], [false]) — selector {}".format(common.SELECTOR_ASSIGN_ROLES))
     decoded = calls.decode_assign_roles(revocation)
-    criteria.append(_criterion("D.1", "calldata K1 construit et vérifié (aller-retour)",
+    criteria.append(_criterion("D.1", "K1 calldata built and verified (round-trip)",
                                "met" if (decoded["member"] == ctx.addresses["agent"]
                                          and decoded["role_keys"] == [ctx.policy.role_key]
                                          and decoded["enabled"] == [False]) else "failed", decoded))
@@ -982,7 +982,7 @@ def run_d(ctx: DemoContext, revocation_tx: Optional[str] = None) -> Dict[str, An
     attempt: Dict[str, Any] = {"sent": False}
     if ctx.mode == MODE_EXECUTE:
         if decision.verdict != "ALLOW":
-            attempt = {"sent": False, "reason": "intent D refusé par la politique: {}".format(decision.reasons)}
+            attempt = {"sent": False, "reason": "D intent refused by the policy: {}".format(decision.reasons)}
         else:
             if revocation_tx:
                 timings["revocation_tx"] = revocation_tx
@@ -991,7 +991,7 @@ def run_d(ctx: DemoContext, revocation_tx: Optional[str] = None) -> Dict[str, An
                     timings["inclusion"] = {
                         "tx_hash": revocation_tx,
                         "block_number": common.hex_to_int(receipt_rev.get("blockNumber")) if receipt_rev else None,
-                        "status": receipt_rev.get("status") if receipt_rev else "non inclus",
+                        "status": receipt_rev.get("status") if receipt_rev else "not included",
                     }
                 except Exception as exc:
                     timings["inclusion"] = {"tx_hash": revocation_tx, "error": str(exc)}
@@ -1012,21 +1012,21 @@ def run_d(ctx: DemoContext, revocation_tx: Optional[str] = None) -> Dict[str, An
                                      "revert_selector": replay.get("revert_selector"),
                                      "expected_selector": common.ERROR_NOT_AUTHORIZED}
             else:
-                attempt["status"] = "non incluse (issue valide si suffisamment retardée — B5 §e.4)"
+                attempt["status"] = "not included (valid outcome if delayed long enough — B5 §e.4)"
     else:
-        attempt = {"sent": False, "reason": "dry-run : répétition, aucune révocation réelle"}
+        attempt = {"sent": False, "reason": "dry-run: rehearsal, no real revocation"}
 
     criteria.extend([
-        _criterion("D.2", "tentative de l'agent : status 0x0 (ou non incluse) après révocation",
+        _criterion("D.2", "agent attempt: status 0x0 (or not included) after revocation",
                    "pending" if ctx.mode == MODE_DRY else
                    ("met" if attempt.get("status") in ("0x0", "0", None) else "failed"), attempt),
-        _criterion("D.3", "sélecteur de revert constaté = {}".format(common.ERROR_NOT_AUTHORIZED),
+        _criterion("D.3", "observed revert selector = {}".format(common.ERROR_NOT_AUTHORIZED),
                    "pending" if ctx.mode == MODE_DRY else
                    ("met" if (attempt.get("revert") or {}).get("revert_selector") == common.ERROR_NOT_AUTHORIZED
                     else "failed"), attempt.get("revert")),
-        _criterion("D.4", "latences (a) collecte, (b) inclusion, (c) effet affichées",
+        _criterion("D.4", "latencies (a) collection, (b) inclusion, (c) effect displayed",
                    "pending" if ctx.mode == MODE_DRY else "met", timings),
-        _criterion("D.5", "révocation vérifiée indépendamment (members == false) puis reset préparé",
+        _criterion("D.5", "revocation independently verified (members == false) then reset prepared",
                    "pending" if ctx.mode == MODE_DRY else "met",
                    {"reset_calldata": reset, "reset_selector": common.SELECTOR_ASSIGN_ROLES}),
     ])
@@ -1046,7 +1046,7 @@ def run_d(ctx: DemoContext, revocation_tx: Optional[str] = None) -> Dict[str, An
 # =============================================================================
 
 def run_e(ctx: DemoContext) -> Dict[str, Any]:
-    """RUN E — journal et audit : export, vérification indépendante, compteurs."""
+    """RUN E — journal and audit: export, independent verification, counters."""
     ctx.journal_run_start("E")
     export_dir = os.path.join(ctx.session_dir, "export")
     os.makedirs(export_dir, exist_ok=True)
@@ -1127,44 +1127,44 @@ def run_e(ctx: DemoContext) -> Dict[str, Any]:
     common.write_json(os.path.join(export_dir, "manifest.json"), manifest)
 
     report_lines = [
-        "# ORVYREN — rapport de session de démonstration",
+        "# ORVYREN — demo session report",
         "",
-        "- session : `{}`".format(common.display_path(ctx.session_dir)),
-        "- run_id : `{}` · cas : `{}` · mode : **{}**".format(ctx.run_id, ctx.case, ctx.mode),
-        "- chaîne : Base Sepolia (84532) — testnet uniquement, aucun argent réel",
+        "- session: `{}`".format(common.display_path(ctx.session_dir)),
+        "- run_id: `{}` · case: `{}` · mode: **{}**".format(ctx.run_id, ctx.case, ctx.mode),
+        "- chain: Base Sepolia (84532) — testnet only, no real money",
         "",
-        "## Journal (append-only chaîné SHA-256)",
+        "## Journal (SHA-256 chained append-only)",
         "",
-        "- enregistrements : **{}**".format(chain_report["records"]),
-        "- chaîne recalculée : **{}**".format("OK (aucune écriture détectée)" if chain_report["ok"] else "RUPTURE"),
-        "- têtes de flux : `{}`".format(json.dumps(chain_report["heads"], ensure_ascii=False)),
+        "- records: **{}**".format(chain_report["records"]),
+        "- recomputed chain: **{}**".format("OK (no write detected)" if chain_report["ok"] else "BREAK"),
+        "- stream heads: `{}`".format(json.dumps(chain_report["heads"], ensure_ascii=False)),
         "",
-        "## Compteurs",
+        "## Counters",
         "",
-        "- exécutions autorisées (entrées POLICY ALLOW) : {}".format(len(allow_policies)),
-        "- refus hors chaîne (POLICY DENY) : {}".format(len(denials)),
-        "- demandes d'approbation (REQUIRE_APPROVAL) : {}".format(len(approvals)),
-        "- transactions soumises : {} · reçus enregistrés : {}".format(len(submits), len(receipts)),
-        "- signatures émises par le service : {}".format(ctx.signatures.count()),
+        "- authorized executions (POLICY ALLOW entries): {}".format(len(allow_policies)),
+        "- off-chain refusals (POLICY DENY): {}".format(len(denials)),
+        "- approval requests (REQUIRE_APPROVAL): {}".format(len(approvals)),
+        "- submitted transactions: {} · receipts recorded: {}".format(len(submits), len(receipts)),
+        "- signatures issued by the service: {}".format(ctx.signatures.count()),
         "",
-        "## Vérification indépendante (relecture des tx_hash)",
+        "## Independent verification (re-reading the tx_hash values)",
         "",
     ]
     if ctx.mode == MODE_EXECUTE:
         conforms = len([check for check in chain_checks if check.get("verification_ok")])
         forced_failed = len([check for check in chain_checks if str(check.get("status")) in ("0x0", "0")])
-        report_lines.append("- {} exécutions conformes, {} refus hors chaîne, {} tentatives forcées "
-                            "refusées par la chaîne".format(conforms, len(denials), forced_failed))
+        report_lines.append("- {} compliant executions, {} off-chain refusals, {} forced attempts "
+                            "refused by the chain".format(conforms, len(denials), forced_failed))
     else:
-        report_lines.append("- confrontation à la chaîne non exécutée (dry-run) — relancer le run E "
-                            "en `--execute --rpc` après le run A réel")
+        report_lines.append("- chain confrontation not executed (dry-run) — rerun run E "
+                            "with `--execute --rpc` after the real run A")
     report_lines.extend([
         "",
-        "## Ce que ce rapport ne prouve pas",
+        "## What this report does not prove",
         "",
-        "- les prix du testnet ne sont pas des données de marché (aucune performance n'est revendiquée) ;",
-        "- en dry-run, **aucune transaction n'a été envoyée** : les hashes sont factices et marqués `simulated` ;",
-        "- la couverture n'est pas l'exhaustivité : ce qui n'est pas journalisé n'existe pas pour le relecteur.",
+        "- testnet prices are not market data (no performance is claimed);",
+        "- in dry-run, **no transaction was sent**: the hashes are placeholders tagged `simulated`;",
+        "- coverage is not exhaustiveness: what is not journaled does not exist for the reviewer.",
         "",
     ])
     report_path = os.path.join(ctx.session_dir, "report.md")
@@ -1175,16 +1175,16 @@ def run_e(ctx: DemoContext) -> Dict[str, Any]:
                                            "chain_checks": chain_checks})
 
     criteria = [
-        _criterion("E.1", "chaîne de hash recalculée OK (aucune écriture détectée)",
+        _criterion("E.1", "hash chain recomputed OK (no write detected)",
                    "met" if chain_report["ok"] else "failed", chain_report["errors"][:5]),
-        _criterion("E.2", "écart journal ↔ chaîne = 0",
+        _criterion("E.2", "journal ↔ chain divergence = 0",
                    "pending" if ctx.mode == MODE_DRY else
                    ("met" if all(check.get("verification_ok", check.get("status") in ("0x0", "0"))
                                  for check in chain_checks) else "failed"), chain_checks),
-        _criterion("E.3", "le rapport liste refus et échecs (première classe)",
+        _criterion("E.3", "the report lists refusals and failures (first-class)",
                    "met" if (denials or approvals) else "pending",
                    {"deny": len(denials), "require_approval": len(approvals)}),
-        _criterion("E.4", "compteurs exportés (manifest.json)",
+        _criterion("E.4", "counters exported (manifest.json)",
                    "met", manifest["counters"]),
     ]
     summary = {"run": "E", "mode": ctx.mode, "chain_report": chain_report, "manifest": manifest,
@@ -1212,37 +1212,37 @@ def execute_run(run: str, ctx: DemoContext, *, revocation_tx: Optional[str] = No
         return run_d(ctx, revocation_tx=revocation_tx)
     if run == "E":
         return run_e(ctx)
-    raise ValueError("run inconnu: {}".format(run))
+    raise ValueError("unknown run: {}".format(run))
 
 
 def main(argv: Optional[list] = None) -> int:
     parser = argparse.ArgumentParser(
         prog="demo.py",
-        description="ORVYREN — orchestrateur des 5 runs de démonstration testnet (A ALLOW · B DENY hors chaîne · "
-                    "C DENY par la chaîne · D kill switch · E journal/audit). "
-                    "Dry-run par défaut : aucune clé, aucune transaction.")
+        description="ORVYREN — orchestrator for the 5 testnet demo runs (A ALLOW · B off-chain DENY · "
+                    "C chain-level DENY · D kill switch · E journal/audit). "
+                    "Dry-run by default: no key, no transaction.")
     parser.add_argument("--run", required=True, choices=list(RUNS) + [run.lower() for run in RUNS],
-                        help="run à exécuter : A, B, C, D ou E")
+                        help="run to execute: A, B, C, D or E")
     mode = parser.add_mutually_exclusive_group()
     mode.add_argument("--dry-run", action="store_true", default=None,
-                      help="répétition hors chaîne : signatures simulées, hashes factices (défaut)")
+                      help="off-chain rehearsal: simulated signatures, placeholder hashes (default)")
     mode.add_argument("--execute", action="store_true",
-                      help="exécution réelle (exige .env complet, eth-account et ORVYREN_PRIVATE_KEY)")
+                      help="real execution (requires a complete .env, eth-account and ORVYREN_PRIVATE_KEY)")
     parser.add_argument("--case", default="rseth",
-                        help="étiquette de cas/épisode journalisée (défaut : rseth ; ex. usdc-2023-03)")
+                        help="journaled case/episode label (default: rseth; e.g. usdc-2023-03)")
     parser.add_argument("--session", default=None,
-                        help="répertoire de session (défaut : evidence/demo_runs/<case>)")
-    parser.add_argument("--env-file", default=None, help="fichier .env de session (jamais versionné)")
-    parser.add_argument("--policy", default=None, help="politique (défaut : policy.demo.json)")
+                        help="session directory (default: evidence/demo_runs/<case>)")
+    parser.add_argument("--env-file", default=None, help="session .env file (never versioned)")
+    parser.add_argument("--policy", default=None, help="policy (default: policy.demo.json)")
     parser.add_argument("--envelope", default=None,
-                        help="enveloppe de référence capturée (envelope.example.json complété)")
-    parser.add_argument("--rpc-url", default=None, help="RPC Base Sepolia (défaut : variable d'env ou endpoint public)")
+                        help="captured reference envelope (completed envelope.example.json)")
+    parser.add_argument("--rpc-url", default=None, help="Base Sepolia RPC (default: environment variable or public endpoint)")
     parser.add_argument("--revocation-tx", default=None,
-                        help="run D : hash de la transaction de révocation exécutée par la Safe (chronométrage)")
+                        help="run D: hash of the revocation transaction executed by the Safe (timing)")
     parser.add_argument("--amount", default=None,
-                        help="run A : montant en USDC (défaut 100.0 — décision gelée FREEZE_V2 E2 ; "
-                             "B5 §e.1 écrivait 50, écart ouvert Q2 de B5)")
-    parser.add_argument("--quiet", action="store_true", help="sortie minimale")
+                        help="run A: amount in USDC (default 100.0 — frozen decision FREEZE_V2 E2; "
+                             "B5 §e.1 wrote 50, open gap B5 Q2)")
+    parser.add_argument("--quiet", action="store_true", help="minimal output")
     args = parser.parse_args(argv)
 
     run = args.run.upper()
@@ -1257,27 +1257,27 @@ def main(argv: Optional[list] = None) -> int:
                           rpc_url=args.rpc_url, quiet=args.quiet)
         ctx.require_execute_prerequisites()
     except common.ConfigurationError as exc:
-        print("ERREUR de configuration: {}".format(exc), file=sys.stderr)
+        print("CONFIGURATION ERROR: {}".format(exc), file=sys.stderr)
         return EXIT_CONFIG
     except signer_mod.SignerError as exc:
-        print("ERREUR du signataire: {}".format(exc), file=sys.stderr)
+        print("SIGNER ERROR: {}".format(exc), file=sys.stderr)
         return EXIT_PREREQUISITES
 
     print("ORVYREN — run {} ({}) · session {}".format(
         run, ctx.mode, common.display_path(ctx.session_dir)))
     if ctx.placeholders_used:
-        print("  (adresses factices de répétition : {})".format(", ".join(sorted(set(ctx.placeholders_used)))))
+        print("  (placeholder rehearsal addresses: {})".format(", ".join(sorted(set(ctx.placeholders_used)))))
 
     try:
         summary = execute_run(run, ctx, revocation_tx=args.revocation_tx, amount=args.amount)
     except signer_mod.SignerDependencyError as exc:
-        print("ERREUR du signataire: {}".format(exc), file=sys.stderr)
+        print("SIGNER ERROR: {}".format(exc), file=sys.stderr)
         return EXIT_PREREQUISITES
     except signer_mod.SignerError as exc:
-        print("ERREUR du signataire: {}".format(exc), file=sys.stderr)
+        print("SIGNER ERROR: {}".format(exc), file=sys.stderr)
         return EXIT_PREREQUISITES
     except common.chain_client.ChainError as exc:
-        print("ERREUR réseau/RPC: {}".format(exc), file=sys.stderr)
+        print("NETWORK/RPC ERROR: {}".format(exc), file=sys.stderr)
         return EXIT_PREREQUISITES
 
     criteria = summary.get("criteria") or []
@@ -1289,8 +1289,8 @@ def main(argv: Optional[list] = None) -> int:
         counts["met"], len(criteria), counts["pending"],
         ", {} failed".format(counts["failed"]) if counts["failed"] else ""))
     if not ok and counts["pending"] and not counts["failed"]:
-        print("  ! critères non évalués en dry-run : aucune preuve « OK » n'est revendiquée.")
-    print("  artefacts : {}".format(common.display_path(ctx.run_dir)))
+        print("  ! criteria not evaluated in dry-run: no \"OK\" proof is claimed.")
+    print("  artifacts : {}".format(common.display_path(ctx.run_dir)))
     print("  journal   : {}".format(common.display_path(os.path.join(ctx.session_dir, "audit.jsonl"))))
     return EXIT_OK if ok else EXIT_CRITERIA_FAILED
 

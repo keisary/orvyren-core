@@ -1,16 +1,16 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-"""ORVYREN-Core — tests du rendu de rapport + régression calibration (W7, B7 §e.5).
+"""ORVYREN-Core — report rendering + calibration regression tests (W7, B7 §e.5).
 
-Couverture :
+Coverage:
 
-* **bannière obligatoire** : pas de bannière / pas de N / pas de validité ⇒
-  refus de rendre (toute sortie sans bannière est un bug) ;
-* rendu : fichiers écrits, première ligne = bannière, ``N`` affiché, hash de
-  contenu stable entre deux rendus ;
-* ``variants.log`` append-only (échecs inclus) ;
-* régression du correctif W7 : l'identité de Murphy **exacte** inclut le terme
-  intra-bin sur le vecteur DEV réel (et reste exacte sur le KAT, terme nul).
+* **mandatory banner**: no banner / no N / no validity ⇒ refusal to render
+  (any output without a banner is a bug);
+* rendering: files written, first line = banner, ``N`` displayed, content hash
+  stable across two renders;
+* append-only ``variants.log`` (failures included);
+* W7 fix regression: the **exact** Murphy identity includes the within-bin
+  term on the real DEV vector (and stays exact on the KAT, zero term).
 
 Run: python -m pytest tests/test_evaluation_report.py -q
 """
@@ -84,7 +84,7 @@ class EvaluationReportTest(unittest.TestCase):
     def test_variants_log_appends_failures(self):
         log = os.path.join(self.tmp, "variants.log")
         report_mod.append_variants_log(log, {"set": "dev", "result": "REFUSED",
-                                             "reason": "gel absent"})
+                                             "reason": "freeze absent"})
         report_mod.append_variants_log(log, {"set": "dev", "result": "OK", "n_windows": 4})
         with open(log, "r", encoding="utf-8") as handle:
             lines = [json.loads(line) for line in handle if line.strip()]
@@ -98,7 +98,7 @@ class EvaluationReportTest(unittest.TestCase):
 
 
 @unittest.skipUnless(os.path.isfile(FORECASTS) and os.path.isfile(OUTCOMES),
-                     "gel DEV absent")
+                     "DEV freeze absent")
 class MurphyWithinBinRegressionTest(unittest.TestCase):
     def test_real_dev_vector_exact_identity(self):
         forecasts = [json.loads(line) for line in open(FORECASTS, encoding="utf-8")
@@ -109,7 +109,7 @@ class MurphyWithinBinRegressionTest(unittest.TestCase):
         y = [outcomes[record["forecast_id"]]["y"] for record in forecasts]
         decomposition = calibration_mod.murphy_decomposition(p, y)
         self.assertLess(abs(decomposition["exact_identity"] - decomposition["bs"]), 1e-9)
-        # p n'est PAS constant par bin sur le vecteur réel : le terme existe.
+        # p is NOT constant per bin on the real vector: the term exists.
         self.assertGreater(abs(decomposition["within_bin_term"]), 1e-6)
 
     def test_kat_still_exact_with_zero_within_term(self):

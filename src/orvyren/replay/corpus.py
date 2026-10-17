@@ -1,17 +1,16 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-"""ORVYREN-Core — corpus figé du rejeu + ancres de blocs (W7, B7 §c.4).
+"""ORVYREN-Core — replay frozen corpus + block anchors (W7, B7 §c.4).
 
-Sources admissibles d'un run de rejeu : **corpus figé** (``corpus/`` + séries
-W1/W3, manifeste ``replay/corpus_v1.manifest.json`` : chemins + ``sha256`` +
-taille) et **blocs fixes** (``replay/blocks_v1.json`` : une ancre par jour —
-table déclarée absente tant qu'elle n'est pas construite : jamais inventée).
-**Aucun ``latest``** dans un run de rejeu : tout accès chaîne passe par un bloc
-explicite épinglé (:func:`require_pinned_block`).
+Admissible sources for a replay run: the **frozen corpus** (``corpus/`` + W1/W3
+series, manifest ``replay/corpus_v1.manifest.json``: paths + ``sha256`` +
+size) and **fixed blocks** (``replay/blocks_v1.json``: one anchor per day — a
+table declared absent until it is built: never invented).
+**No ``latest``** in a replay run: any chain access goes through an explicit
+pinned block (:func:`require_pinned_block`).
 
-Le moteur refuse de démarrer si un hash du manifeste ne correspond pas au
-disque ; les trous de série sont détectés, jamais comblés en silence
-(:func:`find_gaps`).
+The engine refuses to start when a manifest hash does not match the disk;
+series gaps are detected, never silently filled (:func:`find_gaps`).
 """
 
 from __future__ import annotations
@@ -28,18 +27,18 @@ REPO_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.p
 DEFAULT_MANIFEST = os.path.join(REPO_ROOT, "replay", "corpus_v1.manifest.json")
 DEFAULT_BLOCKS = os.path.join(REPO_ROOT, "replay", "blocks_v1.json")
 
-#: Écart maximal normal entre deux observations d'une même série horaire.
+#: Maximum normal gap between two observations of the same hourly series.
 MAX_GAP_MINUTES = 90.0
 
-#: Métriques de prix utilisables comme série de référence d'une fenêtre.
+#: Price metrics usable as the reference series of a window.
 PRICE_VENUES = ("defillama", "bitstamp", "binance")
 
 
 class CorpusError(RuntimeError):
-    """Corpus figé invalide (hash non concordant, ancre manquante, trou...)."""
+    """Invalid frozen corpus (hash mismatch, missing anchor, gap...)."""
 
 
-# --- utilitaires -------------------------------------------------------------
+# --- helpers -----------------------------------------------------------------
 
 def sha256_file(path: str) -> str:
     with open(path, "rb") as handle:
@@ -54,44 +53,44 @@ def _parse_utc(stamp: str) -> _dt.datetime:
     return parsed.astimezone(_dt.timezone.utc)
 
 
-# --- manifeste ---------------------------------------------------------------
+# --- manifest ----------------------------------------------------------------
 
 def load_manifest(path: str = DEFAULT_MANIFEST, *, verify: bool = True) -> dict:
-    """Charge le manifeste du corpus ; vérifie chaque ``sha256`` contre le disque.
+    """Load the corpus manifest; check every ``sha256`` against the disk.
 
-    Règle du producteur (``scripts/build_corpus_v1_manifest.py``) : digest des
-    **octets bruts** de chaque fichier. Tout écart ⇒ refus (B7 §c.4).
+    Producer rule (``scripts/build_corpus_v1_manifest.py``): digest of each
+    file's **raw bytes**. Any mismatch ⇒ refusal (B7 §c.4).
     """
     if not os.path.isfile(path):
-        raise CorpusError("manifeste du corpus absent : %s" % path)
+        raise CorpusError("corpus manifest missing: %s" % path)
     with open(path, "r", encoding="utf-8") as handle:
         manifest = json.load(handle)
     files = manifest.get("files") or []
     if not files:
-        raise CorpusError("manifeste du corpus vide : %s" % path)
+        raise CorpusError("empty corpus manifest: %s" % path)
     checked: List[dict] = []
     for entry in files:
         rel = entry.get("path")
         digest = entry.get("sha256")
         target = rel if os.path.isabs(str(rel)) else os.path.join(REPO_ROOT, rel)
         if not os.path.isfile(target):
-            raise CorpusError("fichier du corpus absent : %s" % rel)
+            raise CorpusError("corpus file missing: %s" % rel)
         actual = sha256_file(target)
         if verify and actual != digest:
-            raise CorpusError("corpus modifié : %s (%s ≠ %s)" % (rel, actual, digest))
+            raise CorpusError("corpus modified: %s (%s ≠ %s)" % (rel, actual, digest))
         checked.append({"path": rel, "sha256": actual, "bytes": entry.get("bytes")})
     manifest["files"] = checked
     manifest["manifest_sha256"] = sha256_file(path)
     return manifest
 
 
-# --- séries ------------------------------------------------------------------
+# --- series ------------------------------------------------------------------
 
 def series_from_corpus_csv(path: str, *, venue: str = "defillama",
                            metric: str = "price_usd",
                            start_utc: Optional[str] = None,
                            end_utc: Optional[str] = None) -> List[Tuple[str, float]]:
-    """Série ``(timestamp_utc, valeur)`` triée depuis ``corpus/*.csv``."""
+    """Sorted ``(timestamp_utc, value)`` series from ``corpus/*.csv``."""
     points: List[Tuple[str, float]] = []
     start = _parse_utc(start_utc) if start_utc else None
     end = _parse_utc(end_utc) if end_utc else None
@@ -115,24 +114,25 @@ def series_from_corpus_csv(path: str, *, venue: str = "defillama",
 
 
 def series_from_episode(path: str) -> List[Tuple[str, float]]:
-    """Série ``(timestamp_utc, valeur)`` depuis ``evidence/episode_*.json``.
+    """``(timestamp_utc, value)`` series from ``evidence/episode_*.json``.
 
-    Deux formes supportées, jamais devinées au-delà :
+    Two supported shapes, never guessed beyond them:
 
-    * ``series`` = **liste** de dicts ``{<horodatage>, <valeur>}`` (clés
-      ``t_utc``/``timestamp_utc``/... × ``price_usd``/``price``/``value``) ;
-    * ``series`` = **dict** horodaté (stETH/rsETH : ``{"2022-05-01T00:00:00Z":
-      {...}}``) — valeur par priorité : ``price_eth_per_steth`` (décote
-      réalisable Curve), ``discount.1.price_eth_per_steth``, ``price_usd``,
-      ``market.median``, ``value``.
+    * ``series`` = **list** of dicts ``{<timestamp>, <value>}`` (keys
+      ``t_utc``/``timestamp_utc``/... × ``price_usd``/``price``/``value``);
+    * ``series`` = timestamped **dict** (stETH/rsETH:
+      ``{"2022-05-01T00:00:00Z": {...}}``) — value by priority:
+      ``price_eth_per_steth`` (realisable Curve discount),
+      ``discount.1.price_eth_per_steth``, ``price_usd``, ``market.median``,
+      ``value``.
 
-    Un fichier qui ne s'y prête pas lève : jamais de série inventée.
+    A file that does not fit raises: never an invented series.
     """
     with open(path, "r", encoding="utf-8") as handle:
         payload = json.load(handle)
     series = payload.get("series")
     if not series:
-        raise CorpusError("aucune série exploitable dans %s" % path)
+        raise CorpusError("no usable series in %s" % path)
     stamp_keys = ("t_utc", "timestamp_utc", "utc", "t", "timestamp")
     value_keys = ("price_usd", "price", "value", "price_reference_usd")
     points: List[Tuple[str, float]] = []
@@ -171,21 +171,21 @@ def series_from_episode(path: str) -> List[Tuple[str, float]]:
                 continue
             points.append((str(stamp), float(value)))
     else:
-        raise CorpusError("forme de série non supportée dans %s (type %s)"
+        raise CorpusError("unsupported series shape in %s (type %s)"
                           % (path, type(series).__name__))
     if not points:
-        raise CorpusError("série non reconnue dans %s (clés inattendues)" % path)
+        raise CorpusError("unrecognised series in %s (unexpected keys)" % path)
     points.sort(key=lambda item: _parse_utc(item[0]))
     return points
 
 
 def window_series(window, *, venue: str = "defillama") -> Tuple[str, List[Tuple[str, float]]]:
-    """Série de référence d'une fenêtre DEV/EVAL, selon ses sources déclarées.
+    """Reference series of a DEV/EVAL window, from its declared sources.
 
-    Dispatch explicite : corpus CSV pour les épisodes USDC ; épisode JSON sinon.
-    Chaque source est tentée dans l'ordre déclaré ; un échec n'interrompt pas
-    la tentative suivante mais est consigné. Renvoie ``(source_label, points)`` ;
-    jamais de fenêtre silencieusement vide.
+    Explicit dispatch: CSV corpus for the USDC episodes; episode JSON otherwise.
+    Each source is tried in declared order; a failure does not stop the next
+    attempt but is recorded. Returns ``(source_label, points)``; never a
+    silently empty window.
     """
     attempts: List[str] = []
     for rel in window.sources:
@@ -197,7 +197,7 @@ def window_series(window, *, venue: str = "defillama") -> Tuple[str, List[Tuple[
                                                 end_utc=window.end_utc)
                 if points:
                     return (rel, points)
-                attempts.append("%s: aucun point dans la fenêtre" % rel)
+                attempts.append("%s: no point in the window" % rel)
             elif target.endswith(".json") and "episode" in os.path.basename(target):
                 points = series_from_episode(target)
                 start, end = _parse_utc(window.start_utc), _parse_utc(window.end_utc)
@@ -205,20 +205,20 @@ def window_series(window, *, venue: str = "defillama") -> Tuple[str, List[Tuple[
                           if start <= _parse_utc(stamp) <= end]
                 if points:
                     return (rel, points)
-                attempts.append("%s: aucun point dans la fenêtre" % rel)
+                attempts.append("%s: no point in the window" % rel)
             else:
-                attempts.append("%s: type de source non reconnu" % rel)
+                attempts.append("%s: unrecognised source type" % rel)
         except CorpusError as exc:
             attempts.append("%s: %s" % (rel, exc))
-    raise CorpusError("aucune source de série résolue pour la fenêtre %s (%s)"
+    raise CorpusError("no series source resolved for window %s (%s)"
                       % (window.window_id, " · ".join(attempts)))
 
 
 def find_gaps(points: Sequence[Tuple[str, float]],
               max_gap_minutes: float = MAX_GAP_MINUTES) -> List[dict]:
-    """Trous d'une série : écarts > ``max_gap_minutes`` entre observations.
+    """Gaps in a series: deltas > ``max_gap_minutes`` between observations.
 
-    Un trou n'est jamais comblé ; l'appelant décide (déclarer, ou refuser).
+    A gap is never filled; the caller decides (declare it, or refuse).
     """
     gaps: List[dict] = []
     previous: Optional[_dt.datetime] = None
@@ -235,35 +235,35 @@ def find_gaps(points: Sequence[Tuple[str, float]],
 
 
 def require_continuous(points: Sequence[Tuple[str, float]],
-                       *, label: str = "série",
+                       *, label: str = "series",
                        max_gap_minutes: float = MAX_GAP_MINUTES) -> None:
-    """Refuse une série trouée (par défaut) — jamais de comblement silencieux."""
+    """Refuse a gapped series (the default) — never a silent fill."""
     gaps = find_gaps(points, max_gap_minutes)
     if gaps:
-        raise CorpusError("%s : %d trou(s) détecté(s), premier %s → %s (%.1f min)"
+        raise CorpusError("%s: %d gap(s) detected, first %s → %s (%.1f min)"
                           % (label, len(gaps), gaps[0]["after_utc"], gaps[0]["before_utc"],
                              gaps[0]["gap_minutes"]))
 
 
-# --- ancres de blocs ---------------------------------------------------------
+# --- block anchors -----------------------------------------------------------
 
 def load_block_anchors(path: str = DEFAULT_BLOCKS) -> Optional[dict]:
-    """Table d'ancres de blocs ``replay/blocks_v1.json`` — ou ``None`` si absente.
+    """Block anchor table ``replay/blocks_v1.json`` — or ``None`` if absent.
 
-    Déclarée absente tant qu'elle n'est pas construite (B7 : « une ancre par
-    jour, résolue par dichotomie, cachée ») : aucune ancre n'est inventée.
+    Declared absent until it is built (B7: "one anchor per day, resolved by
+    bisection, cached"): no anchor is invented.
     """
     if not os.path.isfile(path):
         return None
     with open(path, "r", encoding="utf-8") as handle:
         payload = json.load(handle)
     if not isinstance(payload, dict):
-        raise CorpusError("table d'ancres illisible : %s" % path)
+        raise CorpusError("unreadable anchor table: %s" % path)
     return payload
 
 
 def block_for(anchors: Optional[dict], stamp_utc: str) -> Optional[int]:
-    """Ancre de bloc pour un horodatage (jour le plus proche déjà résolu)."""
+    """Block anchor for a timestamp (closest already-resolved day)."""
     if not anchors:
         return None
     day = _parse_utc(stamp_utc).strftime("%Y-%m-%d")
@@ -274,11 +274,11 @@ def block_for(anchors: Optional[dict], stamp_utc: str) -> Optional[int]:
     return anchors[resolved[-1]] if resolved else None
 
 
-def require_pinned_block(block: object, *, context: str = "lecture chaîne") -> int:
-    """Garde-fou « aucun ``latest`` » : le bloc doit être un entier explicite."""
+def require_pinned_block(block: object, *, context: str = "chain read") -> int:
+    """The "no ``latest``" guard: the block must be an explicit integer."""
     if isinstance(block, int) and not isinstance(block, bool):
         return block
     if isinstance(block, str) and block.isdigit():
         return int(block)
-    raise CorpusError("bloc non épinglé (%r) pour : %s — un run de rejeu n'utilise "
-                      "jamais « latest » (B7 §c.4)" % (block, context))
+    raise CorpusError("unpinned block (%r) for: %s — a replay run never uses "
+                      "“latest” (B7 §c.4)" % (block, context))

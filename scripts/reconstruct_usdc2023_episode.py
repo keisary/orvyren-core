@@ -1,46 +1,46 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""ORVYREN — W3-B : reconstruction autonome de l'épisode USDC mars 2023 (SVB).
+"""ORVYREN — W3-B: autonomous reconstruction of the USDC March 2023 (SVB) episode.
 
-Objet
------
-Reconstruit, heure par heure (2023-03-10 00:00Z -> 2023-03-14 00:00Z), la preuve
-complète de la décrochage USDC/USD de mars 2023 :
+Purpose
+-------
+Rebuild, hour by hour (2023-03-10 00:00Z -> 2023-03-14 00:00Z), the complete
+evidence of the March 2023 USDC/USD depeg:
 
-  (a) prix multi-venues : Binance USDCUSDT (klines 1 h), OKX USDC-USDT
+  (a) multi-venue prices: Binance USDCUSDT (1 h klines), OKX USDC-USDT
       (history-candles), Bitstamp usdcusd (ohlc), DeFiLlama chart 1 h
-      (Ethereum USDC 0xA0b8...eB48) — plus bas / plus haut / dernier / volume ;
-  (b) oracle Chainlink USDC/USD (0x8fFfFfd4AfB6115b954Bd326cbe7B4BA576818f6),
-      latestRoundData() lu à un bloc d'archive horaire — le bloc est trouvé par
-      une recherche dichotomique bloc <-> timestamp locale (BlockIndex) ;
-  (c) Aave V3 Ethereum USDC : approvisionnement (aEthUSDC totalSupply), cash
-      (USDC.balanceOf(aEthUSDC)) et utilisation U = 1 - cash/supply, par heure ;
-  (d) signaux dérivés : décote D(t), dispersion inter-venues sigma_disp,
-      divergence oracle/marché delta — plus les faits clés de W2-B
-      (agrégat DeFiLlama 0,876675 ; Bitstamp 0,80526 ; oracle 0,90687439 ;
+      (Ethereum USDC 0xA0b8...eB48) — low / high / last / volume;
+  (b) Chainlink USDC/USD oracle (0x8fFfFfd4AfB6115b954Bd326cbe7B4BA576818f6),
+      latestRoundData() read at an hourly archive block — the block is found by
+      a local block <-> timestamp binary search (BlockIndex);
+  (c) Aave V3 Ethereum USDC: supply (aEthUSDC totalSupply), cash
+      (USDC.balanceOf(aEthUSDC)) and utilisation U = 1 - cash/supply, per hour;
+  (d) derived signals: discount D(t), cross-venue dispersion sigma_disp,
+      oracle/market divergence delta — plus the key facts of W2-B
+      (DeFiLlama aggregate 0.876675; Bitstamp 0.80526; oracle 0.90687439;
       dispersion ~870 bps).
 
-Contraintes (décidées par le projet, pas par commodité)
---------------------------------------------------------
- * **stdlib uniquement** (urllib/json/datetime/... ; aucun import de `src/`) ;
- * **relançable** : `--from-cache` reconstruit tout depuis les JSON bruts déjà
-   mesurés dans `fixtures/raw_w2b/` quand le réseau échoue ou n'est pas voulu ;
- * **déterministe** : sortie JSON triée et arrondie, aucune valeur inventée —
-   chaque nombre de `evidence/episode_usdc_2023-03.json` est mesuré ici, et les
-   points issus du cache sont marqués `source: cache`.
+Constraints (decided by the project, not for convenience)
+----------------------------------------------------------
+ * **standard library only** (urllib/json/datetime/...; no `src/` import);
+ * **rerunnable**: `--from-cache` rebuilds everything from the raw JSON already
+   measured in `fixtures/raw_w2b/` when the network fails or is not wanted;
+ * **deterministic**: sorted, rounded JSON output, no invented value — every
+   number in `evidence/episode_usdc_2023-03.json` is measured here, and points
+   coming from the cache are marked `source: cache`.
 
 Usage
 -----
-    python scripts/reconstruct_usdc2023_episode.py                # réseau
-    python scripts/reconstruct_usdc2023_episode.py --from-cache   # hors-ligne
+    python scripts/reconstruct_usdc2023_episode.py                # network
+    python scripts/reconstruct_usdc2023_episode.py --from-cache   # offline
     python scripts/reconstruct_usdc2023_episode.py --out evidence/episode_usdc_2023-03.json
 
-Méthodes reproduites depuis W2-A / W2-B (ne pas réinventer) :
- * RPC archive sans clé : eth.drpc.org, eth-mainnet.public.blastapi.io ;
- * Chainlink latestRoundData() = 0xfeaf968c (8 décimales) ;
- * Aave : aToken.totalSupply() = 0x18160ddd ; ERC20 balanceOf = 0x70a08231 ;
- * venues : api.binance.com/api/v3/klines, okx.com/api/v5/market/history-candles,
- *           bitstamp.net/api/v2/ohlc, coins.llama.fi/chart (period=1h).
+Methods reproduced from W2-A / W2-B (do not reinvent):
+ * archive RPC without a key: eth.drpc.org, eth-mainnet.public.blastapi.io;
+ * Chainlink latestRoundData() = 0xfeaf968c (8 decimals);
+ * Aave: aToken.totalSupply() = 0x18160ddd; ERC20 balanceOf = 0x70a08231;
+ * venues: api.binance.com/api/v3/klines, okx.com/api/v5/market/history-candles,
+ *         bitstamp.net/api/v2/ohlc, coins.llama.fi/chart (period=1h).
 """
 
 from __future__ import annotations
@@ -73,8 +73,8 @@ RPC_ENDPOINTS = [
     "https://eth-mainnet.public.blastapi.io",
     "https://eth.drpc.org",
 ]
-#: Seul blastapi accepte les requêtes JSON-RPC par lots (testé 2026-10-15 ;
-#: drpc renvoie HTTP 500 sur un tableau). Sondes par lots = ~0,13 s/bloc.
+#: Only blastapi accepts batched JSON-RPC requests (tested 2026-10-15;
+#: drpc returns HTTP 500 on an array). Batched probes = ~0.13 s/block.
 BATCH_ENDPOINTS = ["https://eth-mainnet.public.blastapi.io"]
 
 CHAINLINK_USDC_USD = "0x8fFfFfd4AfB6115b954Bd326cbe7B4BA576818f6"
@@ -90,8 +90,8 @@ USDC_DECIMALS = 6
 
 LLAMA_USDC_COIN = "ethereum:0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48"
 
-#: Faits clés publiés dans W2-B (research/W2B_signaux_detection.md + notes_01_peg.md),
-#: contre lesquels la reconstruction se vérifie elle-même.
+#: Key facts published in W2-B (research/W2B_signaux_detection.md + notes_01_peg.md),
+#: against which the reconstruction checks itself.
 W2B_EXPECTED = {
     "defillama_min": 0.876675,
     "bitstamp_min": 0.80526,
@@ -105,7 +105,7 @@ VENUES = ("binance", "okx", "bitstamp", "defillama")
 
 
 # --------------------------------------------------------------------------
-# Petits utilitaires (testables, sans réseau)
+# Small utilities (testable, no network)
 # --------------------------------------------------------------------------
 
 def iso_utc(ts):
@@ -119,17 +119,17 @@ def parse_iso_utc(text):
 
 
 def discount_bps(price, peg=1.0):
-    """Décote de peg en points de base : (peg - prix)/peg * 10000."""
+    """Peg discount in basis points: (peg - price)/peg * 10000."""
     if price is None:
         return None
     return (peg - price) / peg * 10000.0
 
 
 def dispersion_bps(prices):
-    """Dispersion inter-venues : (max - min)/max * 10000 (convention W2-B).
+    """Cross-venue dispersion: (max - min)/max * 10000 (W2-B convention).
 
-    C'est la convention qui reproduit le chiffre « 870 bps » de W2-B
-    ((0,8820 - 0,80526)/0,8820 = 870,07 bps).
+    This is the convention that reproduces the "870 bps" figure of W2-B
+    ((0.8820 - 0.80526)/0.8820 = 870.07 bps).
     """
     vals = [p for p in prices if p is not None]
     if len(vals) < 2:
@@ -141,33 +141,33 @@ def dispersion_bps(prices):
 
 
 def divergence_bps(market_price, oracle_price):
-    """Divergence oracle/marché (convention W2-B) : (marché - oracle) * 10000."""
+    """Oracle/market divergence (W2-B convention): (market - oracle) * 10000."""
     if market_price is None or oracle_price is None:
         return None
     return (market_price - oracle_price) * 10000.0
 
 
 def decode_uint256(hex_data):
-    """Décode un retour ABI uint256 (hex '0x...') en entier."""
+    """Decode an ABI uint256 return (hex '0x...') into an integer."""
     if not hex_data or not isinstance(hex_data, str):
-        raise ValueError("retour ABI vide")
+        raise ValueError("empty ABI return")
     raw = hex_data[2:] if hex_data.startswith("0x") else hex_data
     if not raw:
-        raise ValueError("retour ABI vide")
+        raise ValueError("empty ABI return")
     return int(raw[:64], 16)
 
 
 def decode_latest_round_data(hex_data, decimals=CHAINLINK_DECIMALS):
-    """Décode Chainlink `latestRoundData()` -> dict (roundId, answer_raw, ...).
+    """Decode Chainlink `latestRoundData()` -> dict (roundId, answer_raw, ...).
 
-    Retour attendu : 5 mots ABI (roundId, answer, startedAt, updatedAt, answeredInRound).
+    Expected return: 5 ABI words (roundId, answer, startedAt, updatedAt, answeredInRound).
     """
     if not hex_data or not isinstance(hex_data, str):
-        raise ValueError("retour Chainlink vide")
+        raise ValueError("empty Chainlink return")
     raw = hex_data[2:] if hex_data.startswith("0x") else hex_data
     words = [raw[i * 64:(i + 1) * 64] for i in range(5)]
     if any(len(w) < 64 for w in words):
-        raise ValueError("retour Chainlink trop court pour latestRoundData()")
+        raise ValueError("Chainlink return too short for latestRoundData()")
     round_id = int(words[0], 16)
     answer_raw = int(words[1], 16)
     return {
@@ -180,7 +180,7 @@ def decode_latest_round_data(hex_data, decimals=CHAINLINK_DECIMALS):
 
 
 def aave_row_from_raw(supply_raw, cash_raw, decimals=USDC_DECIMALS):
-    """Utilisation Aave : U = 1 - cash/supply (unités USDC)."""
+    """Aave utilisation: U = 1 - cash/supply (USDC units)."""
     supply = supply_raw / (10 ** decimals)
     cash = cash_raw / (10 ** decimals)
     utilisation = 1.0 - cash / supply if supply else None
@@ -188,8 +188,8 @@ def aave_row_from_raw(supply_raw, cash_raw, decimals=USDC_DECIMALS):
 
 
 # --------------------------------------------------------------------------
-# Parseurs de venues (fixtures locales -> séries normalisées)
-# Points normalisés : {"ts": s, "low": f, "high": f, "last": f, "volume": f|None}
+# Venue parsers (local fixtures -> normalised series)
+# Normalised points: {"ts": s, "low": f, "high": f, "last": f, "volume": f|None}
 # --------------------------------------------------------------------------
 
 def parse_binance_klines(rows):
@@ -209,9 +209,9 @@ def parse_binance_klines(rows):
 
 
 def parse_okx_candles(rows):
-    """rows OKX (les plus récents d'abord) -> points triés croissants.
+    """OKX rows (most recent first) -> points sorted ascending.
 
-    Champs : [ts_ms, open, high, low, close, vol(base), volCcy, volCcyQuote, confirm].
+    Fields: [ts_ms, open, high, low, close, vol(base), volCcy, volCcyQuote, confirm].
     """
     out = []
     for row in rows or []:
@@ -262,21 +262,21 @@ def parse_llama_chart(payload, coin_id=LLAMA_USDC_COIN):
 
 
 def filter_window(points, start_ts=WINDOW_START_TS, end_ts=WINDOW_END_TS + STEP_S):
-    """Ne garde que les points dans [start, end (exclu))."""
+    """Keep only the points in [start, end (exclusive))."""
     return [p for p in points if start_ts <= p["ts"] < end_ts]
 
 
 # --------------------------------------------------------------------------
-# Agrégation horaire + signaux dérivés
+# Hourly aggregation + derived signals
 # --------------------------------------------------------------------------
 
 def bucket_by_hour(points, hour_starts):
-    """Regroupe des points par heure pleine. Retourne {hour_ts: agrégat}.
+    """Group points by full hour. Return {hour_ts: aggregate}.
 
-    - low  = plus bas de l'heure (le prix « stress »),
-    - high = plus haut de l'heure,
-    - last = dernière observation de l'heure,
-    - volume = somme des volumes de l'heure (None si aucune venue ne publie).
+    - low  = lowest of the hour (the "stress" price),
+    - high = highest of the hour,
+    - last = last observation of the hour,
+    - volume = sum of the hour's volumes (None if no venue publishes it).
     """
     hours = set(hour_starts)
     out = {}
@@ -298,7 +298,7 @@ def bucket_by_hour(points, hour_starts):
 
 
 def assemble_hourly(hours, venue_series, oracle_by_hour, aave_by_hour):
-    """Construit la table horaire complète (venues + oracle + Aave + signaux)."""
+    """Build the full hourly table (venues + oracle + Aave + signals)."""
     buckets = {v: bucket_by_hour(pts, hours) for v, pts in venue_series.items()}
     rows = []
     for h in hours:
@@ -357,7 +357,7 @@ def assemble_hourly(hours, venue_series, oracle_by_hour, aave_by_hour):
 
 
 def compute_facts(hourly, venue_series, oracle_points, blocks_meta=None):
-    """Faits de fenêtre : minima par venue, dispersion, divergences, Aave."""
+    """Window facts: per-venue minima, dispersion, divergences, Aave."""
     facts = {"minima": {}, "signals": {}}
 
     for v in VENUES:
@@ -371,7 +371,7 @@ def compute_facts(hourly, venue_series, oracle_points, blocks_meta=None):
             "decote_bps": _r1(discount_bps(p["low"])),
         }
 
-    # Oracle : minimum de la fenêtre
+    # Oracle: window minimum
     if oracle_points:
         o = min(oracle_points, key=lambda q: q["price"])
         facts["minima"]["oracle_chainlink"] = {
@@ -382,7 +382,7 @@ def compute_facts(hourly, venue_series, oracle_points, blocks_meta=None):
             if o.get("sample_ts") else None,
         }
 
-    # Dispersion de fenêtre (convention W2-B : max/min des minima de venues)
+    # Window dispersion (W2-B convention: max/min of the venue minima)
     vals = {v: m["low"] for v, m in facts["minima"].items()
             if v in VENUES and m["low"] is not None}
     if len(vals) >= 2:
@@ -395,7 +395,7 @@ def compute_facts(hourly, venue_series, oracle_points, blocks_meta=None):
             "min_venue": vmin,
         }
 
-    # Dispersion maximale à une même heure
+    # Maximum dispersion within a single hour
     best = None
     for row in hourly:
         s = row["signals"]["sigma_disp_bps"]
@@ -405,7 +405,7 @@ def compute_facts(hourly, venue_series, oracle_points, blocks_meta=None):
     if best:
         facts["signals"]["max_hourly_dispersion"] = best
 
-    # Divergences oracle/marché
+    # Oracle/market divergences
     divs = [(row["signals"].get("divergence_bps"), row) for row in hourly]
     divs = [(v, row) for v, row in divs if v is not None]
     if divs:
@@ -420,7 +420,7 @@ def compute_facts(hourly, venue_series, oracle_points, blocks_meta=None):
                        "negatif = oracle au-dessus du marche (survalorisation retenue) ; "
                        "largest_gap = plus grand ecart en valeur absolue (signe conserve)"),
         }
-        # Écart oracle vs minima de fenêtre (ce que dit W2-B : ~300 bps vs DefiLlama)
+        # Oracle gap vs window minima (what W2-B says: ~300 bps vs DefiLlama)
         gap = {}
         oracle_min = facts["minima"].get("oracle_chainlink", {}).get("answer")
         for v, m in facts["minima"].items():
@@ -428,7 +428,7 @@ def compute_facts(hourly, venue_series, oracle_points, blocks_meta=None):
                 gap[v] = _r1((oracle_min - m["low"]) * 10000)
         facts["signals"]["oracle_min_minus_venue_min_bps"] = gap
 
-    # Aave : utilisation sur la fenêtre
+    # Aave: utilisation over the window
     u_rows = [(row["ts"], row["aave"]["utilisation"]) for row in hourly
               if row.get("aave") and row["aave"].get("utilisation") is not None]
     if u_rows:
@@ -448,12 +448,12 @@ def compute_facts(hourly, venue_series, oracle_points, blocks_meta=None):
 
 
 def compare_w2b(facts, oracle_points=None):
-    """Compare les faits mesurés aux chiffres publiés dans W2-B.
+    """Compare the measured facts with the figures published in W2-B.
 
-    Cas particulier de l'oracle : W2-B échantillonnait tous les 1000 blocs
-    (~3,35 h). La reconstruction horaire est plus dense ; on vérifie donc
-    (1) que la valeur publiée par W2-B est bien présente dans la série, et
-    (2) le minimum atteint par l'échantillonnage dense (correction W3).
+    Oracle special case: W2-B sampled every 1000 blocks (~3.35 h). The hourly
+    reconstruction is denser, so we check (1) that the value published by W2-B
+    is indeed present in the series, and (2) the minimum reached by the dense
+    sampling (W3 correction).
     """
     mins = facts["minima"]
     got = {
@@ -476,7 +476,7 @@ def compare_w2b(facts, oracle_points=None):
             "reproduced": bool(ok),
         }
 
-    # Oracle : la valeur de W2-B est-elle dans la série ? quel est le min dense ?
+    # Oracle: is the W2-B value in the series? what is the dense minimum?
     series = [rec for rec in (oracle_points or []) if rec and rec.get("price") is not None]
     w2b_val = W2B_EXPECTED["oracle_min"]
     hit = None
@@ -507,7 +507,7 @@ def _r1(x, nd=1):
 
 
 # --------------------------------------------------------------------------
-# Réseau (HTTP)
+# Network (HTTP)
 # --------------------------------------------------------------------------
 
 def http_get_json(url, timeout=45, tries=4):
@@ -517,10 +517,10 @@ def http_get_json(url, timeout=45, tries=4):
             req = urllib.request.Request(url, headers={"User-Agent": USER_AGENT})
             with urllib.request.urlopen(req, timeout=timeout) as resp:
                 return json.loads(resp.read().decode("utf-8"))
-        except Exception as exc:  # noqa: BLE001 - on journalise l'échec réseau
+        except Exception as exc:  # noqa: BLE001 - log the network failure
             last = exc
             time.sleep(0.8 * (attempt + 1))
-    raise RuntimeError(f"GET {url} échec: {last}")
+    raise RuntimeError(f"GET {url} failed: {last}")
 
 
 def http_post_json(url, payload, timeout=90):
@@ -532,7 +532,7 @@ def http_post_json(url, payload, timeout=90):
 
 
 def rpc_single(method, params):
-    """Appel JSON-RPC unitaire avec bascule d'endpoint (méthode W2-B)."""
+    """Single JSON-RPC call with endpoint failover (W2-B method)."""
     last = None
     for url in RPC_ENDPOINTS:
         for _ in range(2):
@@ -545,15 +545,15 @@ def rpc_single(method, params):
             except Exception as exc:  # noqa: BLE001
                 last = exc
             time.sleep(0.4)
-    raise RuntimeError(f"rpc {method} échec: {last}")
+    raise RuntimeError(f"rpc {method} failed: {last}")
 
 
 def rpc_batch(calls, chunk=90, batch_endpoints=None):
-    """Appels JSON-RPC par lots. calls = [(method, params), ...] -> [résultat|None].
+    """Batched JSON-RPC calls. calls = [(method, params), ...] -> [result|None].
 
-    Les lots ne fonctionnent que sur blastapi (testé) ; en cas d'échec total du
-    lot, repli sur des appels unitaires (drpc inclus). Jamais silencieux :
-    un appel en erreur vaut None, jamais une valeur inventée.
+    Batches only work on blastapi (tested); if the whole batch fails, fall back
+    to single calls (drpc included). Never silent: a failed call is None, never
+    an invented value.
     """
     endpoints = batch_endpoints or BATCH_ENDPOINTS
     out = []
@@ -582,23 +582,23 @@ def rpc_batch(calls, chunk=90, batch_endpoints=None):
 
 
 # --------------------------------------------------------------------------
-# Recherche dichotomique bloc <-> timestamp (locale, avec cache et sondes par lots)
+# Block <-> timestamp binary search (local, with cache and batched probes)
 # --------------------------------------------------------------------------
 
 class BlockIndex:
-    """Plus grand bloc b tel que ts(b) <= cible, par dichotomie locale.
+    """Largest block b such that ts(b) <= target, by local binary search.
 
-    - cache {bloc: ts} partagé entre toutes les recherches (les sondes d'une
-      heure servent aux heures voisines) ;
-    - `local_search` : encadrement par fenêtre croissante puis dichotomie
-      interpolée — convergent même si le rythme de bloc dérive ;
-    - `resolve_hours` : affinage par lots (une requête HTTP pour ~90 sondes),
-      contrôlé par lot après convergence.
+    - cache {block: ts} shared by all searches (the probes of one hour serve the
+      neighbouring hours);
+    - `local_search`: bracketing by an expanding window then interpolated
+      bisection — converges even if the block rate drifts;
+    - `resolve_hours`: batched refinement (one HTTP request for ~90 probes),
+      checked batch by batch after convergence.
 
-    Dépendances injectables (`call`, `batch`) pour les tests hors-ligne.
+    Injectable dependencies (`call`, `batch`) for the offline tests.
     """
 
-    #: couples (bloc, ts) mesurés dans fixtures/raw_w2b/aave_usdc_util_mar2023.json
+    #: (block, ts) pairs measured in fixtures/raw_w2b/aave_usdc_util_mar2023.json
     SEED = ((16794041, 1678406400),    # 2023-03-10 00:00:00Z
             (16820846, 1678730400))    # 2023-03-13 18:00:00Z
 
@@ -611,9 +611,9 @@ class BlockIndex:
         for b, t in (BlockIndex.SEED if seed is None else seed):
             self.cache[b] = t
 
-    # -- sondes -------------------------------------------------------------
+    # -- probes -------------------------------------------------------------
     def ts(self, block):
-        """Timestamp du bloc (cache, sinon un appel unitaire). None si échec."""
+        """Block timestamp (cache, else a single call). None on failure."""
         if block in self.cache and self.cache[block] is not None:
             return self.cache[block]
         res = self._call("eth_getBlockByNumber", [hex(block), False])
@@ -623,7 +623,7 @@ class BlockIndex:
         return ts
 
     def probe_many(self, blocks):
-        """Sonde une liste de blocs par lots (cache)."""
+        """Probe a list of blocks in batches (cached)."""
         todo, seen = [], set()
         for b in blocks:
             if b in seen:
@@ -640,9 +640,9 @@ class BlockIndex:
             for b, r in zip(part, res):
                 self.cache[b] = int(r["timestamp"], 16) if r else None
 
-    # -- modèle -------------------------------------------------------------
+    # -- model --------------------------------------------------------------
     def rate(self):
-        """Secondes par bloc, calibrées sur les sondes encadrantes du cache."""
+        """Seconds per block, calibrated on the bracketing probes of the cache."""
         pts = sorted((b, t) for b, t in self.cache.items() if t)
         if len(pts) >= 2:
             (b0, t0), (b1, t1) = pts[0], pts[-1]
@@ -651,7 +651,7 @@ class BlockIndex:
         return 12.0
 
     def estimate_block(self, target):
-        """Estimation par interpolation linéaire entre sondes encadrantes."""
+        """Linear interpolation estimate between bracketing probes."""
         pts = sorted((t, b) for b, t in self.cache.items() if t)
         lo = None
         hi = None
@@ -666,42 +666,42 @@ class BlockIndex:
         base = lo or hi or (WINDOW_START_TS, BlockIndex.SEED[0][0])
         return base[1] + int(round((target - base[0]) / self.rate()))
 
-    # -- recherche dichotomique locale --------------------------------------
+    # -- local binary search ------------------------------------------------
     def local_search(self, target, max_steps=64):
-        """Plus grand bloc b tel que ts(b) <= target (dichotomie locale).
+        """Largest block b such that ts(b) <= target (local binary search).
 
-        Encadrement par recherche expansive unilatérale (doublement du pas),
-        puis dichotomie à interpolation. Converge même si le rythme de bloc
-        dérive fortement entre l'ancre et la cible.
+        Bracketing by a one-sided expanding search (step doubling), then
+        interpolated bisection. Converges even if the block rate drifts
+        strongly between the anchor and the target.
         """
         b = self.estimate_block(target)
         tb = self.ts(b)
         if tb is None:
-            raise RuntimeError(f"sonde de bloc indisponible autour de {target}")
-        if tb <= target:  # chercher la borne haute vers le haut
+            raise RuntimeError(f"block probe unavailable around {target}")
+        if tb <= target:  # search the upper bound upwards
             lo, hi, step = b, b + 1, 1
             for _ in range(max_steps):
                 th = self.ts(hi)
                 if th is None:
-                    raise RuntimeError(f"sonde de bloc indisponible autour de {target}")
+                    raise RuntimeError(f"block probe unavailable around {target}")
                 if th > target:
                     break
                 lo, hi = hi, hi + step
                 step *= 2
             else:
-                raise RuntimeError(f"fenêtre locale non encadrée pour {target}")
-        else:             # chercher la borne basse vers le bas
+                raise RuntimeError(f"local window not bracketed for {target}")
+        else:             # search the lower bound downwards
             hi, lo, step = b, b - 1, 1
             for _ in range(max_steps):
                 tl = self.ts(lo)
                 if tl is None:
-                    raise RuntimeError(f"sonde de bloc indisponible autour de {target}")
+                    raise RuntimeError(f"block probe unavailable around {target}")
                 if tl <= target:
                     break
                 hi, lo = lo, lo - step
                 step *= 2
             else:
-                raise RuntimeError(f"fenêtre locale non encadrée pour {target}")
+                raise RuntimeError(f"local window not bracketed for {target}")
         while hi - lo > 1:
             tl, th = self.ts(lo), self.ts(hi)
             span = th - tl
@@ -713,9 +713,9 @@ class BlockIndex:
                 hi = mid
         return lo
 
-    # -- affinage par lots (toutes les heures d'un coup) ---------------------
+    # -- batched refinement (all hours at once) -----------------------------
     def resolve_hours(self, hours, max_rounds=8):
-        """Résout le bloc horaire de chaque heure ; vérifie encadrement final."""
+        """Resolve each hour's block; verify the final bracketing."""
         pending = {h: self.estimate_block(h) for h in hours}
         resolved = {}
         rounds = 0
@@ -743,10 +743,10 @@ class BlockIndex:
             pending = still
             if not pending:
                 break
-        # Repli : dichotomie locale pour les heures récalcitrantes
+        # Fallback: local bisection for the recalcitrant hours
         for h in list(pending):
             resolved[h] = self.local_search(h)
-        # Contrôle final : chaque bloc doit encadrer son heure dans le cache
+        # Final check: each block must bracket its hour in the cache
         fresh = [b for h, b in resolved.items()
                  if b not in self.cache or self.cache.get(b + 1) is None]
         if fresh:
@@ -754,13 +754,13 @@ class BlockIndex:
         for h, b in resolved.items():
             tb, tb1 = self.cache.get(b), self.cache.get(b + 1)
             if tb is None or tb1 is None or not (tb <= h < tb1):
-                raise RuntimeError(f"résolution de bloc invalide pour ts={h}")
+                raise RuntimeError(f"invalid block resolution for ts={h}")
         self.rounds = rounds
         return dict(sorted(resolved.items()))
 
 
 # --------------------------------------------------------------------------
-# Collecteurs réseau par source
+# Network collectors per source
 # --------------------------------------------------------------------------
 
 def fetch_binance():
@@ -802,7 +802,7 @@ def fetch_defillama():
 
 
 def fetch_chainlink(blocks_by_hour):
-    """latestRoundData() à chaque bloc horaire -> {hour_ts: mesure}."""
+    """latestRoundData() at each hourly block -> {hour_ts: measurement}."""
     hours = sorted(blocks_by_hour)
     calls = [("eth_call", [{"to": CHAINLINK_USDC_USD, "data": SEL_LATEST_ROUND_DATA},
                            hex(blocks_by_hour[h])]) for h in hours]
@@ -826,12 +826,12 @@ def fetch_chainlink(blocks_by_hour):
 
 
 def sel_balance_of(holder):
-    """Calldata ERC20 balanceOf(address) = 0x70a08231 + adresse alignée sur 32 octets."""
+    """ERC20 balanceOf(address) calldata = 0x70a08231 + address padded to 32 bytes."""
     return SEL_BALANCE_OF + holder[2:].lower().zfill(64)
 
 
 def fetch_aave(blocks_by_hour):
-    """totalSupply(aEthUSDC) et balanceOf(USDC) à chaque bloc horaire."""
+    """totalSupply(aEthUSDC) and balanceOf(USDC) at each hourly block."""
     hours = sorted(blocks_by_hour)
     calls, meta = [], []
     for h in hours:
@@ -865,11 +865,11 @@ def fetch_aave(blocks_by_hour):
 
 
 # --------------------------------------------------------------------------
-# Mode cache (hors-ligne) : relire les JSON bruts de fixtures/raw_w2b/
+# Cache mode (offline): re-read the raw JSON of fixtures/raw_w2b/
 # --------------------------------------------------------------------------
 
 def load_cache_venues(raw_dir):
-    """Venues depuis raw_w2b : venues_usdc_mar2023.json + defillama_chart_usdc.json."""
+    """Venues from raw_w2b: venues_usdc_mar2023.json + defillama_chart_usdc.json."""
     series = {}
     path = os.path.join(raw_dir, "venues_usdc_mar2023.json")
     with open(path, "r", encoding="utf-8") as fh:
@@ -886,7 +886,7 @@ def load_cache_venues(raw_dir):
 
 
 def load_cache_oracle(raw_dir):
-    """Oracle depuis raw_w2b/chainlink_usdcusd_mar2023.json (sonde ~3,35 h)."""
+    """Oracle from raw_w2b/chainlink_usdcusd_mar2023.json (probe ~3.35 h)."""
     path = os.path.join(raw_dir, "chainlink_usdcusd_mar2023.json")
     with open(path, "r", encoding="utf-8") as fh:
         raw = json.load(fh)
@@ -907,7 +907,7 @@ def load_cache_oracle(raw_dir):
 
 
 def load_cache_aave(raw_dir):
-    """Aave depuis raw_w2b/aave_usdc_util_mar2023.json (pas de 6 h)."""
+    """Aave from raw_w2b/aave_usdc_util_mar2023.json (6 h step)."""
     path = os.path.join(raw_dir, "aave_usdc_util_mar2023.json")
     with open(path, "r", encoding="utf-8") as fh:
         raw = json.load(fh)
@@ -926,11 +926,11 @@ def load_cache_aave(raw_dir):
 
 
 def align_series_to_hours(hours, sparse):
-    """Reporte chaque mesure ponctuelle sur l'heure courante.
+    """Carry each point measurement forward onto the current hour.
 
-    Pour l'heure h, retient la dernière mesure dont l'horodatage est <= h
-    (propagation), en marquant `aligned` = (mesure dans l'heure h).
-    `sparse` peut être un dict {ts: mesure} ou une liste de mesures avec 'sample_ts'.
+    For hour h, keep the last measurement whose timestamp is <= h
+    (propagation), marking `aligned` = (measurement within hour h).
+    `sparse` may be a dict {ts: measurement} or a list of measurements with 'sample_ts'.
     """
     if isinstance(sparse, dict):
         items = sorted((ts, rec) for ts, rec in sparse.items() if rec)
@@ -951,13 +951,13 @@ def align_series_to_hours(hours, sparse):
     return out
 
 
-# --------------------------------------------------------------------------
-# Assemblage de la preuve
+# Evidence assembly
+# Evidence assembly
 # --------------------------------------------------------------------------
 
 def build_evidence(from_cache=False, raw_dir=RAW_W2B, out_path=DEFAULT_OUT,
                    verbose=True):
-    """Construit le dictionnaire de preuve complet (réseau, ou cache hors-ligne)."""
+    """Build the complete evidence dictionary (network, or offline cache)."""
     hours = list(range(WINDOW_START_TS, WINDOW_END_TS + 1, STEP_S))  # 97 points
     say = (lambda m: print(m, flush=True)) if verbose else (lambda m: None)
 
@@ -966,7 +966,7 @@ def build_evidence(from_cache=False, raw_dir=RAW_W2B, out_path=DEFAULT_OUT,
 
     if from_cache:
         mode = "from-cache"
-        say("[cache] lecture des JSON bruts fixtures/raw_w2b/ ...")
+        say("[cache] reading the raw JSON of fixtures/raw_w2b/ ...")
         venues = load_cache_venues(raw_dir)
         oracle_sparse = load_cache_oracle(raw_dir)
         aave_sparse = load_cache_aave(raw_dir)
@@ -993,10 +993,10 @@ def build_evidence(from_cache=False, raw_dir=RAW_W2B, out_path=DEFAULT_OUT,
             fn, endpoint = fetchers[name]
             try:
                 pts = filter_window(fn())
-                say(f"[reseau] {name}: {len(pts)} points")
+                say(f"[network] {name}: {len(pts)} points")
                 sources[name] = {"mode": "network", "endpoint": endpoint, "points": len(pts)}
-            except Exception as exc:  # noqa: BLE001 - repli cache explicite
-                say(f"[reseau] {name} ECHEC ({exc}) -> repli cache raw_w2b/")
+            except Exception as exc:  # noqa: BLE001 - explicit cache fallback
+                say(f"[network] {name} FAILED ({exc}) -> raw_w2b/ cache fallback")
                 cache = load_cache_venues(raw_dir)
                 pts = filter_window(cache.get(name) or [])
                 venues[name] = pts
@@ -1005,7 +1005,7 @@ def build_evidence(from_cache=False, raw_dir=RAW_W2B, out_path=DEFAULT_OUT,
                 continue
             venues[name] = pts
 
-        say("[reseau] recherche dichotomique bloc <-> timestamp (97 heures)...")
+        say("[network] block <-> timestamp binary search (97 hours)...")
         idx = BlockIndex()
         block_by_hour = idx.resolve_hours(hours)
         blocks_meta = {
@@ -1018,15 +1018,15 @@ def build_evidence(from_cache=False, raw_dir=RAW_W2B, out_path=DEFAULT_OUT,
             "seeds": [{"block": b, "ts": t, "utc": iso_utc(t)} for b, t in BlockIndex.SEED],
             "verified": "ts(bloc) <= heure < ts(bloc+1) pour chaque heure",
         }
-        say(f"[reseau] blocs resolus (sondes: {idx.probes_single} unitaires, "
-            f"{idx.probes_batch} par lots)")
-        say("[reseau] Chainlink latestRoundData() ...")
+        say(f"[network] blocks resolved (probes: {idx.probes_single} single, "
+            f"{idx.probes_batch} batched)")
+        say("[network] Chainlink latestRoundData() ...")
         oracle_net = fetch_chainlink(block_by_hour)
         oracle_sparse = {h: r for h, r in oracle_net.items() if r}
         oracle_by_hour = oracle_sparse
         sources["chainlink"] = {"mode": "network", "endpoint": "eth_call latestRoundData()",
                                 "contract": CHAINLINK_USDC_USD, "points": len(oracle_sparse)}
-        say("[reseau] Aave V3 USDC (approvisionnement / cash) ...")
+        say("[network] Aave V3 USDC (supply / cash) ...")
         aave_net = fetch_aave(block_by_hour)
         aave_sparse = {h: r for h, r in aave_net.items() if r}
         aave_by_hour = aave_sparse
@@ -1034,7 +1034,7 @@ def build_evidence(from_cache=False, raw_dir=RAW_W2B, out_path=DEFAULT_OUT,
                            "endpoint": "eth_call aEthUSDC.totalSupply() + USDC.balanceOf(aEthUSDC)",
                            "pool": AAVE_V3_POOL, "a_token": AAVE_A_USDC, "points": len(aave_sparse)}
 
-    say("[sortie] assemblage horaire + signaux derives ...")
+    say("[output] hourly assembly + derived signals ...")
     hourly = assemble_hourly(hours, venues, oracle_by_hour, aave_by_hour)
     facts = compute_facts(hourly, venues, list(oracle_sparse.values()), blocks_meta)
     comparison = compare_w2b(facts, list(oracle_sparse.values()))
@@ -1073,7 +1073,7 @@ def build_evidence(from_cache=False, raw_dir=RAW_W2B, out_path=DEFAULT_OUT,
         with open(out_path, "w", encoding="utf-8", newline="\n") as fh:
             json.dump(document, fh, indent=1, sort_keys=False, ensure_ascii=False)
             fh.write("\n")
-        say(f"[sortie] ecrit: {out_path}")
+        say(f"[output] written: {out_path}")
     return document
 
 
@@ -1082,27 +1082,27 @@ def print_summary(document):
     mins = facts["minima"]
     say = print
     say("")
-    say("=== Faits cles (reconstruction vs W2-B) ===")
+    say("=== Key facts (reconstruction vs W2-B) ===")
     for key, comp in document["w2b_comparison"].items():
         if key == "oracle_min":
-            mark = "OK " if comp["reproduced"] else "ECART"
-            say(f"  [{mark}] oracle_min       w2b={comp['w2b']} present dans la serie="
+            mark = "OK " if comp["reproduced"] else "GAP"
+            say(f"  [{mark}] oracle_min       w2b={comp['w2b']} present in the series="
                 f"{comp['w2b_value_present_in_series']} ({comp['w2b_value_utc']}) ; "
-                f"min dense={comp['dense_min']} ({comp['dense_min_utc']})")
+                f"dense min={comp['dense_min']} ({comp['dense_min_utc']})")
             continue
-        mark = "OK " if comp["reproduced"] else "ECART"
-        say(f"  [{mark}] {key:16s} w2b={comp['w2b']}  mesure={comp['measured']}")
+        mark = "OK " if comp["reproduced"] else "GAP"
+        say(f"  [{mark}] {key:16s} w2b={comp['w2b']}  measured={comp['measured']}")
     disp = facts["signals"].get("dispersion_window_bps")
     if disp:
-        say(f"  dispersion fenetre : {disp['value_bps']} bps "
+        say(f"  window dispersion : {disp['value_bps']} bps "
             f"({disp['min_venue']} {mins[disp['min_venue']]['low']} -> "
             f"{disp['max_venue']} {mins[disp['max_venue']]['low']})")
     div = facts["signals"].get("divergence_same_hour")
     if div:
-        say(f"  divergence meme heure : max {div['max_bps']} bps @ {div['max_utc']}")
+        say(f"  same-hour divergence : max {div['max_bps']} bps @ {div['max_utc']}")
     gap = facts["signals"].get("oracle_min_minus_venue_min_bps")
     if gap:
-        say(f"  ecart oracle_min - min venue (bps) : {gap}")
+        say(f"  oracle_min - venue min gap (bps) : {gap}")
     u = facts["signals"].get("aave_usdc_utilisation")
     if u:
         say(f"  Aave USDC utilisation : {u['start']} -> {u['end']} "
@@ -1113,10 +1113,10 @@ def print_summary(document):
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("--from-cache", action="store_true",
-                        help="reconstruire hors-ligne depuis fixtures/raw_w2b/")
-    parser.add_argument("--out", default=DEFAULT_OUT, help="fichier JSON de sortie")
+                        help="rebuild offline from fixtures/raw_w2b/")
+    parser.add_argument("--out", default=DEFAULT_OUT, help="output JSON file")
     parser.add_argument("--raw-dir", default=RAW_W2B,
-                        help="dossier des JSON bruts (mode cache)")
+                        help="directory of the raw JSON files (cache mode)")
     parser.add_argument("--quiet", action="store_true")
     args = parser.parse_args(argv)
 
@@ -1125,7 +1125,7 @@ def main(argv=None):
     if not args.quiet:
         print_summary(document)
     n_ok = sum(1 for c in document["w2b_comparison"].values() if c["reproduced"])
-    print(f"faits W2-B reproduits : {n_ok}/{len(document['w2b_comparison'])}")
+    print(f"W2-B facts reproduced: {n_ok}/{len(document['w2b_comparison'])}")
     return 0 if n_ok == len(document["w2b_comparison"]) else 1
 
 

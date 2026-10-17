@@ -1,18 +1,17 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-"""ORVYREN-Core — REPLAY-JOURNAL : relecture bit-à-bit du journal d'agents (W7).
+"""ORVYREN-Core — REPLAY-JOURNAL: bit-for-bit re-read of the agent journal (W7).
 
-Mode 1 (B7 §c.2, nom gelé ``REPLAY-JOURNAL``) : on relit le journal d'agents et
-le magasin de réponses (prompts/réponses bruts adressés par hash) — **rien
-n'est recalculé** ; le chaînage ``prev_hash`` est vérifié à la lecture, ligne
-par ligne, avant toute restitution. La reproductibilité **bit-à-bit est une
-propriété de ce mode** et de lui seul.
+Mode 1 (B7 §c.2, frozen name ``REPLAY-JOURNAL``): the agent journals and the
+response store are re-read (raw prompts/responses addressed by hash) —
+**nothing is recomputed**; the ``prev_hash`` chaining is verified at read
+time, line by line, before any restitution. Bit-for-bit reproducibility is a
+property of this mode and of this mode only.
 
-Le rejeu réutilise le coordinateur W2 tel quel (``run_agents.py --replay
-journal`` — identifiant de run épinglé ``demo-<case>``, réponses
-enregistrées) : un rejeu k fois doit produire des **transcripts de hash
-identiques** (critère k=10, B1 §6.2). Un run de rejeu **ne signe jamais** et
-n'émet aucune transaction.
+The replay reuses the W2 coordinator as-is (``run_agents.py --replay journal``
+— pinned run identifier ``demo-<case>``, recorded responses): a replay run k
+times must produce **identical transcript hashes** (criterion k=10, B1 §6.2).
+A replay run **never signs** and emits no transaction.
 """
 
 from __future__ import annotations
@@ -35,12 +34,12 @@ from orvyren.agents import worker as worker_mod  # noqa: E402
 
 MODE_LABEL = "REPLAY-JOURNAL"
 GENESIS_HASH = "0" * 64
-#: Champs volatils jamais inclus dans le hash du transcript (audit d'exécution).
+#: Volatile fields never included in the transcript hash (execution audit).
 VOLATILE_KEYS = ("run_dir", "session_dir", "ts_wall", "wall_seconds", "duration_s")
 
 
 class ReplayJournalError(RuntimeError):
-    """Rejeu journal impossible (cas absent, journal incomplet, chaîne cassée)."""
+    """Journal replay impossible (missing case, incomplete journal, broken chain)."""
 
 
 def canonical_json(payload: Any) -> str:
@@ -62,13 +61,13 @@ def _find_run_dir(session_dir: str, case_id: str) -> str:
         os.path.join(session_dir, name) for name in os.listdir(session_dir)
         if name.startswith(prefix) and os.path.isdir(os.path.join(session_dir, name)))
     if not candidates:
-        raise ReplayJournalError("aucun répertoire de run sous %s" % session_dir)
+        raise ReplayJournalError("no run directory under %s" % session_dir)
     return candidates[-1]
 
 
 def replay_once(case_id: str, session_dir: str, *, quiet: bool = False) -> str:
-    """Un rejeu journal (in-process, coordinateur W2 inchangé) → ``run_dir``."""
-    import run_agents  # racine du dépôt (script coordinateur W2)
+    """One journal replay (in-process, unchanged W2 coordinator) → ``run_dir``."""
+    import run_agents  # repository root (W2 coordinator script)
 
     os.makedirs(session_dir, exist_ok=True)
     argv = ["--case", case_id, "--replay", "journal", "--session", session_dir]
@@ -78,19 +77,19 @@ def replay_once(case_id: str, session_dir: str, *, quiet: bool = False) -> str:
     else:
         code = run_agents.main(argv)
     if code != 0:
-        raise ReplayJournalError("E_REPLAY_RUN: code %d pour %s" % (code, case_id))
+        raise ReplayJournalError("E_REPLAY_RUN: exit code %d for %s" % (code, case_id))
     return _find_run_dir(session_dir, case_id)
 
 
 def load_transcript(run_dir: str) -> Dict[str, Any]:
-    """Charge les deux journaux d'un run, vérifie les chaînes, rend le transcript.
+    """Load both journals of a run, verify the chains, return the transcript.
 
-    La vérification du chaînage est **bloquante** (B7 §c.4) : une ligne
-    modifiée ⇒ refus de restituer.
+    Chain verification is **blocking** (B7 §c.4): one modified line ⇒ refusal
+    to restitute anything.
     """
     outcome_path = os.path.join(run_dir, "run_outcome.json")
     if not os.path.isfile(outcome_path):
-        raise ReplayJournalError("E_REPLAY_INCOMPLETE: run_outcome.json absent")
+        raise ReplayJournalError("E_REPLAY_INCOMPLETE: run_outcome.json missing")
     with open(outcome_path, "r", encoding="utf-8") as handle:
         outcome = json.load(handle)
     journals: Dict[str, Any] = {}
@@ -98,7 +97,7 @@ def load_transcript(run_dir: str) -> Dict[str, Any]:
     for role in ("orchestrator", "critic"):
         path = os.path.join(run_dir, "journal_%s.jsonl" % role)
         if not os.path.isfile(path):
-            raise ReplayJournalError("E_REPLAY_INCOMPLETE: journal %s absent" % role)
+            raise ReplayJournalError("E_REPLAY_INCOMPLETE: journal %s missing" % role)
         entries = worker_mod.load_journal(path)
         ok, message = worker_mod.verify_exported_chain(entries)
         if not ok:
@@ -118,20 +117,20 @@ def load_transcript(run_dir: str) -> Dict[str, Any]:
 
 
 def transcript_hash(transcript: Dict[str, Any]) -> str:
-    """SHA-256 canonique du transcript (champs volatils exclus)."""
+    """Canonical SHA-256 of the transcript (volatile fields excluded)."""
     return hashlib.sha256(canonical_json(_strip_volatile(transcript)).encode("utf-8")).hexdigest()
 
 
 def replay_k(case_id: str, work_root: str, *, k: int = 10,
              quiet: bool = True) -> Dict[str, Any]:
-    """k rejeux journal indépendants → comparaison des hashes de transcript.
+    """k independent journal replays → comparison of transcript hashes.
 
-    Critère gelé B1 §6.2 / [DONE] W7 : ``k = 10`` rejeux ⇒ hash identique.
-    Chaque rejeu vit dans sa propre session (``<work_root>/run_<i>/``) : aucun
-    état partagé entre rejeux.
+    Frozen criterion B1 §6.2 / [DONE] W7: ``k = 10`` replays ⇒ identical hash.
+    Each replay lives in its own session (``<work_root>/run_<i>/``): no state
+    shared between replays.
     """
     if k < 1:
-        raise ReplayJournalError("k doit être ≥ 1")
+        raise ReplayJournalError("k must be ≥ 1")
     hashes: List[str] = []
     run_dirs: List[str] = []
     for index in range(k):
@@ -146,7 +145,7 @@ def replay_k(case_id: str, work_root: str, *, k: int = 10,
 
 
 def verify_run(run_dir: str, *, expected_hash: Optional[str] = None) -> Dict[str, Any]:
-    """T10 : recalcule le transcript d'un run et compare (journal identique)."""
+    """T10: recompute a run's transcript and compare (identical journal)."""
     transcript = load_transcript(run_dir)
     computed = transcript_hash(transcript)
     verdict = "OK" if (expected_hash is None or expected_hash == computed) else "MISMATCH"

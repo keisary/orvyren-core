@@ -250,7 +250,7 @@ def serve(host=DEFAULT_HOST, port=DEFAULT_PORT, evidence_dir=None):
     print(f"  evidence dir : {httpd.evidence_dir}")
     latest = dossier.find_latest_dossier(httpd.evidence_dir)
     print(f"  dossier      : {latest if latest else 'none yet - GET / returns 503 until one is built'}")
-    print("  routes       : / (latest dossier HTML), /ui (12 écrans), /screen/1..12, /api/dossier (JSON), /api/health")
+    print("  routes       : / (latest dossier HTML), /ui (12 screens), /screen/1..12, /api/dossier (JSON), /api/health")
     try:
         httpd.serve_forever()
     except KeyboardInterrupt:

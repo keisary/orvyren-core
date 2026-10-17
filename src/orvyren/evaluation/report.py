@@ -1,15 +1,15 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-"""ORVYREN-Core — rendu des rapports d'évaluation (W7 ; B7 §e.5, §b.4).
+"""ORVYREN-Core — evaluation report rendering (W7; B7 §e.5, §b.4).
 
-Règles opposables :
+Opposable rules:
 
-* **bannière obligatoire** en tête de toute sortie (``DEV`` / ``EVAL`` /
-  ``REPLAY-…``) — toute sortie sans bannière est un bug ;
-* **N affiché** partout ; un tableau sans ``N`` n'est pas rendu ;
-* aucun score agrégé unique ; ``R⁻`` et ``R⁺`` jamais moyennés ensemble ;
-* le hash de contenu (champs d'exécution réels exclus) rend deux exécutions
-  identiques comparables — un rapport sans hash est un rapport non vérifiable.
+* **mandatory banner** at the top of every output (``DEV`` / ``EVAL`` /
+  ``REPLAY-…``) — any output without a banner is a bug;
+* **N displayed** everywhere; a table without ``N`` is not rendered;
+* no single aggregate score; ``R⁻`` and ``R⁺`` are never averaged together;
+* the content hash (real execution fields excluded) makes two identical
+  executions comparable — a report without a hash is an unverifiable report.
 """
 
 from __future__ import annotations
@@ -25,15 +25,15 @@ ALLOWED_BANNERS = ("DEV", "EVAL")
 
 
 class ReportError(RuntimeError):
-    """Rapport invalide (bannière absente, N manquant) — jamais rendu en silence."""
+    """Invalid report (missing banner, missing N) — never rendered silently."""
 
 
 def require_banner(banner: object) -> str:
     text = str(banner or "")
     if text in ALLOWED_BANNERS or text.startswith("REPLAY"):
         return text
-    raise ReportError("bannière obligatoire absente ou inconnue (%r) — toute sortie "
-                      "d'évaluation porte DEV/EVAL/REPLAY-… (B7 §e.5)" % banner)
+    raise ReportError("mandatory banner missing or unknown (%r) — every evaluation "
+                      "output carries DEV/EVAL/REPLAY-… (B7 §e.5)" % banner)
 
 
 def _write_json(path: str, payload: Any) -> None:
@@ -50,16 +50,16 @@ def _write_text(path: str, text: str) -> None:
 
 
 def render_evaluation_report(*, content: Dict[str, Any], out_dir: str) -> Dict[str, str]:
-    """Écrit ``evaluation_report.json`` + ``.md`` ; renvoie les chemins + le hash."""
-    from orvyren.evaluation import harness  # import tardif (évite le cycle)
+    """Write ``evaluation_report.json`` + ``.md``; return the paths + the hash."""
+    from orvyren.evaluation import harness  # late import (avoids the cycle)
 
     banner = require_banner(content.get("banner"))
     n_windows = content.get("n_windows")
     if not isinstance(n_windows, int):
-        raise ReportError("N (n_windows) absent du rapport — un tableau sans N n'est pas rendu")
+        raise ReportError("N (n_windows) missing from the report — a table without N is not rendered")
     validity = str(content.get("validity") or "")
     if not validity:
-        raise ReportError("mention de validité absente (non conclusionnel si N < 100)")
+        raise ReportError("validity mention missing (non-conclusive when N < 100)")
     content_sha = harness.content_hash(content)
     generated_at = _dt.datetime.now(_dt.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
 
@@ -145,7 +145,7 @@ def render_window_detail(detail: Dict[str, Any], *, out_dir: str) -> str:
 
 def write_side_files(*, content: Dict[str, Any], window_details: List[Dict[str, Any]],
                      out_dir: str) -> Dict[str, str]:
-    """``placebo_B0.json`` + ``superiority_tests.json`` (structure B7 §e.5)."""
+    """``placebo_B0.json`` + ``superiority_tests.json`` (B7 §e.5 structure)."""
     placebo: Dict[str, Any] = {"schema": "orvyren.evaluation-placebo/v1",
                                "note": "distribution complète des tirages B0 (graine fixée) + "
                                        "percentile de la config appariée"}
@@ -170,7 +170,7 @@ def write_side_files(*, content: Dict[str, Any], window_details: List[Dict[str, 
 
 
 def append_variants_log(log_path: str, entry: Dict[str, Any]) -> None:
-    """``variants.log`` append-only — une ligne par exécution, **échecs inclus**."""
+    """Append-only ``variants.log`` — one line per execution, **failures included**."""
     os.makedirs(os.path.dirname(os.path.abspath(log_path)), exist_ok=True)
     line = dict(entry)
     line.setdefault("ts_wall_utc",

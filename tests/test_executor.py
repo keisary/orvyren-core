@@ -1,12 +1,12 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-"""ORVYREN-Core — banc de l'exécuteur autonome (boucle, ledger, journal, CLI).
+"""ORVYREN-Core — autonomous executor bench (loop, ledger, journal, CLI).
 
-Tout est hors-ligne et stdlib : décision injectée (ou replay réel pour la CLI),
-horloge fixe, chemins temporaires. Aucune clé n'est lue ; ``--execute`` sans
-clé doit échouer avant le premier tick.
+Everything is offline and stdlib: injected decision (or real replay for the CLI),
+fixed clock, temporary paths. No key is read; ``--execute`` without a
+key must fail before the first tick.
 
-Exécution : python -m unittest tests.test_executor -v
+Run: python -m unittest tests.test_executor -v
             python -m pytest tests/test_executor.py -q
 """
 
@@ -48,7 +48,7 @@ def make_bundle(recipient=RESERVE, policy_path=POLICY):
 
 
 def make_provider(amount=100.0, recipient=RESERVE):
-    """Décision synthétique : un transfert borné, sans dépendre du corpus."""
+    """Synthetic decision: a bounded transfer, without depending on the corpus."""
 
     def provider(tick, now):
         return {
@@ -70,7 +70,7 @@ def make_provider(amount=100.0, recipient=RESERVE):
 
 
 def invoke_cli(argv, env=None, clock=None):
-    """Appelle la CLI en capturant stdout/stderr : banc silencieux, code + sorties."""
+    """Call the CLI while capturing stdout/stderr: silent bench, code + output."""
     out, err = io.StringIO(), io.StringIO()
     with contextlib.redirect_stdout(out), contextlib.redirect_stderr(err):
         code = run_executor.main(argv, env={} if env is None else env,
@@ -169,7 +169,7 @@ class TestDryRunLoop(ExecutorTestCase):
         with open(self.journal, "r", encoding="utf-8") as handle:
             lines = [line for line in handle if line.strip()]
         tampered = json.loads(lines[0])
-        tampered["verdict"] = "DENY"  # la ligne était ALLOW : le hash ne correspond plus
+        tampered["verdict"] = "DENY"  # the line was ALLOW: the hash no longer matches
         lines[0] = json.dumps(tampered, ensure_ascii=False) + "\n"
         with open(self.journal, "w", encoding="utf-8", newline="\n") as handle:
             handle.writelines(lines)
@@ -197,7 +197,7 @@ class TestDryRunLoop(ExecutorTestCase):
         ])
         self.assertEqual(0, code)
         self.assertEqual(5, executor.verify_journal(self.journal)["records"])
-        self.assertNotIn("ERREUR", out)
+        self.assertNotIn("ERROR", out)
 
 
 class TestKillSwitch(ExecutorTestCase):
@@ -222,7 +222,7 @@ class TestKillSwitch(ExecutorTestCase):
         self.assertIn("PAUSED", summary["records"][0]["reasons"])
 
     def test_unreadable_pause_value_fails_closed(self):
-        summary = self.run_loop(ticks=1, env={"ORVYREN_K0_PAUSED": "peut-etre"})
+        summary = self.run_loop(ticks=1, env={"ORVYREN_K0_PAUSED": "maybe"})
         self.assertTrue(summary["paused"])
         self.assertIn("PAUSED", summary["records"][0]["reasons"])
 
@@ -240,7 +240,7 @@ class TestKillSwitch(ExecutorTestCase):
 
         def flaky_pause(env=None, flag_path=None):
             calls["count"] += 1
-            return calls["count"] > 1  # le kill switch bascule au 2e tick
+            return calls["count"] > 1  # the kill switch flips on the 2nd tick
 
         executor.resolve_pause = flaky_pause
         try:
@@ -289,7 +289,7 @@ class TestPeriodCapPersistence(ExecutorTestCase):
         self.assertEqual(2, first["counts"]["dry_run"])
         self.assertEqual(200.0, first["ledger"]["spent_24h_after"])
 
-        # Deuxième invocation : nouvelles instances journal/ledger, même fichier.
+        # Second invocation: new journal/ledger instances, same file.
         second = self.run_loop(ticks=2)
         self.assertEqual(200.0, second["ledger"]["spent_24h_before"])
         self.assertEqual(300.0, second["ledger"]["spent_24h_after"])
@@ -312,7 +312,7 @@ class TestPeriodCapPersistence(ExecutorTestCase):
 
     def test_corrupt_ledger_is_fail_closed(self):
         with open(self.ledger, "w", encoding="utf-8") as handle:
-            handle.write("{pas du json")
+            handle.write("{not json")
         code, _, _ = invoke_cli(["--ticks", "1", "--dry-run",
                                  "--journal", self.journal, "--ledger", self.ledger])
         self.assertEqual(executor.EXIT_RUNTIME, code)
@@ -335,13 +335,13 @@ class TestExecuteFailClosed(ExecutorTestCase):
             if isinstance(node, ast.Import):
                 for alias in node.names:
                     self.assertNotIn(alias.name.split(".")[0], banned,
-                                     "import de scripts/signer au top-level interdit")
+                                     "top-level import of scripts/signer is forbidden")
             elif isinstance(node, ast.ImportFrom):
                 module = (node.module or "").split(".")[0]
                 self.assertNotIn(module, banned,
-                                 "import de scripts/signer au top-level interdit")
+                                 "top-level import of scripts/signer is forbidden")
                 self.assertNotEqual("orvyren.decide", node.module,
-                                    "le moteur de décision doit rester un import paresseux")
+                                    "the decision engine must stay a lazy import")
 
 
 class TestDemoWiring(ExecutorTestCase):

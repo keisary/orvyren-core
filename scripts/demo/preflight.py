@@ -1,35 +1,35 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-"""ORVYREN — kit de démo testnet : **préflight 12 contrôles + test de dérive 10 contrôles**.
+"""ORVYREN — testnet demo kit: **12-check preflight + 10-check drift test**.
 
-Deux familles de contrôles, un seul rapport JSON :
+Two families of checks, a single JSON report:
 
-* **P1-P12** — la checklist de simulation/vérifications **avant toute signature**
-  (B5 §c.1) : verdict de politique, chaîne épinglée, échéance, idempotence,
-  pause K0, version de la politique on-chain, présence des contrats cibles,
-  nonce, soldes, gaz, **simulation ``eth_call`` depuis l'adresse de l'agent**,
-  estimation de gaz. Un seul échec ⇒ aucune signature.
-* **D1-D10** — le **test de dérive** hors chaîne ↔ enveloppe Zodiac (B4 §d.3) :
-  chaîne, module (code), membres, cibles, fonctions, conditions, allowances,
-  quota d'appels, expiration/révocation planifiée, version/avis. Divergence ou
-  impossibilité de vérifier ⇒ **SAFE MODE** (B4 P12) : refus de tout autonome,
+* **P1-P12** — the simulation/verification checklist **before any signature**
+  (B5 §c.1): policy verdict, pinned chain, expiry, idempotency,
+  K0 pause, on-chain policy version, presence of target contracts,
+  nonce, balances, gas, **``eth_call`` simulation from the agent address**,
+  gas estimate. A single failure ⇒ no signature.
+* **D1-D10** — the off-chain ↔ Zodiac envelope **drift test** (B4 §d.3):
+  chain, module (code), members, targets, functions, conditions, allowances,
+  call quota, expiration/scheduled revocation, version/advisory. Divergence or
+  inability to verify ⇒ **SAFE MODE** (B4 P12): every autonomous action refused,
   journal ``ENVELOPE_DRIFT`` / ``ENVELOPE_UNVERIFIED``.
 
-Modes :
+Modes:
 
-* ``--offline`` (défaut) : **aucun réseau** ; les contrôles en ligne sont
-  ``SKIPPED``/``UNKNOWN`` et le rapport porte ``verdict = OFFLINE_PASS`` — c'est
-  la répétition hors chaîne, jamais une preuve d'exécution ;
-* ``--rpc`` : les contrôles en ligne s'exécutent (lecture seule, User-Agent
-  inclus) ; en cas d'échec ou de contrôle impossible, le rapport refuse.
+* ``--offline`` (default): **no network**; the live checks are
+  ``SKIPPED``/``UNKNOWN`` and the report carries ``verdict = OFFLINE_PASS`` — it is
+  the off-chain rehearsal, never a proof of execution;
+* ``--rpc``: the live checks run (read-only, User-Agent
+  included); on failure or an impossible check, the report refuses.
 
-``--capture-envelope`` (mode en ligne) écrit une enveloppe de référence
-(adresses + tailles + sha256 du code + bloc + prix du gaz) ; les *probes*
-(calldata des getters du module) restent à confirmer sur le contrat déployé
-(limite assumée de B4 annexe 4 : les noms exacts des getters de cible/condition
-doivent être confirmés le jour J).
+``--capture-envelope`` (live mode) writes a reference envelope
+(addresses + sizes + code sha256 + block + gas price); the *probes*
+(module getter calldata) remain to be confirmed on the deployed contract
+(accepted limitation of B4 annex 4: the exact target/condition getter names
+must be confirmed on demo day).
 
-CLI :
+CLI:
 
     python scripts/demo/preflight.py --intent intent.json --policy policy.demo.json \
         --envelope envelope.example.json [--offline|--rpc] [--out report.json]
@@ -46,7 +46,7 @@ from typing import Any, Dict, List, Optional, Sequence, Tuple
 
 try:
     from . import calls, common, intents
-except ImportError:  # exécution directe : python scripts/demo/preflight.py
+except ImportError:  # direct execution: python scripts/demo/preflight.py
     _sys_dir = os.path.dirname(os.path.abspath(__file__))
     if _sys_dir not in sys.path:
         sys.path.insert(0, _sys_dir)
@@ -57,13 +57,13 @@ except ImportError:  # exécution directe : python scripts/demo/preflight.py
 MODE_OFFLINE = "offline"
 MODE_RPC = "rpc"
 
-#: Garde-fou gaz (B5 P10) : refus au-delà de 10× la valeur de référence.
+#: Gas guard (B5 P10): refuse beyond 10× the reference value.
 GAS_PRICE_BOUND_FACTOR = 10
-#: Valeur de référence mesurée le 2026-10-15 sur Base Sepolia (B5 annexe B) : 0,006 gwei.
+#: Reference value measured on 2026-10-15 on Base Sepolia (B5 annex B): 0.006 gwei.
 GAS_PRICE_BASELINE_WEI = 6_000_000
-#: Marge d'estimation (B5 P12) : gasLimit = 1,25 × estimation.
+#: Estimation margin (B5 P12): gasLimit = 1.25 × estimate.
 GAS_LIMIT_FACTOR = 1.25
-#: Solde ETH minimal exigé : 2 × estimation de gaz (B5 P9).
+#: Minimum ETH balance required: 2 × gas estimate (B5 P9).
 GAS_BALANCE_FACTOR = 2
 
 EXIT_OK = 0
@@ -87,7 +87,7 @@ def _weights(values: Sequence[float]) -> float:
 
 
 class PreflightRunner:
-    """Exécute les 12 + 10 contrôles et produit le rapport JSON."""
+    """Runs the 12 + 10 checks and produces the JSON report."""
 
     def __init__(self, *, policy: common.PolicyReference,
                  intent: Optional[Dict[str, Any]] = None,
@@ -123,7 +123,7 @@ class PreflightRunner:
         self.gas_baseline_wei = int(gas_baseline_wei
                                     or (self.envelope.get("gas") or {}).get("gas_price_baseline_wei")
                                     or GAS_PRICE_BASELINE_WEI)
-        # Valeurs calculées en ligne, réutilisées par plusieurs contrôles.
+        # Values computed live, reused by several checks.
         self._live: Dict[str, Any] = {}
 
     # --- helpers --------------------------------------------------------------
@@ -132,7 +132,7 @@ class PreflightRunner:
         return self.mode == MODE_RPC
 
     def _exec_call(self) -> Optional[Dict[str, str]]:
-        """Calldata exact exécuté par l'agent (module ← transfer), construit depuis l'intent."""
+        """Exact calldata executed by the agent (module ← transfer), built from the intent."""
         if not self.intent or not self.module:
             return None
         try:
@@ -150,21 +150,21 @@ class PreflightRunner:
 
     def p1_policy_verdict(self) -> Dict[str, Any]:
         if not self.intent:
-            return _check("P1", "preflight", "verdict de politique ALLOW tracé", "UNKNOWN",
-                          {"reason": "aucun intent fourni"})
+            return _check("P1", "preflight", "traced ALLOW policy verdict", "UNKNOWN",
+                          {"reason": "no intent provided"})
         seen = self.registry.seen_intent_ids() if self.registry else ()
         decision = common.evaluate_policy(self.intent, self.policy, now=self.now, seen_intent_ids=seen)
         detail = {"recomputed": common.decision_as_dict(decision, intent=self.intent, policy=self.policy, now=self.now)}
         if decision.verdict != "ALLOW":
             detail["code"] = "policy_not_allow"
-            return _check("P1", "preflight", "verdict de politique ALLOW tracé", "FAIL", detail)
+            return _check("P1", "preflight", "traced ALLOW policy verdict", "FAIL", detail)
         if self.recorded_decision is not None:
             recorded = str(self.recorded_decision.get("verdict"))
             detail["recorded"] = recorded
             if recorded != decision.verdict:
                 detail["code"] = "policy_decision_mismatch"
-                return _check("P1", "preflight", "verdict de politique ALLOW tracé", "FAIL", detail)
-        return _check("P1", "preflight", "verdict de politique ALLOW tracé", "PASS", detail)
+                return _check("P1", "preflight", "traced ALLOW policy verdict", "FAIL", detail)
+        return _check("P1", "preflight", "traced ALLOW policy verdict", "PASS", detail)
 
     def p2_chain_pinned(self) -> Dict[str, Any]:
         detail: Dict[str, Any] = {"expected": self.chain_id, "policy": self.policy.chain_id}
@@ -172,65 +172,65 @@ class PreflightRunner:
             detail["intent"] = self.intent.get("chain_id")
             if int(self.intent.get("chain_id") or 0) != self.chain_id:
                 detail["code"] = "chain_id_mismatch"
-                return _check("P2", "preflight", "chaîne épinglée (eth_chainId)", "FAIL", detail)
+                return _check("P2", "preflight", "pinned chain (eth_chainId)", "FAIL", detail)
         if not self._live_mode():
-            detail["note"] = "eth_chainId non lu (mode hors-ligne) — le contrôle en ligne est requis le jour J"
-            return _check("P2", "preflight", "chaîne épinglée (eth_chainId)", "PASS", detail)
+            detail["note"] = "eth_chainId not read (offline mode) — the live check is required on demo day"
+            return _check("P2", "preflight", "pinned chain (eth_chainId)", "PASS", detail)
         try:
             observed = common.eth_chain_id(self.rpc_url, self.timeout)
         except Exception as exc:  # ChainError
             detail.update({"code": "rpc_unreachable", "error": str(exc)})
-            return _check("P2", "preflight", "chaîne épinglée (eth_chainId)", "FAIL", detail)
+            return _check("P2", "preflight", "pinned chain (eth_chainId)", "FAIL", detail)
         detail["observed"] = observed
         if observed != self.chain_id:
             detail["code"] = "chain_id_mismatch"
-            return _check("P2", "preflight", "chaîne épinglée (eth_chainId)", "FAIL", detail)
-        return _check("P2", "preflight", "chaîne épinglée (eth_chainId)", "PASS", detail)
+            return _check("P2", "preflight", "pinned chain (eth_chainId)", "FAIL", detail)
+        return _check("P2", "preflight", "pinned chain (eth_chainId)", "PASS", detail)
 
     def p3_expiry(self) -> Dict[str, Any]:
         if not self.intent:
-            return _check("P3", "preflight", "expiry de l'intent non dépassée", "UNKNOWN",
-                          {"reason": "aucun intent fourni"})
+            return _check("P3", "preflight", "intent expiry not passed", "UNKNOWN",
+                          {"reason": "no intent provided"})
         detail: Dict[str, Any] = {"expiry": self.intent.get("expiry"), "now": self.now.strftime("%Y-%m-%dT%H:%M:%SZ")}
         try:
             expiry = common.parse_rfc3339(self.intent.get("expiry"))
         except ValueError as exc:
             detail["code"] = "intent_expired"
             detail["error"] = str(exc)
-            return _check("P3", "preflight", "expiry de l'intent non dépassée", "FAIL", detail)
+            return _check("P3", "preflight", "intent expiry not passed", "FAIL", detail)
         if expiry <= self.now:
             detail["code"] = "intent_expired"
-            return _check("P3", "preflight", "expiry de l'intent non dépassée", "FAIL", detail)
+            return _check("P3", "preflight", "intent expiry not passed", "FAIL", detail)
         ttl = timedelta(minutes=self.policy.ttl_intent_minutes)
         if expiry > self.now + ttl:
             detail["code"] = "intent_ttl_too_long"
-            return _check("P3", "preflight", "expiry de l'intent non dépassée", "FAIL", detail)
-        return _check("P3", "preflight", "expiry de l'intent non dépassée", "PASS", detail)
+            return _check("P3", "preflight", "intent expiry not passed", "FAIL", detail)
+        return _check("P3", "preflight", "intent expiry not passed", "PASS", detail)
 
     def p4_idempotency(self) -> Dict[str, Any]:
         if not self.intent:
-            return _check("P4", "preflight", "idempotence (registre append-only)", "UNKNOWN",
-                          {"reason": "aucun intent fourni"})
+            return _check("P4", "preflight", "idempotency (append-only registry)", "UNKNOWN",
+                          {"reason": "no intent provided"})
         key = str(self.intent.get("idempotency_key") or "")
         if self.registry is None:
-            return _check("P4", "preflight", "idempotence (registre append-only)", "UNKNOWN",
-                          {"reason": "aucun registre fourni", "code": "intent_registry_missing"})
+            return _check("P4", "preflight", "idempotency (append-only registry)", "UNKNOWN",
+                          {"reason": "no registry provided", "code": "intent_registry_missing"})
         detail = {"idempotency_key": key, "registry": self.registry.as_dict()}
         if self.registry.has_key(key):
             detail["code"] = "intent_already_processed"
-            return _check("P4", "preflight", "idempotence (registre append-only)", "FAIL", detail)
+            return _check("P4", "preflight", "idempotency (append-only registry)", "FAIL", detail)
         if str(self.intent.get("intent_id")) in self.registry.seen_intent_ids():
             detail["code"] = "intent_already_processed"
-            return _check("P4", "preflight", "idempotence (registre append-only)", "FAIL", detail)
-        return _check("P4", "preflight", "idempotence (registre append-only)", "PASS", detail)
+            return _check("P4", "preflight", "idempotency (append-only registry)", "FAIL", detail)
+        return _check("P4", "preflight", "idempotency (append-only registry)", "PASS", detail)
 
     def p5_pause(self) -> Dict[str, Any]:
         paused = bool(self.pause and self.pause.is_paused())
         detail = {"paused": paused, "flag_path": getattr(self.pause, "path", None)}
         if paused:
             detail["code"] = "agent_paused"
-            return _check("P5", "preflight", "pause K0 (kill switch hors chaîne)", "FAIL", detail)
-        return _check("P5", "preflight", "pause K0 (kill switch hors chaîne)", "PASS", detail)
+            return _check("P5", "preflight", "K0 pause (off-chain kill switch)", "FAIL", detail)
+        return _check("P5", "preflight", "K0 pause (off-chain kill switch)", "PASS", detail)
 
     def p6_module_version(self) -> Dict[str, Any]:
         module_ref = (self.envelope.get("module") or {})
@@ -238,32 +238,32 @@ class PreflightRunner:
         pinned = module_ref.get("code_sha256_expected")
         detail: Dict[str, Any] = {"module": address, "code_sha256_expected": pinned}
         if not address:
-            return _check("P6", "preflight", "politique on-chain = attendue (module)", "UNKNOWN",
-                          {"reason": "adresse du module absente (enveloppe et config)", "code": "module_version_unknown"})
+            return _check("P6", "preflight", "on-chain policy = expected (module)", "UNKNOWN",
+                          {"reason": "module address missing (envelope and config)", "code": "module_version_unknown"})
         if not self._live_mode():
             if not pinned:
-                detail["note"] = "codehash non épinglé dans l'enveloppe : la comparaison est impossible hors ligne"
-                return _check("P6", "preflight", "politique on-chain = attendue (module)", "UNKNOWN", detail)
-            return _check("P6", "preflight", "politique on-chain = attendue (module)", "PASS", detail)
+                detail["note"] = "codehash not pinned in the envelope: comparison impossible offline"
+                return _check("P6", "preflight", "on-chain policy = expected (module)", "UNKNOWN", detail)
+            return _check("P6", "preflight", "on-chain policy = expected (module)", "PASS", detail)
         try:
             code = common.eth_get_code(self.rpc_url, address, "latest", self.timeout)
         except Exception as exc:
             detail.update({"code": "module_version_unknown", "error": str(exc)})
-            return _check("P6", "preflight", "politique on-chain = attendue (module)", "FAIL", detail)
+            return _check("P6", "preflight", "on-chain policy = expected (module)", "FAIL", detail)
         if not code or code == "0x":
             detail["code"] = "target_code_missing"
-            return _check("P6", "preflight", "politique on-chain = attendue (module)", "FAIL", detail)
+            return _check("P6", "preflight", "on-chain policy = expected (module)", "FAIL", detail)
         body = code[2:]
         detail["code_size_bytes"] = len(body) // 2
         detail["code_sha256"] = common.sha256_hex(bytes.fromhex(body))
         if pinned and detail["code_sha256"] != str(pinned).lower():
             detail["code"] = "module_version_unknown"
-            return _check("P6", "preflight", "politique on-chain = attendue (module)", "FAIL", detail)
+            return _check("P6", "preflight", "on-chain policy = expected (module)", "FAIL", detail)
         expected_size = module_ref.get("code_size_expected")
         if expected_size and int(expected_size) != detail["code_size_bytes"]:
             detail["code"] = "module_version_unknown"
-            return _check("P6", "preflight", "politique on-chain = attendue (module)", "FAIL", detail)
-        return _check("P6", "preflight", "politique on-chain = attendue (module)", "PASS", detail)
+            return _check("P6", "preflight", "on-chain policy = expected (module)", "FAIL", detail)
+        return _check("P6", "preflight", "on-chain policy = expected (module)", "PASS", detail)
 
     def p7_targets_code(self) -> Dict[str, Any]:
         addresses: Dict[str, str] = {}
@@ -276,8 +276,8 @@ class PreflightRunner:
             addresses.setdefault("asset", self.asset)
         detail: Dict[str, Any] = {"addresses": addresses}
         if not self._live_mode():
-            detail["note"] = "eth_getCode non appelé (mode hors-ligne) — arrêt si code vide le jour J"
-            return _check("P7", "preflight", "adresses cibles re-vérifiées (eth_getCode)", "SKIPPED", detail)
+            detail["note"] = "eth_getCode not called (offline mode) — abort if code is empty on demo day"
+            return _check("P7", "preflight", "target addresses re-verified (eth_getCode)", "SKIPPED", detail)
         results: Dict[str, Any] = {}
         missing = []
         for label, address in addresses.items():
@@ -294,39 +294,39 @@ class PreflightRunner:
         detail["results"] = results
         if missing:
             detail["code"] = "target_code_missing"
-            return _check("P7", "preflight", "adresses cibles re-vérifiées (eth_getCode)", "FAIL", detail)
-        return _check("P7", "preflight", "adresses cibles re-vérifiées (eth_getCode)", "PASS", detail)
+            return _check("P7", "preflight", "target addresses re-verified (eth_getCode)", "FAIL", detail)
+        return _check("P7", "preflight", "target addresses re-verified (eth_getCode)", "PASS", detail)
 
     def p8_nonce(self) -> Dict[str, Any]:
         detail: Dict[str, Any] = {"agent": self.agent}
         if not self.agent:
-            return _check("P8", "preflight", "nonce (sérialisation stricte)", "UNKNOWN",
-                          {"reason": "adresse de l'agent absente"})
+            return _check("P8", "preflight", "nonce (strict serialization)", "UNKNOWN",
+                          {"reason": "agent address missing"})
         if not self._live_mode():
-            detail["note"] = "eth_getTransactionCount non appelé (mode hors-ligne)"
-            return _check("P8", "preflight", "nonce (sérialisation stricte)", "SKIPPED", detail)
+            detail["note"] = "eth_getTransactionCount not called (offline mode)"
+            return _check("P8", "preflight", "nonce (strict serialization)", "SKIPPED", detail)
         try:
             nonce = common.eth_get_transaction_count(self.rpc_url, self.agent, "pending", self.timeout)
         except Exception as exc:
             detail.update({"code": "nonce_conflict", "error": str(exc)})
-            return _check("P8", "preflight", "nonce (sérialisation stricte)", "FAIL", detail)
+            return _check("P8", "preflight", "nonce (strict serialization)", "FAIL", detail)
         detail["pending_nonce"] = nonce
         self._live["nonce"] = nonce
-        detail["note"] = "une seule transaction en vol : le service signataire sérialise"
-        return _check("P8", "preflight", "nonce (sérialisation stricte)", "PASS", detail)
+        detail["note"] = "a single transaction in flight: the signer service serializes"
+        return _check("P8", "preflight", "nonce (strict serialization)", "PASS", detail)
 
     def p9_balances(self) -> Dict[str, Any]:
         if not self.intent:
-            return _check("P9", "preflight", "soldes (gaz + jeton)", "UNKNOWN", {"reason": "aucun intent fourni"})
+            return _check("P9", "preflight", "balances (gas + token)", "UNKNOWN", {"reason": "no intent provided"})
         detail: Dict[str, Any] = {"agent": self.agent, "safe": self.safe,
                                   "amount_base_units": self.intent.get("amount_base_units")}
         if not self._live_mode():
-            detail["note"] = "lectures de soldes non effectuées (mode hors-ligne)"
-            return _check("P9", "preflight", "soldes (gaz + jeton)", "SKIPPED", detail)
+            detail["note"] = "balance reads not performed (offline mode)"
+            return _check("P9", "preflight", "balances (gas + token)", "SKIPPED", detail)
         if not self.agent or not self.safe:
             detail["code"] = "insufficient_gas_balance"
-            detail["reason"] = "adresses agent/safe absentes"
-            return _check("P9", "preflight", "soldes (gaz + jeton)", "FAIL", detail)
+            detail["reason"] = "agent/safe addresses missing"
+            return _check("P9", "preflight", "balances (gas + token)", "FAIL", detail)
         gas_estimate = self._live.get("gas_estimate")
         try:
             eth_balance = common.eth_get_balance(self.rpc_url, self.agent, "latest", self.timeout)
@@ -334,7 +334,7 @@ class PreflightRunner:
                 self.rpc_url, self.asset, calls.balance_of_data(self.safe), "latest", self.timeout))
         except Exception as exc:
             detail.update({"code": "insufficient_token_balance", "error": str(exc)})
-            return _check("P9", "preflight", "soldes (gaz + jeton)", "FAIL", detail)
+            return _check("P9", "preflight", "balances (gas + token)", "FAIL", detail)
         detail["agent_eth_wei"] = eth_balance
         detail["safe_token_base_units"] = token_balance
         if gas_estimate:
@@ -342,15 +342,15 @@ class PreflightRunner:
             detail["required_gas_wei"] = need
             if eth_balance < need:
                 detail["code"] = "insufficient_gas_balance"
-                return _check("P9", "preflight", "soldes (gaz + jeton)", "FAIL", detail)
+                return _check("P9", "preflight", "balances (gas + token)", "FAIL", detail)
         else:
             if eth_balance == 0:
                 detail["code"] = "insufficient_gas_balance"
-                return _check("P9", "preflight", "soldes (gaz + jeton)", "FAIL", detail)
+                return _check("P9", "preflight", "balances (gas + token)", "FAIL", detail)
         if token_balance < int(self.intent.get("amount_base_units") or 0):
             detail["code"] = "insufficient_token_balance"
-            return _check("P9", "preflight", "soldes (gaz + jeton)", "FAIL", detail)
-        return _check("P9", "preflight", "soldes (gaz + jeton)", "PASS", detail)
+            return _check("P9", "preflight", "balances (gas + token)", "FAIL", detail)
+        return _check("P9", "preflight", "balances (gas + token)", "PASS", detail)
 
     def gas_price_wei(self) -> int:
         if "gas_price" in self._live:
@@ -361,65 +361,65 @@ class PreflightRunner:
         detail: Dict[str, Any] = {"baseline_wei": self.gas_baseline_wei,
                                   "bound_wei": self.gas_baseline_wei * GAS_PRICE_BOUND_FACTOR}
         if not self._live_mode():
-            detail["note"] = "eth_gasPrice non lu (mode hors-ligne)"
-            return _check("P10", "preflight", "prix du gaz dans les bornes", "SKIPPED", detail)
+            detail["note"] = "eth_gasPrice not read (offline mode)"
+            return _check("P10", "preflight", "gas price within bounds", "SKIPPED", detail)
         try:
             price = common.eth_gas_price(self.rpc_url, self.timeout)
         except Exception as exc:
             detail.update({"code": "gas_price_out_of_bounds", "error": str(exc)})
-            return _check("P10", "preflight", "prix du gaz dans les bornes", "FAIL", detail)
+            return _check("P10", "preflight", "gas price within bounds", "FAIL", detail)
         self._live["gas_price"] = price
         detail["gas_price_wei"] = price
         if price > self.gas_baseline_wei * GAS_PRICE_BOUND_FACTOR:
             detail["code"] = "gas_price_out_of_bounds"
-            return _check("P10", "preflight", "prix du gaz dans les bornes", "FAIL", detail)
-        return _check("P10", "preflight", "prix du gaz dans les bornes", "PASS", detail)
+            return _check("P10", "preflight", "gas price within bounds", "FAIL", detail)
+        return _check("P10", "preflight", "gas price within bounds", "PASS", detail)
 
     def p11_simulation(self) -> Dict[str, Any]:
         call = self._exec_call()
         detail: Dict[str, Any] = {"exec_call_to": call["to"] if call else None}
         if not call or not self.agent:
-            return _check("P11", "preflight", "simulation eth_call depuis l'agent", "UNKNOWN",
-                          {"reason": "calldata ou adresse d'agent indisponible"})
+            return _check("P11", "preflight", "eth_call simulation from the agent", "UNKNOWN",
+                          {"reason": "calldata or agent address unavailable"})
         if not self._live_mode():
             detail["data_prefix"] = call["data"][:42] + "…"
-            detail["note"] = ("simulation non exécutée (mode hors-ligne) — le jour J elle part de la clé de "
-                              "l'agent pour faire évaluer la politique du module")
-            return _check("P11", "preflight", "simulation eth_call depuis l'agent", "SKIPPED", detail)
+            detail["note"] = ("simulation not executed (offline mode) — on demo day it starts from the agent's "
+                              "key so the module policy evaluates it")
+            return _check("P11", "preflight", "eth_call simulation from the agent", "SKIPPED", detail)
         try:
             result = self._read("eth_call", [{"from": self.agent, "to": call["to"], "data": call["data"]}, "latest"])
         except common.chain_client.RpcError as exc:
             detail.update({"code": "simulation_revert", "revert_selector": common.revert_selector(exc.data),
                            "error": exc.message})
-            return _check("P11", "preflight", "simulation eth_call depuis l'agent", "FAIL", detail)
+            return _check("P11", "preflight", "eth_call simulation from the agent", "FAIL", detail)
         except Exception as exc:
             detail.update({"code": "simulation_revert", "error": str(exc)})
-            return _check("P11", "preflight", "simulation eth_call depuis l'agent", "FAIL", detail)
+            return _check("P11", "preflight", "eth_call simulation from the agent", "FAIL", detail)
         detail["result"] = result
-        return _check("P11", "preflight", "simulation eth_call depuis l'agent", "PASS", detail)
+        return _check("P11", "preflight", "eth_call simulation from the agent", "PASS", detail)
 
     def p12_gas_estimate(self) -> Dict[str, Any]:
         call = self._exec_call()
         detail: Dict[str, Any] = {}
         if not call or not self.agent:
-            return _check("P12", "preflight", "estimation de gaz (1,25×)", "UNKNOWN",
-                          {"reason": "calldata ou adresse d'agent indisponible"})
+            return _check("P12", "preflight", "gas estimate (1.25×)", "UNKNOWN",
+                          {"reason": "calldata or agent address unavailable"})
         if not self._live_mode():
-            detail["note"] = "eth_estimateGas non appelé (mode hors-ligne)"
+            detail["note"] = "eth_estimateGas not called (offline mode)"
             detail["factor"] = GAS_LIMIT_FACTOR
-            return _check("P12", "preflight", "estimation de gaz (1,25×)", "SKIPPED", detail)
+            return _check("P12", "preflight", "gas estimate (1.25×)", "SKIPPED", detail)
         try:
             estimate = common.eth_estimate_gas(self.rpc_url, self.agent, call["to"], call["data"], self.timeout)
         except Exception as exc:
             detail.update({"code": "gas_estimate_failed", "error": str(exc)})
-            return _check("P12", "preflight", "estimation de gaz (1,25×)", "FAIL", detail)
+            return _check("P12", "preflight", "gas estimate (1.25×)", "FAIL", detail)
         limit = int(math.ceil(estimate * GAS_LIMIT_FACTOR))
         self._live["gas_estimate"] = estimate
         self._live["gas_limit"] = limit
         detail.update({"estimate": estimate, "gas_limit": limit, "factor": GAS_LIMIT_FACTOR})
-        return _check("P12", "preflight", "estimation de gaz (1,25×)", "PASS", detail)
+        return _check("P12", "preflight", "gas estimate (1.25×)", "PASS", detail)
 
-    # --- D1-D10 (test de dérive, B4 §d.3) ------------------------------------
+    # --- D1-D10 (drift test, B4 §d.3) ----------------------------------------
 
     def _envelope(self) -> Dict[str, Any]:
         return self.envelope or {}
@@ -429,7 +429,7 @@ class PreflightRunner:
         return [probe for probe in probes if isinstance(probe, dict) and probe.get("check") == check_id]
 
     def _run_probes(self, check_id: str) -> Tuple[List[Dict[str, Any]], List[str]]:
-        """Exécute les probes ``eth_call`` d'un contrôle (mode en ligne). Échecs nommés."""
+        """Runs a check's ``eth_call`` probes (live mode). Failures are named."""
         executed: List[Dict[str, Any]] = []
         failures: List[str] = []
         for probe in self._probes(check_id):
@@ -457,7 +457,7 @@ class PreflightRunner:
                     match = observed == expected
                 entry.update({"status": "PASS" if match else "FAIL", "observed": observed, "expect": expected})
                 if not match:
-                    failures.append("{}: observé {} ≠ attendu {}".format(entry["id"], observed, expected))
+                    failures.append("{}: observed {} ≠ expected {}".format(entry["id"], observed, expected))
             except Exception as exc:
                 entry.update({"status": "ERROR", "error": str(exc)})
                 failures.append("{}: {}".format(entry["id"], exc))
@@ -472,25 +472,25 @@ class PreflightRunner:
         if failures:
             detail["code"] = "ENVELOPE_DRIFT"
             detail["failures"] = failures
-            return _check("D1", "drift", "chaîne (eth_chainId)", "FAIL", detail)
+            return _check("D1", "drift", "chain (eth_chainId)", "FAIL", detail)
         if self._live_mode():
             try:
                 detail["observed"] = common.eth_chain_id(self.rpc_url, self.timeout)
             except Exception as exc:
                 detail.update({"code": "ENVELOPE_UNVERIFIED", "error": str(exc)})
-                return _check("D1", "drift", "chaîne (eth_chainId)", "UNKNOWN", detail)
+                return _check("D1", "drift", "chain (eth_chainId)", "UNKNOWN", detail)
             if detail["observed"] != self.policy.chain_id:
                 detail["code"] = "ENVELOPE_DRIFT"
-                return _check("D1", "drift", "chaîne (eth_chainId)", "FAIL", detail)
-            return _check("D1", "drift", "chaîne (eth_chainId)", "PASS", detail)
+                return _check("D1", "drift", "chain (eth_chainId)", "FAIL", detail)
+            return _check("D1", "drift", "chain (eth_chainId)", "PASS", detail)
         envelope_chain = self._envelope().get("chain_id")
         if envelope_chain is None:
-            detail["reason"] = "chaîne absente de l'enveloppe"
-            return _check("D1", "drift", "chaîne (eth_chainId)", "UNKNOWN", detail)
+            detail["reason"] = "chain missing from the envelope"
+            return _check("D1", "drift", "chain (eth_chainId)", "UNKNOWN", detail)
         if int(envelope_chain) != int(self.policy.chain_id):
             detail["code"] = "ENVELOPE_DRIFT"
-            return _check("D1", "drift", "chaîne (eth_chainId)", "FAIL", detail)
-        return _check("D1", "drift", "chaîne (eth_chainId)", "PASS", detail)
+            return _check("D1", "drift", "chain (eth_chainId)", "FAIL", detail)
+        return _check("D1", "drift", "chain (eth_chainId)", "PASS", detail)
 
     def d2_module(self) -> Dict[str, Any]:
         module_ref = self._envelope().get("module") or {}
@@ -499,32 +499,32 @@ class PreflightRunner:
         detail: Dict[str, Any] = {"module": address, "code_sha256_expected": pinned,
                                   "code_size_expected": module_ref.get("code_size_expected")}
         if not address:
-            return _check("D2", "drift", "module (code + codehash épinglé)", "UNKNOWN",
-                          {"reason": "adresse du module absente", "code": "ENVELOPE_UNVERIFIED"})
+            return _check("D2", "drift", "module (code + pinned codehash)", "UNKNOWN",
+                          {"reason": "module address missing", "code": "ENVELOPE_UNVERIFIED"})
         if self._live_mode():
             try:
                 code = common.eth_get_code(self.rpc_url, address, "latest", self.timeout)
             except Exception as exc:
                 detail.update({"code": "ENVELOPE_UNVERIFIED", "error": str(exc)})
-                return _check("D2", "drift", "module (code + codehash épinglé)", "UNKNOWN", detail)
+                return _check("D2", "drift", "module (code + pinned codehash)", "UNKNOWN", detail)
             body = code[2:] if code.startswith("0x") else code
             detail["code_size_bytes"] = len(body) // 2
             detail["code_sha256"] = common.sha256_hex(bytes.fromhex(body)) if body else ""
             if detail["code_size_bytes"] == 0:
                 detail["code"] = "ENVELOPE_DRIFT"
-                return _check("D2", "drift", "module (code + codehash épinglé)", "FAIL", detail)
+                return _check("D2", "drift", "module (code + pinned codehash)", "FAIL", detail)
             if pinned and detail["code_sha256"] != str(pinned).lower():
                 detail["code"] = "ENVELOPE_DRIFT"
-                return _check("D2", "drift", "module (code + codehash épinglé)", "FAIL", detail)
+                return _check("D2", "drift", "module (code + pinned codehash)", "FAIL", detail)
             expected_size = module_ref.get("code_size_expected")
             if expected_size and int(expected_size) != detail["code_size_bytes"]:
                 detail["code"] = "ENVELOPE_DRIFT"
-                return _check("D2", "drift", "module (code + codehash épinglé)", "FAIL", detail)
-            return _check("D2", "drift", "module (code + codehash épinglé)", "PASS", detail)
+                return _check("D2", "drift", "module (code + pinned codehash)", "FAIL", detail)
+            return _check("D2", "drift", "module (code + pinned codehash)", "PASS", detail)
         if not pinned:
-            detail["reason"] = "codehash non épinglé : comparaison impossible hors ligne (à capturer le jour J)"
-            return _check("D2", "drift", "module (code + codehash épinglé)", "UNKNOWN", detail)
-        return _check("D2", "drift", "module (code + codehash épinglé)", "PASS", detail)
+            detail["reason"] = "codehash not pinned: offline comparison impossible (to be captured on demo day)"
+            return _check("D2", "drift", "module (code + pinned codehash)", "UNKNOWN", detail)
+        return _check("D2", "drift", "module (code + pinned codehash)", "PASS", detail)
 
     def d3_members(self) -> Dict[str, Any]:
         envelope_agent = ((self._envelope().get("agent") or {}).get("address"))
@@ -534,24 +534,24 @@ class PreflightRunner:
         if failures:
             detail["code"] = "ENVELOPE_DRIFT"
             detail["failures"] = failures
-            return _check("D3", "drift", "membres du rôle AGENT", "FAIL", detail)
+            return _check("D3", "drift", "AGENT role members", "FAIL", detail)
         if envelope_agent and self.agent and str(envelope_agent).lower() != self.agent.lower():
             detail["code"] = "ENVELOPE_DRIFT"
-            detail["reason"] = "l'adresse de l'agent de la config ≠ celle de l'enveloppe"
-            return _check("D3", "drift", "membres du rôle AGENT", "FAIL", detail)
+            detail["reason"] = "the config agent address ≠ the envelope's"
+            return _check("D3", "drift", "AGENT role members", "FAIL", detail)
         if not probes:
-            detail["reason"] = ("membres non lisibles hors ligne ; probe eth_call à confirmer sur le contrat "
-                                "déployé (getter à figer le jour J)")
-            return _check("D3", "drift", "membres du rôle AGENT", "UNKNOWN", detail)
-        return _check("D3", "drift", "membres du rôle AGENT", "PASS", detail)
+            detail["reason"] = ("members not readable offline; eth_call probe to confirm on the deployed "
+                                "contract (getter to freeze on demo day)")
+            return _check("D3", "drift", "AGENT role members", "UNKNOWN", detail)
+        return _check("D3", "drift", "AGENT role members", "PASS", detail)
 
     def d4_targets(self) -> Dict[str, Any]:
         role = self._envelope().get("role") or {}
         targets = role.get("targets")
         detail: Dict[str, Any] = {"declared": targets, "expected_asset": self.policy.asset}
         if not targets:
-            return _check("D4", "drift", "cibles du rôle (clearance)", "UNKNOWN",
-                          {"reason": "cibles absentes de l'enveloppe", "code": "ENVELOPE_UNVERIFIED"})
+            return _check("D4", "drift", "role targets (clearance)", "UNKNOWN",
+                          {"reason": "targets missing from the envelope", "code": "ENVELOPE_UNVERIFIED"})
         addresses = set()
         broad = []
         for target in targets:
@@ -563,19 +563,19 @@ class PreflightRunner:
         detail["addresses"] = sorted(addresses)
         if broad:
             detail["code"] = "ENVELOPE_DRIFT"
-            detail["reason"] = "cible en Clearance.Target (portée large) : {}".format(broad)
-            return _check("D4", "drift", "cibles du rôle (clearance)", "FAIL", detail)
+            detail["reason"] = "target in Clearance.Target (broad scope): {}".format(broad)
+            return _check("D4", "drift", "role targets (clearance)", "FAIL", detail)
         if addresses != {self.policy.asset.lower()}:
             detail["code"] = "ENVELOPE_DRIFT"
-            detail["reason"] = "l'ensemble des cibles ≠ {{USDC}} attendu"
-            return _check("D4", "drift", "cibles du rôle (clearance)", "FAIL", detail)
+            detail["reason"] = "the target set ≠ expected {{USDC}}"
+            return _check("D4", "drift", "role targets (clearance)", "FAIL", detail)
         probes, failures = self._run_probes("D4")
         detail["probes"] = probes
         if failures:
             detail["code"] = "ENVELOPE_DRIFT"
             detail["failures"] = failures
-            return _check("D4", "drift", "cibles du rôle (clearance)", "FAIL", detail)
-        return _check("D4", "drift", "cibles du rôle (clearance)", "PASS", detail)
+            return _check("D4", "drift", "role targets (clearance)", "FAIL", detail)
+        return _check("D4", "drift", "role targets (clearance)", "PASS", detail)
 
     def d5_functions(self) -> Dict[str, Any]:
         role = self._envelope().get("role") or {}
@@ -584,8 +584,8 @@ class PreflightRunner:
             "target": self.policy.asset, "signature": common.TRANSFER_SIGNATURE,
             "selector": common.SELECTOR_TRANSFER, "clearance": "Function", "operation": "CALL"}}
         if not functions:
-            return _check("D5", "drift", "fonctions scopées", "UNKNOWN",
-                          {"reason": "fonctions absentes de l'enveloppe", "code": "ENVELOPE_UNVERIFIED"})
+            return _check("D5", "drift", "scoped functions", "UNKNOWN",
+                          {"reason": "functions missing from the envelope", "code": "ENVELOPE_UNVERIFIED"})
         expected_pairs = set()
         problems: List[str] = []
         for function in functions:
@@ -595,24 +595,24 @@ class PreflightRunner:
             operation = str(function.get("operation") or "CALL").upper()
             expected_pairs.add((target, selector))
             if clearance == "target":
-                problems.append("fonction en clearance Target (portée large) : {}".format(selector))
+                problems.append("function in Target clearance (broad scope): {}".format(selector))
             if operation not in ("CALL",):
-                problems.append("opération non-CALL sur {} : {}".format(selector, operation))
+                problems.append("non-CALL operation on {}: {}".format(selector, operation))
         wanted = {(self.policy.asset.lower(), common.SELECTOR_TRANSFER)}
         if expected_pairs != wanted:
-            problems.append("ensemble (cible, sélecteur) = {} ≠ {} attendu".format(sorted(expected_pairs), sorted(wanted)))
+            problems.append("(target, selector) set = {} ≠ expected {}".format(sorted(expected_pairs), sorted(wanted)))
         detail["pairs"] = sorted("{}:{}".format(a, b) for a, b in expected_pairs)
         if problems:
             detail["code"] = "ENVELOPE_DRIFT"
             detail["failures"] = problems
-            return _check("D5", "drift", "fonctions scopées", "FAIL", detail)
+            return _check("D5", "drift", "scoped functions", "FAIL", detail)
         probes, failures = self._run_probes("D5")
         detail["probes"] = probes
         if failures:
             detail["code"] = "ENVELOPE_DRIFT"
             detail["failures"] = failures
-            return _check("D5", "drift", "fonctions scopées", "FAIL", detail)
-        return _check("D5", "drift", "fonctions scopées", "PASS", detail)
+            return _check("D5", "drift", "scoped functions", "FAIL", detail)
+        return _check("D5", "drift", "scoped functions", "PASS", detail)
 
     def d6_conditions(self) -> Dict[str, Any]:
         role = self._envelope().get("role") or {}
@@ -620,31 +620,31 @@ class PreflightRunner:
         detail: Dict[str, Any] = {"declared": conditions,
                                   "expected_recipients": sorted(self.policy.allowed_recipients())}
         if not conditions:
-            return _check("D6", "drift", "conditions (destinataire, montant)", "UNKNOWN",
-                          {"reason": "conditions absentes de l'enveloppe", "code": "ENVELOPE_UNVERIFIED"})
+            return _check("D6", "drift", "conditions (recipient, amount)", "UNKNOWN",
+                          {"reason": "conditions missing from the envelope", "code": "ENVELOPE_UNVERIFIED"})
         problems: List[str] = []
         param0 = conditions.get("param0") or {}
         values = {str(value).lower() for value in (param0.get("values") or [])}
         if not values:
-            return _check("D6", "drift", "conditions (destinataire, montant)", "UNKNOWN",
-                          {"reason": "valeurs de la condition destinataire non renseignées dans l'enveloppe "
-                                     "(à coller depuis l'app Roles le jour J)", "code": "ENVELOPE_UNVERIFIED"})
+            return _check("D6", "drift", "conditions (recipient, amount)", "UNKNOWN",
+                          {"reason": "recipient condition values not filled in the envelope "
+                                     "(to paste from the Roles app on demo day)", "code": "ENVELOPE_UNVERIFIED"})
         if str(param0.get("kind")) != "or_equal":
-            problems.append("condition destinataire ≠ Or(EqualTo(B), EqualTo(C))")
+            problems.append("recipient condition ≠ Or(EqualTo(B), EqualTo(C))")
         if values != set(self.policy.allowed_recipients()):
-            problems.append("destinataires de la condition {} ≠ allowlist de la politique {}".format(
+            problems.append("condition recipients {} ≠ policy allowlist {}".format(
                 sorted(values), sorted(self.policy.allowed_recipients())))
         param1 = conditions.get("param1") or {}
         if str(param1.get("kind")) != "within_allowance":
-            problems.append("condition de montant absente (param1) — un montant non conditionné "
-                            "peut consommer l'allowance en un coup")
+            problems.append("amount condition missing (param1) — an unconditioned amount "
+                            "can consume the allowance in one shot")
         elif str(param1.get("allowance_key")) not in (role.get("allowances") or {}):
-            problems.append("allowance référencée par la condition introuvable : {}".format(param1.get("allowance_key")))
+            problems.append("allowance referenced by the condition not found: {}".format(param1.get("allowance_key")))
         if problems:
             detail["code"] = "ENVELOPE_DRIFT"
             detail["failures"] = problems
-            return _check("D6", "drift", "conditions (destinataire, montant)", "FAIL", detail)
-        return _check("D6", "drift", "conditions (destinataire, montant)", "PASS", detail)
+            return _check("D6", "drift", "conditions (recipient, amount)", "FAIL", detail)
+        return _check("D6", "drift", "conditions (recipient, amount)", "PASS", detail)
 
     def d7_allowances(self) -> Dict[str, Any]:
         role = self._envelope().get("role") or {}
@@ -659,17 +659,17 @@ class PreflightRunner:
         }}
         if not daily:
             return _check("D7", "drift", "allowances (refill/maxRefill/period)", "UNKNOWN",
-                          {"reason": "allowance usdc_daily absente de l'enveloppe", "code": "ENVELOPE_UNVERIFIED"})
+                          {"reason": "usdc_daily allowance missing from the envelope", "code": "ENVELOPE_UNVERIFIED"})
         refill = int(daily.get("refill_base_units") or 0)
         max_refill = int(daily.get("max_refill_base_units") or 0)
         period = int(daily.get("period_seconds") or 0)
         problems: List[str] = []
         if refill != max_refill:
-            problems.append("refill ({}) ≠ maxRefill ({}) : la rafale de frontière dépasse 2 périodes".format(
+            problems.append("refill ({}) ≠ maxRefill ({}): the boundary burst exceeds 2 periods".format(
                 refill, max_refill))
         if (refill, max_refill, period) != (self.policy.allowance_refill, self.policy.allowance_max_refill,
                                             self.policy.allowance_period_seconds):
-            problems.append("allowance déclarée {} ≠ politique {}".format(
+            problems.append("declared allowance {} ≠ policy {}".format(
                 (refill, max_refill, period),
                 (self.policy.allowance_refill, self.policy.allowance_max_refill,
                  self.policy.allowance_period_seconds)))
@@ -691,30 +691,30 @@ class PreflightRunner:
         quota = role.get("call_quota") or {}
         detail: Dict[str, Any] = {"declared": quota, "policy_max_calls_24h": self.policy.max_calls_24h}
         if not quota:
-            return _check("D8", "drift", "quota d'appels (CallWithinAllowance)", "UNKNOWN",
-                          {"reason": "quota d'appels absent de l'enveloppe", "code": "ENVELOPE_UNVERIFIED"})
+            return _check("D8", "drift", "call quota (CallWithinAllowance)", "UNKNOWN",
+                          {"reason": "call quota missing from the envelope", "code": "ENVELOPE_UNVERIFIED"})
         problems: List[str] = []
         if int(quota.get("max_per_period") or -1) != self.policy.max_calls_24h:
-            problems.append("quota on-chain {} ≠ politique {}".format(
+            problems.append("on-chain quota {} ≠ policy {}".format(
                 quota.get("max_per_period"), self.policy.max_calls_24h))
         if int(quota.get("period_seconds") or 0) != self.policy.allowance_period_seconds:
-            problems.append("période du quota {} ≠ {}".format(
+            problems.append("quota period {} ≠ {}".format(
                 quota.get("period_seconds"), self.policy.allowance_period_seconds))
         if problems:
             detail["code"] = "ENVELOPE_DRIFT"
             detail["failures"] = problems
-            return _check("D8", "drift", "quota d'appels (CallWithinAllowance)", "FAIL", detail)
-        return _check("D8", "drift", "quota d'appels (CallWithinAllowance)", "PASS", detail)
+            return _check("D8", "drift", "call quota (CallWithinAllowance)", "FAIL", detail)
+        return _check("D8", "drift", "call quota (CallWithinAllowance)", "PASS", detail)
 
     def d9_expiration(self) -> Dict[str, Any]:
         scheduled = self.policy.revocation_scheduled_at or (self._envelope().get("revocation_scheduled_at"))
         detail: Dict[str, Any] = {"revocation_scheduled_at": scheduled,
-                                  "note": "Allowance Zodiac n'a aucun champ d'expiration (B4 P8) : "
-                                          "une révocation planifiée est exigée"}
+                                  "note": "Zodiac Allowance has no expiration field (B4 P8): "
+                                          "a scheduled revocation is required"}
         if not scheduled:
             detail["code"] = "ENVELOPE_DRIFT"
-            return _check("D9", "drift", "expiration / révocation planifiée", "FAIL", detail)
-        return _check("D9", "drift", "expiration / révocation planifiée", "PASS", detail)
+            return _check("D9", "drift", "expiration / scheduled revocation", "FAIL", detail)
+        return _check("D9", "drift", "expiration / scheduled revocation", "PASS", detail)
 
     def d10_version(self) -> Dict[str, Any]:
         module_ref = self._envelope().get("module") or {}
@@ -723,16 +723,16 @@ class PreflightRunner:
         detail: Dict[str, Any] = {"version": version, "advisory_clear": advisory,
                                   "codehash_pinned": bool(module_ref.get("code_sha256_expected"))}
         if not version or advisory is not True:
-            detail["reason"] = ("version du module non suivie ou avis de sécurité non déclaré clair "
-                                "(post-mortems 2026 : ERC-1271 v2.1.0→v2.1.1, padding MultiSend)")
+            detail["reason"] = ("module version not tracked or security advisory not declared clear "
+                                "(2026 post-mortems: ERC-1271 v2.1.0→v2.1.1, MultiSend padding)")
             detail["code"] = "ENVELOPE_UNVERIFIED"
-            return _check("D10", "drift", "version du module / avis de sécurité", "UNKNOWN", detail)
-        return _check("D10", "drift", "version du module / avis de sécurité", "PASS", detail)
+            return _check("D10", "drift", "module version / security advisory", "UNKNOWN", detail)
+        return _check("D10", "drift", "module version / security advisory", "PASS", detail)
 
     # --- pilote ---------------------------------------------------------------
 
     def run(self) -> Dict[str, Any]:
-        # Ordre d'exécution : P9 (soldes) consomme l'estimation de gaz (P12) et le prix (P10).
+        # Execution order: P9 (balances) consumes the gas estimate (P12) and the price (P10).
         checks = [
             self.p1_policy_verdict(), self.p2_chain_pinned(), self.p3_expiry(), self.p4_idempotency(),
             self.p5_pause(), self.p6_module_version(), self.p7_targets_code(), self.p8_nonce(),
@@ -792,17 +792,17 @@ class PreflightRunner:
 def capture_envelope(*, rpc_url: str, addresses: Dict[str, str], timeout: int = common.RPC_TIMEOUT_SECONDS,
                      chain_id_expected: int = common.CHAIN_ID_DEMO,
                      session: Optional[common.SessionConfig] = None) -> Dict[str, Any]:
-    """Capture une enveloppe de référence par lecture seule (chainId, bloc, gaz, codes).
+    """Captures a reference envelope by read-only calls (chainId, block, gas, codes).
 
-    La structure produite est directement consommable par le test de dérive
-    (``module``, ``avatar``, ``agent``, ``assets``, ``contracts``) ; le bloc
-    ``role`` (cibles/conditions/allowances) et les ``probes`` restent à confirmer
-    sur le contrat déployé avec l'app Roles (B4 §d.3, annexe 4).
+    The produced structure is directly consumable by the drift test
+    (``module``, ``avatar``, ``agent``, ``assets``, ``contracts``); the
+    ``role`` block (targets/conditions/allowances) and the ``probes`` remain to be confirmed
+    on the deployed contract with the Roles app (B4 §d.3, annex 4).
     """
     chain_id = common.eth_chain_id(rpc_url, timeout)
     if chain_id != chain_id_expected:
         raise common.ConfigurationError(
-            "chainId observé {} ≠ {} attendu — capture refusée".format(chain_id, chain_id_expected))
+            "observed chainId {} ≠ expected {} — capture refused".format(chain_id, chain_id_expected))
     block = common.eth_block_number(rpc_url, timeout)
     gas_price = common.eth_gas_price(rpc_url, timeout)
     contracts: Dict[str, Any] = {}
@@ -828,18 +828,18 @@ def capture_envelope(*, rpc_url: str, addresses: Dict[str, str], timeout: int = 
         "gas": {"gas_price_baseline_wei": gas_price, "captured_at_utc": common.utc_now()},
         "contracts": contracts,
         "probes": [],
-        "note": ("enveloppe capturée par lecture seule — `role` (cibles/conditions/allowances) et `probes` "
-                 "(calldata des getters) restent à confirmer sur le contrat déployé (B4 §d.3, annexe 4)"),
+        "note": ("envelope captured by read-only calls — `role` (targets/conditions/allowances) and `probes` "
+                 "(getter calldata) remain to be confirmed on the deployed contract (B4 §d.3, annex 4)"),
     }
     module = pick("module") or pick("orvyren_module_address")
     if module:
         envelope["module"] = {**module, "version": None, "advisory_clear": None}
     avatar = pick("safe") or pick("orvyren_safe_address")
     if avatar:
-        envelope["avatar"] = {"address": avatar["address"], "label": "Safe de démonstration"}
+        envelope["avatar"] = {"address": avatar["address"], "label": "demo Safe"}
     agent = pick("agent") or pick("orvyren_agent_address")
     if agent:
-        envelope["agent"] = {"address": agent["address"], "label": "EOA jetable membre du rôle AGENT"}
+        envelope["agent"] = {"address": agent["address"], "label": "throwaway EOA member of the AGENT role"}
     assets = {}
     for label, key in (("usdc_circle", "usdc_circle_base_sepolia"), ("usdc_aave", "usdc_aave_base_sepolia"),
                        ("weth_predeploy", "weth_predeploy")):
@@ -860,32 +860,32 @@ def _load_optional(path: Optional[str]) -> Optional[Dict[str, Any]]:
         return None
     data = common.load_json(path)
     if not isinstance(data, dict):
-        raise common.ConfigurationError("fichier illisible: {}".format(path))
+        raise common.ConfigurationError("unreadable file: {}".format(path))
     return data
 
 
 def main(argv: Optional[list] = None) -> int:
     parser = argparse.ArgumentParser(
         prog="preflight.py",
-        description="ORVYREN — préflight 12 contrôles (B5 §c.1) + test de dérive 10 contrôles (B4 §d.3). "
-                    "Aucune signature, aucune transaction ; un seul échec bloque.")
-    parser.add_argument("--intent", help="fichier JSON d'un intent v1 (validé par intents.validate_intent)")
+        description="ORVYREN — 12-check preflight (B5 §c.1) + 10-check drift test (B4 §d.3). "
+                    "No signature, no transaction; a single failure blocks.")
+    parser.add_argument("--intent", help="JSON file of a v1 intent (validated by intents.validate_intent)")
     parser.add_argument("--policy", default=os.path.join(os.path.dirname(os.path.abspath(__file__)),
                                                          "policy.demo.json"),
-                        help="politique de démonstration (défaut : policy.demo.json)")
-    parser.add_argument("--env-file", help="fichier .env de session (jamais versionné) pour les adresses")
-    parser.add_argument("--envelope", help="référence d'enveloppe (envelope.example.json capturé)")
-    parser.add_argument("--decision", help="verdict de politique enregistré (comparé à P1)")
-    parser.add_argument("--registry", help="registre d'idempotence (JSON) — P4")
-    parser.add_argument("--out", help="écrire le rapport JSON à ce chemin")
+                        help="demo policy (default: policy.demo.json)")
+    parser.add_argument("--env-file", help="session .env file (never versioned) for the addresses")
+    parser.add_argument("--envelope", help="envelope reference (captured envelope.example.json)")
+    parser.add_argument("--decision", help="recorded policy verdict (compared to P1)")
+    parser.add_argument("--registry", help="idempotency registry (JSON) — P4")
+    parser.add_argument("--out", help="write the JSON report to this path")
     mode = parser.add_mutually_exclusive_group()
-    mode.add_argument("--offline", action="store_true", default=None, help="aucun réseau (défaut)")
-    mode.add_argument("--rpc", action="store_true", help="exécuter les contrôles en ligne (lecture seule)")
+    mode.add_argument("--offline", action="store_true", default=None, help="no network (default)")
+    mode.add_argument("--rpc", action="store_true", help="run the live checks (read-only)")
     parser.add_argument("--rpc-url", default=os.environ.get("ORVYREN_RPC_URL_BASE_SEPOLIA")
                         or common.DEFAULT_RPC_URL)
     parser.add_argument("--capture-envelope", metavar="OUT",
-                        help="capture une enveloppe de référence (mode en ligne, lecture seule)")
-    parser.add_argument("--quiet", action="store_true", help="n'imprimer que le verdict")
+                        help="capture a reference envelope (live mode, read-only)")
+    parser.add_argument("--quiet", action="store_true", help="print only the verdict")
     args = parser.parse_args(argv)
 
     mode_value = MODE_RPC if args.rpc else MODE_OFFLINE
@@ -897,7 +897,7 @@ def main(argv: Optional[list] = None) -> int:
 
         if args.capture_envelope:
             if mode_value != MODE_RPC:
-                print("ERREUR: --capture-envelope exige --rpc (lecture seule)", file=sys.stderr)
+                print("ERROR: --capture-envelope requires --rpc (read-only)", file=sys.stderr)
                 return EXIT_USAGE
             addresses = dict(common.KNOWN_ADDRESSES)
             for key in common.SessionConfig.REQUIRED_ADDRESS_KEYS:
@@ -906,7 +906,7 @@ def main(argv: Optional[list] = None) -> int:
                     addresses[key.lower()] = value
             envelope = capture_envelope(rpc_url=args.rpc_url, addresses=addresses, session=session)
             common.write_json(args.capture_envelope, envelope)
-            print("enveloppe capturée: {} (bloc {}, {} contrats)".format(
+            print("envelope captured: {} (block {}, {} contracts)".format(
                 args.capture_envelope, envelope["block_number"], len(envelope["contracts"])))
             return EXIT_OK
 
@@ -920,7 +920,7 @@ def main(argv: Optional[list] = None) -> int:
                                                  decimals=policy.asset_decimals)
             if not ok:
                 for error in errors:
-                    print("intent invalide: [{}] {} — {}".format(error["code"], error["field"], error["detail"]),
+                    print("invalid intent: [{}] {} — {}".format(error["code"], error["field"], error["detail"]),
                           file=sys.stderr)
                 return EXIT_USAGE
 
@@ -934,20 +934,20 @@ def main(argv: Optional[list] = None) -> int:
         )
         report = runner.run()
     except common.ConfigurationError as exc:
-        print("ERREUR de configuration: {}".format(exc), file=sys.stderr)
+        print("CONFIGURATION ERROR: {}".format(exc), file=sys.stderr)
         return EXIT_USAGE
 
     if args.out:
         common.write_json(args.out, report)
 
     if not args.quiet:
-        print("ORVYREN — préflight ({}) : verdict {} — safe_mode {}".format(
+        print("ORVYREN — preflight ({}): verdict {} — safe_mode {}".format(
             report["mode"], report["verdict"], report["safe_mode"]))
         for check in report["checks"]:
             print("  [{}] {:<5} {:<4} {}".format(
                 check["family"][:4], check["status"], check["id"], check["name"]))
         if report["safe_mode"]:
-            print("  SAFE MODE : {}".format(", ".join(report["safe_mode_reasons"])))
+            print("  SAFE MODE: {}".format(", ".join(report["safe_mode_reasons"])))
     else:
         print(report["verdict"])
 

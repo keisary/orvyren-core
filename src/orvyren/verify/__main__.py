@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-"""Entry point: ``python -m orvyren.verify <cible> [options]`` (B6 §2.3)."""
+"""Entry point: ``python -m orvyren.verify <target> [options]`` (B6 §2.3)."""
 
 import sys
 

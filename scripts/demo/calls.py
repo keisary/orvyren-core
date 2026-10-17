@@ -1,22 +1,22 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-"""ORVYREN — kit de démo testnet : construction/décodage des calldatas (stdlib).
+"""ORVYREN — testnet demo kit: calldata building/decoding (stdlib).
 
-Toutes les signatures sont celles **vérifiées le 2026-10-15** sur Base Sepolia
-(``research/raw_b5/SELECTEURS_VERIFIES.md``) ; les autres sont calculées par le
-Keccak-256 local du kit et doivent être re-vérifiées dans le bytecode déployé
-avant la démo (protocole B5 §e.7).
+All signatures are those **verified on 2026-10-15** on Base Sepolia
+(``research/raw_b5/SELECTEURS_VERIFIES.md``); the others are computed with the
+kit's local Keccak-256 and must be re-verified in the deployed bytecode
+before the demo (protocol B5 §e.7).
 
-Objets construits ici :
+Objects built here:
 
-* ``transfer(address,uint256)`` du jeton (intent ALLOW) ;
-* ``execTransactionWithRole(address,uint256,bytes,uint8,bytes32,bool)`` du module
-  Roles — l'enveloppe par laquelle l'agent exécute **et** ses tentatives forcées
-  (run C : les mêmes builders, avec des paramètres interdits) ;
-* ``assignRoles(address,bytes32[],bool[])`` (kill switch K1 — exécuté par la Safe) ;
-* ``allowTarget(bytes32,address,uint8)`` (tentative d'auto-élargissement, run C3) ;
-* ``enableModule(address)`` du Safe (tentative d'admin, run C3) ;
-* lectures ``balanceOf`` / ``allowance``.
+* token ``transfer(address,uint256)`` (ALLOW intent);
+* Roles module ``execTransactionWithRole(address,uint256,bytes,uint8,bytes32,bool)``
+  — the envelope through which the agent executes **and** makes its forced attempts
+  (run C: the same builders, with forbidden parameters);
+* ``assignRoles(address,bytes32[],bool[])`` (K1 kill switch — executed by the Safe);
+* ``allowTarget(bytes32,address,uint8)`` (self-widening attempt, run C3);
+* Safe ``enableModule(address)`` (admin attempt, run C3);
+* ``balanceOf`` / ``allowance`` reads.
 """
 
 from __future__ import annotations
@@ -25,9 +25,9 @@ import os
 import sys
 from typing import Any, Dict, Sequence
 
-try:  # paquet
+try:  # package
     from . import common
-except ImportError:  # exécution directe
+except ImportError:  # direct execution
     _sys_dir = os.path.dirname(os.path.abspath(__file__))
     if _sys_dir not in sys.path:
         sys.path.insert(0, _sys_dir)
@@ -36,7 +36,7 @@ except ImportError:  # exécution directe
 OPERATION_CALL = 0
 OPERATION_DELEGATECALL = 1
 
-#: Énumération Zodiac ``Clearance`` (Roles v2) : 0 = None, 1 = Target, 2 = Function.
+#: Zodiac ``Clearance`` enum (Roles v2): 0 = None, 1 = Target, 2 = Function.
 CLEARANCE_NONE = 0
 CLEARANCE_TARGET = 1
 CLEARANCE_FUNCTION = 2
@@ -45,10 +45,10 @@ CLEARANCE_NAMES = {0: "None", 1: "Target", 2: "Function"}
 
 
 class CalldataError(Exception):
-    """Calldata refusé (adresse, montant ou paramètre invalide)."""
+    """Calldata refused (invalid address, amount or parameter)."""
 
 
-# --- lectures ----------------------------------------------------------------
+# --- reads -------------------------------------------------------------------
 
 
 def balance_of_data(holder: str) -> str:
@@ -63,24 +63,24 @@ def decode_uint_result(payload: str) -> int:
     return common.decode_word_uint(payload, 0)
 
 
-# --- transfert ERC-20 --------------------------------------------------------
+# --- ERC-20 transfer ---------------------------------------------------------
 
 
 def erc20_transfer_data(recipient: str, amount_base_units: int) -> str:
-    """``transfer(address,uint256)`` — sélecteur vérifié ``0xa9059cbb``."""
+    """``transfer(address,uint256)`` — verified selector ``0xa9059cbb``."""
     if isinstance(amount_base_units, bool) or not isinstance(amount_base_units, int):
-        raise CalldataError("amount_base_units doit être un entier")
+        raise CalldataError("amount_base_units must be an integer")
     if amount_base_units < 0 or amount_base_units >= 2 ** 256:
-        raise CalldataError("amount_base_units hors 256 bits")
+        raise CalldataError("amount_base_units outside 256 bits")
     return common.SELECTOR_TRANSFER + common.enc_address(recipient) + common.enc_uint(amount_base_units)
 
 
 def decode_erc20_transfer(data: str) -> Dict[str, Any]:
-    """Décode ``transfer`` (round-trip de contrôle, utilisé par les tests)."""
+    """Decodes ``transfer`` (control round-trip, used by the tests)."""
     body = data[2:] if data.startswith("0x") else data
     if not body.startswith(common.SELECTOR_TRANSFER[2:]):
-        raise CalldataError("sélecteur ≠ transfer(address,uint256)")
-    args = "0x" + body[8:]              # les mots ABI commencent APRÈS le sélecteur
+        raise CalldataError("selector ≠ transfer(address,uint256)")
+    args = "0x" + body[8:]              # the ABI words start AFTER the selector
     return {
         "selector": common.SELECTOR_TRANSFER,
         "to": common.decode_word_address(args, 0),
@@ -88,23 +88,23 @@ def decode_erc20_transfer(data: str) -> Dict[str, Any]:
     }
 
 
-# --- module Roles : execTransactionWithRole ---------------------------------
+# --- Roles module: execTransactionWithRole ----------------------------------
 
 
 def exec_with_role_data(*, target: str, value: int, inner_data: str, operation: int,
                         role_key: str, should_revert: bool = True) -> str:
     """``execTransactionWithRole(address,uint256,bytes,uint8,bytes32,bool)`` (``0xc6fe8747``).
 
-    ``inner_data`` est le calldata exécuté par la Safe (ex. ``transfer``).
+    ``inner_data`` is the calldata executed by the Safe (e.g. ``transfer``).
     """
     if operation not in (OPERATION_CALL, OPERATION_DELEGATECALL):
-        raise CalldataError("operation doit être 0 (CALL) ou 1 (DELEGATECALL)")
+        raise CalldataError("operation must be 0 (CALL) or 1 (DELEGATECALL)")
     if not isinstance(inner_data, str) or not inner_data.startswith("0x"):
-        raise CalldataError("inner_data doit être un calldata 0x…")
+        raise CalldataError("inner_data must be 0x… calldata")
     head = [
         common.enc_address(target),
         common.enc_uint(value),
-        common.enc_uint(6 * 32),          # offset de `bytes data` (6 mots d'en-tête)
+        common.enc_uint(6 * 32),          # `bytes data` offset (6 header words)
         common.enc_uint(operation),
         common.enc_bytes32(role_key),
         common.enc_bool(should_revert),
@@ -114,10 +114,10 @@ def exec_with_role_data(*, target: str, value: int, inner_data: str, operation: 
 
 
 def decode_exec_with_role(data: str) -> Dict[str, Any]:
-    """Décode un ``execTransactionWithRole`` (contrôle round-trip)."""
+    """Decodes an ``execTransactionWithRole`` (round-trip check)."""
     body = data[2:] if data.startswith("0x") else data
     if not body.startswith(common.SELECTOR_EXEC_TX_WITH_ROLE[2:]):
-        raise CalldataError("sélecteur ≠ execTransactionWithRole")
+        raise CalldataError("selector ≠ execTransactionWithRole")
     args_hex = body[8:]
     payload = "0x" + args_hex
     offset_words = common.decode_word_uint(payload, 2) // 32
@@ -135,15 +135,15 @@ def decode_exec_with_role(data: str) -> Dict[str, Any]:
     }
 
 
-# --- module Roles : administration (jamais accordée à l'agent) ---------------
+# --- Roles module: administration (never granted to the agent) ---------------
 
 
 def assign_roles_data(member: str, role_keys: Sequence[str], enabled: Sequence[bool]) -> str:
-    """``assignRoles(address,bytes32[],bool[])`` (``0x957ed2b3``) — exécuté par la Safe (K1)."""
+    """``assignRoles(address,bytes32[],bool[])`` (``0x957ed2b3``) — executed by the Safe (K1)."""
     keys = [common.enc_bytes32(key) for key in role_keys]
     flags = [common.enc_bool(bool(flag)) for flag in enabled]
     if len(keys) != len(flags) or not keys:
-        raise CalldataError("role_keys et enabled doivent être de même taille non nulle")
+        raise CalldataError("role_keys and enabled must have the same non-zero length")
     head_words = 3
     keys_offset = head_words * 32
     flags_offset = keys_offset + (1 + len(keys)) * 32
@@ -158,10 +158,10 @@ def assign_roles_data(member: str, role_keys: Sequence[str], enabled: Sequence[b
 
 
 def decode_assign_roles(data: str) -> Dict[str, Any]:
-    """Décode un ``assignRoles`` (vérifie l'aller-retour du kill switch)."""
+    """Decodes an ``assignRoles`` (checks the kill-switch round-trip)."""
     body = data[2:] if data.startswith("0x") else data
     if not body.startswith(common.SELECTOR_ASSIGN_ROLES[2:]):
-        raise CalldataError("sélecteur ≠ assignRoles")
+        raise CalldataError("selector ≠ assignRoles")
     payload = "0x" + body[8:]
     member = common.decode_word_address(payload, 0)
     keys_offset = common.decode_word_uint(payload, 1) // 32
@@ -174,18 +174,18 @@ def decode_assign_roles(data: str) -> Dict[str, Any]:
 
 
 def allow_target_data(role_key: str, target: str, clearance: int) -> str:
-    """``allowTarget(bytes32,address,uint8)`` (``0x7b0da5b2``) — tentative d'admin (run C3)."""
+    """``allowTarget(bytes32,address,uint8)`` (``0x7b0da5b2``) — admin attempt (run C3)."""
     if clearance not in (CLEARANCE_NONE, CLEARANCE_TARGET, CLEARANCE_FUNCTION):
-        raise CalldataError("clearance hors énumération Zodiac")
+        raise CalldataError("clearance outside the Zodiac enum")
     head = [common.enc_bytes32(role_key), common.enc_address(target), common.enc_uint(clearance)]
     return common.abi_encode_call(common.SELECTOR_ALLOW_TARGET, head)
 
 
-# --- Safe : administre le module ---------------------------------------------
+# --- Safe: administers the module --------------------------------------------
 
 
 def safe_enable_module_selector() -> str:
-    """Sélecteur ``enableModule(address)`` (calculé localement, re-vérifiable)."""
+    """``enableModule(address)`` selector (computed locally, re-verifiable)."""
     return common.selector("enableModule(address)")
 
 
@@ -194,7 +194,7 @@ def safe_enable_module_data(module: str) -> str:
 
 
 def safe_disable_module_data(previous_module: str, module: str) -> str:
-    """``disableModule(address,address)`` — variante K2 (exécutée par la Safe)."""
+    """``disableModule(address,address)`` — K2 variant (executed by the Safe)."""
     return common.selector("disableModule(address,address)") + common.enc_address(previous_module) + common.enc_address(module)
 
 
@@ -202,7 +202,7 @@ def safe_owner_selector() -> str:
     return common.selector("getOwners()")
 
 
-# --- assemblage de la transaction d'exécution --------------------------------
+# --- execution transaction assembly ------------------------------------------
 
 
 def demo_exec_transaction(*, module: str, agent: str, chain_id: int, nonce: int, gas: int,
@@ -210,7 +210,7 @@ def demo_exec_transaction(*, module: str, agent: str, chain_id: int, nonce: int,
                           inner_data: str, asset: str,
                           operation: int = OPERATION_CALL,
                           role_key: str = common.ROLE_KEY_AGENT) -> Dict[str, Any]:
-    """Transaction EIP-1559 **non signée** passant par le module Roles (l'agent paie le gaz)."""
+    """**Unsigned** EIP-1559 transaction going through the Roles module (the agent pays the gas)."""
     return {
         "chainId": int(chain_id),
         "nonce": int(nonce),

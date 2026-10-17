@@ -670,21 +670,21 @@ def summarise(payload: Dict[str, Any], output_path: str) -> str:
     weth_peak = headline.get("weth_utilisation_peak")
     lines = [
         f"episode rsETH 2026-04 -- mode {payload['meta']['mode']} -- {len(series)} points -> {output_path}",
-        f"  supplyCap rsETH sature : {headline.get('cap_ratio_max')} le {headline.get('cap_ratio_max_utc')} "
+        f"  rsETH supplyCap saturated : {headline.get('cap_ratio_max')} on {headline.get('cap_ratio_max_utc')} "
         f"(aToken {headline.get('a_token_supply_at_cap_max')} / cap {headline.get('supply_cap_rsETH')})",
-        f"  gel on-chain (isFrozen): {headline.get('rsETH_frozen_transition_utc')} "
-        f"(bloc {headline.get('rsETH_frozen_transition_block')})",
-        f"  oracle rsETH retenu    : {oracle_first.get('price')} $ le {oracle_first.get('utc')}"
-        + (f", {oracle_20} $ le 2026-04-20" if oracle_20 is not None else ""),
-        f"  utilisation WETH pic   : {weth_peak} le {headline.get('weth_utilisation_peak_utc')}"
-        if weth_peak is not None else "  utilisation WETH pic   : n/a (mode cache: pas de point WETH)",
+        f"  on-chain freeze (isFrozen): {headline.get('rsETH_frozen_transition_utc')} "
+        f"(block {headline.get('rsETH_frozen_transition_block')})",
+        f"  rsETH oracle retained     : {oracle_first.get('price')} $ on {oracle_first.get('utc')}"
+        + (f", {oracle_20} $ on 2026-04-20" if oracle_20 is not None else ""),
+        f"  WETH utilisation peak     : {weth_peak} on {headline.get('weth_utilisation_peak_utc')}"
+        if weth_peak is not None else "  WETH utilisation peak     : n/a (cache mode: no WETH point)",
     ]
     if errors:
-        lines.append(f"  points en erreur       : {len(errors)} ({errors[:3]}...)")
+        lines.append(f"  points in error           : {len(errors)} ({errors[:3]}...)")
     if payload.get("label_repairs"):
-        lines.append(f"  labels re-places       : {len(payload['label_repairs'])} (voir label_repairs)")
+        lines.append(f"  re-placed labels          : {len(payload['label_repairs'])} (see label_repairs)")
     if payload.get("label_mismatches"):
-        lines.append(f"  labels incoherents     : {len(payload['label_mismatches'])} (voir label_mismatches)")
+        lines.append(f"  inconsistent labels       : {len(payload['label_mismatches'])} (see label_mismatches)")
     return "\n".join(lines)
 
 

@@ -1,25 +1,24 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-"""ORVYREN-Core — CLI de l'exécuteur autonome (dry-run par défaut).
+"""ORVYREN-Core — autonomous executor CLI (dry-run by default).
 
-Une commande, une boucle bornée :
+One command, one bounded loop:
 
     python run_executor.py --case usdc-2023-03 --ticks 5 --dry-run
 
-Chaque tick : décision replay (``build_decision_record``) -> intent borné ->
-``policy.evaluate`` avec un ``PolicyState`` réel (pause, solde, enveloppe,
-budget) et le cumul 24 h d'un ledger persistant -> verdict journalisé. Un
-verdict ALLOW en dry-run produit un rapport DRY-RUN sans signature ; avec
-``--execute`` le signataire isolé est importé paresseusement, signe, diffuse et
-le reçu est vérifié — sans clé ou sans ``eth-account``, le run est refusé avant
-le premier tick (code 4).
+Each tick: replay decision (``build_decision_record``) -> bounded intent ->
+``policy.evaluate`` with a real ``PolicyState`` (pause, balance, envelope,
+budget) and the 24 h cumulative of a persistent ledger -> journaled verdict. An
+ALLOW verdict in dry-run produces a DRY-RUN report without signature; with
+``--execute`` the isolated signer is imported lazily, signs, broadcasts and the
+receipt is verified — without a key or without ``eth-account``, the run is
+refused before the first tick (code 4).
 
-Codes de sortie : 0 run terminé · 2 configuration/destinataire · 3 pause
-(kill switch) · 4 exécution réelle indisponible · 5 erreur d'exécution
-(ledger/journal/réseau/reçu).
+Exit codes: 0 run finished · 2 configuration/recipient · 3 pause
+(kill switch) · 4 real execution unavailable · 5 execution error
+(ledger/journal/network/receipt).
 
-Aucune clé n'est lue en dry-run. Aucun secret n'est imprimé dans quelque mode
-que ce soit.
+No key is read in dry-run. No secret is printed in any mode whatsoever.
 """
 
 from __future__ import annotations
@@ -47,34 +46,34 @@ DEFAULT_RUN_DIR = os.path.join(ROOT, "demo_runs", "executor")
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="run_executor.py",
-        description="ORVYREN — exécuteur autonome borné : décision -> politique "
-                    "(état réel) -> journal chaîné. Dry-run par défaut, aucune clé lue.")
+        description="ORVYREN — bounded autonomous executor: decision -> policy "
+                    "(real state) -> chained journal. Dry-run by default, no key read.")
     parser.add_argument("--case", default=DEFAULT_CASE,
-                        help="identifiant de cas rejoué (défaut : %(default)s)")
+                        help="replayed case identifier (default: %(default)s)")
     parser.add_argument("--ticks", type=int, default=1,
-                        help="nombre de ticks (défaut : %(default)s)")
+                        help="number of ticks (default: %(default)s)")
     parser.add_argument("--interval-s", type=float, default=0.0,
-                        help="attente entre ticks, en secondes (défaut : %(default)s)")
+                        help="wait between ticks, in seconds (default: %(default)s)")
     parser.add_argument("--max-usd", type=float, default=None,
-                        help="plafond par tick en USDC (optionnel) — au-delà, refus fail-closed")
+                        help="per-tick cap in USDC (optional) — above it, fail-closed refusal")
     parser.add_argument("--recipient", default=None,
-                        help="destinataire de réserve demandé — doit figurer dans la liste "
-                             "blanche résolue (ORVYREN_RECIPIENT_B/C)")
+                        help="requested reserve recipient — must appear in the resolved "
+                             "allowlist (ORVYREN_RECIPIENT_B/C)")
     parser.add_argument("--policy", default=DEFAULT_POLICY,
-                        help="chemin de policy_v1.yaml (défaut : racine du dépôt)")
+                        help="path of policy_v1.yaml (default: repository root)")
     parser.add_argument("--fixture", default=None,
-                        help="fixture d'enveloppe (défaut : celle déclarée par policy_v1.yaml)")
+                        help="envelope fixture (default: the one declared by policy_v1.yaml)")
     parser.add_argument("--ledger", default=None,
-                        help="ledger JSON 24 h (défaut : demo_runs/executor/<case>/ledger.json)")
+                        help="24 h JSON ledger (default: demo_runs/executor/<case>/ledger.json)")
     parser.add_argument("--journal", default=None,
-                        help="journal JSONL chaîné (défaut : demo_runs/executor/<case>/journal.jsonl)")
+                        help="chained JSONL journal (default: demo_runs/executor/<case>/journal.jsonl)")
     parser.add_argument("--json", action="store_true",
-                        help="sortie machine (un objet JSON sur stdout)")
+                        help="machine output (one JSON object on stdout)")
     mode = parser.add_mutually_exclusive_group()
     mode.add_argument("--dry-run", action="store_true", default=None,
-                      help="aucune signature, aucune clé lue (défaut)")
+                      help="no signature, no key read (default)")
     mode.add_argument("--execute", action="store_true",
-                      help="signature et diffusion réelles (exige ORVYREN_PRIVATE_KEY + eth-account)")
+                      help="real signing and broadcast (requires ORVYREN_PRIVATE_KEY + eth-account)")
     return parser
 
 
@@ -82,17 +81,17 @@ def _human(summary: Mapping[str, Any]) -> None:
     counts = summary["counts"]
     policy = summary["policy"]
     envelope = summary["envelope"]
-    print("ORVYREN — exécuteur autonome ({})".format(summary["mode"]))
-    print("  case       : {}  ({} tick(s) exécuté(s))".format(summary["case"], summary["ticks_run"]))
-    print("  politique  : {}  hash {}  ({})".format(
+    print("ORVYREN — autonomous executor ({})".format(summary["mode"]))
+    print("  case       : {}  ({} tick(s) executed)".format(summary["case"], summary["ticks_run"]))
+    print("  policy     : {}  hash {}  ({})".format(
         policy.get("version"), str(policy.get("policy_hash") or "")[:16],
         policy.get("path") or "policy_v1.yaml"))
-    print("  enveloppe  : {} (source: {})".format(envelope.get("status"), envelope.get("source")))
-    print("  destinataire: {}".format(summary["recipient"]))
-    print("  ledger     : {}  ({:.2f} USDC consommés / 24 h avant le run)".format(
-        summary["ledger"]["path"] or "(mémoire)", summary["ledger"]["spent_24h_before"]))
+    print("  envelope   : {} (source: {})".format(envelope.get("status"), envelope.get("source")))
+    print("  recipient  : {}".format(summary["recipient"]))
+    print("  ledger     : {}  ({:.2f} USDC spent / 24 h before the run)".format(
+        summary["ledger"]["path"] or "(memory)", summary["ledger"]["spent_24h_before"]))
     print("  journal    : {}".format(summary["journal"]["path"]))
-    print("  tick  intent                                        montant  verdict   outcome")
+    print("  tick  intent                                        amount   verdict   outcome")
     for record in summary["records"]:
         intent = record.get("intent") or {}
         codes = ", ".join(record.get("reasons") or []) or "-"
@@ -101,16 +100,16 @@ def _human(summary: Mapping[str, Any]) -> None:
             float(intent.get("amount") or 0.0), str(record.get("verdict") or "-"),
             str(record.get("outcome") or "-")))
         if codes != "-" or record.get("error"):
-            print("        refus: {} {}".format(codes, record.get("error") or "").rstrip())
+            print("        denied: {} {}".format(codes, record.get("error") or "").rstrip())
     chain_state = summary["journal"]
-    print("  chaîne du journal : {}".format(
-        "VALIDE ({} enregistrement(s))".format(chain_state["records"])
-        if chain_state["ok"] else "ROMPUE — {}".format(chain_state["error"])))
-    print("  bilan      : {} ALLOW · {} DENY · {} DRY-RUN · {} signé(s) · {} erreur(s)".format(
+    print("  journal chain    : {}".format(
+        "VALID ({} record(s))".format(chain_state["records"])
+        if chain_state["ok"] else "BROKEN — {}".format(chain_state["error"])))
+    print("  summary    : {} ALLOW · {} DENY · {} DRY-RUN · {} signed · {} error(s)".format(
         counts["allow"], counts["deny"], counts["dry_run"], counts["signed"], counts["errors"]))
-    print("  consommé 24 h après le run : {:.2f} USDC".format(summary["ledger"]["spent_24h_after"]))
+    print("  spent 24 h after the run : {:.2f} USDC".format(summary["ledger"]["spent_24h_after"]))
     if summary["paused"]:
-        print("  PAUSE / kill switch ENGAGÉ — aucun transfert autonome n'a été autorisé.")
+        print("  PAUSE / kill switch ENGAGED — no autonomous transfer was authorised.")
 
 
 def main(argv: Optional[list] = None, env: Optional[Mapping[str, str]] = None,
@@ -121,46 +120,46 @@ def main(argv: Optional[list] = None, env: Optional[Mapping[str, str]] = None,
     now_fn = clock or executor.utcnow
 
     if args.ticks < 0:
-        print("ERREUR : --ticks doit être >= 0", file=sys.stderr)
+        print("ERROR: --ticks must be >= 0", file=sys.stderr)
         return executor.EXIT_USAGE
     if args.interval_s is not None and (not math.isfinite(args.interval_s) or args.interval_s < 0):
-        print("ERREUR : --interval-s doit être un nombre fini >= 0", file=sys.stderr)
+        print("ERROR: --interval-s must be a finite number >= 0", file=sys.stderr)
         return executor.EXIT_USAGE
     if args.max_usd is not None and (not math.isfinite(args.max_usd) or args.max_usd < 0):
-        print("ERREUR : --max-usd doit être un nombre fini >= 0", file=sys.stderr)
+        print("ERROR: --max-usd must be a finite number >= 0", file=sys.stderr)
         return executor.EXIT_USAGE
 
     policy_path = args.policy if os.path.isabs(args.policy) else os.path.join(ROOT, args.policy)
     if not os.path.exists(policy_path):
-        print("ERREUR : policy_v1.yaml introuvable : {}".format(policy_path), file=sys.stderr)
+        print("ERROR: policy_v1.yaml not found: {}".format(policy_path), file=sys.stderr)
         return executor.EXIT_USAGE
     if args.fixture and not os.path.exists(args.fixture):
-        print("ERREUR : fixture d'enveloppe introuvable : {}".format(args.fixture), file=sys.stderr)
+        print("ERROR: envelope fixture not found: {}".format(args.fixture), file=sys.stderr)
         return executor.EXIT_USAGE
 
     try:
         recipient, recipients = executor.collect_recipients(args.recipient, environment)
     except executor.RecipientError as exc:
-        print("ERREUR destinataire : {}".format(exc), file=sys.stderr)
+        print("ERROR recipient: {}".format(exc), file=sys.stderr)
         return executor.EXIT_USAGE
 
     try:
         bundle = executor.load_bundle(policy_path, recipients)
     except executor.PolicyLoadError as exc:
-        print("ERREUR politique : {}".format(exc), file=sys.stderr)
+        print("ERROR policy: {}".format(exc), file=sys.stderr)
         return executor.EXIT_USAGE
     allowed = {str(address).lower() for address in bundle.config.allowed_recipients}
     if recipient not in allowed:
-        print("ERREUR destinataire : {} hors liste blanche de policy_v1.yaml "
-              "({} destinataire(s) résolu(s) : {}). Renseigner ORVYREN_RECIPIENT_B/C "
-              "ou --recipient.".format(recipient, len(allowed), ", ".join(sorted(allowed)) or "aucun"),
+        print("ERROR recipient: {} outside the policy_v1.yaml allowlist "
+              "({} recipient(s) resolved: {}). Set ORVYREN_RECIPIENT_B/C "
+              "or --recipient.".format(recipient, len(allowed), ", ".join(sorted(allowed)) or "none"),
               file=sys.stderr)
         return executor.EXIT_USAGE
 
     try:
         executor.apply_permission_window(bundle, now_fn())
     except executor.PolicyLoadError as exc:
-        print("ERREUR politique : {}".format(exc), file=sys.stderr)
+        print("ERROR policy: {}".format(exc), file=sys.stderr)
         return executor.EXIT_USAGE
 
     signer = None
@@ -168,7 +167,7 @@ def main(argv: Optional[list] = None, env: Optional[Mapping[str, str]] = None,
         try:
             signer = executor.preflight_signer(env=environment)
         except executor.ExecuteUnavailable as exc:
-            print("ERREUR --execute : {}".format(exc), file=sys.stderr)
+            print("ERROR --execute: {}".format(exc), file=sys.stderr)
             return executor.EXIT_EXECUTE
 
     run_dir = os.path.join(DEFAULT_RUN_DIR, executor.safe_case(args.case))
@@ -194,10 +193,10 @@ def main(argv: Optional[list] = None, env: Optional[Mapping[str, str]] = None,
             rpc_url=str(environment.get("ORVYREN_RPC_URL_BASE_SEPOLIA") or "") or None,
         )
     except (executor.LedgerError, executor.JournalError, executor.PolicyLoadError) as exc:
-        print("ERREUR exécution : {}".format(exc), file=sys.stderr)
+        print("ERROR execution: {}".format(exc), file=sys.stderr)
         return executor.EXIT_RUNTIME
     except ChainError as exc:
-        print("ERREUR réseau : {}".format(exc), file=sys.stderr)
+        print("ERROR network: {}".format(exc), file=sys.stderr)
         return executor.EXIT_RUNTIME
 
     if args.json:
@@ -210,7 +209,7 @@ def main(argv: Optional[list] = None, env: Optional[Mapping[str, str]] = None,
     if summary["paused"]:
         return executor.EXIT_PAUSED
     if not summary["journal"]["ok"]:
-        print("ERREUR : chaîne du journal invalide — {}".format(summary["journal"]["error"]),
+        print("ERROR: invalid journal chain — {}".format(summary["journal"]["error"]),
               file=sys.stderr)
         return executor.EXIT_RUNTIME
     return executor.EXIT_OK

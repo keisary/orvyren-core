@@ -1,10 +1,10 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-"""Tests du chargeur v1 : mini-YAML strict + `load_policy(policy_v1.yaml)`.
+"""v1 loader tests: strict mini-YAML + `load_policy(policy_v1.yaml)`.
 
-Le chargeur refuse plus qu'il n'accepte (fail-closed) ; le bundle porte
-version + empreinte YAML + empreinte de code, et chaque verdict de politique
-les porte (DOC2 §5.5.3). Exécution : python -m unittest discover -s tests -v
+The loader refuses more than it accepts (fail-closed); the bundle carries
+a version + YAML fingerprint + code fingerprint, and every policy verdict
+carries them (DOC2 §5.5.3). Run: python -m unittest discover -s tests -v
 """
 
 import hashlib
@@ -31,7 +31,7 @@ NOW = datetime(2026, 10, 16, 12, 0, tzinfo=timezone.utc)
 
 
 class TestMiniYaml(unittest.TestCase):
-    """Le sous-ensemble YAML strict : ce qu'il accepte, ce qu'il refuse."""
+    """The strict YAML subset: what it accepts, what it refuses."""
 
     def test_mapping_simple_et_types(self):
         data = yaml_load("a: 1\nb: deux\nc: true\nd: null\ne: \"100.0\"\nf: -3\ng: 1.5\n")
@@ -95,7 +95,7 @@ class TestMiniYaml(unittest.TestCase):
 
 
 class TestPolicyV1Bundle(unittest.TestCase):
-    """`policy_v1.yaml` : paramètres, version, empreintes."""
+    """`policy_v1.yaml`: parameters, version, fingerprints."""
 
     def test_charge_les_parametres(self):
         bundle = load_policy(POLICY_PATH, RECIPIENTS)

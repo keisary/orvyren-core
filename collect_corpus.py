@@ -1,32 +1,32 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-"""ORVYREN-Core — collecteur de corpus (cas pilote USDC / SVB, mars 2023).
+"""ORVYREN-Core — corpus collector (pilot case USDC / SVB, March 2023).
 
-Collecte, horodate et archive les observations nécessaires au cas :
-  1. DeFiLlama  — prix USDC (agrégateur) heure par heure, requête par timestamp
-                  (endpoint `prices/historical` : c'est le seul qui répond pour
-                   l'historique ; `chart` renvoie 0 point — constat du 14/10/2026).
-  2. Bitstamp   — OHLC horaire USDC/USD (source d'exchange indépendante).
-  3. Binance    — klines horaires USDC/USDT (deuxième source d'exchange).
-  4. DeFiLlama  — offre en circulation d'USDC par chaîne (quotidien, agrégat + Ethereum).
-  5. Référence documentaire — déclaration Circle du 12-13/03/2023 (métadonnée, non scrapée).
+Collects, timestamps and archives the observations required by the case:
+  1. DeFiLlama  — USDC price (aggregator) hour by hour, one request per timestamp
+                  (`prices/historical` endpoint: the only one that answers for
+                   history; `chart` returns 0 points — finding of 2026-10-14).
+  2. Bitstamp   — hourly USDC/USD OHLC (independent exchange source).
+  3. Binance    — hourly USDC/USDT klines (second exchange source).
+  4. DeFiLlama  — USDC circulating supply per chain (daily, aggregate + Ethereum).
+  5. Documentary reference — Circle statement of 12-13/03/2023 (metadata, not scraped).
 
-Sorties (dans corpus/) :
-  raw/<source>/*.json   réponses brutes horodatées
-  manifest.json         manifeste de source : url, heure de collecte, nb d'enregistrements, limites
-  usdc_observations.csv observations unifiées (timestamp_utc, venue, type, valeur)
-  README.md             note de provenance et limites
+Outputs (under corpus/):
+  raw/<source>/*.json   timestamped raw responses
+  manifest.json         source manifest: url, collection time, record count, limits
+  usdc_observations.csv unified observations (timestamp_utc, venue, type, value)
+  README.md             provenance and limits note
 
-Contrat de fenêtre : chaque série est re-vérifiée contre ses bornes déclarées
-avant écriture (`validate_archived_windows`) ; une ligne hors fenêtre fait
-échouer la collecte (exit 2) au lieu d'entrer silencieusement dans l'archive.
-Ce garde-fou existe parce qu'un cache d'avant le filtre de fenêtre a déjà été
-réutilisé et a expédié 855 lignes Bitstamp hors fenêtre (constat du 14/10/2026).
+Window contract: every series is re-checked against its declared bounds
+before writing (`validate_archived_windows`); an out-of-window row makes the
+collection fail (exit 2) instead of silently entering the archive.
+This guard exists because a cache predating the window filter was once reused
+and shipped 855 out-of-window Bitstamp rows (finding of 2026-10-14).
 
-Usage :
-  python collect_corpus.py                # collecte complète (≈ 4 min, réseau requis)
-  python collect_corpus.py --offline      # rejoue uniquement le corpus archivé
-Dépendances : stdlib uniquement.
+Usage:
+  python collect_corpus.py                # full collection (≈ 4 min, network required)
+  python collect_corpus.py --offline      # replays the archived corpus only
+Dependencies: stdlib only.
 """
 
 import argparse
@@ -44,10 +44,10 @@ CORPUS = os.path.join(BASE, "corpus")
 RAW = os.path.join(CORPUS, "raw")
 UA = {"user-agent": "curl/8.5.0", "accept": "application/json"}
 
-# Fenêtre principale : depeg USDC (SVB) — du 9 au 15 mars 2023, pas horaire.
+# Main window: USDC depeg (SVB) — 9 to 15 March 2023, hourly step.
 MAIN_START = dt.datetime(2023, 3, 9, 0, 0, tzinfo=dt.timezone.utc)
 MAIN_END = dt.datetime(2023, 3, 15, 0, 0, tzinfo=dt.timezone.utc)
-# Fenêtre témoin (hors crise) : 15-18 février 2023.
+# Control window (outside the crisis): 15-18 February 2023.
 CTRL_START = dt.datetime(2023, 2, 15, 0, 0, tzinfo=dt.timezone.utc)
 CTRL_END = dt.datetime(2023, 2, 18, 0, 0, tzinfo=dt.timezone.utc)
 
@@ -57,14 +57,14 @@ CIRCLE_STATEMENT = {
     "title": "USDC reserves and Silicon Valley Bank — statement",
     "url": "https://www.circle.com/pressroom/3-3-billion-of-usdc-reserve-risk-removed-dollar-de-peg-closes",
     "publication_date": "2023-03-12",
-    "usage": "Source primaire de l'émetteur : information annoncée à une date donnée (fait documentaire).",
-    "limit": "Une déclaration d'émetteur ne tranche pas seule les hypothèses de risque ; à corroborer.",
-    "note": "Métadonnée enregistrée manuellement : le texte de la déclaration doit être lu et cité, pas scrapé automatiquement.",
+    "usage": "Primary issuer source: information announced on a given date (documentary fact).",
+    "limit": "An issuer statement does not settle risk hypotheses on its own; corroborate it.",
+    "note": "Manually recorded metadata: the statement text must be read and quoted, not scraped automatically.",
 }
 
 
 def fetch_json(url, retries=3, pause=1.5):
-    """GET JSON avec reprises ; renvoie (donnée, heure_de_collecte_iso) ou lève."""
+    """GET JSON with retries; returns (data, collection_time_iso) or raises."""
     last = None
     for attempt in range(retries):
         try:
@@ -75,26 +75,26 @@ def fetch_json(url, retries=3, pause=1.5):
         except (urllib.error.URLError, urllib.error.HTTPError, TimeoutError, json.JSONDecodeError) as exc:
             last = exc
             time.sleep(pause * (attempt + 1))
-    raise RuntimeError(f"échec après {retries} tentatives : {url} ({last})")
+    raise RuntimeError(f"failed after {retries} attempts: {url} ({last})")
 
 
-FORCE = False  # mis à True par --force : ignore le cache et recollecte tout
+FORCE = False  # set to True by --force: ignore the cache and re-collect everything
 
 
 def cached_or_fetch(sub, name, url, builder):
-    """Idempotence de collecte : si le fichier brut existe déjà et que --force n'est pas
-    demandé, on le relit au lieu de refaire les appels réseau (coûteux : ~1 s/appel).
-    `builder()` doit renvoyer la liste d'enregistrements construite depuis la réponse."""
+    """Collection idempotence: if the raw file already exists and --force is not
+    requested, re-read it instead of repeating the network calls (expensive: ~1 s/call).
+    `builder()` must return the list of records built from the response."""
     path = os.path.join(RAW, sub, name)
     if os.path.exists(path) and not FORCE:
         rows = json.load(open(path, encoding="utf-8"))
-        if rows:  # un cache vide (collecte échouée) ne doit jamais être réutilisé
-            print(f"  {sub}/{name}: {len(rows)} enregistrements (réutilisés du cache)")
+        if rows:  # an empty cache (failed collection) must never be reused
+            print(f"  {sub}/{name}: {len(rows)} records (reused from cache)")
             return rows, True
-        print(f"  {sub}/{name}: cache vide → nouvelle tentative réseau")
+        print(f"  {sub}/{name}: empty cache → new network attempt")
     rows = builder()
     save_raw(sub, name, rows)
-    print(f"  {sub}/{name}: {len(rows)} enregistrements (collectés)")
+    print(f"  {sub}/{name}: {len(rows)} records (collected)")
     return rows, False
 
 
@@ -157,7 +157,7 @@ def validate_archived_windows(prices, bitstamp, binance, supply):
 
 
 def collect_defillama_prices(manifest, sleep=1.1):
-    """Prix USDC heure par heure via l'endpoint prices/historical (une requête par point)."""
+    """Hourly USDC price via the prices/historical endpoint (one request per point)."""
     series = {}
     for label, (start, end) in (("main", (MAIN_START, MAIN_END)), ("control", (CTRL_START, CTRL_END))):
         def build(start=start, end=end):
@@ -180,13 +180,13 @@ def collect_defillama_prices(manifest, sleep=1.1):
             "source": "DeFiLlama", "endpoint": "coins.llama.fi/prices/historical/{ts}/{coin}",
             "window": label, "records": len(rows),
             "file": f"corpus/raw/defillama/usdc_prices_{label}.json", "from_cache": reused,
-            "limits": "Agrégateur : prix médian multi-venues, retard et couverture à vérifier ; quota public non garanti (voir doc API).",
+            "limits": "Aggregator: multi-venue median price; lag and coverage must be checked; public quota not guaranteed (see API docs).",
         })
     return series
 
 
 def collect_bitstamp(manifest):
-    """OHLC horaire USDC/USD sur Bitstamp, depuis le 9 mars 2023 (API publique, sans clé)."""
+    """Hourly USDC/USD OHLC on Bitstamp, from 9 March 2023 (public API, no key)."""
     def build():
         out, start = [], int(MAIN_START.timestamp())
         while True:
@@ -216,13 +216,13 @@ def collect_bitstamp(manifest):
         "source": "Bitstamp", "endpoint": "www.bitstamp.net/api/v2/ohlc/usdcusd/",
         "window": "main", "records": len(rows), "file": "corpus/raw/bitstamp/usdcusd_ohlc.json",
         "from_cache": reused,
-        "limits": "Une seule place de marché : profondeur et spreads locaux ; la dislocation observée peut être propre à cette venue.",
+        "limits": "Single marketplace: local depth and spreads; the observed dislocation may be venue-specific.",
     })
     return rows
 
 
 def collect_binance(manifest):
-    """Klines horaires USDC/USDT (source d'exchange indépendante de Bitstamp)."""
+    """Hourly USDC/USDT klines (exchange source independent of Bitstamp)."""
     def build():
         out = []
         start = int(MAIN_START.timestamp() * 1000)
@@ -248,22 +248,22 @@ def collect_binance(manifest):
     manifest.append({
         "source": "Binance", "endpoint": "api.binance.com/api/v3/klines", "window": "main",
         "records": len(rows), "file": "corpus/raw/binance/usdcusdt_klines.json", "from_cache": reused,
-        "limits": "Marché USDC/USDT : mesure une paire contre un autre stablecoin, donc une dislocation relative, pas absolue.",
+        "limits": "USDC/USDT market: measures one pair against another stablecoin, hence a relative dislocation, not an absolute one.",
     })
     return rows
 
 
 def collect_supply(manifest):
-    """Offre en circulation USDC (quotidien) — agrégat et Ethereum."""
+    """USDC circulating supply (daily) — aggregate and Ethereum."""
     out = {}
-    # Fenêtre élargie : la crise ± 15 jours, pour pouvoir comparer à une période calme proche.
+    # Wider window: the crisis ± 15 days, so a nearby calm period can be compared.
     lo = (MAIN_START - dt.timedelta(days=15)).timestamp()
     hi = (MAIN_END + dt.timedelta(days=15)).timestamp()
 
     def parse_ts(value):
-        """L'endpoint renvoie la date sous trois formes possibles :
-        epoch numérique (int/float), epoch encodé en chaîne ("1678320000"), ou ISO ("2023-03-09").
-        Constat du 14/10/2026 : stablecoincharts renvoie une CHAÎNE contenant l'epoch."""
+        """The endpoint returns the date in three possible forms:
+        numeric epoch (int/float), epoch encoded as a string ("1678320000"), or ISO ("2023-03-09").
+        Finding of 2026-10-14: stablecoincharts returns a STRING containing the epoch."""
         if isinstance(value, (int, float)):
             return dt.datetime.fromtimestamp(float(value), dt.timezone.utc)
         text = str(value).strip()
@@ -302,18 +302,18 @@ def collect_supply(manifest):
             return rows
         try:
             rows, reused = cached_or_fetch("supply", f"usdc_circulating_{label}.json", url, build)
-        except Exception as exc:  # source indisponible : on le consigne, on n'invente rien
-            print(f"  supply {label}: ÉCHEC ({exc})")
-            manifest.append({"source": "DeFiLlama", "endpoint": url, "window": "crise ±15 j",
+        except Exception as exc:  # source unavailable: record it, never invent anything
+            print(f"  supply {label}: FAILED ({exc})")
+            manifest.append({"source": "DeFiLlama", "endpoint": url, "window": "crisis ±15 d",
                              "records": 0, "file": None, "from_cache": False,
-                             "limits": f"Indisponible lors de la collecte : {exc}"})
+                             "limits": f"Unavailable at collection time: {exc}"})
             continue
         out[label] = rows
-        manifest.append({"source": "DeFiLlama", "endpoint": url, "window": "crise ±15 j",
+        manifest.append({"source": "DeFiLlama", "endpoint": url, "window": "crisis ±15 d",
                          "records": len(rows),
                          "file": f"corpus/raw/supply/usdc_circulating_{label}.json",
                          "from_cache": reused,
-                         "limits": "Série quotidienne, granularité grossière ; couvre l'on-chain observable uniquement."})
+                         "limits": "Daily series, coarse granularity; covers observable on-chain supply only."})
     save_raw("circle", "circle_statement_reference.json", CIRCLE_STATEMENT)
     manifest.append({"source": "Circle", "endpoint": CIRCLE_STATEMENT["url"], "window": "12/03/2023",
                      "records": 1, "file": "corpus/raw/circle/circle_statement_reference.json", "from_cache": False,
@@ -325,9 +325,9 @@ def write_csv(prices, bitstamp, binance, supply):
     path = os.path.join(CORPUS, "usdc_observations.csv")
     n = 0
     with open(path, "w", newline="", encoding="utf-8") as fh:
-        # lineterminator explicite : le défaut du module csv est '\r\n', ce qui
-        # rendrait le fichier dépendant du style d'écriture et casserait la
-        # comparaison directe sha256sum <-> empreinte enregistrée (LF partout).
+        # explicit lineterminator: the csv module default is '\r\n', which would
+        # make the file depend on the writing style and break the direct
+        # sha256sum <-> recorded digest comparison (LF everywhere).
         w = csv.writer(fh, lineterminator="\n")
         w.writerow(["timestamp_utc", "venue", "metric", "value", "extra", "retrieved_at"])
         for label, rows in prices.items():
@@ -355,32 +355,32 @@ def write_csv(prices, bitstamp, binance, supply):
 def write_readme(manifest, n_obs):
     path = os.path.join(CORPUS, "README.md")
     lines = [
-        "# Corpus USDC — cas pilote ORVYREN (épisode SVB, mars 2023)",
+        "# USDC corpus — ORVYREN pilot case (SVB episode, March 2023)",
         "",
-        "Collecte reproductible : `python collect_corpus.py` (réseau) ou `--offline` (rejeu de l'archive).",
-        f"Dernière collecte : {dt.datetime.now(dt.timezone.utc).isoformat(timespec='seconds')}",
-        f"Observations unifiées : **{n_obs}** (voir `usdc_observations.csv`).",
+        "Reproducible collection: `python collect_corpus.py` (network) or `--offline` (archive replay).",
+        f"Last collection: {dt.datetime.now(dt.timezone.utc).isoformat(timespec='seconds')}",
+        f"Unified observations: **{n_obs}** (see `usdc_observations.csv`).",
         "",
-        "## Fenêtres",
-        f"- principale (depeg) : {MAIN_START.date()} → {MAIN_END.date()}, pas horaire ;",
-        f"- témoin (hors crise) : {CTRL_START.date()} → {CTRL_END.date()}, pas horaire.",
+        "## Windows",
+        f"- main (depeg): {MAIN_START.date()} → {MAIN_END.date()}, hourly step;",
+        f"- control (outside the crisis): {CTRL_START.date()} → {CTRL_END.date()}, hourly step.",
         "",
-        "## Sources et limites",
+        "## Sources and limits",
         "",
-        "| Source | Endpoint | Enregistrements | Limite à afficher |",
+        "| Source | Endpoint | Records | Limit to display |",
         "|---|---|---|---|",
     ]
     for m in manifest:
         lines.append(f"| {m['source']} | `{m['endpoint']}` | {m['records']} | {m['limits']} |")
     lines += [
         "",
-        "## Règles d'usage",
-        "1. Les prix de testnet ne servent **jamais** de contexte de décision (V0.2 §3.5).",
-        "2. Toute analyse historique n'utilise que les informations disponibles à l'instant simulé (point-in-time).",
-        "3. Un prix d'agrégateur et un prix d'exchange ne sont pas deux preuves indépendantes par construction ;",
-        "   la comparaison Bitstamp / Binance / DeFiLlama est conservée pour mesurer les écarts **entre venues**.",
-        "4. La déclaration de l'émetteur est enregistrée comme référence documentaire : elle doit être lue et citée,",
-        "   jamais reformulée automatiquement.",
+        "## Rules of use",
+        "1. Testnet prices are **never** used as decision context (V0.2 §3.5).",
+        "2. Any historical analysis uses only the information available at the simulated instant (point-in-time).",
+        "3. An aggregator price and an exchange price are not two independent proofs by construction;",
+        "   the Bitstamp / Binance / DeFiLlama comparison is kept to measure the gaps **between venues**.",
+        "4. The issuer statement is recorded as a documentary reference: it must be read and quoted,",
+        "   never reworded automatically.",
     ]
     with open(path, "w", encoding="utf-8") as fh:
         fh.write("\n".join(lines) + "\n")
@@ -389,8 +389,8 @@ def write_readme(manifest, n_obs):
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--offline", action="store_true", help="rejoue l'archive sans réseau")
-    parser.add_argument("--force", action="store_true", help="recollecte tout, ignore le cache local")
+    parser.add_argument("--offline", action="store_true", help="replay the archive without network")
+    parser.add_argument("--force", action="store_true", help="re-collect everything, ignore the local cache")
     args = parser.parse_args()
     ensure_dirs()
     manifest_path = os.path.join(CORPUS, "manifest.json")
@@ -400,22 +400,22 @@ def main():
 
     if args.offline:
         if not os.path.exists(manifest_path):
-            print("Aucun corpus archivé. Lancez une collecte en ligne d'abord."); sys.exit(1)
+            print("No archived corpus. Run an online collection first."); sys.exit(1)
         data = json.load(open(manifest_path, encoding="utf-8"))
-        print(f"REPLAY — corpus du {data['collected_at']} : {sum(m['records'] for m in data['sources'])} enregistrements.")
+        print(f"REPLAY — corpus of {data['collected_at']}: {sum(m['records'] for m in data['sources'])} records.")
         return
 
     if os.path.exists(manifest_path):
-        print("Un corpus existe déjà (une collecte par jour suffit) ; il sera écrasé.\n")
+        print("A corpus already exists (one collection per day is enough); it will be overwritten.\n")
     manifest = []
-    print("Collecte du corpus USDC (mars 2023)…")
+    print("Collecting the USDC corpus (March 2023)…")
     prices = collect_defillama_prices(manifest)
     bitstamp = collect_bitstamp(manifest)
     binance = collect_binance(manifest)
     supply = collect_supply(manifest)
     problems = validate_archived_windows(prices, bitstamp, binance, supply)
     if problems:
-        print("CONTRAT DE FENÊTRE VIOLÉ — écriture du corpus refusée :")
+        print("WINDOW CONTRACT VIOLATED — corpus write refused:")
         for problem in problems[:10]:
             print("  " + problem)
         sys.exit(2)

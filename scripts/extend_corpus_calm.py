@@ -1,27 +1,26 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-"""ORVYREN — L1.5 : fenêtres CALME (DEV/EVAL) — collecte et archivage.
+"""ORVYREN — L1.5: CALM windows (DEV/EVAL) — collection and archiving.
 
-Les fenêtres CALME servent de **contrôles** (le pipeline ne doit PAS sonner
-quand rien ne se passe). Le plan B7 les désigne (CALME 2022–2023 pour DEV,
-CALME 2025–2026 pour EVAL) — les bornes exactes restent **à figer en G1** :
-les valeurs ci-dessous sont la **proposition** exécutée ici, marquées comme
-telles dans les artefacts.
+CALM windows serve as **controls** (the pipeline must NOT fire when nothing is
+happening). Plan B7 designates them (CALM 2022-2023 for DEV, CALM 2025-2026 for
+EVAL) — the exact bounds remain **to be frozen in G1**: the values below are the
+**proposal** executed here, marked as such in the artefacts.
 
-Collecte par fenêtre (réutilise les contrats de sources du collecteur
-principal, ``collect_corpus.py``) :
-- DeFiLlama ``coins.llama.fi/chart`` (prix USDC horaire, une requête batch) ;
-- Bitstamp OHLC horaire USDC/USD (API publique, sans clé) ;
-- Binance klines horaires USDCUSDT (source indépendante).
+Collection per window (reuses the main collector's source contracts,
+``collect_corpus.py``):
+- DeFiLlama ``coins.llama.fi/chart`` (hourly USDC price, one batch request);
+- Bitstamp hourly OHLC USDC/USD (public API, no key);
+- Binance hourly USDCUSDT klines (independent source).
 
-Écrit sous ``corpus/raw/<source>/…_<fenêtre>.json``, l'unifié
-``corpus/series/calm_windows.json`` et ``corpus/calm_manifest.json``.
-``--offline`` reconstruit les sorties depuis le cache brut (aucun réseau).
+Writes under ``corpus/raw/<source>/..._<window>.json``, the unified
+``corpus/series/calm_windows.json`` and ``corpus/calm_manifest.json``.
+``--offline`` rebuilds the outputs from the raw cache (no network).
 
-Usage ::
+Usage::
 
-    python scripts/extend_corpus_calm.py            # collecte (réseau) + écritures
-    python scripts/extend_corpus_calm.py --offline  # reconstruit depuis corpus/raw
+    python scripts/extend_corpus_calm.py            # collection (network) + writes
+    python scripts/extend_corpus_calm.py --offline  # rebuild from corpus/raw
 """
 
 from __future__ import annotations
@@ -40,13 +39,13 @@ if REPO_ROOT not in sys.path:
 
 import collect_corpus as cc  # noqa: E402  (source contracts reused verbatim)
 
-#: Proposition B7 (à figer en G1) — bornes exécutées ici.
+#: B7 proposal (to be frozen in G1) — bounds executed here.
 CALM_WINDOWS = {
-    "calm_a": ("2023-01-16T00:00:00Z", "2023-01-23T00:00:00Z"),  # saison 2022-2023
-    "calm_b": ("2025-09-15T00:00:00Z", "2025-09-22T00:00:00Z"),  # saison 2025-2026
+    "calm_a": ("2023-01-16T00:00:00Z", "2023-01-23T00:00:00Z"),  # 2022-2023 season
+    "calm_b": ("2025-09-15T00:00:00Z", "2025-09-22T00:00:00Z"),  # 2025-2026 season
 }
 
-MIN_POINTS = 160  # 7 jours horaires -> tolérance pertes marginales
+MIN_POINTS = 160  # 7 hourly days -> tolerance for marginal losses
 
 
 def _parse(iso: str) -> dt.datetime:
@@ -165,16 +164,16 @@ def _check_bounds(label: str, rows, start: dt.datetime, end: dt.datetime):
                                        <= _parse(r["timestamp_utc"])
                                        <= end + dt.timedelta(hours=2))]
     if outside:
-        raise SystemExit("E_WINDOW: %s hors fenêtre (%d lignes)" % (label, len(outside)))
+        raise SystemExit("E_WINDOW: %s outside window (%d rows)" % (label, len(outside)))
     if len(rows) < MIN_POINTS:
-        raise SystemExit("E_WINDOW: %s trop courte (%d < %d points)"
+        raise SystemExit("E_WINDOW: %s too short (%d < %d points)"
                          % (label, len(rows), MIN_POINTS))
 
 
 def main(argv=None) -> int:
     parser = argparse.ArgumentParser(prog="extend_corpus_calm.py")
     parser.add_argument("--offline", action="store_true",
-                        help="reconstruit depuis corpus/raw (aucun réseau)")
+                        help="rebuild from corpus/raw (no network)")
     args = parser.parse_args(argv)
     if args.offline:
         os.environ["ORVYREN_CALM_FORCE"] = "0"
@@ -194,7 +193,7 @@ def main(argv=None) -> int:
             rows, reused = collector(label, start, end)
             if not rows:
                 if name in ("defillama", "bitstamp"):
-                    raise SystemExit("E_WINDOW: %s/%s vide (source obligatoire)"
+                    raise SystemExit("E_WINDOW: %s/%s empty (mandatory source)"
                                      % (label, name))
                 # optional source: declared unavailable, never invented
                 unavailable[name] = {
@@ -228,7 +227,7 @@ def main(argv=None) -> int:
                                      "bounds": [start_iso, end_iso],
                                      "note": info["note"] + " ; proposition B7 (à figer en G1)"})
         if len(sources) < 2:
-            raise SystemExit("E_WINDOW: %s — moins de 2 sources réelles" % label)
+            raise SystemExit("E_WINDOW: %s — fewer than 2 real sources" % label)
         unified["windows"][label] = {"start": start_iso, "end": end_iso,
                                      "sources": {name: {"records": len(rows),
                                                         "observations": rows}
@@ -256,8 +255,8 @@ def main(argv=None) -> int:
                             for name, source in sorted(window["sources"].items()))
         print("  [ok] %s (%s → %s) : %s" % (label, window["start"][:10],
                                             window["end"][:10], summary))
-    print("  [ok] série unifiée : corpus/series/calm_windows.json")
-    print("  [ok] manifeste     : corpus/calm_manifest.json")
+    print("  [ok] unified series : corpus/series/calm_windows.json")
+    print("  [ok] manifest       : corpus/calm_manifest.json")
     return 0
 
 

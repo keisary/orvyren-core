@@ -1,18 +1,18 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-"""ORVYREN — kit de démo testnet (W5, L5.2) : **faucet / soldes avant run**.
+"""ORVYREN — testnet demo kit (W5, L5.2): **faucet / balances before a run**.
 
-Vérifie avant chaque run ce qui est indispensable :
+Checks before every run what is essential:
 
-* **agent** : solde ETH ≥ seuil (il paie le gaz) ;
-* **Safe** : solde USDC ≥ seuil (c'est elle qui détient les fonds — l'avance
-  exécute *en tant que* Safe via Roles) ;
-* propriétaires : soldes ETH rapportés (information).
+* **agent**: ETH balance ≥ threshold (it pays the gas);
+* **Safe**: USDC balance ≥ threshold (it holds the funds — the advance
+  executes *as* the Safe through Roles);
+* owners: reported ETH balances (informational).
 
-Si un seuil n'est pas atteint, le script sort en ``exit 1`` et rappelle les
-robinets gratuits (testnet uniquement — aucune valeur réelle).
+If a threshold is not met, the script exits with ``exit 1`` and recalls the
+free faucets (testnet only — no real value).
 
-CLI :
+CLI:
 
     python scripts/demo/faucet_check.py [--rpc] [--min-eth 0.0005] [--min-usdc 1]
 """
@@ -24,9 +24,9 @@ import os
 import sys
 from typing import Any, Dict, List, Optional
 
-try:  # paquet (``demo.faucet_check``)
+try:  # package (``demo.faucet_check``)
     from . import common
-except ImportError:  # exécution directe : python scripts/demo/faucet_check.py
+except ImportError:  # direct execution: python scripts/demo/faucet_check.py
     _sys_dir = os.path.dirname(os.path.abspath(__file__))
     if _sys_dir not in sys.path:
         sys.path.insert(0, _sys_dir)
@@ -36,11 +36,11 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 DEFAULT_ENV = os.path.join(HERE, ".env")
 DEFAULT_OWNERS = os.path.join(HERE, "owners.env")
 
-USDC_DECIMALS = 6  # USDC Circle (test) — jamais l'USDC d'Aave (B5 §b.2)
+USDC_DECIMALS = 6  # Circle USDC (test) — never Aave's USDC (B5 §b.2)
 
 FAUCET_HINTS = [
-    "ETH Base Sepolia : https://portal.cdp.coinbase.com/products/faucet (gratuit)",
-    "USDC test Circle : https://faucet.circle.com (gratuit, choisir Base Sepolia)",
+    "Base Sepolia ETH: https://portal.cdp.coinbase.com/products/faucet (free)",
+    "Circle test USDC: https://faucet.circle.com (free, choose Base Sepolia)",
 ]
 
 EXIT_OK = 0
@@ -72,12 +72,12 @@ def run(*, env: Dict[str, str], rpc_url: Optional[str],
                                            "ORVYREN_OWNER3_ADDRESS")]
     if not rpc_url:
         report["checks"].append({"id": "F0", "status": "SKIPPED",
-                                 "detail": "offline — soldes non lus ; passer --rpc"})
+                                 "detail": "offline — balances not read; pass --rpc"})
         report["verdict"] = "OFFLINE_PASS"
         return report
     if not (agent and safe and usdc):
         report["checks"].append({"id": "F0", "status": "FAIL",
-                                 "detail": "agent/Safe/USDC absents de l'env"})
+                                 "detail": "agent/Safe/USDC missing from the env"})
         report["verdict"] = "FAIL"
         return report
 
@@ -88,7 +88,7 @@ def run(*, env: Dict[str, str], rpc_url: Optional[str],
         owner_eth = {address: eth_balance(rpc_url, address) for address in owners if address}
     except Exception as exc:
         report["checks"].append({"id": "F1", "status": "FAIL",
-                                 "detail": "rpc indisponible : %s" % exc})
+                                 "detail": "rpc unavailable: %s" % exc})
         report["verdict"] = "FAIL"
         return report
 
@@ -103,19 +103,19 @@ def run(*, env: Dict[str, str], rpc_url: Optional[str],
     if agent_eth < min_eth:
         ready = False
         report["checks"].append({"id": "F2.agent_eth", "status": "FAIL",
-                                 "detail": "agent %.6f ETH < seuil %.6f — robinet ETH requis"
+                                 "detail": "agent %.6f ETH < threshold %.6f — ETH faucet required"
                                            % (agent_eth, min_eth)})
     else:
         report["checks"].append({"id": "F2.agent_eth", "status": "PASS",
-                                 "detail": "agent %.6f ETH ≥ seuil %.6f" % (agent_eth, min_eth)})
+                                 "detail": "agent %.6f ETH ≥ threshold %.6f" % (agent_eth, min_eth)})
     if safe_usdc / 10 ** USDC_DECIMALS < min_usdc:
         ready = False
         report["checks"].append({"id": "F3.safe_usdc", "status": "FAIL",
-                                 "detail": "Safe %.6f USDC < seuil %.6f — robinet USDC requis"
+                                 "detail": "Safe %.6f USDC < threshold %.6f — USDC faucet required"
                                            % (safe_usdc / 10 ** USDC_DECIMALS, min_usdc)})
     else:
         report["checks"].append({"id": "F3.safe_usdc", "status": "PASS",
-                                 "detail": "Safe %.6f USDC ≥ seuil %.6f"
+                                 "detail": "Safe %.6f USDC ≥ threshold %.6f"
                                            % (safe_usdc / 10 ** USDC_DECIMALS, min_usdc)})
     report["verdict"] = "READY" if ready else "NOT_READY"
     return report
@@ -124,15 +124,15 @@ def run(*, env: Dict[str, str], rpc_url: Optional[str],
 def main(argv: Optional[List[str]] = None) -> int:
     parser = argparse.ArgumentParser(
         prog="faucet_check.py",
-        description="ORVYREN (W5/L5.2) — soldes avant run : ETH agent, USDC Safe, "
-                    "robinets gratuits rappelés. Testnet uniquement.")
+        description="ORVYREN (W5/L5.2) — balances before a run: agent ETH, Safe USDC, "
+                    "free faucets recalled. Testnet only.")
     parser.add_argument("--env-file", default=DEFAULT_ENV)
-    parser.add_argument("--rpc", action="store_true", help="lecture en ligne (lecture seule)")
+    parser.add_argument("--rpc", action="store_true", help="live read (read-only)")
     parser.add_argument("--rpc-url", default=None)
     parser.add_argument("--min-eth", type=float, default=0.0005,
-                        help="seuil ETH de l'agent (défaut 0,0005)")
+                        help="agent ETH threshold (default 0.0005)")
     parser.add_argument("--min-usdc", type=float, default=1.0,
-                        help="seuil USDC de la Safe (défaut 1)")
+                        help="Safe USDC threshold (default 1)")
     parser.add_argument("--out", default=None)
     parser.add_argument("--quiet", action="store_true")
     args = parser.parse_args(argv)
@@ -140,7 +140,7 @@ def main(argv: Optional[List[str]] = None) -> int:
     env = common.load_session_env(args.env_file)
     rpc_url = args.rpc_url or (env.get("ORVYREN_RPC_URL_BASE_SEPOLIA") if args.rpc else None)
     if args.rpc and not rpc_url:
-        print("faucet_check: --rpc exige --rpc-url ou ORVYREN_RPC_URL_BASE_SEPOLIA", file=sys.stderr)
+        print("faucet_check: --rpc requires --rpc-url or ORVYREN_RPC_URL_BASE_SEPOLIA", file=sys.stderr)
         return EXIT_USAGE
     report = run(env=env, rpc_url=rpc_url, min_eth=args.min_eth, min_usdc=args.min_usdc)
     if args.out:
@@ -150,7 +150,7 @@ def main(argv: Optional[List[str]] = None) -> int:
             print("  [%s] %s — %s" % (check["status"], check["id"], str(check["detail"])[:180]))
         if report["verdict"] in ("NOT_READY", "FAIL"):
             for hint in FAUCET_HINTS:
-                print("  robinet : %s" % hint)
+                print("  faucet: %s" % hint)
         print("VERDICT: %s" % report["verdict"])
     return EXIT_OK if report["verdict"] in ("READY", "OFFLINE_PASS") else EXIT_NOT_READY
 

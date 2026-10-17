@@ -1,21 +1,21 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-"""ORVYREN-Core — CLI d'évaluation DEV/EVAL (W7, L7.6 ; B7 §d.2.5, §e).
+"""ORVYREN-Core — DEV/EVAL evaluation CLI (W7, L7.6; B7 §d.2.5, §e).
 
-    python run_evaluation.py --set dev                     # harnais complet hors-ligne
+    python run_evaluation.py --set dev                     # full offline harness
     python run_evaluation.py --set eval [--force] [--calibration-periods 2025-01,2025-02]
 
-Portes (refus d'écrire, code 2) :
+Gates (refusal to write, code 2):
 
-* gel ``frozen/G1–G6`` absent, incomplet ou non concordant — **les deux jeux** ;
-* ``--set eval`` : verrou ``eval_run.lock`` présent (deuxième exécution interdite
-  sans ``--force`` — mention « évaluation ré-exécutée » ajoutée au rapport) ;
-* ``--set eval`` : une fenêtre CALME EVAL chevauche la période de calibration
-  déclarée (``--calibration-periods``).
+* ``frozen/G1–G6`` freeze absent, incomplete or non-matching — **both sets**;
+* ``--set eval``: ``eval_run.lock`` present (second run forbidden without
+  ``--force`` — an "evaluation re-run" mention is added to the report);
+* ``--set eval``: a CALM EVAL window overlaps the declared calibration period
+  (``--calibration-periods``).
 
-Sorties (``--out-dir``, défaut ``evidence/evaluation/``) :
-``evaluation_report.{json,md}`` (bannière + N obligatoires), ``windows/<id>.json``,
-``placebo_B0.json``, ``superiority_tests.json``, ``variants.log`` (échecs inclus).
+Outputs (``--out-dir``, default ``evidence/evaluation/``):
+``evaluation_report.{json,md}`` (mandatory banner + N), ``windows/<id>.json``,
+``placebo_B0.json``, ``superiority_tests.json``, ``variants.log`` (failures included).
 """
 
 from __future__ import annotations
@@ -38,16 +38,16 @@ EXIT_REFUSED = 2
 def main(argv=None) -> int:
     parser = argparse.ArgumentParser(
         prog="run_evaluation.py",
-        description="ORVYREN — harnais d'évaluation : boucle A0/A1/AX0/A2/B0 par fenêtre, "
-                    "porte de gel, bannières obligatoires (B7 §e).")
+        description="ORVYREN — evaluation harness: A0/A1/AX0/A2/B0 loop per window, "
+                    "freeze gate, mandatory banners (B7 §e).")
     parser.add_argument("--set", dest="set_label", choices=("dev", "eval"), default="dev")
     parser.add_argument("--out-dir", default=harness.DEFAULT_OUT_DIR)
     parser.add_argument("--frozen-dir", default=harness.DEFAULT_FROZEN_DIR)
     parser.add_argument("--b0-draws", type=int, default=200)
     parser.add_argument("--force", action="store_true",
-                        help="autorise une ré-exécution EVAL (mention obligatoire dans le rapport)")
+                        help="allow an EVAL re-run (mandatory mention in the report)")
     parser.add_argument("--calibration-periods", default=None,
-                        help="mois YYYY-MM séparés par des virgules (embargo de calibration croisée)")
+                        help="comma-separated YYYY-MM months (cross-calibration embargo)")
     parser.add_argument("--lock-path", default=None)
     args = parser.parse_args(argv)
 
@@ -66,7 +66,7 @@ def main(argv=None) -> int:
             windows_mod.WindowError) as exc:
         report_mod.append_variants_log(variants_log, {
             "set": args.set_label, "result": "REFUSED", "reason": str(exc)})
-        print("REFUS — %s" % exc, file=sys.stderr)
+        print("REFUSED — %s" % exc, file=sys.stderr)
         return EXIT_REFUSED
 
     content = result["content"]
@@ -81,7 +81,7 @@ def main(argv=None) -> int:
     if args.set_label == "eval" and not os.path.exists(lock_path):
         os.makedirs(os.path.dirname(os.path.abspath(lock_path)), exist_ok=True)
         with open(lock_path, "w", encoding="utf-8", newline="\n") as handle:
-            handle.write("# premier passage EVAL — le jeu est brûlé (B7 §d.2.5)\n%s\n"
+            handle.write("# first EVAL pass — the set is burned (B7 §d.2.5)\n%s\n"
                          % paths["content_sha256"])
         lock_written = True
 
@@ -89,20 +89,20 @@ def main(argv=None) -> int:
         "set": args.set_label, "result": "OK", "n_windows": content["n_windows"],
         "content_sha256": paths["content_sha256"], "forced": bool(content.get("forced_mention"))})
 
-    print("évaluation %s — N = %d fenêtre(s), %d sautée(s)"
+    print("evaluation %s — N = %d window(s), %d skipped"
           % (content["banner"], content["n_windows"], content["n_windows_skipped"]))
     for label, aggregate in sorted((content.get("aggregates") or {}).items()):
-        print("  %-4s n=%d · L moyen %.4f · R⁺ %.4f · R⁻ %.4f"
+        print("  %-4s n=%d · mean L %.4f · R⁺ %.4f · R⁻ %.4f"
               % (label, aggregate["n"], aggregate["mean_loss"],
                  aggregate["mean_R_plus"], aggregate["mean_R_minus"]))
     if content.get("forced_mention"):
         print("  !! %s" % content["forced_mention"])
-    print("  rapport : %s" % paths["md_path"])
+    print("  report  : %s" % paths["md_path"])
     print("  hash    : %s" % paths["content_sha256"])
     print("  annexes : %s · %s" % (os.path.basename(side["placebo_B0"]),
                                    os.path.basename(side["superiority_tests"])))
     if lock_written:
-        print("  verrou EVAL écrit : %s (jeu brûlé)" % lock_path)
+        print("  EVAL lock written: %s (set burned)" % lock_path)
     return EXIT_OK
 
 

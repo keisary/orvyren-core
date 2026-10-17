@@ -1,24 +1,24 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-"""ORVYREN-Core — REPLAY-ARCHIVE : recalcul sur données archivées (W7, mode 2).
+"""ORVYREN-Core — REPLAY-ARCHIVE: recomputation on archived data (W7, mode 2).
 
-Mode 2 (B7 §c.2, nom gelé ``REPLAY-ARCHIVE`` ; alias historique
-``LIVE-REPLAY`` de B1 §6.3 conservé en traçabilité) : les **appels LLM sont
-recalculés** sur le corpus figé et des blocs épinglés, versions de modèle
-épinglées, temperature 0. Déterminisme **non garanti** : « même décision,
-texte différent » — c'est un résultat à publiér (k ≥ 3 rejeux, distribution
-des sorties), pas un échec.
+Mode 2 (B7 §c.2, frozen name ``REPLAY-ARCHIVE``; historical alias
+``LIVE-REPLAY`` from B1 §6.3 kept for traceability): **LLM calls are
+recomputed** on the frozen corpus and pinned blocks, with pinned model
+versions and temperature 0. Determinism is **not guaranteed**: "same decision,
+different text" — this is a result to publish (k ≥ 3 replays, distribution of
+outputs), not a failure.
 
-Exigences opposables :
+Opposable requirements:
 
-* un fournisseur LLM est **nécessaire** — sans clé, le mode refuse de tourner
-  (jamais de recalcul simulé présenté comme réel) ;
-* aucune lecture « live » : les entrées du run viennent de
-  ``fixtures/agents/<case>/run_inputs.json`` (données archivées) et toute
-  lecture chaîne éventuelle exige un bloc épinglé
-  (:func:`orvyren.replay.corpus.require_pinned_block`) ;
-* chaque passe écrit un **nouveau** journal (mode ``REPLAY-ARCHIVE``) —
-  affichable côte à côte avec l'original.
+* an LLM provider is **required** — without a key, the mode refuses to run
+  (never a simulated recomputation presented as real);
+* no "live" read: run inputs come from
+  ``fixtures/agents/<case>/run_inputs.json`` (archived data) and any chain read
+  requires a pinned block
+  (:func:`orvyren.replay.corpus.require_pinned_block`);
+* each pass writes a **new** journal (mode ``REPLAY-ARCHIVE``) — displayable
+  side by side with the original.
 """
 
 from __future__ import annotations
@@ -37,13 +37,13 @@ from orvyren.replay import journal as journal_mod  # noqa: E402
 
 MODE_LABEL = "REPLAY-ARCHIVE"
 ALIAS = "LIVE-REPLAY (B1 §6.3)"
-#: Clés d'environnement acceptées (processus seulement — jamais dans le dépôt).
+#: Accepted environment keys (process only — never in the repository).
 KEY_ENV_VARS = ("ORVYREN_DEEPSEEK_API_KEY", "ORVYREN_MIMO_API_KEY")
-MIN_REPLAYS = 3  # B7 §c.7 mitigation 3 : k ≥ 3, on publie la distribution.
+MIN_REPLAYS = 3  # B7 §c.7 mitigation 3: k ≥ 3, the distribution is published.
 
 
 class ArchiveUnavailable(RuntimeError):
-    """Mode archive impossible (clé absente) — l'échec est explicite, jamais simulé."""
+    """Archive mode impossible (missing key) — the failure is explicit, never simulated."""
 
 
 def _keys_present(environ: Optional[Dict[str, str]] = None) -> List[str]:
@@ -54,22 +54,22 @@ def _keys_present(environ: Optional[Dict[str, str]] = None) -> List[str]:
 def replay_archive(case_id: str, work_root: str, *, k: int = MIN_REPLAYS,
                    environ: Optional[Dict[str, str]] = None,
                    quiet: bool = True) -> Dict[str, Any]:
-    """k passes de recalcul (mode 2) ; exige un fournisseur LLM.
+    """k recomputation passes (mode 2); requires an LLM provider.
 
-    Renvoie ``{"k", "run_dirs", "outcomes": [...], "identical": bool, "note"}``.
-    ``identical`` porte honnêtement la distribution : ``False`` (textes
-    différents) est un **résultat publié**, pas une erreur — la *décision*
-    peut rester stable quand le texte diffère.
+    Returns ``{"k", "run_dirs", "outcomes": [...], "identical": bool, "note"}``.
+    ``identical`` honestly carries the distribution: ``False`` (different
+    texts) is a **published result**, not an error — the *decision* may stay
+    stable while the text differs.
     """
     if k < MIN_REPLAYS:
-        raise ArchiveUnavailable("le mode REPLAY-ARCHIVE exige k ≥ %d rejeux (B7 §c.7)"
+        raise ArchiveUnavailable("REPLAY-ARCHIVE mode requires k ≥ %d replays (B7 §c.7)"
                                  % MIN_REPLAYS)
     if not _keys_present(environ):
         raise ArchiveUnavailable(
-            "E_LLM_NO_KEY: le mode REPLAY-ARCHIVE recalcule les appels LLM et exige un "
-            "fournisseur (%s) dans l'environnement du processus — sans clé, utiliser le "
-            "mode journal (déterministe, hors-ligne). Aucun recalcul simulé n'est présenté "
-            "comme réel." % " / ".join(KEY_ENV_VARS))
+            "E_LLM_NO_KEY: REPLAY-ARCHIVE mode recomputes LLM calls and requires a "
+            "provider (%s) in the process environment — without a key, use the "
+            "journal mode (deterministic, offline). No simulated recomputation is "
+            "presented as real." % " / ".join(KEY_ENV_VARS))
 
     import run_agents
 
@@ -84,7 +84,7 @@ def replay_archive(case_id: str, work_root: str, *, k: int = MIN_REPLAYS,
         else:
             code = run_agents.main(argv)
         if code != 0:
-            raise ArchiveUnavailable("E_REPLAY_ARCHIVE: passe %d en échec (code %d)"
+            raise ArchiveUnavailable("E_REPLAY_ARCHIVE: pass %d failed (exit code %d)"
                                      % (index, code))
         run_dir = _find_live_run_dir(session, case_id)
         outcome_path = os.path.join(run_dir, "run_outcome.json")
@@ -109,5 +109,5 @@ def _find_live_run_dir(session_dir: str, case_id: str) -> str:
         os.path.join(session_dir, name) for name in os.listdir(session_dir)
         if name.startswith(prefix) and os.path.isdir(os.path.join(session_dir, name)))
     if not candidates:
-        raise ArchiveUnavailable("répertoire de run archive introuvable sous %s" % session_dir)
+        raise ArchiveUnavailable("archive run directory not found under %s" % session_dir)
     return candidates[-1]

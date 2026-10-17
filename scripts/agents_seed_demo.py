@@ -1,24 +1,23 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-"""ORVYREN — enregistrement du cas de démonstration des agents (W2/L2.6).
+"""ORVYREN — record the agents' demonstration case (W2/L2.6).
 
-Écrit ``fixtures/agents/store_<case>/`` en **rejouant des réponses scriptées**
-via le chemin d'enregistrement réel de ``LiveBackend`` (aucune clé, aucun
-réseau) : le magasin obtenu rend ``run_agents.py --replay journal`` déterministe
-et **hors-ligne** (B1 §6.3 : « rejouer les réponses enregistrées est
-déterministe par construction — c'est le seul mode qu'on peut garantir devant
-un jury »). Un manifeste ``SEED.json`` déclare l'origine scriptée — jamais
-présentée comme un enregistrement live ; une vraie session live (avec clés)
-remplace le magasin :
+Writes ``fixtures/agents/store_<case>/`` by **replaying scripted responses**
+through the real recording path of ``LiveBackend`` (no key, no network): the
+resulting store makes ``run_agents.py --replay journal`` deterministic and
+**offline** (B1 §6.3: "replaying recorded responses is deterministic by
+construction — it is the only mode we can guarantee in front of a jury"). A
+``SEED.json`` manifest declares the scripted origin — never presented as a live
+recording; a real live session (with keys) replaces the store:
 
     python run_agents.py --case usdc-2023-03 --replay live
 
-Usage ::
+Usage::
 
     python scripts/agents_seed_demo.py --case usdc-2023-03 [--force] [--session DIR]
 
-Refuse d'écraser un magasin existant sans ``--force`` (protection d'un
-enregistrement réel). Stdlib uniquement.
+Refuses to overwrite an existing store without ``--force`` (protection of a real
+recording). Standard library only.
 """
 
 from __future__ import annotations
@@ -38,7 +37,7 @@ if os.path.join(REPO_ROOT, "src") not in sys.path:
 import run_agents  # noqa: E402
 
 # ---------------------------------------------------------------------------
-# Le scénario scripté (déterministe) — mêmes schémas que les validateurs gelés.
+# The scripted (deterministic) scenario — same schemas as the frozen validators.
 # ---------------------------------------------------------------------------
 _ORCHESTRATOR = [
     {"content": {
@@ -109,17 +108,17 @@ def main(argv=None) -> int:
     parser = argparse.ArgumentParser(prog="agents_seed_demo.py")
     parser.add_argument("--case", default="usdc-2023-03")
     parser.add_argument("--session", default=None,
-                        help="répertoire des sorties de seed (défaut demo_runs/agents_seed/<case>)")
+                        help="seed output directory (default demo_runs/agents_seed/<case>)")
     parser.add_argument("--force", action="store_true",
-                        help="écraser un magasin existant (protection d'un enregistrement réel)")
+                        help="overwrite an existing store (protection of a real recording)")
     args = parser.parse_args(argv)
 
     inputs = run_agents.load_case_inputs(args.case)
     store_dir = os.path.join(REPO_ROOT, "fixtures", "agents", "store_%s" % args.case)
     calls_path = os.path.join(store_dir, "calls.jsonl")
     if os.path.exists(calls_path) and not args.force:
-        raise SystemExit("E_SEED_EXISTS: %s existe déjà — refus d'écraser un magasin "
-                         "(un enregistrement live? utiliser --force si c'est bien un seed scripté)"
+        raise SystemExit("E_SEED_EXISTS: %s already exists — refusing to overwrite a store "
+                         "(a live recording? use --force if this really is a scripted seed)"
                          % calls_path)
 
     session = args.session or os.path.join(REPO_ROOT, "demo_runs", "agents_seed", args.case)
@@ -131,8 +130,8 @@ def main(argv=None) -> int:
         "schema": "orvyren/agent-run/v1",
         "run_id": "demo-%s" % args.case,
         "case_id": args.case,
-        "mode": "journal",            # horloge virtuelle (déterminisme)
-        "backend": "scripted",        # transport scripté -> enregistrement réel dans le magasin
+        "mode": "journal",            # virtual clock (determinism)
+        "backend": "scripted",        # scripted transport -> real recording into the store
         "budget": {"llm_calls": 30, "tool_calls": 12, "wall_seconds": 600, "cost_usd": 0.10},
         "snapshot": inputs["snapshot"],
         "lacunes": inputs["lacunes"],
@@ -146,11 +145,11 @@ def main(argv=None) -> int:
     _write_json(os.path.join(run_dir, "scripted_responses.json"),
                 {"orchestrator": _ORCHESTRATOR, "critic": _CRITIC})
 
-    print("ORVYREN — seed scripté du cas %s" % args.case)
-    print("  magasin cible : %s" % store_dir)
-    print("  run de seed   : %s" % run_dir)
+    print("ORVYREN — scripted seed for case %s" % args.case)
+    print("  target store  : %s" % store_dir)
+    print("  seed run      : %s" % run_dir)
     for role in ("orchestrator", "critic"):
-        print("  [%s] processus lancé…" % role)
+        print("  [%s] process started…" % role)
         code = run_agents._spawn(role, run_dir, 180.0)
         if code != 0:
             raise SystemExit("E_SEED_WORKER_%s: code %d" % (role.upper(), code))
@@ -169,9 +168,9 @@ def main(argv=None) -> int:
                          "LiveBackend réel. Remplacer par une session live quand les clés "
                          "existent : python run_agents.py --case %s --replay live" % args.case})
     print()
-    print("  [ok] magasin enregistré : %d appels — %s" % (records, store_dir))
-    print("  [ok] manifeste SEED.json écrit (origine scriptée déclarée)")
-    print("  → rejeu hors-ligne : python run_agents.py --case %s --replay journal" % args.case)
+    print("  [ok] store recorded: %d calls — %s" % (records, store_dir))
+    print("  [ok] SEED.json manifest written (scripted origin declared)")
+    print("  → offline replay: python run_agents.py --case %s --replay journal" % args.case)
     return 0
 
 

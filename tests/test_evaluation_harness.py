@@ -1,17 +1,17 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-"""ORVYREN-Core — tests du harnais d'évaluation (W7, B7 §e ; [DONE] W7).
+"""ORVYREN-Core — evaluation harness tests (W7, B7 §e; [DONE] W7).
 
-Couverture :
+Coverage:
 
-* run **DEV USDC complet hors-ligne** : 4 fenêtres, 0 sautée, schéma conforme ;
-* déterminisme : deux exécutions ⇒ même ``content_hash`` ;
-* ``A0 = 0 action`` : perte A0 = q·(1 − P_T) par fenêtre ;
-* ``AX0`` reproduit ``baseline_report.json`` (2 signaux main, 0 contrôle) ;
-* porte de gel : refus sans ``frozen/G1–G6`` ; refus de la 2ᵉ exécution EVAL
-  sans ``--force`` ; refus si une fenêtre CALME EVAL chevauche la période de
-  calibration (monkeypatch d'une fenêtre synthétique) ;
-* mapping A2 du dossier déterministe (montant + horodatage déclaré).
+* complete **DEV USDC run offline**: 4 windows, 0 skipped, schema compliant;
+* determinism: two executions ⇒ same ``content_hash``;
+* ``A0 = 0 action``: A0 loss = q·(1 − P_T) per window;
+* ``AX0`` reproduces ``baseline_report.json`` (2 main signals, 0 control);
+* freeze gate: refusal without ``frozen/G1–G6``; refusal of the 2nd EVAL
+  execution without ``--force``; refusal if a CALM EVAL window overlaps the
+  calibration period (monkeypatch of a synthetic window);
+* A2 mapping from the deterministic dossier (amount + declared timestamp).
 
 Run: python -m pytest tests/test_evaluation_harness.py -q
 """
@@ -73,7 +73,7 @@ class HarnessDevTest(unittest.TestCase):
     def test_eval_lock_refuses_second_run(self):
         lock = os.path.join(tempfile.mkdtemp(prefix="orvyren_lock_"), "eval_run.lock")
         with open(lock, "w", encoding="utf-8") as handle:
-            handle.write("# déjà exécuté\n")
+            handle.write("# already executed\n")
         with self.assertRaises(windows_mod.FreezeGateError):
             harness.run_set("eval", lock_path=lock, force=False)
 
@@ -84,7 +84,7 @@ class HarnessDevTest(unittest.TestCase):
             window_id="eval-calme-synthetique", episode_id="calme-test",
             set_label="eval", kind="calme",
             start_utc="2025-01-05T00:00:00Z", end_utc="2025-01-20T00:00:00Z",
-            sources=("inexistant.json",), role="fenêtre de test (jamais utilisée en run réel)")
+            sources=("inexistant.json",), role="test window (never used in a real run)")
         with mock.patch.object(windows_mod, "EVAL_WINDOWS", (synthetic,)):
             with self.assertRaises(harness.HarnessError):
                 harness.run_set("eval", calibration_periods=["2025-01"], lock_path=None)

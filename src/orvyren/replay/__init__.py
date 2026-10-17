@@ -1,23 +1,23 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-"""ORVYREN-Core — moteur de rejeu : paquet `orvyren.replay` (W7, lot L7.7).
+"""ORVYREN-Core — replay engine: the `orvyren.replay` package (W7, lot L7.7).
 
-Deux modes officiels, jamais confondus (B7 §c.2, noms gelés) :
+Two official modes, never confused (B7 §c.2, frozen names):
 
-* **REPLAY-JOURNAL** — on relit le journal d'agents + le magasin de réponses
-  (prompts/réponses bruts adressés par hash) : rien n'est recalculé, le
-  chaînage ``prev_hash`` est vérifié à la lecture — **bit-à-bit garanti par
-  construction** (:mod:`orvyren.replay.journal`) ;
-* **REPLAY-ARCHIVE** — les appels LLM sont recalculés sur le corpus figé et
-  des blocs épinglés : **non déterministe** (« même décision, texte
-  différent » — c'est un résultat publié, pas un échec)
-  (:mod:`orvyren.replay.archive`) ; exige un fournisseur LLM.
+* **REPLAY-JOURNAL** — the agent journals and the response store are re-read
+  (raw prompts/responses addressed by hash): nothing is recomputed, the
+  ``prev_hash`` chaining is verified at read time — **bit-for-bit guaranteed
+  by construction** (:mod:`orvyren.replay.journal`);
+* **REPLAY-ARCHIVE** — LLM calls are recomputed on the frozen corpus and
+  pinned blocks: **non-deterministic** ("same decision, different text" —
+  this is a published result, not a failure)
+  (:mod:`orvyren.replay.archive`); requires an LLM provider.
 
-Règles transverses : horloge simulée à PIT strict (:mod:`orvyren.replay.clock`),
-corpus figé vérifié par hash et aucun ``latest`` (:mod:`orvyren.replay.corpus`),
-dossier de rejeu marqué ``REPLAY`` avec provenance
-(:mod:`orvyren.replay.dossier`), et le journal des rejeux append-only
-``replay/runs.jsonl``. **Un run de rejeu ne signe jamais et n'émet jamais de
+Cross-cutting rules: simulated clock with strict PIT (:mod:`orvyren.replay.clock`),
+frozen corpus verified by hash and no ``latest`` (:mod:`orvyren.replay.corpus`),
+replay dossier tagged ``REPLAY`` with provenance
+(:mod:`orvyren.replay.dossier`), and the append-only replay log
+``replay/runs.jsonl``. **A replay run never signs and never emits a
 transaction** (B7 §c.5-4).
 """
 

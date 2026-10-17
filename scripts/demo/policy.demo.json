@@ -1,7 +1,7 @@
 {
   "schema": "orvyren-policy-demo/v1",
   "policy_version": "v1.0",
-  "note": "Politique hors chaîne de démonstration (verrou 1). Les paramètres viennent de W2C §g.1 / B5 §e.0 ; la sémantique vient du code (orvyren.policy, règles R1-R8). Le code = source de vérité de la sémantique ; ce fichier = source de vérité des paramètres.",
+  "note": "Demo off-chain policy (lock 1). The parameters come from W2C §g.1 / B5 §e.0; the semantics come from the code (orvyren.policy, rules R1-R8). The code = source of truth for the semantics; this file = source of truth for the parameters.",
   "chain_id": 84532,
   "asset": "0x036CbD53842c5426634e7929541eC2318f3dCF7e",
   "asset_symbol": "USDC (test, Circle)",
@@ -20,6 +20,6 @@
   "allowance_period_seconds": 86400,
   "role_key": "0x4147454e54000000000000000000000000000000000000000000000000000000",
   "revocation_scheduled_at": "2026-11-15T23:59:59Z",
-  "note_revocation": "Date cible de la révocation planifiée du rôle AGENT (tâche K1) — À ADAPTER au jour du montage. Allowance Zodiac n'a AUCUN champ d'expiration (B4 P8) : cette échéance hors chaîne est la seule qui existe, et le test de dérive (D9) exige qu'elle soit renseignée.",
-  "note_usdc": "Transferts = USDC Circle (robinet Circle). Le USDC d'Aave (0xba50Cd2A20f6DA35D788639E581bca8d0B5d4D5f) est un AUTRE jeton (robinet Aave) — jamais interchangeable (B5 §b.2)."
+  "note_revocation": "Target date for the scheduled revocation of the AGENT role (task K1) — TO BE ADAPTED on setup day. Zodiac Allowance has NO expiration field (B4 P8): this off-chain deadline is the only one that exists, and the drift test (D9) requires it to be filled in.",
+  "note_usdc": "Transfers = Circle USDC (Circle faucet). Aave's USDC (0xba50Cd2A20f6DA35D788639E581bca8d0B5d4D5f) is ANOTHER token (Aave faucet) — never interchangeable (B5 §b.2)."
 }

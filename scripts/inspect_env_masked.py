@@ -1,19 +1,19 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-"""ORVYREN — inspecteur **masqué** des fichiers d'environnement locaux.
+"""ORVYREN — **masked** inspector for local environment files.
 
-N'affiche **jamais** une valeur secrète : uniquement des noms, une présence et
-une longueur. Sert à vérifier qu'un fichier ``.env`` local est bien ignoré par
-git et que les clés attendues (démo on-chain, LLM) sont présentes — sans jamais
-les exposer dans un terminal, un log ou une conversation.
+**Never** prints a secret value: only names, presence and a length. Used to
+check that a local ``.env`` file is properly git-ignored and that the expected
+keys (on-chain demo, LLM) are present — without ever exposing them in a
+terminal, a log or a conversation.
 
-Usage ::
+Usage::
 
-    python scripts/inspect_env_masked.py                      # fichiers par défaut
-    python scripts/inspect_env_masked.py --require-live-keys  # exit 1 si clé LLM absente
+    python scripts/inspect_env_masked.py                      # default files
+    python scripts/inspect_env_masked.py --require-live-keys  # exit 1 if an LLM key is missing
 
-Fichiers par défaut : ``scripts/demo/.env`` et ``scripts/demo/owners.env``
-(tous deux git-ignorés — la commande le vérifie).
+Default files: ``scripts/demo/.env`` and ``scripts/demo/owners.env``
+(both git-ignored — the command verifies it).
 """
 
 from __future__ import annotations
@@ -28,9 +28,9 @@ REPO_ROOT = os.path.dirname(HERE)
 DEFAULT_FILES = (os.path.join(REPO_ROOT, "scripts", "demo", ".env"),
                  os.path.join(REPO_ROOT, "scripts", "demo", "owners.env"))
 
-#: Clés attendues pour le mode live des agents (FREEZE_V2 A2).
+#: Keys expected for the agents' live mode (FREEZE_V2 A2).
 LIVE_KEY_NAMES = ("ORVYREN_DEEPSEEK_API_KEY", "ORVYREN_MIMO_API_KEY")
-#: Fragments de noms jamais affichables (même partiellement).
+#: Name fragments that must never be displayed (not even partially).
 SECRET_HINTS = ("PRIVATE_KEY", "_API_KEY", "MNEMONIC", "SEED", "SIGNER")
 
 
@@ -61,10 +61,10 @@ def _git_ignored(path: str) -> "bool | None":
 def main(argv=None) -> int:
     parser = argparse.ArgumentParser(
         prog="inspect_env_masked.py",
-        description="ORVYREN — vue masquée des fichiers d'env locaux (jamais de valeurs).")
+        description="ORVYREN — masked view of local env files (never values).")
     parser.add_argument("--env-file", action="append", default=None)
     parser.add_argument("--require-live-keys", action="store_true",
-                        help="sortir en code 1 si une clé LLM attendue est absente")
+                        help="exit with code 1 if an expected LLM key is missing")
     args = parser.parse_args(argv)
 
     files = args.env_file or list(DEFAULT_FILES)
@@ -72,29 +72,29 @@ def main(argv=None) -> int:
     for path in files:
         rel = os.path.relpath(path, REPO_ROOT).replace(os.sep, "/")
         if not os.path.isfile(path):
-            print("[absent]  %s" % rel)
+            print("[missing] %s" % rel)
             continue
         ignored = _git_ignored(path)
-        state = {True: "git-ignoré ✓", False: "!! SUIVI PAR GIT — DANGER", None: "git ?"}[ignored]
-        print("[fichier] %s  (%s)" % (rel, state))
+        state = {True: "git-ignored ✓", False: "!! TRACKED BY GIT — DANGER", None: "git ?"}[ignored]
+        print("[file]    %s  (%s)" % (rel, state))
         for key, length in _read_keys(path):
             seen.setdefault(key, length)
             secret = any(hint in key.upper() for hint in SECRET_HINTS)
-            shown = "présente (len %d)" % length if length else "vide"
+            shown = "present (len %d)" % length if length else "empty"
             if secret and length:
-                shown += " — jamais affichée"
+                shown += " — never displayed"
             print("    %-34s %s" % (key, shown))
         print()
 
-    print("clés du mode live (agents) :")
+    print("live-mode keys (agents):")
     missing = []
     for name in LIVE_KEY_NAMES:
         length = seen.get(name)
         if length:
-            print("    %-34s présente (len %d)" % (name, length))
+            print("    %-34s present (len %d)" % (name, length))
         else:
             missing.append(name)
-            print("    %-34s ABSENTE" % name)
+            print("    %-34s MISSING" % name)
     if args.require_live_keys and missing:
         print("E_LIVE_KEYS_MISSING: %s" % ", ".join(missing), file=sys.stderr)
         return 1

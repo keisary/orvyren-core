@@ -1,22 +1,22 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-"""ORVYREN — kit de démo testnet (W5, L5.2) : **hygiène des secrets** (offline).
+"""ORVYREN — testnet demo kit (W5, L5.2): **secret hygiene** (offline).
 
-Contrôles (aucun réseau) :
+Checks (no network):
 
-* **H1** — aucun ``.env`` / ``owners.env`` n'est **versionné** (exceptions
-  ``*.example.*`` autorisées) ;
-* **H2** — la **valeur** de chaque clé privée présente en local n'apparaît dans
-  **aucun fichier suivi** du dépôt (recherche en mémoire, la clé n'est jamais
-  passée en argument ni imprimée) ;
-* **H3** — chaque fichier d'env local est bien couvert par ``.gitignore``
-  (``git check-ignore``) ;
-* **H4** — permissions POSIX : lecture/écriture propriétaire seulement
-  (``chmod 600`` ; SKIPPED sous Windows) ;
-* **H5** — noms des secrets présents dans l'environnement du processus
-  (information : l'attendu est « aucun » hors processus de signature).
+* **H1** — no ``.env`` / ``owners.env`` is **versioned** (``*.example.*``
+  exceptions allowed);
+* **H2** — the **value** of every private key present locally appears in
+  **no tracked file** of the repository (in-memory search, the key is never
+  passed as an argument nor printed);
+* **H3** — every local env file is properly covered by ``.gitignore``
+  (``git check-ignore``);
+* **H4** — POSIX permissions: owner read/write only
+  (``chmod 600``; SKIPPED on Windows);
+* **H5** — names of the secrets present in the process environment
+  (informational: the expectation is "none" outside the signing process).
 
-CLI :
+CLI:
 
     python scripts/demo/check_env_hygiene.py [--out report.json]
 """
@@ -29,9 +29,9 @@ import subprocess
 import sys
 from typing import Any, Dict, List, Optional
 
-try:  # paquet (``demo.check_env_hygiene``)
+try:  # package (``demo.check_env_hygiene``)
     from . import common
-except ImportError:  # exécution directe : python scripts/demo/check_env_hygiene.py
+except ImportError:  # direct execution: python scripts/demo/check_env_hygiene.py
     _sys_dir = os.path.dirname(os.path.abspath(__file__))
     if _sys_dir not in sys.path:
         sys.path.insert(0, _sys_dir)
@@ -44,7 +44,7 @@ DEFAULT_ENV_FILES = (os.path.join(HERE, ".env"), os.path.join(HERE, "owners.env"
 SECRET_KEYS = ("ORVYREN_PRIVATE_KEY", "ORVYREN_OWNER1_PRIVATE_KEY",
                "ORVYREN_OWNER2_PRIVATE_KEY", "ORVYREN_OWNER3_PRIVATE_KEY",
                "ORVYREN_SIGNER_KEY", "ORVYREN_MNEMONIC", "ORVYREN_SEED",
-               # Clés LLM du mode live (FREEZE_V2 A2) — surveillées comme les autres.
+               # Live-mode LLM keys (FREEZE_V2 A2) — watched like the others.
                "ORVYREN_DEEPSEEK_API_KEY", "ORVYREN_MIMO_API_KEY",
                "ORVYREN_ZHIPU_API_KEY", "ORVYREN_MOONSHOT_API_KEY")
 MAX_SCAN_BYTES = 8 * 1024 * 1024
@@ -75,20 +75,20 @@ def run(*, env_files: List[str], repo_root: str) -> Dict[str, Any]:
     else:
         tracked = [line.strip() for line in tracked_raw.splitlines() if line.strip()]
 
-    # H1 — aucun .env versionné (exceptions *example*)
+    # H1 — no versioned .env (*example* exceptions)
     if not git_available:
         report["checks"].append({"id": "H1.tracked_env", "status": "SKIPPED",
-                                 "detail": "git indisponible — contrôles H1/H2/H3 sautés"})
+                                 "detail": "git unavailable — H1/H2/H3 checks skipped"})
     else:
         tracked_env = [rel for rel in tracked
                        if (os.path.basename(rel) == ".env" or os.path.basename(rel) == "owners.env")
                        and ".example" not in os.path.basename(rel)]
         report["checks"].append({
             "id": "H1.tracked_env", "status": "PASS" if not tracked_env else "FAIL",
-            "detail": "aucun .env versionné" if not tracked_env
-                      else "FICHIERS SENSIBLES VERSIONNÉS : %s" % ", ".join(tracked_env)})
+            "detail": "no versioned .env" if not tracked_env
+                      else "SENSITIVE FILES VERSIONED: %s" % ", ".join(tracked_env)})
 
-    # H2 — valeurs des clés locales absentes des fichiers suivis
+    # H2 — local key values absent from tracked files
     secrets: List[bytes] = []
     for path in env_files:
         values = common.read_env_file(path)
@@ -96,7 +96,7 @@ def run(*, env_files: List[str], repo_root: str) -> Dict[str, Any]:
                                     else path, "present": os.path.isfile(path)})
         for key in SECRET_KEYS:
             value = values.get(key, "").strip()
-            if len(value) >= 16:  # jetons courts ignorés (placeholders)
+            if len(value) >= 16:  # short tokens ignored (placeholders)
                 body = value[2:] if value.startswith("0x") else value
                 secrets.append(value.encode("ascii", "ignore"))
                 if body != value:
@@ -105,7 +105,7 @@ def run(*, env_files: List[str], repo_root: str) -> Dict[str, Any]:
         pass
     elif not secrets:
         report["checks"].append({"id": "H2.secret_values", "status": "PASS",
-                                 "detail": "aucune clé locale présente — rien à confronter"})
+                                 "detail": "no local key present — nothing to confront"})
     else:
         hits: List[str] = []
         for rel in tracked:
@@ -123,16 +123,16 @@ def run(*, env_files: List[str], repo_root: str) -> Dict[str, Any]:
                 hits.append(rel)
         report["checks"].append({
             "id": "H2.secret_values", "status": "PASS" if not hits else "FAIL",
-            "detail": "aucune valeur de clé dans %d fichiers suivis" % len(tracked)
-                      if not hits else "VALEUR DE CLÉ TROUVÉE DANS : %s" % ", ".join(hits)})
+            "detail": "no key value in %d tracked files" % len(tracked)
+                      if not hits else "KEY VALUE FOUND IN: %s" % ", ".join(hits)})
 
-    # H3 — fichiers d'env locaux couverts par .gitignore
+    # H3 — local env files covered by .gitignore
     present_envs = [path for path in env_files if os.path.isfile(path)]
     if not git_available:
         pass
     elif not present_envs:
         report["checks"].append({"id": "H3.gitignore", "status": "PASS",
-                                 "detail": "aucun fichier d'env local présent"})
+                                 "detail": "no local env file present"})
     else:
         not_ignored: List[str] = []
         for path in present_envs:
@@ -142,10 +142,10 @@ def run(*, env_files: List[str], repo_root: str) -> Dict[str, Any]:
                 not_ignored.append(common.display_path(path))
         report["checks"].append({
             "id": "H3.gitignore", "status": "PASS" if not not_ignored else "FAIL",
-            "detail": "tous les fichiers d'env locaux sont ignorés" if not not_ignored
-                      else "NON IGNORÉS : %s" % ", ".join(not_ignored)})
+            "detail": "all local env files are ignored" if not not_ignored
+                      else "NOT IGNORED: %s" % ", ".join(not_ignored)})
 
-    # H4 — permissions (POSIX uniquement)
+    # H4 — permissions (POSIX only)
     if os.name == "posix":
         bad_perms: List[str] = []
         for path in present_envs:
@@ -154,13 +154,13 @@ def run(*, env_files: List[str], repo_root: str) -> Dict[str, Any]:
                 bad_perms.append("%s (%o)" % (common.display_path(path), mode))
         report["checks"].append({
             "id": "H4.perms", "status": "PASS" if not bad_perms else "FAIL",
-            "detail": "600 partout" if not bad_perms else "PERMISSIONS LARGES : %s"
+            "detail": "600 everywhere" if not bad_perms else "BROAD PERMISSIONS: %s"
                       % ", ".join(bad_perms)})
     else:
         report["checks"].append({"id": "H4.perms", "status": "SKIPPED",
-                                 "detail": "Windows — permissions POSIX sans objet"})
+                                 "detail": "Windows — POSIX permissions not applicable"})
 
-    # H5 — noms des secrets présents dans l'environnement (information)
+    # H5 — names of the secrets present in the environment (informational)
     env = common.load_session_env()
     try:
         present = sorted(common.present_secret_env_names(env))
@@ -168,7 +168,7 @@ def run(*, env_files: List[str], repo_root: str) -> Dict[str, Any]:
         present = [key for key in SECRET_KEYS if env.get(key)]
     report["checks"].append({"id": "H5.process_env", "status": "PASS",
                              "detail": {"secret_env_names_present": present,
-                                        "expectation": "aucun hors processus de signature"}})
+                                        "expectation": "none outside the signing process"}})
 
     report["verdict"] = "FAIL" if any(check["status"] == "FAIL" for check in report["checks"]) \
         else ("NO_GIT" if not git_available else "OK")
@@ -178,8 +178,8 @@ def run(*, env_files: List[str], repo_root: str) -> Dict[str, Any]:
 def main(argv: Optional[List[str]] = None) -> int:
     parser = argparse.ArgumentParser(
         prog="check_env_hygiene.py",
-        description="ORVYREN (W5/L5.2) — hygiène des secrets : rien de versionné, "
-                    "aucune valeur de clé dans les fichiers suivis, .gitignore et "
+        description="ORVYREN (W5/L5.2) — secret hygiene: nothing versioned, "
+                    "no key value in tracked files, .gitignore and "
                     "permissions. Offline.")
     parser.add_argument("--env-file", action="append", default=None)
     parser.add_argument("--repo-root", default=REPO_ROOT)

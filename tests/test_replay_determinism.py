@@ -1,10 +1,10 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-"""ORVYREN-Core — test du déterminisme du rejeu journal (W7, B1 §6.2).
+"""ORVYREN-Core — journal replay determinism test (W7, B1 §6.2).
 
-Critère gelé : **k = 10 rejeux journal ⇒ hash de transcript identique**
-(hors-ligne, aucune clé, aucun réseau). Chaque rejeu vit dans sa propre
-session ; toute divergence casse le critère et le test échoue.
+Frozen criterion: **k = 10 journal replays ⇒ identical transcript hash**
+(offline, no key, no network). Each replay lives in its own session; any
+divergence breaks the criterion and the test fails.
 
 Run: python -m pytest tests/test_replay_determinism.py -q
 """
@@ -27,7 +27,7 @@ INPUTS_PRESENT = os.path.isfile(os.path.join(ROOT, "fixtures", "agents", CASE,
 K_REPLAYS = 10
 
 
-@unittest.skipUnless(INPUTS_PRESENT, "fixtures agents absentes")
+@unittest.skipUnless(INPUTS_PRESENT, "agent fixtures absent")
 class ReplayDeterminismTest(unittest.TestCase):
     def test_k10_identical_transcript_hashes(self):
         work_root = tempfile.mkdtemp(prefix="orvyren_replay_k10_")
@@ -36,8 +36,8 @@ class ReplayDeterminismTest(unittest.TestCase):
         self.assertEqual(report["k"], K_REPLAYS)
         self.assertEqual(len(report["hashes"]), K_REPLAYS)
         self.assertTrue(report["identical"],
-                        "hashes divergents sur k=%d : %s" % (K_REPLAYS,
-                                                             sorted(set(report["hashes"]))))
+                        "divergent hashes over k=%d: %s" % (K_REPLAYS,
+                                                            sorted(set(report["hashes"]))))
         self.assertEqual(len(set(report["hashes"])), 1)
 
     def test_replay_k_rejects_invalid_k(self):

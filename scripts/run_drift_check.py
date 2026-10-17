@@ -1,26 +1,26 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-"""ORVYREN — test de dérive politique ↔ enveloppe on-chain (10 contrôles, DOC2 §5.5.4).
+"""ORVYREN — policy <-> on-chain envelope drift check (10 checks, DOC2 §5.5.4).
 
-Deux étages :
-  --offline (défaut) : conformité `policy_v1.yaml` ↔ fixture d'enveloppe
-      versionnée (`fixtures/roles_agent_config.json`) — aucun réseau ;
-  --rpc              : étage offline + lectures chaîne (chainId, code des
-      contrats) et replays des sondes (eth_call) — LECTURE SEULE, jamais de
-      signature, jamais de transaction.
+Two stages:
+  --offline (default): compliance of `policy_v1.yaml` <-> versioned envelope
+      fixture (`fixtures/roles_agent_config.json`) — no network;
+  --rpc              : offline stage + chain reads (chainId, contract code)
+      and probe replays (eth_call) — READ ONLY, never a signature, never a
+      transaction.
 
-Sortie : rapport JSON (défaut `evidence/envelope_drift_report.json`).
-Trois verdicts (DOC2 §5.5.4) :
-  PASS        — tous les contrôles exécutés passent ;
-  DRIFT       — au moins un écart => SAFE MODE : refus de toute action autonome ;
-  UNVERIFIED  — vérification impossible (RPC injoignable, capture incomplète) => SAFE MODE.
-Un contrôle non exécutable est `SKIPPED` avec son motif écrit — jamais silencieux.
+Output: JSON report (default `evidence/envelope_drift_report.json`).
+Three verdicts (DOC2 §5.5.4):
+  PASS        — every executed check passes;
+  DRIFT       — at least one divergence => SAFE MODE: no autonomous action allowed;
+  UNVERIFIED  — verification impossible (RPC unreachable, incomplete capture) => SAFE MODE.
+A check that cannot run is `SKIPPED` with its reason written down — never silent.
 
-Codes de sortie : 0 PASS · 2 DRIFT · 3 UNVERIFIED · 4 usage.
+Exit codes: 0 PASS · 2 DRIFT · 3 UNVERIFIED · 4 usage.
 
-Note d'implémentation : ce script (W4) réutilise le client JSON-RPC et les
-utilitaires en lecture seule du kit démo (`scripts/demo/common.py`) ; il
-n'importe ni `signer` ni quoi que ce soit qui détienne une clé.
+Implementation note: this script (W4) reuses the JSON-RPC client and read-only
+helpers of the demo kit (`scripts/demo/common.py`); it imports neither `signer`
+nor anything that holds a key.
 """
 
 from __future__ import annotations
@@ -63,7 +63,7 @@ def _base_units(amount: float, decimals: int) -> int:
     return int(round(float(amount) * (10 ** decimals)))
 
 
-# --- étage offline : politique ↔ fixture -------------------------------------
+# --- offline stage: policy <-> fixture ---------------------------------------
 
 
 def offline_checks(bundle, fixture: Dict[str, Any]) -> Dict[str, Dict[str, Any]]:
@@ -71,7 +71,7 @@ def offline_checks(bundle, fixture: Dict[str, Any]) -> Dict[str, Dict[str, Any]]
     data, cfg = bundle.data, bundle.config
     role = fixture.get("role") or {}
 
-    # D3 (partie offline) — identité du rôle (l'appartenance se vérifie en --rpc)
+    # D3 (offline part) — role identity (membership is verified in --rpc)
     key_fixture = str(fixture.get("role_key") or "").lower()
     key_policy = str(data.get("role_key") or "").lower()
     checks["D3"] = _check("D3", "membres du rôle AGENT",
@@ -80,7 +80,7 @@ def offline_checks(bundle, fixture: Dict[str, Any]) -> Dict[str, Dict[str, Any]]
                            "role_key_policy": data.get("role_key"),
                            "note": "sonde comportementale d'appartenance exécutée en mode --rpc"})
 
-    # D4 — cibles du rôle == ensemble attendu ; portée large interdite
+    # D4 — role targets == expected set; broad clearance forbidden
     targets = role.get("targets") or []
     fixture_targets = {str(t.get("address") or "").lower(): str(t.get("clearance") or "") for t in targets}
     broad = sorted(addr for addr, clearance in fixture_targets.items()
@@ -95,7 +95,7 @@ def offline_checks(bundle, fixture: Dict[str, Any]) -> Dict[str, Dict[str, Any]]
         status, detail = STATUS_PASS, {"targets": sorted(fixture_targets)}
     checks["D4"] = _check("D4", "cibles du rôle (clearance)", status, detail)
 
-    # D5 — fonctions (paires (cible, sélecteur) == attendues, scope Function/CALL)
+    # D5 — functions ((target, selector) pairs == expected, Function/CALL scope)
     functions = role.get("functions") or []
     fixture_functions = {(str(f.get("target") or "").lower(), str(f.get("selector") or "").lower())
                          for f in functions}
@@ -111,7 +111,7 @@ def offline_checks(bundle, fixture: Dict[str, Any]) -> Dict[str, Dict[str, Any]]
         status, detail = STATUS_PASS, {"functions": sorted(fixture_functions)}
     checks["D5"] = _check("D5", "fonctions du rôle (cible, sélecteur)", status, detail)
 
-    # D6 — conditions : destinataires et allowance
+    # D6 — conditions: recipients and allowance
     conditions = role.get("conditions") or {}
     param0 = conditions.get("param0") or {}
     param1 = conditions.get("param1") or {}
@@ -132,7 +132,7 @@ def offline_checks(bundle, fixture: Dict[str, Any]) -> Dict[str, Dict[str, Any]]
             detail["pending"] = "destinataires non résolus (labels sans adresse de session) — à vérifier au montage"
     checks["D6"] = _check("D6", "conditions (destinataires + allowance)", status, detail)
 
-    # D7 — allowances : bornes et cohérence avec les paramètres de politique
+    # D7 — allowances: bounds and consistency with the policy parameters
     allowance = (role.get("allowances") or {}).get("usdc_daily") or {}
     refill = allowance.get("refill_base_units")
     max_refill = allowance.get("max_refill_base_units")
@@ -157,7 +157,7 @@ def offline_checks(bundle, fixture: Dict[str, Any]) -> Dict[str, Dict[str, Any]]
                           else {"refill": refill, "max_refill": max_refill,
                                 "period_seconds": allowance.get("period_seconds")})
 
-    # D8 — quota d'appels
+    # D8 — call quota
     quota = role.get("call_quota") or {}
     quota_ok = isinstance(quota.get("max_per_period"), int) \
         and quota["max_per_period"] == int(data.get("max_calls_24h"))
@@ -166,7 +166,7 @@ def offline_checks(bundle, fixture: Dict[str, Any]) -> Dict[str, Dict[str, Any]]
                           {"fixture": quota.get("max_per_period"),
                            "policy": data.get("max_calls_24h")})
 
-    # D9 — échéances : policy ≤ révocation planifiée enregistrée
+    # D9 — deadlines: policy <= recorded scheduled revocation
     policy_revocation = data.get("revocation_scheduled_at")
     fixture_revocation = fixture.get("revocation_scheduled_at")
     if not policy_revocation or not fixture_revocation:
@@ -176,7 +176,7 @@ def offline_checks(bundle, fixture: Dict[str, Any]) -> Dict[str, Dict[str, Any]]
     else:
         try:
             ok = common.parse_rfc3339(str(policy_revocation)) <= common.parse_rfc3339(str(fixture_revocation))
-        except Exception as exc:  # noqa: BLE001 — format de date invalide = écart
+        except Exception as exc:  # noqa: BLE001 — invalid date format = drift
             ok = False
             checks["D9"] = _check("D9", "échéance de révocation planifiée", STATUS_DRIFT,
                                   {"error": str(exc)})
@@ -185,13 +185,13 @@ def offline_checks(bundle, fixture: Dict[str, Any]) -> Dict[str, Dict[str, Any]]
                                   STATUS_PASS if ok else STATUS_DRIFT,
                                   {"policy": policy_revocation, "fixture": fixture_revocation})
 
-    # D10 — version/avis du module : non suivis en v1
+    # D10 — module version/advisory: not tracked in v1
     checks["D10"] = _check("D10", "version / avis de sécurité du module", STATUS_SKIPPED,
                            {"note": "non suivis en v1 — l'empreinte du bytecode épinglée (D2) sert de garde"})
     return checks
 
 
-# --- étage live : lectures chaîne + replays ----------------------------------
+# --- live stage: chain reads + replays ---------------------------------------
 
 
 def replay_probe(probe: Dict[str, Any], rpc_url: str, timeout: int) -> Dict[str, Any]:
@@ -215,8 +215,8 @@ def replay_probe(probe: Dict[str, Any], rpc_url: str, timeout: int) -> Dict[str,
 
 def live_checks(bundle, fixture: Dict[str, Any], rpc_url: str, timeout: int,
                 checks: Dict[str, Dict[str, Any]]) -> None:
-    """Complète les contrôles D1/D2/D3, et joint les sondes aux contrôles visés."""
-    # D1 — chaîne
+    """Complete checks D1/D2/D3 and attach the probes to their target checks."""
+    # D1 — chain
     try:
         chain_id = common.eth_chain_id(rpc_url, timeout)
         if chain_id != fixture.get("chain_id"):
@@ -227,7 +227,7 @@ def live_checks(bundle, fixture: Dict[str, Any], rpc_url: str, timeout: int,
     except ChainError as exc:
         checks["D1"] = _check("D1", "chaîne (eth_chainId)", STATUS_UNVERIFIED, {"error": str(exc)[:200]})
 
-    # D2 — code des contrats (module, singleton, safe, USDC Circle)
+    # D2 — contract code (module, singleton, safe, USDC Circle)
     refs: List[tuple] = [("module", fixture.get("module"))]
     singleton = (fixture.get("module") or {}).get("singleton")
     if singleton:
@@ -259,7 +259,7 @@ def live_checks(bundle, fixture: Dict[str, Any], rpc_url: str, timeout: int,
         checks["D2"] = _check("D2", "module (code + empreinte épinglée)", STATUS_UNVERIFIED,
                               {"error": str(exc)[:200]})
 
-    # D3/D6/D7 — sondes comportementales (replays des refus mesurés)
+    # D3/D6/D7 — behavioural probes (replays of the measured refusals)
     evidence: Dict[str, List[Dict[str, Any]]] = {}
     for probe in fixture.get("probes") or []:
         result = replay_probe(probe, rpc_url, timeout)
@@ -276,7 +276,7 @@ def live_checks(bundle, fixture: Dict[str, Any], rpc_url: str, timeout: int,
             entry["detail"]["probes_note"] = "sondes indisponibles (nœud) — verdict inchangé, à rejouer"
 
 
-# --- rapport ------------------------------------------------------------------
+# --- report ------------------------------------------------------------------
 
 
 def build_report(*, bundle, fixture, fixture_path: str, policy_path: str,
@@ -323,26 +323,26 @@ def build_report(*, bundle, fixture, fixture_path: str, policy_path: str,
 def main(argv: Optional[List[str]] = None) -> int:
     parser = argparse.ArgumentParser(
         prog="run_drift_check.py",
-        description="ORVYREN — test de dérive politique ↔ enveloppe on-chain (10 contrôles, "
-                    "DOC2 §5.5.4). Lecture seule ; verdict PASS / DRIFT / UNVERIFIED => SAFE MODE.")
+        description="ORVYREN — policy <-> on-chain envelope drift check (10 checks, "
+                    "DOC2 §5.5.4). Read only; verdict PASS / DRIFT / UNVERIFIED => SAFE MODE.")
     parser.add_argument("--policy", default=os.path.join(ROOT, "policy_v1.yaml"),
-                        help="paramètres de politique (défaut : policy_v1.yaml)")
-    parser.add_argument("--fixture", help="fixture d'enveloppe (défaut : celle déclarée par policy_v1.yaml)")
-    parser.add_argument("--recipients", help="fichier JSON label→adresse pour résoudre les destinataires de session")
+                        help="policy parameters (default: policy_v1.yaml)")
+    parser.add_argument("--fixture", help="envelope fixture (default: the one declared by policy_v1.yaml)")
+    parser.add_argument("--recipients", help="JSON file label->address to resolve session recipients")
     mode = parser.add_mutually_exclusive_group()
-    mode.add_argument("--offline", action="store_true", help="aucun réseau (défaut)")
-    mode.add_argument("--rpc", action="store_true", help="lectures chaîne + replays des sondes (lecture seule)")
+    mode.add_argument("--offline", action="store_true", help="no network (default)")
+    mode.add_argument("--rpc", action="store_true", help="chain reads + probe replays (read only)")
     parser.add_argument("--rpc-url", default=os.environ.get("ORVYREN_RPC_URL_BASE_SEPOLIA") or common.DEFAULT_RPC_URL)
     parser.add_argument("--timeout", type=int, default=common.RPC_TIMEOUT_SECONDS)
     parser.add_argument("--out", default=os.path.join(ROOT, "evidence", "envelope_drift_report.json"))
-    parser.add_argument("--quiet", action="store_true", help="n'imprimer que le verdict")
+    parser.add_argument("--quiet", action="store_true", help="print the verdict only")
     args = parser.parse_args(argv)
 
     recipients = common.load_json(args.recipients) if args.recipients else None
     try:
         bundle = load_policy(args.policy, recipients)
     except Exception as exc:  # noqa: BLE001 — fichier de politique invalide = erreur d'usage
-        print("ERREUR de configuration (policy): {}".format(exc), file=sys.stderr)
+        print("CONFIG ERROR (policy): {}".format(exc), file=sys.stderr)
         return EXIT_USAGE
 
     fixture_path = args.fixture or bundle.data.get("envelope_fixture") \
@@ -352,10 +352,10 @@ def main(argv: Optional[List[str]] = None) -> int:
     try:
         fixture = common.load_json(fixture_path)
     except Exception as exc:  # noqa: BLE001
-        print("ERREUR fixture illisible: {} ({})".format(fixture_path, exc), file=sys.stderr)
+        print("ERROR unreadable fixture: {} ({})".format(fixture_path, exc), file=sys.stderr)
         return EXIT_USAGE
     if not isinstance(fixture, dict) or fixture.get("schema") != FIXTURE_SCHEMA:
-        print("ERREUR fixture: schéma attendu {}".format(FIXTURE_SCHEMA), file=sys.stderr)
+        print("ERROR fixture: expected schema {}".format(FIXTURE_SCHEMA), file=sys.stderr)
         return EXIT_USAGE
 
     report = build_report(bundle=bundle, fixture=fixture, fixture_path=fixture_path,
@@ -368,7 +368,7 @@ def main(argv: Optional[List[str]] = None) -> int:
     if args.quiet:
         print(report["verdict"])
     else:
-        print("ORVYREN — test de dérive ({}): verdict {} — safe_mode {}".format(
+        print("ORVYREN — drift check ({}): verdict {} — safe_mode {}".format(
             report["mode"], report["verdict"], report["safe_mode"]))
         for check in report["checks"]:
             print("  [{}] {:<10} {}".format(check["status"], check["id"], check["name"]))

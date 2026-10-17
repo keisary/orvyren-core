@@ -50,8 +50,8 @@ class UiRoutesTests(unittest.TestCase):
     def test_index_lists_all_twelve_screens(self):
         status, body = self._get("/ui")
         self.assertEqual(status, 200)
-        self.assertIn("Index des écrans", body)
-        self.assertNotIn("ERREUR DE RENDU", body)
+        self.assertIn("Screen index", body)
+        self.assertNotIn("RENDER ERROR", body)
         for screen_id in screens.screen_ids():
             self.assertIn(f"/screen/{screen_id}", body)
 
@@ -60,11 +60,11 @@ class UiRoutesTests(unittest.TestCase):
         for screen_id in screens.screen_ids():
             status, body = self._get(f"/screen/{screen_id}")
             self.assertEqual(status, 200, f"screen {screen_id}")
-            self.assertIn("MODE :", body, f"screen {screen_id} must declare its mode")
-            self.assertIn("Horloge (UTC)", body, f"screen {screen_id} must display a clock")
-            self.assertIn("Horloge simulée", body, f"screen {screen_id}")
-            self.assertIn("Sources rendues", body, f"screen {screen_id}")
-            self.assertNotIn("ERREUR DE RENDU", body, f"screen {screen_id} crashed")
+            self.assertIn("MODE:", body, f"screen {screen_id} must declare its mode")
+            self.assertIn("Clock (UTC)", body, f"screen {screen_id} must display a clock")
+            self.assertIn("Simulated clock", body, f"screen {screen_id}")
+            self.assertIn("Rendered sources", body, f"screen {screen_id}")
+            self.assertNotIn("RENDER ERROR", body, f"screen {screen_id} crashed")
 
     def test_pages_are_static_no_javascript_no_external_asset(self):
         pages = [self._get("/ui")[1]]
@@ -80,7 +80,7 @@ class UiRoutesTests(unittest.TestCase):
 
     def test_known_modes_are_declared_honestly(self):
         _, body1 = self._get("/screen/1")
-        self.assertIn("DONNÉES FIGÉES", body1)
+        self.assertIn("FROZEN DATA", body1)
         _, body4 = self._get("/screen/4")
         self.assertIn("REPLAY", body4)
         _, body10 = self._get("/screen/10")
@@ -94,15 +94,15 @@ class UiRoutesTests(unittest.TestCase):
         if source_present:
             self.assertIn("sha256:", body10)
         else:
-            self.assertIn("SOURCE ABSENTE", body10)
+            self.assertIn("SOURCE MISSING", body10)
 
-    @unittest.skipUnless(os.path.isfile(_DEMO_CHAIN), "micro-chaîne publique absente de ce checkout")
+    @unittest.skipUnless(os.path.isfile(_DEMO_CHAIN), "public micro-chain absent from this checkout")
     def test_screen_10_renders_the_versioned_public_chain(self):
         _, body10 = self._get("/screen/10")
-        self.assertIn("Événements par type", body10)
-        self.assertIn("Reçus on-chain", body10)
+        self.assertIn("Events by type", body10)
+        self.assertIn("On-chain receipts", body10)
         self.assertIn("RUN_START", body10)
-        self.assertNotIn('<p class="warn">SOURCE ABSENTE', body10)
+        self.assertNotIn('<p class="warn">SOURCE MISSING', body10)
 
     # -- robustness ---------------------------------------------------------
 
@@ -121,7 +121,7 @@ class UiRoutesTests(unittest.TestCase):
 
     def test_screens_never_invent_missing_sources(self):
         built = screens.build_screen(10, screens.Ctx(_ROOT, os.path.join(_ROOT, "evidence")))
-        self.assertIn(b"MODE :", built)
+        self.assertIn(b"MODE:", built)
 
 
 if __name__ == "__main__":

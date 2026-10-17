@@ -1,20 +1,20 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-"""ORVYREN — kit de démo testnet (W5, L5.2) : **vérification d'adresses avant run**.
+"""ORVYREN — testnet demo kit (W5, L5.2): **address verification before a run**.
 
-Avant chaque run, vérifier que la session pointe sur les bonnes adresses de
-Base Sepolia : format EIP-55, **présence de code** (``eth_getCode``) pour les
-contrats attendus, **absence de code** pour les EOA attendus, ``chainId``
-épinglé, bloc de référence capturé. Règle du kit : **arrêt si écart** — tout
-écart sort en ``exit 1`` et le montage s'arrête.
+Before every run, check that the session points to the right Base Sepolia
+addresses: EIP-55 format, **code presence** (``eth_getCode``) for the expected
+contracts, **code absence** for the expected EOAs, pinned ``chainId``, captured
+reference block. Kit rule: **stop on any mismatch** — every mismatch exits with
+``exit 1`` and the setup stops.
 
-Modes :
+Modes:
 
-* ``--offline`` (défaut) : format seul — aucun réseau ; les contrôles chaîne
-  sont ``SKIPPED`` et le rapport porte ``verdict = OFFLINE_PASS`` ;
-* ``--rpc`` : contrôles en ligne (lecture seule, User-Agent inclus).
+* ``--offline`` (default): format only — no network; the chain checks
+  are ``SKIPPED`` and the report carries ``verdict = OFFLINE_PASS``;
+* ``--rpc``: live checks (read-only, User-Agent included).
 
-CLI :
+CLI:
 
     python scripts/demo/verify_addresses.py [--env-file scripts/demo/.env] [--rpc] [--out report.json]
 """
@@ -26,9 +26,9 @@ import os
 import sys
 from typing import Any, Dict, List, Optional
 
-try:  # paquet (``demo.verify_addresses``)
+try:  # package (``demo.verify_addresses``)
     from . import common
-except ImportError:  # exécution directe : python scripts/demo/verify_addresses.py
+except ImportError:  # direct execution: python scripts/demo/verify_addresses.py
     _sys_dir = os.path.dirname(os.path.abspath(__file__))
     if _sys_dir not in sys.path:
         sys.path.insert(0, _sys_dir)
@@ -38,11 +38,11 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 DEFAULT_ENV = os.path.join(HERE, ".env")
 DEFAULT_OWNERS = os.path.join(HERE, "owners.env")
 
-#: Adresses qui DOIVENT porter du code (contrats déployés).
+#: Addresses that MUST carry code (deployed contracts).
 EXPECT_CONTRACT = ("ORVYREN_SAFE_ADDRESS", "ORVYREN_MODULE_ADDRESS", "ORVYREN_USDC_ADDRESS")
-#: Adresses qui NE DOIVENT PAS porter de code (EOA jetable).
+#: Addresses that MUST NOT carry code (throwaway EOA).
 EXPECT_EOA = ("ORVYREN_AGENT_ADDRESS",)
-#: Adresses rapportées sans exigence contrat/EOA (destinataires, propriétaires).
+#: Addresses reported without contract/EOA requirement (recipients, owners).
 INFO_ONLY = ("ORVYREN_RECIPIENT_B", "ORVYREN_RECIPIENT_C", "ORVYREN_RECIPIENT_UNLISTED",
              "ORVYREN_OWNER1_ADDRESS", "ORVYREN_OWNER2_ADDRESS", "ORVYREN_OWNER3_ADDRESS")
 ADDRESS_KEYS = EXPECT_CONTRACT + EXPECT_EOA + INFO_ONLY
@@ -53,7 +53,7 @@ EXIT_USAGE = 2
 
 
 def collect_addresses(env_files: List[str]) -> Dict[str, str]:
-    """Fusionne les fichiers d'env ; les clés ``*_ADDRESS`` connues seulement."""
+    """Merges the env files; known ``*_ADDRESS`` keys only."""
     merged: Dict[str, str] = {}
     for path in env_files:
         for key, value in common.read_env_file(path).items():
@@ -66,9 +66,9 @@ def check_one(key: str, value: str, *, rpc_url: Optional[str]) -> Dict[str, Any]
     entry: Dict[str, Any] = {"key": key, "address": value, "status": "PASS"}
     try:
         normalized = common.normalize_address(value)
-    except Exception as exc:  # format EIP-55 invalide → écart immédiat
+    except Exception as exc:  # invalid EIP-55 format → immediate mismatch
         entry["status"] = "FAIL"
-        entry["reason"] = "adresse invalide (EIP-55) : %s" % exc
+        entry["reason"] = "invalid address (EIP-55): %s" % exc
         return entry
     entry["normalized"] = normalized
     if key in EXPECT_CONTRACT:
@@ -84,17 +84,17 @@ def check_one(key: str, value: str, *, rpc_url: Optional[str]) -> Dict[str, Any]
         code = common.eth_get_code(rpc_url, normalized) or "0x"
     except Exception as exc:
         entry["status"] = "FAIL"
-        entry["reason"] = "rpc getCode : %s" % exc
+        entry["reason"] = "rpc getCode: %s" % exc
         return entry
     kind = "contract" if code not in ("0x", "") else "eoa"
     entry["code_kind"] = kind
     entry["code_size_bytes"] = (len(code) - 2) // 2
     if entry["expected"] == "contract" and kind != "contract":
         entry["status"] = "FAIL"
-        entry["reason"] = "code attendu (contrat) — absent sur la chaîne"
+        entry["reason"] = "code expected (contract) — absent on chain"
     if entry["expected"] == "eoa" and kind != "eoa":
         entry["status"] = "FAIL"
-        entry["reason"] = "code inattendu sur une EOA"
+        entry["reason"] = "unexpected code on an EOA"
     return entry
 
 
@@ -109,7 +109,7 @@ def run(*, env_files: List[str], rpc_url: Optional[str],
     }
     if not addresses:
         report["checks"].append({"id": "V0", "status": "FAIL",
-                                 "detail": "aucune adresse (*_ADDRESS) trouvée dans %s"
+                                 "detail": "no address (*_ADDRESS) found in %s"
                                            % ", ".join(env_files)})
         report["verdict"] = "FAIL"
         return report
@@ -122,7 +122,7 @@ def run(*, env_files: List[str], rpc_url: Optional[str],
             block_number = common.eth_block_number(rpc_url)
         except Exception as exc:
             report["checks"].append({"id": "V1", "status": "FAIL",
-                                     "detail": "rpc indisponible : %s" % exc})
+                                     "detail": "rpc unavailable: %s" % exc})
             report["verdict"] = "FAIL"
             return report
         report["chain"] = {"chain_id": chain_id, "block_number": block_number,
@@ -130,8 +130,8 @@ def run(*, env_files: List[str], rpc_url: Optional[str],
         if chain_id != expected_chain_id:
             report["checks"].append({
                 "id": "V1.chain_id", "status": "FAIL",
-                "detail": "échec : chainId %s attendu %s — arrêt (tout signerait sur la "
-                          "mauvaise chaîne)" % (chain_id, expected_chain_id)})
+                "detail": "failure: chainId %s expected %s — stopping (everything would sign on the "
+                          "wrong chain)" % (chain_id, expected_chain_id)})
             report["verdict"] = "FAIL"
             return report
     else:
@@ -149,11 +149,11 @@ def run(*, env_files: List[str], rpc_url: Optional[str],
     missing = [key for key in (EXPECT_CONTRACT + EXPECT_EOA) if key not in addresses]
     if missing:
         report["checks"].append({"id": "V2.complete", "status": "FAIL",
-                                 "detail": "clés manquantes : %s" % ", ".join(missing)})
+                                 "detail": "missing keys: %s" % ", ".join(missing)})
         failures += 1
     else:
         report["checks"].append({"id": "V2.complete", "status": "PASS",
-                                 "detail": "toutes les adresses requises sont présentes"})
+                                 "detail": "all required addresses are present"})
 
     if failures:
         report["verdict"] = "FAIL"
@@ -167,15 +167,15 @@ def run(*, env_files: List[str], rpc_url: Optional[str],
 def main(argv: Optional[List[str]] = None) -> int:
     parser = argparse.ArgumentParser(
         prog="verify_addresses.py",
-        description="ORVYREN (W5/L5.2) — adresses de session : format EIP-55, code "
-                    "des contrats, absence de code sur les EOA, chainId épinglé. "
-                    "Arrêt si écart.")
+        description="ORVYREN (W5/L5.2) — session addresses: EIP-55 format, contract "
+                    "code, code absence on EOAs, pinned chainId. "
+                    "Stop on mismatch.")
     parser.add_argument("--env-file", action="append", default=None,
-                        help="fichier KEY=VALUE (répétable ; défaut : .env puis owners.env)")
-    parser.add_argument("--rpc", action="store_true", help="contrôles en ligne (lecture seule)")
+                        help="KEY=VALUE file (repeatable; default: .env then owners.env)")
+    parser.add_argument("--rpc", action="store_true", help="live checks (read-only)")
     parser.add_argument("--rpc-url", default=None)
     parser.add_argument("--chain-id", type=int, default=None)
-    parser.add_argument("--out", default=None, help="rapport JSON")
+    parser.add_argument("--out", default=None, help="JSON report")
     parser.add_argument("--quiet", action="store_true")
     args = parser.parse_args(argv)
 
@@ -183,7 +183,7 @@ def main(argv: Optional[List[str]] = None) -> int:
     env = common.load_session_env(env_files[0] if env_files else None)
     rpc_url = args.rpc_url or (env.get("ORVYREN_RPC_URL_BASE_SEPOLIA") if args.rpc else None)
     if args.rpc and not rpc_url:
-        print("verify_addresses: --rpc exige --rpc-url ou ORVYREN_RPC_URL_BASE_SEPOLIA", file=sys.stderr)
+        print("verify_addresses: --rpc requires --rpc-url or ORVYREN_RPC_URL_BASE_SEPOLIA", file=sys.stderr)
         return EXIT_USAGE
     expected_chain_id = args.chain_id or int(env.get("ORVYREN_CHAIN_ID") or 84532)
 
@@ -195,7 +195,7 @@ def main(argv: Optional[List[str]] = None) -> int:
             line = "  %-32s %-44s %s" % (entry["key"], entry.get("normalized", entry["address"]),
                                          entry.get("code_kind", entry.get("code", "")))
             if entry["status"] == "FAIL":
-                line += "  → %s" % entry.get("reason", "écart")
+                line += "  → %s" % entry.get("reason", "mismatch")
             print(line)
         for check in report["checks"]:
             print("  [%s] %s — %s" % (check["status"], check["id"], str(check["detail"])[:160]))

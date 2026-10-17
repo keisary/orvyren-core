@@ -76,7 +76,7 @@ PENDING_VERIFICATION = "no transaction hash provided yet (pending human executio
 
 
 def _display_path(path):
-    """Chemin relatif POSIX quand il est dans le dépôt, sinon absolu."""
+    """Repo-relative POSIX path when inside the repository, else absolute."""
     try:
         relative = os.path.relpath(path, ROOT).replace(os.sep, "/")
     except ValueError:
@@ -85,24 +85,24 @@ def _display_path(path):
 
 
 def build_demo_policy(config, env=None):
-    """Charge policy_v1.yaml et résout les destinataires de session.
+    """Load policy_v1.yaml and resolve the session recipients.
 
-    Le fichier est la source de vérité des paramètres ; les adresses restent
-    hors du fichier (labels B/C résolus depuis l'environnement ou la config
-    d'exécution). L'échéance du mandat (P8) est un fait d'exécution : le TTL
-    du bundle est appliqué à l'horloge de démonstration.
+    The file is the source of truth for the parameters; addresses stay out of
+    the file (labels B/C resolved from the environment or the execution
+    config). The mandate expiry (P8) is an execution fact: the bundle TTL is
+    applied against the demo clock.
     """
     environment = os.environ if env is None else env
     recipient, recipients = collect_recipients(None, environment,
                                                fallback=config.reserve_address)
     if not os.path.exists(POLICY_PATH):
-        raise FileNotFoundError("policy_v1.yaml introuvable : %s" % POLICY_PATH)
+        raise FileNotFoundError("policy_v1.yaml not found: %s" % POLICY_PATH)
     bundle = load_policy(POLICY_PATH, recipients)
     return bundle, recipient, recipients
 
 
 def build_state(bundle, clock, env=None):
-    """PolicyState réel : pause, appartenance, enveloppe, solde, budget (P14)."""
+    """Real PolicyState: pause, membership, envelope, balance, budget (P14)."""
     environment = os.environ if env is None else env
     envelope = resolve_envelope(bundle, POLICY_PATH, None, environment)
     state = make_policy_state(
@@ -148,10 +148,11 @@ def verify_on_chain(config, intent, tx_hash):
 
 
 def build_period_cap_check(bundle, clock, recipient, env=None):
-    """4 x 100 USDC sur un ledger 24 h persistant : le 4e transfert est refusé P6.
+    """4 x 100 USDC on a persistent 24 h ledger: the 4th transfer is denied by P6.
 
-    Le ledger est écrit sur disque puis **rouvert** avec une nouvelle instance
-    (redémarrage simulé) : le cumul de 300 USDC est bien relu, pas oublié.
+    The ledger is written to disk then **reopened** with a fresh instance
+    (simulated restart): the 300 USDC cumulative is really re-read, not
+    forgotten.
     """
     state, _envelope = build_state(bundle, clock, env)
     amount = 100.0
@@ -168,7 +169,7 @@ def build_period_cap_check(bundle, clock, recipient, env=None):
                 amount=amount,
                 recipient=recipient,
                 created_at=clock,
-                justification="demonstration du plafond glissant 24 h",
+                justification="24 h rolling cap demonstration",
             )
             decision = evaluate(intent, bundle.config, now=clock,
                                 seen_intent_ids=ledger.seen_intent_ids(),
@@ -182,7 +183,7 @@ def build_period_cap_check(bundle, clock, recipient, env=None):
             })
             if decision.verdict == "ALLOW":
                 ledger.record(clock, intent.intent_id, amount)
-        reopened = PeriodLedger(ledger_path)  # redémarrage : relecture du fichier
+        reopened = PeriodLedger(ledger_path)  # restart: re-read the file
         spent_after_restart = reopened.spent(clock)
         entries_after_restart = len(reopened.entries())
     return {
@@ -209,7 +210,7 @@ def build_report(config, now, tx_hash=None, clock=DEMO_CLOCK, env=None):
     bundle, recipient, recipients = build_demo_policy(config, environment)
     apply_permission_window(bundle, clock, default_hours=config.permission_ttl_hours)
     state, envelope = build_state(bundle, clock, environment)
-    session = PeriodLedger()  # ledger de session (mémoire) : rapports rejouables
+    session = PeriodLedger()  # session ledger (in memory): replayable reports
 
     cases = []
     guard_blocks = []
@@ -303,7 +304,7 @@ def print_summary(report, out_path=None):
     print("ORVYREN-Core — execution-layer demo")
     print("mode: {}".format(report["mode"]))
     print("chain: {}".format(report["chain"]))
-    print("policy: policy_v1.yaml {} (hash {}) — paramètres chargés depuis {}".format(
+    print("policy: policy_v1.yaml {} (hash {}) — parameters loaded from {}".format(
         policy["version"], str(policy["policy_hash"])[:16], policy["path"]))
     print("state : paused={} agent_member={} envelope={} balance={} budget_cap={}".format(
         state["paused"], state["agent_member"], state["envelope_status"],
@@ -320,10 +321,10 @@ def print_summary(report, out_path=None):
             case["amount_usdc"], _short(case["recipient"]), codes))
         if case["skipped_rules"]:
             skipped_all.update(case["skipped_rules"])
-            motifs = [str(rule.get("note") or "non applicable")
+            motifs = [str(rule.get("note") or "not applicable")
                       for rule in case["rules_evaluated"]
                       if rule.get("result") == "SKIPPED"]
-            print("      règles SKIPPED: {} — {}".format(
+            print("      SKIPPED rules: {} — {}".format(
                 ", ".join(case["skipped_rules"]), "; ".join(motifs)))
         if case["instruction"]:
             print("      instruction (unsigned): to {}".format(case["instruction"]["to"]))
@@ -332,12 +333,12 @@ def print_summary(report, out_path=None):
     cap = report["period_cap_check"]
     chain_verdicts = " · ".join(
         "{} {}".format(item["attempt"], item["verdict"]) for item in cap["verdicts"])
-    print("période 24 h (4 x {} USDC, plafond {} USDC, ledger JSON relu après redémarrage):".format(
+    print("24 h period (4 x {} USDC, cap {} USDC, JSON ledger re-read after restart):".format(
         cap["amount_usdc"], cap["max_cumulative_24h"]))
     print("      {}".format(chain_verdicts))
-    print("      4e transfert: {} {}".format(
+    print("      4th transfer: {} {}".format(
         cap["fourth_verdict"], ", ".join(cap["fourth_deny_codes"]) or "-"))
-    print("      cumul relu après redémarrage: {} USDC ({} entrée(s))".format(
+    print("      cumulative re-read after restart: {} USDC ({} entry(ies))".format(
         cap["spent_24h_after_restart"], cap["ledger_entries_after_restart"]))
 
     verification = report["receipt_verification"]
@@ -354,19 +355,19 @@ def print_summary(report, out_path=None):
     print("secret env vars detected (names only, never read): {}".format(
         config_view["secret_env_vars_present"] or "none"))
     print("verdicts match expectation: {}".format(not report["verdict_check"]["unexpected"]))
-    print("règles d'état évaluées (state fourni): P7/P11/P12/P14 — aucune SKIPPED")
-    print("règles SKIPPED sur le chemin: {}".format(
-        ", ".join(sorted(skipped_all)) or "aucune"))
+    print("state rules evaluated (state supplied): P7/P11/P12/P14 — none SKIPPED")
+    print("SKIPPED rules on the path: {}".format(
+        ", ".join(sorted(skipped_all)) or "none"))
     print("evidence written: {}".format(out_path or EVIDENCE_PATH))
 
 
 def main(argv=None):
     parser = argparse.ArgumentParser(
         prog="run_execution_demo.py",
-        description="ORVYREN — démo d'exécution : politique réelle (policy_v1.yaml), "
-                    "état complet, plafond 24 h ; aucune signature.")
+        description="ORVYREN — execution demo: real policy (policy_v1.yaml), "
+                    "full state, 24 h cap; no signature.")
     parser.add_argument("--out", default=os.environ.get("ORVYREN_DEMO_OUT") or EVIDENCE_PATH,
-                        help="chemin du rapport JSON (défaut : %(default)s)")
+                        help="path of the JSON report (default: %(default)s)")
     args = parser.parse_args(argv)
 
     now = datetime.now(timezone.utc)
@@ -375,8 +376,8 @@ def main(argv=None):
 
     try:
         report = build_report(config, now, tx_hash=tx_hash)
-    except Exception as exc:  # noqa: BLE001 — politique ou fixture indisponible : refus propre
-        print("ERREUR: {}".format(exc), file=sys.stderr)
+    except Exception as exc:  # noqa: BLE001 — policy or fixture unavailable: clean refusal
+        print("ERROR: {}".format(exc), file=sys.stderr)
         return 2
 
     out_path = args.out
