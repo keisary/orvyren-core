@@ -8,7 +8,7 @@ This document maps the **permission tiers** the system is allowed to reach, the 
 
 ## 1. Design invariants (the rules the rest of this document refers to)
 
-1. **The agent never holds a key.** No module signs or broadcasts; a human executes the bounded instruction from their own wallet and the system verifies the result afterwards (read-only JSON-RPC).
+1. **The agent never holds a key.** No module of the decision / policy / research path signs or broadcasts, and no key material is ever recorded (all 13 `SUBMIT` lines of the `rseth` demo carry `key_material: "never recorded"`). **Correction (2026-10-17, M11)** — the blanket claim must not be read as « nothing was ever signed »: the T2 testnet demonstration broadcast 13 transactions signed by a dedicated human-held demo key, outside the agent and outside this repository (see §3bis for the receipts). The agent produced only unsigned bounded instructions, and the system verified the results afterwards (read-only JSON-RPC).
 2. **The policy service is deterministic and outside any LLM.** `src/orvyren/policy` computes ALLOW / DENY / REQUIRE_APPROVAL from structured `Intent` fields only. No model output, text, or justification string is ever parsed as an instruction.
 3. **Nothing executes without an explicit ALLOW.** `orvyren.execution.guard.assert_allowed()` raises for every other verdict; the demo asserts 0 out-of-policy actions.
 4. **No number without provenance.** Every figure in the decision output references corpus observations; a claim without a resolvable reference is refused by the graph store.
@@ -23,6 +23,32 @@ This document maps the **permission tiers** the system is allowed to reach, the 
 | **T2 — Bounded test execution** | the *human* sends the allowed transaction on Base Sepolia (test USDC, ≤ 100 per tx, ≤ 300 cumulative, 24 h permission, allowlisted recipient); the agent verifies the ERC-20 receipt against the authorized intent | human wallet only | ready; receipt verification runs when `ORVYREN_TX_HASH` is provided |
 | **T3 — Extended actions** (swap / approve / anything else) | — | — | **REQUIRE_APPROVAL by construction — never autonomous** |
 | **T4 — Policy or configuration change** | — | — | **REQUIRE_APPROVAL by construction — never autonomous**; the engine cannot widen its own envelope |
+
+## 3bis. The 13 receipts of the `rseth` demo — 12/13 distinguished
+
+The manifest counts `submits: 13, receipts: 13, signatures: 13` without
+distinguishing their outcomes. The honest breakdown (measured, Base Sepolia,
+2026-10-16, run `01M526YS3FMDNS6Z9EJYJPPG1E`) is:
+
+| # | nonce | intent | scenario | receipt status | outcome |
+|---|---|---|---|---|---|
+| 1 | 1 | run A | the single in-policy bounded transfer | `0x1` | **success (the only one)** |
+| 2 | 2 | `forced-C1` | 500 USDC over the `maxRefill` allowance | `0x0` | REVERTED by the module |
+| 3 | 3 | `forced-C2` | 1 USDC to an unlisted recipient | `0x0` | REVERTED by the module |
+| 4 | 4 | `forced-C1` | second attempt, same over-cap transfer | `0x0` | REVERTED by the module |
+| 5 | 5 | `forced-C2` | second attempt, unlisted recipient | `0x0` | REVERTED by the module |
+| 6 | 6 | `forced-C3a` | `allowTarget` (agent widens its own allowlist) | `0x0` | REVERTED by the module |
+| 7 | 7 | `forced-C3b` | `Safe.enableModule` (agent takes over the Safe) | `0x0` | REVERTED by the Safe |
+| 8–13 | 8–13 | `forced-C4` | cumulative-cap loop (repeated bounded transfers) | `0x0` ×6 | REVERTED by the module |
+
+**The 12 reverts are the security demonstration, not failures**: every forced
+attack was deliberately broadcast against the real module, and the chain
+refused it (`status 0x0`, empty logs). One caveat is journaled honestly: for
+several reverts the RPC could not return the revert reason
+(`"block not found"` in the `VERIFY` lines), so the authority is the receipt
+`status` — not a decoded revert selector. The single success (nonce 1) is the
+only transfer that matched the authorized intent on chain id, token, sender,
+recipient and exact base units (R7 matrix).
 
 ## 3. Risk register
 

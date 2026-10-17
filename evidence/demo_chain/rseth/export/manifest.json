@@ -22,6 +22,27 @@
     "signatures": 13,
     "chain_confronted": 13
   },
+  "receipts_breakdown": {
+    "note": "affichage corrige par Hermes-B (M11) : les 13 recus ne se ressemblent pas. Mesure: evidence/demo_chain/rseth/receipts/*.json (12 fichiers status 0x0, 1 fichier status 0x1).",
+    "ok_status_0x1": 1,
+    "reverted_status_0x0": 12,
+    "success": {
+      "count": 1,
+      "intent": "run A (transfer autorise et borne)",
+      "tx_hash": "0x82827c701e03852ae0e2176be1984ddfbc2420228cd9cd8db73986e2f6734f53"
+    },
+    "reverted_forced_attacks": {
+      "count": 12,
+      "intents": {
+        "forced-C1": {"count": 2, "scenario": "transfer 500 USDC au-dela de l'allowance maxRefill"},
+        "forced-C2": {"count": 2, "scenario": "transfer 1 USDC vers un destinataire non liste"},
+        "forced-C3a": {"count": 1, "scenario": "allowTarget (auto-elargissement de la cible de l'agent)"},
+        "forced-C3b": {"count": 1, "scenario": "Safe.enableModule (prise de controle de la Safe)"},
+        "forced-C4": {"count": 6, "scenario": "boucle de transferts cumules (plafond cumulatif)"}
+      },
+      "interpretation": "les 12 reverts SONT la demonstration de securite : chaque attaque a ete forcee contre le module reel et la chaine l'a refusee (status 0x0, logs vides)"
+    }
+  },
   "addresses": {
     "safe": "0x000e11a54daadf202542a0136f974f24d7c38be0",
     "agent": "0xe1039e345fa2ad9ecceab7bb160fd5e53f58f01c",
