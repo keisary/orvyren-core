@@ -19,6 +19,7 @@ ORVYREN est un système d'agents qui transforme des signaux financiers publics e
 | `ARCHITECTURE_V1.md` | carte des modules du code |
 | `SECURITY_SELF_ASSESSMENT.md` | auto-évaluation sécurité (niveaux de permission, risques connus) |
 | `LICENSES.md` | composants tiers et licences |
+| `AUDIT_PROMPT.md` | prompt d'audit externe (outil interne — pas une pièce de soumission) |
 
 ## Démarrage rapide
 
