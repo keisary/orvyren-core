@@ -339,11 +339,12 @@ def run_set(set_label: str, *, frozen_dir: str = DEFAULT_FROZEN_DIR,
                     for detail in skipped],
         "windows": [{"window_id": detail["window_id"], "status": detail.get("status"),
                      "notes": detail.get("notes", []),
-                     "config_losses": {label: detail["configs"][label].get("loss")
-                                       for label in CONFIG_LABELS},
-                     "config_regrets": {label: (detail["configs"][label].get("regret") or {}).get("R")
+                     "config_losses": ({label: detail["configs"][label].get("loss")
                                         for label in CONFIG_LABELS}
-                     if detail.get("status") == "OK" else {}}
+                                       if detail.get("status") == "OK" else {}),
+                     "config_regrets": ({label: (detail["configs"][label].get("regret") or {}).get("R")
+                                         for label in CONFIG_LABELS}
+                                        if detail.get("status") == "OK" else {})}
                     for detail in window_details],
         "aggregates": aggregates,
         "superiority": {

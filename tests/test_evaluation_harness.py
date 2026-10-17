@@ -22,6 +22,7 @@ import shutil
 import sys
 import tempfile
 import unittest
+from unittest import mock
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(HERE)
@@ -63,6 +64,25 @@ class HarnessDevTest(unittest.TestCase):
         second = harness.run_set("dev")
         self.assertEqual(harness.content_hash(self.content),
                          harness.content_hash(second["content"]))
+
+    def test_skipped_window_is_rendered_without_configs(self):
+        """A skipped EVAL window has no ``configs``; report content must survive."""
+        ok_detail = {"window_id": "ok", "status": "OK", "notes": [],
+                     "configs": {label: {"loss": 1.0, "regret": {"R": 0.0}}
+                                 for label in harness.CONFIG_LABELS}}
+        skipped_detail = {"window_id": "skip", "status": "SKIPPED",
+                          "reason": "no series", "notes": []}
+        with mock.patch.object(harness, "runs_for_set", return_value=[object(), object()]), \
+                mock.patch.object(harness, "run_window",
+                                  side_effect=[ok_detail, skipped_detail]), \
+                mock.patch.object(windows_mod, "verify_frozen_package",
+                                  return_value={"G1": "x"}):
+            result = harness.run_set("dev", b0_draws=1)
+        content = result["content"]
+        self.assertEqual(1, content["n_windows"])
+        self.assertEqual(1, content["n_windows_skipped"])
+        self.assertEqual({}, content["windows"][1]["config_losses"])
+        self.assertEqual({}, content["windows"][1]["config_regrets"])
 
     def test_freeze_gate_refuses_without_frozen(self):
         empty = tempfile.mkdtemp(prefix="orvyren_nofrozen_")
