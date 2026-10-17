@@ -355,6 +355,19 @@ def append_outcome(
     if require_frozen:
         windows_mod.verify_frozen_package(frozen_dir or forecasts_mod.default_frozen_dir())
     _validate_outcome(outcome)
+    horizon = outcome.get("horizon") if isinstance(outcome.get("horizon"), dict) else {}
+    resolution_window = horizon.get("t_resolution_window_utc")
+    written_at = outcome.get("written_at_utc")
+    try:
+        resolution_moment = windows_mod.parse_utc(resolution_window) if resolution_window else None
+        written_moment = windows_mod.parse_utc(written_at) if written_at else None
+    except (TypeError, ValueError) as exc:
+        raise OutcomeError("horizon/written_at illisible: %s" % exc) from exc
+    if resolution_moment is not None and written_moment is not None:
+        if written_moment < resolution_moment:
+            raise ResolutionTooEarly(
+                "outcome écrit avant resolve_not_before: written_at=%s, horizon=%s"
+                % (written_at, resolution_window))
     existing = load_outcomes(path)
     verify_outcome_chain(existing, path=path)
     if any(prior["outcome_id"] == outcome["outcome_id"] for prior in existing):

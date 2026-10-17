@@ -221,11 +221,16 @@ class TestResolveEtOutcomes(unittest.TestCase):
             O.append_outcome(os.path.join(tempfile.gettempdir(), "never_written.jsonl"), outcome, frozen_dir=FROZEN_DIR)
 
     def test_outcome_avant_horizon_refuse_a_l_ecriture(self):
-        """The guard also applies on the outcome side: resolved_at < resolve_not_before."""
+        """The guard also applies on the outcome side: written_at < resolve_not_before."""
         slow = make_forecast(resolve_not_before="2099-01-01T00:00:00Z")
         outcome = O.resolve_forecast(slow, SERIES, now_utc="2099-01-02T00:00:00Z")
-        # the written_at field is the real write time; the resolution window is
-        # carried by horizon.t_resolution_window_utc
+        outcome["written_at_utc"] = "2098-12-31T00:00:00Z"
+        path = os.path.join(tempfile.gettempdir(), "never_written_before_horizon.jsonl")
+        if os.path.exists(path):
+            os.remove(path)
+        with self.assertRaises(O.ResolutionTooEarly):
+            O.append_outcome(path, outcome, require_frozen=False)
+        self.assertFalse(os.path.exists(path))
         self.assertEqual(outcome["horizon"]["t_resolution_window_utc"], "2099-01-01T00:00:00Z")
 
 
