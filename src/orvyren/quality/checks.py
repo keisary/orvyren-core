@@ -54,7 +54,14 @@ MIN_INDEPENDENT_VENUES = 2
 
 
 def hour_floor(ts: datetime) -> datetime:
-    """Floor a timestamp to its UTC hour."""
+    """Floor a timestamp to its UTC hour.
+
+    A naive timestamp is read as UTC (same convention as
+    ``normalize.parse_timestamp``) — never as local wall time, which would
+    make the result machine-dependent.
+    """
+    if ts.tzinfo is None:
+        ts = ts.replace(tzinfo=timezone.utc)
     return ts.astimezone(timezone.utc).replace(minute=0, second=0, microsecond=0)
 
 
