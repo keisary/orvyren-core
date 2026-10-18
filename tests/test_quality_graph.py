@@ -9,6 +9,7 @@ failure message carries the measured value.
 Execution: ``python -m unittest discover -s tests -v``
 """
 
+import copy
 import csv
 import os
 import sqlite3
@@ -449,8 +450,9 @@ class TestSnapshotAndFingerprints(unittest.TestCase):
     def test_observation_fingerprint_is_stable(self):
         observations, _ = real_corpus()
         observation = observations[0]
+        same = copy.deepcopy(observation)
         self.assertEqual(models.observation_fingerprint(observation),
-                         models.observation_fingerprint(observation))
+                         models.observation_fingerprint(same))
         different = normalize.Observation(
             venue=observation.venue, metric=observation.metric,
             ts_event=observation.ts_event + timedelta(hours=1),

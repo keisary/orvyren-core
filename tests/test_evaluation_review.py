@@ -14,7 +14,7 @@ import os
 import sys
 import tempfile
 import unittest
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "src"))
 
@@ -71,10 +71,9 @@ class TestHourFloorNaiveIsUtc(unittest.TestCase):
                          datetime(2023, 3, 9, 5, 0, tzinfo=timezone.utc))
 
     def test_hour_floor_offset_aware_still_converted(self):
-        offset = datetime(2023, 3, 9, 7, 30, tzinfo=timezone.utc).astimezone(
-            timezone.utc)  # identity sanity
+        offset = datetime(2023, 3, 9, 7, 30, tzinfo=timezone(timedelta(hours=2)))
         self.assertEqual(checks.hour_floor(offset),
-                         datetime(2023, 3, 9, 7, 0, tzinfo=timezone.utc))
+                         datetime(2023, 3, 9, 5, 0, tzinfo=timezone.utc))
 
 
 class TestB0QuantileConvention(unittest.TestCase):
