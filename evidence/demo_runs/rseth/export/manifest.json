@@ -1,0 +1,48 @@
+{
+  "schema": "orvyren-session-manifest/v1",
+  "run_id": "01M526YS3FMDNS6Z9EJYJPPG1E",
+  "case": "rseth",
+  "exported_at": "2026-10-16T11:30:54Z",
+  "journal": {
+    "records": 83,
+    "heads": {
+      "exec": "86b4e1f8490ece2554b083060179e7a518d62e1d8cd5918c21e12e54a8a0ed79"
+    },
+    "counts": {
+      "exec": 83
+    },
+    "chain_ok": true
+  },
+  "counters": {
+    "allow_policy_entries": 4,
+    "deny_entries": 6,
+    "require_approval_entries": 1,
+    "submits": 13,
+    "receipts": 13,
+    "signatures": 13,
+    "chain_confronted": 13
+  },
+  "addresses": {
+    "safe": "0x000e11a54daadf202542a0136f974f24d7c38be0",
+    "agent": "0xe1039e345fa2ad9ecceab7bb160fd5e53f58f01c",
+    "module": "0x7e2b7798ab4b4db837b30107f0d2a3ffb24e95e8",
+    "asset": "0x036cbd53842c5426634e7929541ec2318f3dcf7e",
+    "B": "0x37877f6ffb6656e752bf4807b9c3c7b761a953a3",
+    "C": "0x9f59adcdea0341e258e3ac98e7f9c57a2277760e",
+    "D_unlisted": "0xd959b95e70005208e0654b849ad635c67d3da689"
+  },
+  "contracts_expected_present": {
+    "module_roles_officiel": "0xF2964CE6161ce0e75964Fe7927cE114cb0B283D5",
+    "usdc_circle_base_sepolia": "0x036CbD53842c5426634e7929541eC2318f3dCF7e",
+    "usdc_aave_base_sepolia": "0xba50Cd2A20f6DA35D788639E581bca8d0B5d4D5f",
+    "weth_predeploy": "0x4200000000000000000000000000000000000006",
+    "safe_l2_singleton_1_4_1": "0x29fcB43b46531BcA003ddC8FCB67FFE91900C762",
+    "safe_proxy_factory_1_4_1": "0x4e1DCf7AD4e460CfD30791CCC4F9c8a4f820ec67",
+    "multisend_call_only_1_4_1": "0x40A2aCCbd92BCA938b02010E17A5b8929b49130D",
+    "swap_router02": "0x94cC0AaC535CCDB3C01d6787D6413C739ae12bc4",
+    "uniswap_v3_factory": "0x4752ba5DBc23f44D87826276BF6Fd6b1C372aD24",
+    "quoter_v2": "0xC5290058841028F1614F3A6F0F5816cAd0df5E27",
+    "aave_v3_pool": "0x8bAB6d1b75f19e9eD9fCe8b9BD338844fF79aE27",
+    "eas": "0x4200000000000000000000000000000000000021"
+  }
+}

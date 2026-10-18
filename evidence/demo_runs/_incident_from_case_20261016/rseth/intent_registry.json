@@ -1,0 +1,23 @@
+{
+  "keys": {
+    "0x0c8e59af54d00c75c801dbca11b92a1e4126b99fd707195dd18f485cebb00b5c": {
+      "intent_id": "01M526AMCFM5T3N457ZRXWP6G3",
+      "idempotency_key": "0x0c8e59af54d00c75c801dbca11b92a1e4126b99fd707195dd18f485cebb00b5c",
+      "status": "RESERVED",
+      "note": "run A — préflight passé, signature imminente",
+      "ts_utc": "2026-10-16T11:07:37Z"
+    }
+  },
+  "intent_ids": [
+    "01M526AMCFM5T3N457ZRXWP6G3"
+  ],
+  "entries": [
+    {
+      "intent_id": "01M526AMCFM5T3N457ZRXWP6G3",
+      "idempotency_key": "0x0c8e59af54d00c75c801dbca11b92a1e4126b99fd707195dd18f485cebb00b5c",
+      "status": "RESERVED",
+      "note": "run A — préflight passé, signature imminente",
+      "ts_utc": "2026-10-16T11:07:37Z"
+    }
+  ]
+}

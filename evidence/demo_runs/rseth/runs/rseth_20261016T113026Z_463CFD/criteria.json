@@ -1,0 +1,75 @@
+{
+  "run": "D",
+  "criteria": [
+    {
+      "id": "D.1",
+      "description": "calldata K1 construit et vérifié (aller-retour)",
+      "status": "met",
+      "detail": {
+        "member": "0xe1039e345fa2ad9ecceab7bb160fd5e53f58f01c",
+        "role_keys": [
+          "0x4147454e54000000000000000000000000000000000000000000000000000000"
+        ],
+        "enabled": [
+          false
+        ]
+      }
+    },
+    {
+      "id": "D.2",
+      "description": "tentative de l'agent : status 0x0 (ou non incluse) après révocation",
+      "status": "met",
+      "detail": {
+        "sent": true,
+        "tx_hash": "0xe9be566f82424857a0fff1406a452f7b99fbd0c1ee3cd0dfb021160e4227272b",
+        "nonce": 13,
+        "status": "0x0",
+        "revert": {
+          "status": "REVERT",
+          "revert_selector": "0xfd8e9f28",
+          "error_message": "execution reverted",
+          "data": "0xfd8e9f28"
+        }
+      }
+    },
+    {
+      "id": "D.3",
+      "description": "sélecteur de revert constaté = 0xfd8e9f28",
+      "status": "met",
+      "detail": {
+        "status": "REVERT",
+        "revert_selector": "0xfd8e9f28",
+        "error_message": "execution reverted",
+        "data": "0xfd8e9f28"
+      }
+    },
+    {
+      "id": "D.4",
+      "description": "latences (a) collecte, (b) inclusion, (c) effet affichées",
+      "status": "met",
+      "detail": {
+        "signature_collection": null,
+        "inclusion": {
+          "tx_hash": "0x0fb96134b2ecca31c81573d8f807ba161a99f7d2e315a50eb539c09c26bd9a41",
+          "block_number": 48190968,
+          "status": "0x1"
+        },
+        "effect": {
+          "attempt_status": "0x0",
+          "revert_selector": "0xfd8e9f28",
+          "expected_selector": "0xfd8e9f28"
+        },
+        "revocation_tx": "0x0fb96134b2ecca31c81573d8f807ba161a99f7d2e315a50eb539c09c26bd9a41"
+      }
+    },
+    {
+      "id": "D.5",
+      "description": "révocation vérifiée indépendamment (members == false) puis reset préparé",
+      "status": "met",
+      "detail": {
+        "reset_calldata": "0x957ed2b3000000000000000000000000e1039e345fa2ad9ecceab7bb160fd5e53f58f01c000000000000000000000000000000000000000000000000000000000000006000000000000000000000000000000000000000000000000000000000000000a000000000000000000000000000000000000000000000000000000000000000014147454e5400000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000010000000000000000000000000000000000000000000000000000000000000001",
+        "reset_selector": "0x957ed2b3"
+      }
+    }
+  ]
+}

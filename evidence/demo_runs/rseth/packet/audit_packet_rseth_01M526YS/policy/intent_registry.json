@@ -1,0 +1,75 @@
+{
+  "keys": {
+    "0x9555d12f3ed25f16a151d8b10c9bdd8806e38d59901f4512b65826d266e0bdac": {
+      "intent_id": "01M526YT463MN9YWMV8ZWN7DHV",
+      "idempotency_key": "0x9555d12f3ed25f16a151d8b10c9bdd8806e38d59901f4512b65826d266e0bdac",
+      "status": "REGISTERED",
+      "note": "rejeu B3 (déjà enregistré)",
+      "ts_utc": "2026-10-16T11:18:47Z"
+    },
+    "0xa31fc933c0d160492effe6271265dbf5e306709e04f7ce83b311d4121bb5cb16": {
+      "intent_id": "01M526Z72662KZBTHCJZXS2JQF",
+      "idempotency_key": "0xa31fc933c0d160492effe6271265dbf5e306709e04f7ce83b311d4121bb5cb16",
+      "status": "REQUIRE_APPROVAL",
+      "note": "change_policy",
+      "ts_utc": "2026-10-16T11:18:47Z"
+    },
+    "0x7141f2020fc3074cc2090d38f8a812f160ca5ad1db68a0554fa25a5c98c6c9be": {
+      "intent_id": "01M527BWSJ0E98DT3XFCVH7RPZ",
+      "idempotency_key": "0x7141f2020fc3074cc2090d38f8a812f160ca5ad1db68a0554fa25a5c98c6c9be",
+      "status": "PREPARED",
+      "note": "RUN D — intent non envoyé (kill switch)",
+      "ts_utc": "2026-10-16T11:25:43Z"
+    },
+    "0xbc668c98889d02e6429c56db65b48f5bee536d8a0ee88125d6359a20b01135a2": {
+      "intent_id": "01M527MJRNGXJF78TG5S94C7Q8",
+      "idempotency_key": "0xbc668c98889d02e6429c56db65b48f5bee536d8a0ee88125d6359a20b01135a2",
+      "status": "PREPARED",
+      "note": "RUN D — intent non envoyé (kill switch)",
+      "ts_utc": "2026-10-16T11:30:27Z"
+    }
+  },
+  "intent_ids": [
+    "01M526YT463MN9YWMV8ZWN7DHV",
+    "01M526Z72662KZBTHCJZXS2JQF",
+    "01M527BWSJ0E98DT3XFCVH7RPZ",
+    "01M527MJRNGXJF78TG5S94C7Q8"
+  ],
+  "entries": [
+    {
+      "intent_id": "01M526YT463MN9YWMV8ZWN7DHV",
+      "idempotency_key": "0x9555d12f3ed25f16a151d8b10c9bdd8806e38d59901f4512b65826d266e0bdac",
+      "status": "RESERVED",
+      "note": "run A — préflight passé, signature imminente",
+      "ts_utc": "2026-10-16T11:18:38Z"
+    },
+    {
+      "intent_id": "01M526YT463MN9YWMV8ZWN7DHV",
+      "idempotency_key": "0x9555d12f3ed25f16a151d8b10c9bdd8806e38d59901f4512b65826d266e0bdac",
+      "status": "REGISTERED",
+      "note": "rejeu B3 (déjà enregistré)",
+      "ts_utc": "2026-10-16T11:18:47Z"
+    },
+    {
+      "intent_id": "01M526Z72662KZBTHCJZXS2JQF",
+      "idempotency_key": "0xa31fc933c0d160492effe6271265dbf5e306709e04f7ce83b311d4121bb5cb16",
+      "status": "REQUIRE_APPROVAL",
+      "note": "change_policy",
+      "ts_utc": "2026-10-16T11:18:47Z"
+    },
+    {
+      "intent_id": "01M527BWSJ0E98DT3XFCVH7RPZ",
+      "idempotency_key": "0x7141f2020fc3074cc2090d38f8a812f160ca5ad1db68a0554fa25a5c98c6c9be",
+      "status": "PREPARED",
+      "note": "RUN D — intent non envoyé (kill switch)",
+      "ts_utc": "2026-10-16T11:25:43Z"
+    },
+    {
+      "intent_id": "01M527MJRNGXJF78TG5S94C7Q8",
+      "idempotency_key": "0xbc668c98889d02e6429c56db65b48f5bee536d8a0ee88125d6359a20b01135a2",
+      "status": "PREPARED",
+      "note": "RUN D — intent non envoyé (kill switch)",
+      "ts_utc": "2026-10-16T11:30:27Z"
+    }
+  ]
+}

@@ -1,0 +1,25 @@
+{
+  "schema_version": "intent/v1",
+  "intent_id": "01M526WZ0DT0DSSBS7RW0XC799",
+  "chain_id": 84532,
+  "account": "0x000e11a54daadf202542a0136f974f24d7c38be0",
+  "action": "transfer",
+  "asset": "0x036cbd53842c5426634e7929541ec2318f3dcf7e",
+  "amount": "20.0",
+  "amount_base_units": "20000000",
+  "recipient": "0x37877f6ffb6656e752bf4807b9c3c7b761a953a3",
+  "function": "transfer(address,uint256)",
+  "params": {
+    "to": "0x37877f6ffb6656e752bf4807b9c3c7b761a953a3",
+    "value": "20000000"
+  },
+  "expiry": "2026-10-16T11:32:33Z",
+  "created_at": "2026-10-16T11:17:33Z",
+  "justification": "RUN A — transfert 20.0 USDC dans l'enveloppe (ALLOW)",
+  "policy_version": "v1.0",
+  "source": {
+    "decision_id": "01M526WZ0DT0DSSBS7RW0XC798",
+    "case": "rseth"
+  },
+  "idempotency_key": "0xbc28537117099cae71d067d9e49e613e9d05760c9b27122399944fffe7e3dc82"
+}

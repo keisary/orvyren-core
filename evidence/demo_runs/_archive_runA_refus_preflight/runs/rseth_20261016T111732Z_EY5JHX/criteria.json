@@ -1,0 +1,11 @@
+{
+  "run": "A",
+  "criteria": [
+    {
+      "id": "A.1",
+      "description": "receipt.status == 0x1",
+      "status": "failed",
+      "detail": "préflight refusé"
+    }
+  ]
+}

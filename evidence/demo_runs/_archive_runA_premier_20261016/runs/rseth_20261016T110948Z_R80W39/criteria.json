@@ -1,0 +1,70 @@
+{
+  "run": "A",
+  "criteria": [
+    {
+      "id": "A.1",
+      "description": "receipt.status == 0x1",
+      "status": "met",
+      "detail": []
+    },
+    {
+      "id": "A.2",
+      "description": "exactement un log Transfer correspondant exactement",
+      "status": "met",
+      "detail": {
+        "token_transfer_logs": 1,
+        "exact_matches": 1
+      }
+    },
+    {
+      "id": "A.3",
+      "description": "Δ solde Safe = −20000000 et Δ solde B = +20000000",
+      "status": "met",
+      "detail": {
+        "before": {
+          "safe": 20000000,
+          "B": 0
+        },
+        "after": {
+          "safe": 0,
+          "B": 20000000
+        }
+      }
+    },
+    {
+      "id": "A.4",
+      "description": "compteur de signatures = +1 (simulées incluses en dry-run)",
+      "status": "met",
+      "detail": {
+        "before": 0,
+        "after": 1
+      }
+    },
+    {
+      "id": "A.5",
+      "description": "les 7 kind de journal présents pour l'intent_id",
+      "status": "failed",
+      "detail": [
+        "INTENT",
+        "POLICY",
+        "RECEIPT",
+        "SIMULATION",
+        "SUBMIT",
+        "VERIFY"
+      ]
+    },
+    {
+      "id": "A.6",
+      "description": "blockHash stable après 2 blocs",
+      "status": "pending",
+      "detail": {
+        "tx_hash": "0xaf9fdf0ee8986136c8b5dc5cfccdd21303fa086261344d5ef00d26a80437dd0e",
+        "confirmation_blocks": 2,
+        "block_number": 48190355,
+        "block_hash": "0x0000000000000000000000000000000000000000000000000000000000000000",
+        "confirmations": 0,
+        "status": "PENDING_CONFIRMATION"
+      }
+    }
+  ]
+}

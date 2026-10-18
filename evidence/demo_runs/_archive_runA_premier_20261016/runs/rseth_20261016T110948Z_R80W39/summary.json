@@ -1,0 +1,76 @@
+{
+  "run": "A",
+  "mode": "execute",
+  "intent_id": "01M526ESF6Y49D162G6ZHNS0E1",
+  "verdict": "ALLOW",
+  "policy": {
+    "decision_id": "01M526ESFP6PAYCW47H958HXEK",
+    "verdict": "ALLOW",
+    "reasons": [],
+    "rules_evaluated": [
+      {
+        "rule": "R1-chain",
+        "result": "OK",
+        "note": "84532"
+      },
+      {
+        "rule": "R2-asset",
+        "result": "OK",
+        "note": ""
+      },
+      {
+        "rule": "R3-recipient",
+        "result": "OK",
+        "note": ""
+      },
+      {
+        "rule": "R4-amount",
+        "result": "OK",
+        "note": "20.0 <= 100.0"
+      },
+      {
+        "rule": "R5-cumulative",
+        "result": "OK",
+        "note": "20.0 <= 300.0"
+      },
+      {
+        "rule": "R6-permission",
+        "result": "OK",
+        "note": "2026-10-17T11:09:49.430415+00:00"
+      },
+      {
+        "rule": "R7-idempotency",
+        "result": "OK",
+        "note": ""
+      },
+      {
+        "rule": "R8-action",
+        "result": "OK",
+        "note": "transfer"
+      }
+    ],
+    "evaluator": "orvyren-policy v0.1 (déterministe, hors LLM)",
+    "decided_at": "2026-10-16T11:09:49Z",
+    "intent_id": "01M526ESF6Y49D162G6ZHNS0E1",
+    "intent_hash": "0xd2091193ef670ffbdac9178df3e229e97f14fcf8341407d5165ccd5548ec5d62",
+    "policy_version": "v1.0",
+    "policy_chain_id": 84532,
+    "context_used": {
+      "placeholders": []
+    }
+  },
+  "expected": {
+    "receipt_status": "0x1",
+    "transfer_base_units": 20000000
+  },
+  "tx": {
+    "mode": "execute",
+    "tx_hash": "0xaf9fdf0ee8986136c8b5dc5cfccdd21303fa086261344d5ef00d26a80437dd0e",
+    "simulated": false,
+    "sent": true,
+    "nonce": 0,
+    "gas": 208843,
+    "raw_signed": "0x02f901b283014a3480835b8d8083b71b0083032fcb947e2b7798ab4b4db837b30107f0d2a3ffb24e95e880b90144c6fe8747000000000000000000000000036cbd53842c5426634e7929541ec2318f3dcf7e000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000c000000000000000000000000000000000000000000000000000000000000000004147454e5400000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000010000000000000000000000000000000000000000000000000000000000000044a9059cbb00000000000000000000000037877f6ffb6656e752bf4807b9c3c7b761a953a30000000000000000000000000000000000000000000000000000000001312d0000000000000000000000000000000000000000000000000000000000c001a0cb1cf7ba1279291eb2c2d1e1024a8d745ffdc8bf324476874036082e245e27eca016819af3440e14ba390c540178027eb08ca69123a8c14cdf6f9e9f0ef4b0b559"
+  },
+  "status": "VERIFIED_OK"
+}

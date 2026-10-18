@@ -1,0 +1,108 @@
+{
+  "run": "E",
+  "criteria": [
+    {
+      "id": "E.1",
+      "description": "chaîne de hash recalculée OK (aucune écriture détectée)",
+      "status": "met",
+      "detail": []
+    },
+    {
+      "id": "E.2",
+      "description": "écart journal ↔ chaîne = 0",
+      "status": "met",
+      "detail": [
+        {
+          "tx_hash": "0x82827c701e03852ae0e2176be1984ddfbc2420228cd9cd8db73986e2f6734f53",
+          "intent_id": "01M526YT463MN9YWMV8ZWN7DHV",
+          "status": "0x1",
+          "verification_ok": true,
+          "mismatches": []
+        },
+        {
+          "tx_hash": "0x2d7eae5f5ab0917e629c0f8194b884ae4e968ecb21dfd2ce1f3494297060bf96",
+          "intent_id": "forced-C1",
+          "status": "0x0"
+        },
+        {
+          "tx_hash": "0xd9d3b2fd9e54b8c5067e14c25f0336be1e3b59e4f754d53d53363f62aaf4c3a5",
+          "intent_id": "forced-C2",
+          "status": "0x0"
+        },
+        {
+          "tx_hash": "0xf3731d3bab01949c33be43cb687367a47680b55738966ed5b644319cd4356446",
+          "intent_id": "forced-C1",
+          "status": "0x0"
+        },
+        {
+          "tx_hash": "0x17e94df4255b0f09132c4952ab90a199ed678df383c7e90db356c2590274ff05",
+          "intent_id": "forced-C2",
+          "status": "0x0"
+        },
+        {
+          "tx_hash": "0x508b13cf13b55fc17b44e2eb12bc7345d078e5284c62271a7c1b0098b81fefc9",
+          "intent_id": "forced-C3a",
+          "status": "0x0"
+        },
+        {
+          "tx_hash": "0x34819b1da9f76417c3f480b6cd91c0ba41818092cb12690e0f5c8af363525641",
+          "intent_id": "forced-C3b",
+          "status": "0x0"
+        },
+        {
+          "tx_hash": "0xd7e2a7ae60a4438357b1222bb1d744d153a49dc07a8f2c0c995cd2145e0eee44",
+          "intent_id": "forced-C4",
+          "status": "0x0"
+        },
+        {
+          "tx_hash": "0x8e6beda64ca8a9da6e839dd406cf7262eaeb986b602a2ad6e3ade5caff491d9e",
+          "intent_id": "forced-C4",
+          "status": "0x0"
+        },
+        {
+          "tx_hash": "0xe79f7771eecb1be4847ebcbfec864bf45b5b367a2ebbbc5dc115a56b6e09804e",
+          "intent_id": "forced-C4",
+          "status": "0x0"
+        },
+        {
+          "tx_hash": "0x7548461ed0e49cf3b21a43377ffcf20b9de7e415fa746b252edebe212ba1b4ab",
+          "intent_id": "forced-C4",
+          "status": "0x0"
+        },
+        {
+          "tx_hash": "0x43bd6bf606afb2a02772ec20321428837b0d903c61853eed73e0bf7a53da0247",
+          "intent_id": "01M527BWSJ0E98DT3XFCVH7RPZ",
+          "status": "0x0"
+        },
+        {
+          "tx_hash": "0xe9be566f82424857a0fff1406a452f7b99fbd0c1ee3cd0dfb021160e4227272b",
+          "intent_id": "01M527MJRNGXJF78TG5S94C7Q8",
+          "status": "0x0"
+        }
+      ]
+    },
+    {
+      "id": "E.3",
+      "description": "le rapport liste refus et échecs (première classe)",
+      "status": "met",
+      "detail": {
+        "deny": 6,
+        "require_approval": 1
+      }
+    },
+    {
+      "id": "E.4",
+      "description": "compteurs exportés (manifest.json)",
+      "status": "met",
+      "detail": {
+        "allow_policy_entries": 4,
+        "deny_entries": 6,
+        "require_approval_entries": 1,
+        "submits": 13,
+        "receipts": 13,
+        "signatures": 13,
+        "chain_confronted": 13
+      }
+    }
+  ]
+}

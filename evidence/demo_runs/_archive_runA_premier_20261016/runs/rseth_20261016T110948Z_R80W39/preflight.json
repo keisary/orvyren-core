@@ -1,0 +1,440 @@
+{
+  "v": 1,
+  "schema": "orvyren-preflight/v1",
+  "generated_at_utc": "2026-10-16T11:09:54Z",
+  "mode": "rpc",
+  "rpc_masked": "https://sepolia.base.org",
+  "chain_id": 84532,
+  "policy_version": "v1.0",
+  "role_key": "0x4147454e54000000000000000000000000000000000000000000000000000000",
+  "verdict": "PASS",
+  "safe_mode": false,
+  "safe_mode_reasons": [],
+  "safe_mode_required_when_live": false,
+  "blocking": false,
+  "checks": [
+    {
+      "id": "P1",
+      "family": "preflight",
+      "name": "verdict de politique ALLOW tracé",
+      "status": "PASS",
+      "ok": true,
+      "detail": {
+        "recomputed": {
+          "decision_id": "01M526ESG314AD8TEXHYHAKE38",
+          "verdict": "ALLOW",
+          "reasons": [],
+          "rules_evaluated": [
+            {
+              "rule": "R1-chain",
+              "result": "OK",
+              "note": "84532"
+            },
+            {
+              "rule": "R2-asset",
+              "result": "OK",
+              "note": ""
+            },
+            {
+              "rule": "R3-recipient",
+              "result": "OK",
+              "note": ""
+            },
+            {
+              "rule": "R4-amount",
+              "result": "OK",
+              "note": "20.0 <= 100.0"
+            },
+            {
+              "rule": "R5-cumulative",
+              "result": "OK",
+              "note": "20.0 <= 300.0"
+            },
+            {
+              "rule": "R6-permission",
+              "result": "OK",
+              "note": "2026-10-17T11:09:49.443273+00:00"
+            },
+            {
+              "rule": "R7-idempotency",
+              "result": "OK",
+              "note": ""
+            },
+            {
+              "rule": "R8-action",
+              "result": "OK",
+              "note": "transfer"
+            }
+          ],
+          "evaluator": "orvyren-policy v0.1 (déterministe, hors LLM)",
+          "decided_at": "2026-10-16T11:09:49Z",
+          "intent_id": "01M526ESF6Y49D162G6ZHNS0E1",
+          "intent_hash": "0xd2091193ef670ffbdac9178df3e229e97f14fcf8341407d5165ccd5548ec5d62",
+          "policy_version": "v1.0",
+          "policy_chain_id": 84532
+        }
+      }
+    },
+    {
+      "id": "P10",
+      "family": "preflight",
+      "name": "prix du gaz dans les bornes",
+      "status": "PASS",
+      "ok": true,
+      "detail": {
+        "baseline_wei": 6000000,
+        "bound_wei": 60000000,
+        "gas_price_wei": 6000000
+      }
+    },
+    {
+      "id": "P11",
+      "family": "preflight",
+      "name": "simulation eth_call depuis l'agent",
+      "status": "PASS",
+      "ok": true,
+      "detail": {
+        "exec_call_to": "0x7e2b7798ab4b4db837b30107f0d2a3ffb24e95e8",
+        "result": "0x0000000000000000000000000000000000000000000000000000000000000001"
+      }
+    },
+    {
+      "id": "P12",
+      "family": "preflight",
+      "name": "estimation de gaz (1,25×)",
+      "status": "PASS",
+      "ok": true,
+      "detail": {
+        "estimate": 167075,
+        "gas_limit": 208844,
+        "factor": 1.25
+      }
+    },
+    {
+      "id": "P2",
+      "family": "preflight",
+      "name": "chaîne épinglée (eth_chainId)",
+      "status": "PASS",
+      "ok": true,
+      "detail": {
+        "expected": 84532,
+        "policy": 84532,
+        "intent": 84532,
+        "observed": 84532
+      }
+    },
+    {
+      "id": "P3",
+      "family": "preflight",
+      "name": "expiry de l'intent non dépassée",
+      "status": "PASS",
+      "ok": true,
+      "detail": {
+        "expiry": "2026-10-16T11:24:49Z",
+        "now": "2026-10-16T11:09:49Z"
+      }
+    },
+    {
+      "id": "P4",
+      "family": "preflight",
+      "name": "idempotence (registre append-only)",
+      "status": "PASS",
+      "ok": true,
+      "detail": {
+        "idempotency_key": "0xd2091193ef670ffbdac9178df3e229e97f14fcf8341407d5165ccd5548ec5d62",
+        "registry": {
+          "keys": [],
+          "intent_ids": [],
+          "entries": 0
+        }
+      }
+    },
+    {
+      "id": "P5",
+      "family": "preflight",
+      "name": "pause K0 (kill switch hors chaîne)",
+      "status": "PASS",
+      "ok": true,
+      "detail": {
+        "paused": false,
+        "flag_path": "D:\\orvyren_core\\evidence\\demo_runs\\rseth\\PAUSED"
+      }
+    },
+    {
+      "id": "P6",
+      "family": "preflight",
+      "name": "politique on-chain = attendue (module)",
+      "status": "PASS",
+      "ok": true,
+      "detail": {
+        "module": "0x7e2b7798ab4b4db837b30107f0d2a3ffb24e95e8",
+        "code_sha256_expected": "09bfac6bbbcc2243f8768c9967697a3599bb1274d71154cca75b4cd910cf2c14",
+        "code_size_bytes": 45,
+        "code_sha256": "09bfac6bbbcc2243f8768c9967697a3599bb1274d71154cca75b4cd910cf2c14"
+      }
+    },
+    {
+      "id": "P7",
+      "family": "preflight",
+      "name": "adresses cibles re-vérifiées (eth_getCode)",
+      "status": "PASS",
+      "ok": true,
+      "detail": {
+        "addresses": {
+          "asset": "0x036cbd53842c5426634e7929541ec2318f3dcf7e",
+          "account": "0x000e11a54daadf202542a0136f974f24d7c38be0",
+          "module": "0x7e2b7798ab4b4db837b30107f0d2a3ffb24e95e8"
+        },
+        "results": {
+          "asset": {
+            "address": "0x036cbd53842c5426634e7929541ec2318f3dcf7e",
+            "code_size_bytes": 1798
+          },
+          "account": {
+            "address": "0x000e11a54daadf202542a0136f974f24d7c38be0",
+            "code_size_bytes": 171
+          },
+          "module": {
+            "address": "0x7e2b7798ab4b4db837b30107f0d2a3ffb24e95e8",
+            "code_size_bytes": 45
+          }
+        }
+      }
+    },
+    {
+      "id": "P8",
+      "family": "preflight",
+      "name": "nonce (sérialisation stricte)",
+      "status": "PASS",
+      "ok": true,
+      "detail": {
+        "agent": "0xe1039e345fa2ad9ecceab7bb160fd5e53f58f01c",
+        "pending_nonce": 0,
+        "note": "une seule transaction en vol : le service signataire sérialise"
+      }
+    },
+    {
+      "id": "P9",
+      "family": "preflight",
+      "name": "soldes (gaz + jeton)",
+      "status": "PASS",
+      "ok": true,
+      "detail": {
+        "agent": "0xe1039e345fa2ad9ecceab7bb160fd5e53f58f01c",
+        "safe": "0x000e11a54daadf202542a0136f974f24d7c38be0",
+        "amount_base_units": "20000000",
+        "agent_eth_wei": 1500000000000000,
+        "safe_token_base_units": 20000000,
+        "required_gas_wei": 2506128000000
+      }
+    },
+    {
+      "id": "D1",
+      "family": "drift",
+      "name": "chaîne (eth_chainId)",
+      "status": "PASS",
+      "ok": true,
+      "detail": {
+        "policy_chain_id": 84532,
+        "envelope_chain_id": 84532,
+        "probes": [],
+        "observed": 84532
+      }
+    },
+    {
+      "id": "D10",
+      "family": "drift",
+      "name": "version du module / avis de sécurité",
+      "status": "PASS",
+      "ok": true,
+      "detail": {
+        "version": "v2.1.1",
+        "advisory_clear": true,
+        "codehash_pinned": true
+      }
+    },
+    {
+      "id": "D2",
+      "family": "drift",
+      "name": "module (code + codehash épinglé)",
+      "status": "PASS",
+      "ok": true,
+      "detail": {
+        "module": "0x7e2b7798ab4b4db837b30107f0d2a3ffb24e95e8",
+        "code_sha256_expected": "09bfac6bbbcc2243f8768c9967697a3599bb1274d71154cca75b4cd910cf2c14",
+        "code_size_expected": 45,
+        "code_size_bytes": 45,
+        "code_sha256": "09bfac6bbbcc2243f8768c9967697a3599bb1274d71154cca75b4cd910cf2c14"
+      }
+    },
+    {
+      "id": "D3",
+      "family": "drift",
+      "name": "membres du rôle AGENT",
+      "status": "PASS",
+      "ok": true,
+      "detail": {
+        "agent_config": "0xe1039e345fa2ad9ecceab7bb160fd5e53f58f01c",
+        "agent_envelope": "0xe1039e345Fa2AD9EcCeab7bb160FD5e53f58F01c",
+        "probes": [
+          {
+            "id": "modules.agent",
+            "to": "0x7e2b7798ab4b4db837b30107f0d2a3ffb24e95e8",
+            "note": "isModuleEnabled(agent) : dans cette version de Roles, execTransactionWithRole est moduleOnly — le membre doit être un module activé (auto-activé par assignRoles, tx 0x994e762c…)",
+            "status": "PASS",
+            "observed": true,
+            "expect": true
+          }
+        ]
+      }
+    },
+    {
+      "id": "D4",
+      "family": "drift",
+      "name": "cibles du rôle (clearance)",
+      "status": "PASS",
+      "ok": true,
+      "detail": {
+        "declared": [
+          {
+            "address": "0x036CbD53842c5426634e7929541eC2318f3dCF7e",
+            "clearance": "Function",
+            "note": "USDC Circle uniquement — cloisonnement vérifié par RUN B (refus d'un destinataire non listé)"
+          }
+        ],
+        "expected_asset": "0x036cbd53842c5426634e7929541ec2318f3dcf7e",
+        "addresses": [
+          "0x036cbd53842c5426634e7929541ec2318f3dcf7e"
+        ],
+        "probes": []
+      }
+    },
+    {
+      "id": "D5",
+      "family": "drift",
+      "name": "fonctions scopées",
+      "status": "PASS",
+      "ok": true,
+      "detail": {
+        "declared": [
+          {
+            "target": "0x036CbD53842c5426634e7929541eC2318f3dCF7e",
+            "signature": "transfer(address,uint256)",
+            "selector": "0xa9059cbb",
+            "clearance": "Function",
+            "operation": "CALL",
+            "note": "évidence : événement ScopeFunction (tx 0xf623f087…)"
+          }
+        ],
+        "expected": {
+          "target": "0x036cbd53842c5426634e7929541ec2318f3dcf7e",
+          "signature": "transfer(address,uint256)",
+          "selector": "0xa9059cbb",
+          "clearance": "Function",
+          "operation": "CALL"
+        },
+        "pairs": [
+          "0x036cbd53842c5426634e7929541ec2318f3dcf7e:0xa9059cbb"
+        ],
+        "probes": []
+      }
+    },
+    {
+      "id": "D6",
+      "family": "drift",
+      "name": "conditions (destinataire, montant)",
+      "status": "PASS",
+      "ok": true,
+      "detail": {
+        "declared": {
+          "param0": {
+            "kind": "or_equal",
+            "values": [
+              "0x37877F6ffb6656E752Bf4807b9C3c7B761A953a3",
+              "0x9f59ADcdeA0341e258e3AC98E7f9c57A2277760E"
+            ],
+            "note": "Or(EqualTo(B), EqualTo(C)) — vérifié par RUN B : ConditionViolation(status=5, OrViolation)"
+          },
+          "param1": {
+            "kind": "within_allowance",
+            "allowance_key": "usdc_daily",
+            "note": "plafond par transaction = solde d'allowance (300 USDC)"
+          },
+          "quota": {
+            "kind": "call_within_allowance",
+            "allowance_key": "calls_daily",
+            "note": "10 appels / 24 h (amortisseur anti-rejeu)"
+          }
+        },
+        "expected_recipients": [
+          "0x37877f6ffb6656e752bf4807b9c3c7b761a953a3",
+          "0x9f59adcdea0341e258e3ac98e7f9c57a2277760e"
+        ]
+      }
+    },
+    {
+      "id": "D7",
+      "family": "drift",
+      "name": "allowances (refill/maxRefill/period)",
+      "status": "PASS",
+      "ok": true,
+      "detail": {
+        "declared": {
+          "refill_base_units": 300000000,
+          "max_refill_base_units": 300000000,
+          "period_seconds": 86400,
+          "evidence": "tx 0x5c13a9a8… (événement SetAllowance) + lecture allowances(usdc_daily)"
+        },
+        "policy": {
+          "max_per_tx": 100.0,
+          "max_cumulative_24h": 300.0,
+          "allowance_refill": 300000000,
+          "allowance_max_refill": 300000000,
+          "allowance_period_seconds": 86400
+        }
+      }
+    },
+    {
+      "id": "D8",
+      "family": "drift",
+      "name": "quota d'appels (CallWithinAllowance)",
+      "status": "PASS",
+      "ok": true,
+      "detail": {
+        "declared": {
+          "key": "calls_daily",
+          "max_per_period": 10,
+          "period_seconds": 86400,
+          "evidence": "tx 0x0977f870… (événement SetAllowance) + lecture allowances(calls_daily)"
+        },
+        "policy_max_calls_24h": 10
+      }
+    },
+    {
+      "id": "D9",
+      "family": "drift",
+      "name": "expiration / révocation planifiée",
+      "status": "PASS",
+      "ok": true,
+      "detail": {
+        "revocation_scheduled_at": "2026-11-15T23:59:59Z",
+        "note": "Allowance Zodiac n'a aucun champ d'expiration (B4 P8) : une révocation planifiée est exigée"
+      }
+    }
+  ],
+  "summary": {
+    "preflight": {
+      "PASS": 12,
+      "FAIL": 0,
+      "SKIPPED": 0,
+      "UNKNOWN": 0
+    },
+    "drift": {
+      "PASS": 10,
+      "FAIL": 0,
+      "SKIPPED": 0,
+      "UNKNOWN": 0
+    },
+    "failed": []
+  }
+}

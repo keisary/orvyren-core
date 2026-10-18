@@ -1,0 +1,70 @@
+{
+  "run": "D",
+  "criteria": [
+    {
+      "id": "D.1",
+      "description": "calldata K1 construit et vérifié (aller-retour)",
+      "status": "met",
+      "detail": {
+        "member": "0xe1039e345fa2ad9ecceab7bb160fd5e53f58f01c",
+        "role_keys": [
+          "0x4147454e54000000000000000000000000000000000000000000000000000000"
+        ],
+        "enabled": [
+          false
+        ]
+      }
+    },
+    {
+      "id": "D.2",
+      "description": "tentative de l'agent : status 0x0 (ou non incluse) après révocation",
+      "status": "met",
+      "detail": {
+        "sent": true,
+        "tx_hash": "0x43bd6bf606afb2a02772ec20321428837b0d903c61853eed73e0bf7a53da0247",
+        "nonce": 12,
+        "status": "0x0",
+        "revert": {
+          "status": "REVERT",
+          "revert_selector": "0x",
+          "error_message": "block not found: 0x2df556d",
+          "data": null
+        }
+      }
+    },
+    {
+      "id": "D.3",
+      "description": "sélecteur de revert constaté = 0x4a0bfec1",
+      "status": "failed",
+      "detail": {
+        "status": "REVERT",
+        "revert_selector": "0x",
+        "error_message": "block not found: 0x2df556d",
+        "data": null
+      }
+    },
+    {
+      "id": "D.4",
+      "description": "latences (a) collecte, (b) inclusion, (c) effet affichées",
+      "status": "met",
+      "detail": {
+        "signature_collection": null,
+        "inclusion": null,
+        "effect": {
+          "attempt_status": "0x0",
+          "revert_selector": "0x",
+          "expected_selector": "0x4a0bfec1"
+        }
+      }
+    },
+    {
+      "id": "D.5",
+      "description": "révocation vérifiée indépendamment (members == false) puis reset préparé",
+      "status": "met",
+      "detail": {
+        "reset_calldata": "0x957ed2b3000000000000000000000000e1039e345fa2ad9ecceab7bb160fd5e53f58f01c000000000000000000000000000000000000000000000000000000000000006000000000000000000000000000000000000000000000000000000000000000a000000000000000000000000000000000000000000000000000000000000000014147454e5400000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000010000000000000000000000000000000000000000000000000000000000000001",
+        "reset_selector": "0x957ed2b3"
+      }
+    }
+  ]
+}

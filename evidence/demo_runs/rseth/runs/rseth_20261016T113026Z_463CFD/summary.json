@@ -1,0 +1,50 @@
+{
+  "run": "D",
+  "mode": "execute",
+  "intent_id": "01M527MJRNGXJF78TG5S94C7Q8",
+  "verdict": "ALLOW",
+  "revocation": {
+    "schema": "orvyren-safe-instruction/v1",
+    "executed_by": "la Safe 2/3 (2 signatures) — JAMAIS par l'agent",
+    "to": "0x7e2b7798ab4b4db837b30107f0d2a3ffb24e95e8",
+    "data": "0x957ed2b3000000000000000000000000e1039e345fa2ad9ecceab7bb160fd5e53f58f01c000000000000000000000000000000000000000000000000000000000000006000000000000000000000000000000000000000000000000000000000000000a000000000000000000000000000000000000000000000000000000000000000014147454e5400000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000010000000000000000000000000000000000000000000000000000000000000000",
+    "description": "assignRoles(agent, [AGENT], [false]) — retire le rôle AGENT (K1)",
+    "verify_after": "Roles.roles(AGENT).members(agent) == false (eth_call)",
+    "reset": {
+      "to": "0x7e2b7798ab4b4db837b30107f0d2a3ffb24e95e8",
+      "data": "0x957ed2b3000000000000000000000000e1039e345fa2ad9ecceab7bb160fd5e53f58f01c000000000000000000000000000000000000000000000000000000000000006000000000000000000000000000000000000000000000000000000000000000a000000000000000000000000000000000000000000000000000000000000000014147454e5400000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000010000000000000000000000000000000000000000000000000000000000000001",
+      "description": "assignRoles(agent, [AGENT], [true]) — reset après la démo"
+    },
+    "expected_agent_revert": {
+      "selector": "0xfd8e9f28",
+      "name": "NotAuthorized(address) — mesuré sur Base Sepolia le 2026-10-15"
+    }
+  },
+  "attempt": {
+    "sent": true,
+    "tx_hash": "0xe9be566f82424857a0fff1406a452f7b99fbd0c1ee3cd0dfb021160e4227272b",
+    "nonce": 13,
+    "status": "0x0",
+    "revert": {
+      "status": "REVERT",
+      "revert_selector": "0xfd8e9f28",
+      "error_message": "execution reverted",
+      "data": "0xfd8e9f28"
+    }
+  },
+  "timings": {
+    "signature_collection": null,
+    "inclusion": {
+      "tx_hash": "0x0fb96134b2ecca31c81573d8f807ba161a99f7d2e315a50eb539c09c26bd9a41",
+      "block_number": 48190968,
+      "status": "0x1"
+    },
+    "effect": {
+      "attempt_status": "0x0",
+      "revert_selector": "0xfd8e9f28",
+      "expected_selector": "0xfd8e9f28"
+    },
+    "revocation_tx": "0x0fb96134b2ecca31c81573d8f807ba161a99f7d2e315a50eb539c09c26bd9a41"
+  },
+  "status": "EXECUTED"
+}

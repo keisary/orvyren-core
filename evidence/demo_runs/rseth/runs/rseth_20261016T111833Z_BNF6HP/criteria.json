@@ -1,0 +1,74 @@
+{
+  "run": "A",
+  "criteria": [
+    {
+      "id": "A.1",
+      "description": "receipt.status == 0x1",
+      "status": "met",
+      "detail": []
+    },
+    {
+      "id": "A.2",
+      "description": "exactement un log Transfer correspondant exactement",
+      "status": "met",
+      "detail": {
+        "token_transfer_logs": 1,
+        "exact_matches": 1
+      }
+    },
+    {
+      "id": "A.3",
+      "description": "Δ solde Safe = −20000000 et Δ solde B = +20000000",
+      "status": "met",
+      "detail": {
+        "before": {
+          "safe": 20000000,
+          "B": 20000000
+        },
+        "after": {
+          "safe": 0,
+          "B": 40000000
+        }
+      }
+    },
+    {
+      "id": "A.4",
+      "description": "compteur de signatures = +1 (simulées incluses en dry-run)",
+      "status": "met",
+      "detail": {
+        "before": 0,
+        "after": 1
+      }
+    },
+    {
+      "id": "A.5",
+      "description": "les 7 kind de journal présents pour l'intent_id",
+      "status": "met",
+      "detail": [
+        "INTENT",
+        "OUTCOME",
+        "POLICY",
+        "RECEIPT",
+        "SIMULATION",
+        "SUBMIT",
+        "VERIFY"
+      ]
+    },
+    {
+      "id": "A.6",
+      "description": "blockHash stable après 2 blocs",
+      "status": "pending",
+      "detail": {
+        "tx_hash": "0x82827c701e03852ae0e2176be1984ddfbc2420228cd9cd8db73986e2f6734f53",
+        "confirmation_blocks": 2,
+        "block_number": 48190617,
+        "block_hash": "0x70093bba252aa1863d796c8986ee4cf66c1ade9e7cdd3c04092364791610db8d",
+        "confirmations": 2,
+        "status": "REORGED",
+        "code": "REORGED",
+        "note": "blockHash différent de celui consigné",
+        "waited_seconds": 4.34
+      }
+    }
+  ]
+}

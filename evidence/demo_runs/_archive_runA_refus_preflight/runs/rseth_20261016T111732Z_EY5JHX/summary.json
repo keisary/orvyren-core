@@ -1,0 +1,68 @@
+{
+  "run": "A",
+  "mode": "execute",
+  "intent_id": "01M526WZ0DT0DSSBS7RW0XC799",
+  "verdict": "ALLOW",
+  "policy": {
+    "decision_id": "01M526WZ0Y2PA4QKSDQQDCQP8H",
+    "verdict": "ALLOW",
+    "reasons": [],
+    "rules_evaluated": [
+      {
+        "rule": "R1-chain",
+        "result": "OK",
+        "note": "84532"
+      },
+      {
+        "rule": "R2-asset",
+        "result": "OK",
+        "note": ""
+      },
+      {
+        "rule": "R3-recipient",
+        "result": "OK",
+        "note": ""
+      },
+      {
+        "rule": "R4-amount",
+        "result": "OK",
+        "note": "20.0 <= 100.0"
+      },
+      {
+        "rule": "R5-cumulative",
+        "result": "OK",
+        "note": "20.0 <= 300.0"
+      },
+      {
+        "rule": "R6-permission",
+        "result": "OK",
+        "note": "2026-10-17T11:17:33.854462+00:00"
+      },
+      {
+        "rule": "R7-idempotency",
+        "result": "OK",
+        "note": ""
+      },
+      {
+        "rule": "R8-action",
+        "result": "OK",
+        "note": "transfer"
+      }
+    ],
+    "evaluator": "orvyren-policy v0.1 (déterministe, hors LLM)",
+    "decided_at": "2026-10-16T11:17:33Z",
+    "intent_id": "01M526WZ0DT0DSSBS7RW0XC799",
+    "intent_hash": "0xbc28537117099cae71d067d9e49e613e9d05760c9b27122399944fffe7e3dc82",
+    "policy_version": "v1.0",
+    "policy_chain_id": 84532,
+    "context_used": {
+      "placeholders": []
+    }
+  },
+  "expected": {
+    "receipt_status": "0x1",
+    "transfer_base_units": 20000000
+  },
+  "status": "REFUSED_BY_PREFLIGHT",
+  "preflight_verdict": "FAIL"
+}

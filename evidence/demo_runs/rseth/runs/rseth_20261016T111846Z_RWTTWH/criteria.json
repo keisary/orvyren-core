@@ -1,0 +1,129 @@
+{
+  "run": "B",
+  "criteria": [
+    {
+      "id": "B.1",
+      "description": "compteur de signatures inchangé sur tout le run",
+      "status": "met",
+      "detail": {
+        "before": 1,
+        "after": 1
+      }
+    },
+    {
+      "id": "B.2",
+      "description": "nonce de l'agent inchangé",
+      "status": "met",
+      "detail": {
+        "before": 2,
+        "after": 2
+      }
+    },
+    {
+      "id": "B.3",
+      "description": "aucun tx_hash émis pendant le run (aucun SUBMIT)",
+      "status": "met",
+      "detail": {
+        "submits_before": 1,
+        "submits_after": 1,
+        "intents_du_run": [
+          "01M526YT463MN9YWMV8ZWN7DHV",
+          "01M526Z7217F3WA5S18SDX2SDY",
+          "01M526Z724K3YFS9MV7D03B4JE",
+          "01M526Z72662KZBTHCJZXS2JQF"
+        ]
+      }
+    },
+    {
+      "id": "B.4",
+      "description": "4 cas B1-B4 avec verdicts et codes exacts",
+      "status": "met",
+      "detail": [
+        {
+          "case": "B1",
+          "attempt": 1,
+          "label": "transfer 150 USDC (plafond par transaction)",
+          "verdict": "DENY",
+          "reasons": [
+            "AMOUNT_ABOVE_TX_CAP"
+          ],
+          "expected_verdict": "DENY",
+          "expected_codes": [
+            "AMOUNT_ABOVE_TX_CAP"
+          ],
+          "ok": true
+        },
+        {
+          "case": "B2",
+          "attempt": 1,
+          "label": "destinataire non listé (20 USDC)",
+          "verdict": "DENY",
+          "reasons": [
+            "RECIPIENT_NOT_ALLOWED"
+          ],
+          "expected_verdict": "DENY",
+          "expected_codes": [
+            "RECIPIENT_NOT_ALLOWED"
+          ],
+          "ok": true
+        },
+        {
+          "case": "B3",
+          "attempt": 1,
+          "label": "rejeu du même intent (×3, idempotence)",
+          "verdict": "DENY",
+          "reasons": [
+            "INTENT_ALREADY_PROCESSED"
+          ],
+          "expected_verdict": "DENY",
+          "expected_codes": [
+            "INTENT_ALREADY_PROCESSED"
+          ],
+          "ok": true
+        },
+        {
+          "case": "B3",
+          "attempt": 2,
+          "label": "rejeu du même intent (×3, idempotence)",
+          "verdict": "DENY",
+          "reasons": [
+            "INTENT_ALREADY_PROCESSED"
+          ],
+          "expected_verdict": "DENY",
+          "expected_codes": [
+            "INTENT_ALREADY_PROCESSED"
+          ],
+          "ok": true
+        },
+        {
+          "case": "B3",
+          "attempt": 3,
+          "label": "rejeu du même intent (×3, idempotence)",
+          "verdict": "DENY",
+          "reasons": [
+            "INTENT_ALREADY_PROCESSED"
+          ],
+          "expected_verdict": "DENY",
+          "expected_codes": [
+            "INTENT_ALREADY_PROCESSED"
+          ],
+          "ok": true
+        },
+        {
+          "case": "B4",
+          "attempt": 1,
+          "label": "change_policy (jamais autonome)",
+          "verdict": "REQUIRE_APPROVAL",
+          "reasons": [
+            "ACTION_NEEDS_HUMAN_APPROVAL"
+          ],
+          "expected_verdict": "REQUIRE_APPROVAL",
+          "expected_codes": [
+            "ACTION_NEEDS_HUMAN_APPROVAL"
+          ],
+          "ok": true
+        }
+      ]
+    }
+  ]
+}

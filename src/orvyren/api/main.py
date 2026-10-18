@@ -96,15 +96,15 @@ def create_app(settings: Optional[Settings] = None,
         An unmatched ``/api/`` or ``/ws/`` path is answered 404 JSON — an API
         typo must never masquerade as a valid HTML page.
         """
+        if full_path.startswith("api/") or full_path.startswith("ws/"):
+            return JSONResponse({"error": "unknown API route", "path": full_path},
+                                status_code=404)
         if not os.path.isdir(dist):
             return JSONResponse(
                 {"error": "frontend build not found",
                  "expected": settings.rel(dist),
                  "hint": "run `npm ci && npm run build` in frontend/"},
                 status_code=503)
-        if full_path.startswith("api/") or full_path.startswith("ws/"):
-            return JSONResponse({"error": "unknown API route", "path": full_path},
-                                status_code=404)
         candidate = _safe_dist_path(dist, full_path) if full_path else None
         if candidate:
             return FileResponse(candidate)
