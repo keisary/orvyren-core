@@ -107,8 +107,15 @@ def default_tool_mode(replay_mode: str) -> str:
 def prepare_run(*, case_id: str, mode: str, session_dir: str, inputs: dict,
                 store_dir: str, budget: dict, record_live: bool = False,
                 tool_mode: str = "fixture", graph_db: str = None,
-                tool_store: str = None, record_tools: str = None) -> str:
-    """Create the run directory + ``run.json``; returns the run directory."""
+                tool_store: str = None, record_tools: str = None,
+                memory: bool = False) -> str:
+    """Create the run directory + ``run.json``; returns the run directory.
+
+    ``memory=True`` (``--memory``) is written into the spec as ``"memory":
+    true``; the default writes **no** such key, so a run without the flag keeps
+    the historical ``run.json`` and the historical prompts (the sealed store
+    keeps replaying bit for bit).
+    """
     stamp = _utc_stamp()
     # Journal mode: the run_id is PINNED ("demo-<case>") so the journal
     # content — and the evidence packet the critic receives — is byte-identical
@@ -144,6 +151,11 @@ def prepare_run(*, case_id: str, mode: str, session_dir: str, inputs: dict,
         spec["record_tools"] = os.path.abspath(record_tools)
     if record_live:
         spec["record_live"] = True
+    if memory:
+        # OFF by default: the key is absent unless --memory was given, so a
+        # default run writes exactly the historical spec (no database, no
+        # ``memory_recall`` in the planning payload).
+        spec["memory"] = True
     _write_json(os.path.join(run_dir, "run.json"), spec)
     return run_dir
 
@@ -291,6 +303,14 @@ def main(argv=None) -> int:
     parser.add_argument("--record-tools", default=None,
                         help="record every LIVE tool response into this directory "
                              "(tool_responses.jsonl; later bit-identical REPLAY)")
+    parser.add_argument("--memory", action="store_true",
+                        help="attach the FTS memory of the run "
+                             "(<run_dir>/memory.sqlite + a memory_recall tool). "
+                             "OFF by default: the allow-list and the recorded "
+                             "prompts stay unchanged, so the sealed store keeps "
+                             "replaying bit for bit; a memory-enabled run needs "
+                             "its own recording (the planning payload lists the "
+                             "extra tool)")
     parser.add_argument("--budget-llm", type=float, default=30)
     parser.add_argument("--budget-tools", type=float, default=12)
     parser.add_argument("--budget-wall", type=float, default=600)
@@ -341,11 +361,13 @@ def main(argv=None) -> int:
                           inputs=inputs, store_dir=store, budget=budget,
                           record_live=args.record_live, tool_mode=tool_mode,
                           graph_db=args.graph_db, tool_store=args.tool_store,
-                          record_tools=args.record_tools)
+                          record_tools=args.record_tools, memory=args.memory)
     print("ORVYREN — run_agents · %s · mode %s" % (args.case, args.replay))
     print("  run       : %s" % run_dir)
     if args.record_live:
         print("  store live: %s" % os.path.join(run_dir, "store_live"))
+    if args.memory:
+        print("  memory    : %s" % os.path.join(run_dir, "memory.sqlite"))
 
     for role in ("orchestrator", "critic"):
         print("  [%s] process started…" % role)

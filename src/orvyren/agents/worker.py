@@ -22,8 +22,13 @@ Usage (spawned by ``run_agents.py`` — rarely by hand)::
 
 The run directory contains ``run.json`` (spec) and receives
 ``outcome_orchestrator.json``, ``exchanges/*.json``, ``journal_*.jsonl`` and
-``worker_done_<role>.json``. No agent process may import ``orvyren.policy``
-or ``orvyren.execution`` (boundary rule, DOC4 W2).
+``worker_done_<role>.json``. With ``run_agents.py --memory`` the orchestrator
+additionally attaches an :class:`~orvyren.agents.memory.FTSMemory`
+(``<run_dir>/memory.sqlite``) and registers ``memory_recall``; the flag is OFF
+by default so a run without it creates no database, exposes no extra tool and
+keeps the recorded prompts byte-identical (a replay of the sealed store still
+matches). No agent process may import ``orvyren.policy`` or
+``orvyren.execution`` (boundary rule, DOC4 W2).
 
 Standard library only.
 """
@@ -57,6 +62,10 @@ __all__ = [
 
 #: Poll interval while waiting for the packet / reports (seconds).
 POLL_SECONDS = 0.05
+
+#: File name of the optional FTS memory inside the run directory
+#: (``run_agents.py --memory``; never created when the flag is absent).
+MEMORY_DB_NAME = "memory.sqlite"
 
 
 # ---------------------------------------------------------------------------
@@ -213,16 +222,36 @@ def build_backend(spec: Dict[str, Any], run_dir: str, role: str = ""):
 # The two roles.
 # ---------------------------------------------------------------------------
 def _build_tools(spec: Dict[str, Any], journal: AgentJournal,
-                 observed: Any = None):
+                 observed: Any = None, run_dir: Optional[str] = None,
+                 clock: Any = None, role: str = "orchestrator"):
     """The ONE registry entry point (P0-1): ``tool_mode`` selects the data
-    providers (``fixture`` / ``live`` / ``replay``) — never the tool code."""
+    providers (``fixture`` / ``live`` / ``replay``) — never the tool code.
+
+    ``spec["memory"]`` (only written by ``run_agents.py --memory``) attaches
+    the FTS memory of the run: :class:`~orvyren.agents.memory.FTSMemory` on
+    ``<run_dir>/memory.sqlite`` (created on demand) plus the ``memory_recall``
+    tool and the rememberer of every successful observation. Without that key
+    **nothing changes**: no database is created, no tool is registered and the
+    planning payload (``sources_autorisees``) is the historical one, which is
+    what keeps the sealed response store replaying bit for bit.
+    """
     from orvyren.agents.tools import build_registry
+    memory = None
+    if spec.get("memory"):
+        if not run_dir:
+            # Fail-closed: the memory file lives with the run's artifacts.
+            raise ValueError("E_MEMORY_RUN_DIR: memory needs the run directory")
+        from orvyren.agents.memory import FTSMemory
+        memory = FTSMemory(os.path.join(run_dir, MEMORY_DB_NAME))
     return build_registry(mode=str(spec.get("tool_mode", "fixture")),
                           journal=journal, observed=observed,
                           fixtures=spec.get("tool_fixtures"),
                           store_dir=spec.get("tool_store"),
                           record_dir=spec.get("record_tools"),
-                          db=spec.get("graph_db"))
+                          db=spec.get("graph_db"),
+                          memory=memory, memory_role=role,
+                          memory_run_id=str(spec.get("run_id", "")),
+                          clock=clock)
 
 
 def build_evidence_packet(journal: AgentJournal, ledger: Any, *,
@@ -285,9 +314,12 @@ def run_orchestrator(run_dir: str) -> int:
     if isinstance(spec.get("snapshot"), dict):
         ledger.add(spec["snapshot"].get("ref"))
     ledger.add_many(spec.get("authorized_refs") or ())
-    tools = _build_tools(spec, journal, observed=ledger)
     clock = VirtualClock(spec.get("created_at", "")) if spec["mode"] == "journal" \
         else SystemClock()
+    # ``--memory`` (spec["memory"]) attaches the FTS memory to the registry;
+    # absent, ``_build_tools`` builds exactly the historical allow-list.
+    tools = _build_tools(spec, journal, observed=ledger, run_dir=run_dir,
+                         clock=clock, role="orchestrator")
 
     budget = contracts.Budget(**{k: float(v) for k, v in spec["budget"].items()
                                  if k in contracts.Budget.__dataclass_fields__})

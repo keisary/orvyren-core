@@ -59,16 +59,25 @@ its data provider changes — :func:`build_registry` selects it:
 ``build_registry(mode="fixture", ...)``. The full mode contract lives in
 :mod:`orvyren.agents.tool_sources`.
 
+**Memory is opt-in** (``build_registry(..., memory=...)``, wired by
+``worker._build_tools`` behind ``run_agents.py --memory``): attaching an
+:class:`orvyren.agents.memory.FTSMemory` adds one ``memory_recall`` tool and
+remembers every successful tool observation. Without it the allow-list,
+the payloads and the recorded prompts stay exactly as before — which is what
+keeps the sealed store replaying bit for bit.
+
 Standard library only.
 """
 
 from __future__ import annotations
 
+import hashlib
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Mapping, Optional, Tuple
 
 from orvyren.agents import contracts
 from orvyren.agents.journal import AgentJournal
+from orvyren.agents.memory import refs_from_observations
 from orvyren.agents.tool_sources import (
     MODES,
     NO_DATA_CODE,
@@ -84,12 +93,24 @@ __all__ = [
     "FORBIDDEN_TOOL",
     "TOOL_NAMES",
     "LIVE_TOOL_NAMES",
+    "MEMORY_TOOL_NAME",
+    "MEMORY_TOOL_SPEC",
+    "MEMORY_QUERY_MAX_CHARS",
+    "MEMORY_K_MIN",
+    "MEMORY_K_MAX",
+    "MEMORY_DEFAULT_K",
     "MODES",
     "NO_DATA_CODE",
     "ToolRegistry",
     "build_registry",
     "build_v1_registry",
     "FailingTool",
+    "MemoryRecallTool",
+    "ObservationMemory",
+    "RememberingTool",
+    "observation_memory_id",
+    "observation_refs",
+    "observation_text",
     "ReadPricesTool",
     "ReadSupplyTool",
     "ReadChainTool",
@@ -126,6 +147,57 @@ LIVE_TOOL_NAMES: Tuple[str, ...] = (
     "graph_snapshot",
     "journal_write",
 )
+
+#: Name of the OPTIONAL memory tool. It is registered **only** when an
+#: :class:`orvyren.agents.memory.FTSMemory` is attached to the registry
+#: (``--memory``): by default the allow-list — and therefore every recorded
+#: prompt that lists it — is byte-identical to the pre-memory run.
+MEMORY_TOOL_NAME = "memory_recall"
+
+#: Longest accepted recall query (chars, trimmed check + raw length bound).
+MEMORY_QUERY_MAX_CHARS = 200
+
+#: Closed bounds of ``memory_recall.k`` (P1-1: ``k`` is a real bound, and a
+#: negative/zero/huge value is refused instead of silently unbounding the
+#: search — ``LIMIT -1`` in SQLite means unlimited).
+MEMORY_K_MIN = 1
+MEMORY_K_MAX = 10
+MEMORY_DEFAULT_K = 5
+
+#: OpenAI-style spec of ``memory_recall`` (English, closed object). The bound
+#: values are duplicated in the schema for the provider: the CODE re-checks
+#: them, the schema only documents them.
+MEMORY_TOOL_SPEC: Dict[str, Any] = {
+    "type": "function",
+    "function": {
+        "name": MEMORY_TOOL_NAME,
+        "description": (
+            "Recall earlier observations of this run from the local FTS memory. "
+            "Returns at most k entries, each with the evidence refs of the "
+            "observation it came from. The search is lexical (SQLite FTS5) over "
+            "the remembered summaries: pass a few keywords, not a question."),
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "query": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": MEMORY_QUERY_MAX_CHARS,
+                    "description": "Keywords looked for in remembered observations.",
+                },
+                "k": {
+                    "type": "integer",
+                    "minimum": MEMORY_K_MIN,
+                    "maximum": MEMORY_K_MAX,
+                    "default": MEMORY_DEFAULT_K,
+                    "description": "Maximum number of entries returned (1..10).",
+                },
+            },
+            "required": ["query"],
+            "additionalProperties": False,
+        },
+    },
+}
 
 
 # ---------------------------------------------------------------------------
@@ -444,6 +516,238 @@ class JournalWriteTool:
              "step_index": entry.step_index, "kind": entry.kind},))
 
 
+# ---------------------------------------------------------------------------
+# Memory wiring (M9): remember every observation, recall it with a tool.
+# ---------------------------------------------------------------------------
+#: Observation keys carrying a *real* evidence reference. Nothing synthetic is
+#: added here: the loop's journal adds ``observation:<tool>`` as a fallback,
+#: but such a marker is not evidence, and an entry without evidence refs
+#: cannot be used — the memory refuses it instead of storing noise.
+_OBSERVATION_REF_KEYS: Tuple[str, ...] = (
+    "source_ref", "ref", "url", "method_ref",
+)
+
+
+def observation_refs(result: contracts.ToolResult) -> Tuple[str, ...]:
+    """The evidence refs of one tool result (stable order, no duplicate).
+
+    Top-level ``source_ref`` / ``ref`` / ``url`` / ``method_ref`` plus the
+    per-row ``refs`` a source declares, plus the nested keys scanned by
+    :func:`orvyren.agents.memory.refs_from_observations` (``relation_id``,
+    ``ref_id``, ``graph_hash``, ``snapshot_ref`` inside the rows of an API
+    response). These are the ``refs`` a memory entry carries — never a
+    fabricated ``observation:<tool>`` placeholder.
+    """
+    refs: List[str] = []
+
+    def _add(value: Any) -> None:
+        if isinstance(value, str) and value.strip() and value not in refs:
+            refs.append(value)
+
+    for observation in result.observations or ():
+        if not isinstance(observation, Mapping):
+            continue
+        for key in _OBSERVATION_REF_KEYS:
+            _add(observation.get(key))
+        declared = observation.get("refs")
+        if isinstance(declared, (list, tuple)):
+            for ref in declared:
+                _add(ref)
+    for ref in refs_from_observations(result.observations or ()):
+        _add(ref)
+    return tuple(refs)
+
+
+def observation_text(tool_name: str, observations: Any, limit: int = 800) -> str:
+    """Bounded summary of one observation set — the ``text`` of a memory entry.
+
+    Canonical JSON keeps the summary deterministic (same observation, same
+    text) and bounded: a memory entry is a searchable digest of what was
+    observed, not a copy of the whole payload.
+    """
+    payload = {
+        "tool": str(tool_name or ""),
+        "observations": [dict(item) if isinstance(item, Mapping) else item
+                         for item in (observations or ())],
+    }
+    try:
+        text = contracts.canonical_json(payload)
+    except (TypeError, ValueError):  # pragma: no cover - defensive
+        text = str(payload)
+    return text[:max(1, int(limit))]
+
+
+def observation_memory_id(role: str, run_id: str, step_index: int) -> str:
+    """Deterministic memory id of one observation: ``sha256(role|run_id|step)``.
+
+    The step index is the index of the recorded observation in the run, so the
+    id is a pure function of the call sequence: replaying a run produces the
+    very same ids (``remember`` replaces by ``memory_id``, it never duplicates).
+    """
+    raw = "%s|%s|%d" % (str(role or ""), str(run_id or ""), int(step_index))
+    return hashlib.sha256(raw.encode("utf-8")).hexdigest()
+
+
+class ObservationMemory:
+    """Remembers every successful tool observation of a run (``--memory``).
+
+    One entry per observation: ``text`` = bounded summary of the observed
+    payload, ``refs`` = the observation's own evidence refs, ``memory_id`` =
+    :func:`observation_memory_id`. A failed tool call leaves no entry (an
+    error is not an observation) and a result without any evidence ref is not
+    remembered (an entry without refs cannot be used). A memory write never
+    breaks a tool call: the failure is journaled as a visible ``ERROR`` line
+    and the tool result travels unchanged.
+    """
+
+    def __init__(self, memory: Any, *, role: str = "orchestrator",
+                 run_id: str = "", clock: Any = None,
+                 journal: Any = None) -> None:
+        self.memory = memory
+        self.role = str(role or "")
+        self.run_id = str(run_id or "")
+        self.journal = journal
+        self._clock = clock
+        self._step = 0
+
+    def _now_iso(self) -> str:
+        now_iso = getattr(self._clock, "now_iso", None)
+        if callable(now_iso):
+            return str(now_iso())
+        return datetime.now(timezone.utc).isoformat()
+
+    def _journal_failure(self, step: int, exc: Exception) -> None:
+        """One visible ``ERROR`` line — a failed remember is never silent."""
+        if self.journal is None:
+            return
+        try:
+            self.journal.append_dict({
+                "journal_id": "mem-%s-%s-%04d" % (self.run_id or "run",
+                                                  self.role or "agent", step),
+                "run_id": self.run_id, "episode_id": "", "agent_id": self.role,
+                "role_version": "memory/v1", "step_index": step,
+                "ts_utc": self._now_iso(), "kind": "ERROR", "refs": (),
+                "content": "E_MEMORY_WRITE: %s" % type(exc).__name__})
+        except Exception:  # the journal must never break the tool either
+            pass
+
+    def record(self, tool_name: str, result: contracts.ToolResult) -> Any:
+        """Remember one tool observation; returns the entry or ``None``."""
+        if result is None or not result.ok:
+            return None
+        refs = observation_refs(result)
+        if not refs:
+            return None
+        step = self._step
+        self._step += 1
+        try:
+            return self.memory.remember(
+                observation_memory_id(self.role, self.run_id, step),
+                observation_text(tool_name, result.observations), refs,
+                kind="TOOL_RESULT", ts_utc=self._now_iso())
+        except Exception as exc:
+            self._journal_failure(step, exc)
+            return None
+
+
+class RememberingTool:
+    """One registry tool wrapped so its successful observation is remembered.
+
+    The wrapped result travels **verbatim** (same observations, same error):
+    memory is an add-on of the run, never a rewrite of what the tool answered.
+    """
+
+    def __init__(self, tool: Any, recorder: ObservationMemory) -> None:
+        self._tool = tool
+        self._recorder = recorder
+        self.name = str(getattr(tool, "name", "") or "")
+
+    def run(self, args: Mapping[str, Any], *,
+            deadline_s: float = 20.0) -> contracts.ToolResult:
+        result = self._tool.run(args, deadline_s=deadline_s)
+        self._recorder.record(self.name, result)
+        return result
+
+
+class MemoryRecallTool:
+    """``memory_recall`` — lexical recall over the run's FTS memory.
+
+    Args are a **closed** object (``query``, ``k``) and both bounds are
+    enforced by this code, not by the caller: an empty or oversized ``query``
+    and a ``k`` outside 1..10 are refused with an ``E_TOOL_ARGS_*`` error —
+    the same refusal mechanism as the graph tools (``ToolResult(ok=False)``),
+    so a refusal is never a silent execution. The FTS search itself is
+    bounded by ``k`` (never ``LIMIT -1``).
+    """
+
+    name = MEMORY_TOOL_NAME
+
+    def __init__(self, memory: Any) -> None:
+        self._memory = memory
+
+    def _errors(self, args: Mapping[str, Any]) -> List[str]:
+        errors = ["E_TOOL_ARGS_UNKNOWN:%s" % key
+                  for key in sorted(set(args) - {"query", "k"})]
+        query = args.get("query")
+        if query is None:
+            errors.append("E_TOOL_ARGS_REQUIRED:query")
+        elif not isinstance(query, str):
+            errors.append("E_TOOL_ARGS_TYPE:query")
+        elif not query.strip():
+            errors.append("E_TOOL_ARGS_RANGE:query[1..%d]" % MEMORY_QUERY_MAX_CHARS)
+        elif len(query) > MEMORY_QUERY_MAX_CHARS:
+            errors.append("E_TOOL_ARGS_RANGE:query[1..%d]" % MEMORY_QUERY_MAX_CHARS)
+        k = args.get("k")
+        if k is not None:
+            if isinstance(k, bool) or not isinstance(k, int):
+                errors.append("E_TOOL_ARGS_TYPE:k")
+            elif k < MEMORY_K_MIN or k > MEMORY_K_MAX:
+                errors.append("E_TOOL_ARGS_RANGE:k[%d..%d]"
+                              % (MEMORY_K_MIN, MEMORY_K_MAX))
+        return errors
+
+    def run(self, args: Mapping[str, Any], *,
+            deadline_s: float = 5.0) -> contracts.ToolResult:
+        supplied = dict(args or {})
+        errors = self._errors(supplied)
+        if errors:
+            return contracts.ToolResult(ok=False, status="FAILED",
+                                        error=";".join(errors))
+        query = str(supplied.get("query")).strip()
+        k = supplied.get("k")
+        k = MEMORY_DEFAULT_K if k is None else int(k)
+        try:
+            entries = self._memory.recall(query, k)
+        except ValueError as exc:  # E_MEMORY_K / a refused bound: fail-closed
+            return contracts.ToolResult(ok=False, status="FAILED", error=str(exc))
+        return contracts.ToolResult(ok=True, status="OK", observations=tuple(
+            {"memory_id": entry.memory_id, "refs": list(entry.refs),
+             "text": entry.text} for entry in entries))
+
+
+def _with_memory(registry: ToolRegistry, memory: Any, *,
+                 journal: Optional[AgentJournal], role: str, run_id: str,
+                 clock: Any = None) -> ToolRegistry:
+    """Same allow-list plus ``memory_recall`` and one rememberer per tool.
+
+    ``journal_write`` is not wrapped: it is the run's own output sink (its
+    "observation" is a journal id, not a fact about the world), and
+    ``memory_recall`` is not wrapped either — a recall must never re-remember
+    its own hits.
+    """
+    recorder = ObservationMemory(memory, role=role, run_id=run_id,
+                                 clock=clock, journal=journal)
+    with_memory = ToolRegistry()
+    for name in registry.names():
+        tool = registry.get(name)
+        if name in (MEMORY_TOOL_NAME, "journal_write"):
+            with_memory.register(name, tool)
+        else:
+            with_memory.register(name, RememberingTool(tool, recorder))
+    with_memory.register(MEMORY_TOOL_NAME, MemoryRecallTool(memory))
+    return with_memory
+
+
 #: Registry name -> tool class, in the frozen v1 order.
 _TOOL_CLASSES: Tuple[Tuple[str, type], ...] = (
     ("read_prices", ReadPricesTool),
@@ -497,14 +801,14 @@ def _build_fixture_registry(*, fixtures: Mapping[str, Any],
     return registry
 
 
-def build_registry(*, mode: str, journal: AgentJournal,
+def _mode_registry(*, mode: str, journal: AgentJournal,
                    observed: Optional[contracts.ObservedRefs] = None,
                    fixtures: Optional[Mapping[str, Any]] = None,
                    source: Any = None, store_dir: Optional[str] = None,
                    record_dir: Optional[str] = None,
                    db: Optional[str] = None, api: Any = None
                    ) -> ToolRegistry:
-    """Build the ONE registry of the run (P0-1); ``mode`` picks the providers.
+    """Build the mode-selected registry (P0-1); ``mode`` picks the providers.
 
     ``mode="fixture"``
         The v1 allow-list (``TOOL_NAMES``): simulated, explicitly labelled
@@ -558,6 +862,44 @@ def build_registry(*, mode: str, journal: AgentJournal,
         return _wrap_registry(registry,
                               lambda tool: RecordingTool(tool, store))
     return registry
+
+
+def build_registry(*, mode: str, journal: AgentJournal,
+                   observed: Optional[contracts.ObservedRefs] = None,
+                   fixtures: Optional[Mapping[str, Any]] = None,
+                   source: Any = None, store_dir: Optional[str] = None,
+                   record_dir: Optional[str] = None,
+                   db: Optional[str] = None, api: Any = None,
+                   memory: Any = None, memory_role: str = "orchestrator",
+                   memory_run_id: str = "", clock: Any = None
+                   ) -> ToolRegistry:
+    """Build the ONE registry of the run (P0-1); ``mode`` picks the providers.
+
+    The mode contract (fixture / live / replay, the calls they serve and the
+    way they fail) is documented on :func:`_mode_registry`; this entry point
+    only adds the **optional memory wiring**:
+
+    ``memory=None`` (default)
+        Exactly the mode's allow-list — the historical behaviour, unchanged:
+        no ``FTSMemory`` instance, no extra tool, no extra prompt entry.
+    ``memory=<FTSMemory>``
+        The same allow-list **plus** ``memory_recall`` (closed args
+        ``query``/``k``, bounds enforced by the code) and one
+        :class:`RememberingTool` per data tool: every successful observation is
+        stored with its evidence refs and a deterministic
+        ``sha256(memory_role|memory_run_id|step)`` id, so a replay produces
+        the same entries. ``journal_write`` and ``memory_recall`` are never
+        wrapped (the run's own output sink, and a recall must not re-remember
+        its own hits).
+    """
+    registry = _mode_registry(mode=mode, journal=journal, observed=observed,
+                              fixtures=fixtures, source=source,
+                              store_dir=store_dir, record_dir=record_dir,
+                              db=db, api=api)
+    if memory is None:
+        return registry
+    return _with_memory(registry, memory, journal=journal, role=memory_role,
+                        run_id=memory_run_id, clock=clock)
 
 
 #: Tools that are OUTPUT SINKS of the run itself, never replayable data
