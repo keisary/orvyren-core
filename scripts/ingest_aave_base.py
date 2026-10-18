@@ -140,6 +140,7 @@ def reserve_meta(rpc: ArchiveRpc, reserve: str, block: int) -> Tuple[str, int, s
     if key in _META_CACHE:
         return _META_CACHE[key]
     symbol, decimals, kind = "UNKNOWN", 18, "ACTIF"
+    symbol_ok = decimals_ok = False
     try:
         raw = rpc.eth_call(reserve, "0x95d89b41", block)  # symbol()
         if raw and raw != "0x":
@@ -153,14 +154,22 @@ def reserve_meta(rpc: ArchiveRpc, reserve: str, block: int) -> Tuple[str, int, s
                 symbol = bytes.fromhex(body).decode("utf-8", "replace") or symbol
                 if not symbol.isprintable():
                     symbol = "UNKNOWN"
+                symbol_ok = symbol != "UNKNOWN"
     except Exception:
         pass
     try:
         raw = rpc.eth_call(reserve, "0x313ce567", block)  # decimals()
         if raw and raw != "0x":
             decimals = decode_words(raw)[0]
+            decimals_ok = True
     except Exception:
         pass
+    if not symbol_ok or not decimals_ok:
+        # An unknown reserve with guessed metadata would silently mis-scale
+        # every amount. Refuse instead of fabricating decimals/symbol.
+        raise RuntimeError(
+            "reserve metadata unavailable for %s at block %s (symbol_ok=%s, decimals_ok=%s)"
+            % (reserve, block, symbol_ok, decimals_ok))
     _META_CACHE[key] = (symbol, int(decimals), kind)
     return _META_CACHE[key]
 

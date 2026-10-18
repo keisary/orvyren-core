@@ -32,6 +32,15 @@ class IngestTimestampGuardTest(unittest.TestCase):
         with self.assertRaises(RuntimeError):
             ingest_aave_base.block_times(ZeroRpc(), [100], 100, 101)
 
+    def test_unknown_reserve_metadata_is_not_guessed(self):
+        class EmptyRpc:
+            def eth_call(self, address, data, block):
+                return "0x"
+
+        with self.assertRaises(RuntimeError):
+            ingest_aave_base.reserve_meta(
+                EmptyRpc(), "0x000000000000000000000000000000000000dead", 100)
+
 
 if __name__ == "__main__":
     unittest.main()
