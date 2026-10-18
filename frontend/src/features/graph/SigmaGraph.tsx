@@ -31,6 +31,10 @@ export default function SigmaGraph({ payload, selected, onSelect, onLayout }: Pr
   const sigmaRef = useRef<Sigma | null>(null);
   const workerRef = useRef<Worker | null>(null);
   const [hovered, setHovered] = useState<string | null>(null);
+  // Reducers are built ONCE per payload: they must read the focus through a
+  // ref, otherwise they keep the ``selected``/``hovered`` of the build render
+  // and the dim/highlight never reacts to clicks and hovers.
+  const focusRef = useRef<string | null>(null);
 
   const colors = useMemo(() => {
     const mapping: Record<string, string> = {};
@@ -79,9 +83,12 @@ export default function SigmaGraph({ payload, selected, onSelect, onLayout }: Pr
         label: node.label,
       });
     }
-    for (const edge of payload.edges) {
+    for (const [index, edge] of payload.edges.entries()) {
       if (graph.hasNode(edge.source) && graph.hasNode(edge.target)) {
-        graph.addEdgeWithKey(edge.id, edge.source, edge.target, {
+        // graphology keys must be unique: a repeated relation id (revisions)
+        // gets a suffixed key instead of throwing and killing the canvas.
+        const key = graph.hasEdge(edge.id) ? `${edge.id}#${index}` : edge.id;
+        graph.addEdgeWithKey(key, edge.source, edge.target, {
           size: 0.6,
           color: DIM_EDGE,
           hidden: false,
@@ -111,7 +118,7 @@ export default function SigmaGraph({ payload, selected, onSelect, onLayout }: Pr
       minCameraRatio: 0.03,
       maxCameraRatio: 4,
       nodeReducer: (node: string, attrs: Record<string, unknown>) => {
-        const focus = hovered ?? selected;
+        const focus = focusRef.current;
         if (!focus) return attrs;
         const visible = node === focus || (adjacency[focus]?.has(node) ?? false);
         return {
@@ -122,7 +129,7 @@ export default function SigmaGraph({ payload, selected, onSelect, onLayout }: Pr
         };
       },
       edgeReducer: (edge: string, attrs: Record<string, unknown>) => {
-        const focus = hovered ?? selected;
+        const focus = focusRef.current;
         if (!focus) return { ...attrs, color: DIM_EDGE };
         const source = graph.source(edge);
         const target = graph.target(edge);
@@ -187,6 +194,12 @@ export default function SigmaGraph({ payload, selected, onSelect, onLayout }: Pr
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [payload, colors, adjacency, onSelect]);
+
+  // Focus changes must repaint through the reducers (they read ``focusRef``).
+  useEffect(() => {
+    focusRef.current = hovered ?? selected;
+    sigmaRef.current?.refresh();
+  }, [hovered, selected]);
 
   // Recentre la caméra sur le nœud sélectionné.
   useEffect(() => {

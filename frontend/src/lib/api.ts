@@ -50,10 +50,10 @@ export const api = {
   graphFull: () => get<GraphPayload>("/api/graph/full"),
   graphInfo: () => get<Record<string, unknown>>("/api/graph/info"),
   graphNode: (id: string) =>
-    get<Record<string, unknown>>(`/api/graph/node/${id}`),
+    get<Record<string, unknown>>(`/api/graph/node/${encodeURIComponent(id)}`),
   graphNeighbors: (id: string, depth = 1) =>
     get<{ root: string; depth: number; nodes: string[]; edges: Record<string, unknown>[] }>(
-      `/api/graph/neighbors/${id}?depth=${depth}`,
+      `/api/graph/neighbors/${encodeURIComponent(id)}?depth=${depth}`,
     ),
   graphQuery: (name: string, params: Record<string, string | number | undefined>) => {
     const search = new URLSearchParams();

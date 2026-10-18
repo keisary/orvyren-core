@@ -22,6 +22,7 @@ export class LiveSocket {
   private retries = 0;
   private pingSentAt: number | null = null;
   private reconnectTimer: number | null = null;
+  private channels: string[] = [];
 
   constructor(private handlers: Handlers) {}
 
@@ -39,9 +40,16 @@ export class LiveSocket {
   }
 
   subscribe(channels: string[]) {
-    if (this.socket?.readyState === WebSocket.OPEN) {
+    this.channels = channels;
+    this.sendSubscribe();
+  }
+
+  /** Send (or re-send) the subscription: called on subscribe and on open —
+   *  a message sent while CONNECTING would be dropped silently. */
+  private sendSubscribe() {
+    if (this.socket?.readyState === WebSocket.OPEN && this.channels.length > 0) {
       this.socket.send(
-        JSON.stringify({ type: "subscribe", channels, since_seq: this.lastSeq }),
+        JSON.stringify({ type: "subscribe", channels: this.channels, since_seq: this.lastSeq }),
       );
     }
   }
@@ -65,6 +73,7 @@ export class LiveSocket {
       this.handlers.onStatus("live", null);
       this.pingSentAt = Date.now();
       socket.send(JSON.stringify({ type: "ping" }));
+      this.sendSubscribe();
     };
     socket.onmessage = (event) => {
       let envelope: WsEnvelope;

@@ -11,6 +11,7 @@ This module is the lazy FastAPI boundary: importing it requires fastapi.
 from __future__ import annotations
 
 import os
+from contextlib import asynccontextmanager
 from typing import Any, Dict, Optional
 
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
@@ -25,14 +26,34 @@ from orvyren.api.routes import build_router
 API_VERSION = "orvyren/api/v1"
 
 
+def _safe_dist_path(dist: str, full_path: str) -> Optional[str]:
+    """Resolve ``full_path`` inside the SPA dist directory (traversal-safe).
+
+    ``normpath(join(dist, "../dist_evil/x"))`` lands in a SIBLING directory
+    whose path merely *starts with* ``dist``'s text: containment is therefore
+    checked against ``normcase(dist) + os.sep``, not a bare prefix.
+    """
+    root = os.path.normcase(os.path.normpath(dist))
+    candidate = os.path.normcase(os.path.normpath(os.path.join(dist, full_path)))
+    if candidate == root or not candidate.startswith(root + os.sep):
+        return None
+    return candidate if os.path.isfile(candidate) else None
+
+
 def create_app(settings: Optional[Settings] = None,
                graph: Optional[GraphService] = None) -> FastAPI:
     settings = settings or load_settings()
     graph = graph or GraphService(settings=settings)
     hub = LiveHub(settings)
 
+    @asynccontextmanager
+    async def _lifespan(_app: FastAPI):
+        yield
+        await hub.shutdown()
+
     app = FastAPI(title="ORVYREN Live Dashboard API", version=API_VERSION,
-                  docs_url="/api/docs", openapi_url="/api/openapi.json")
+                  docs_url="/api/docs", openapi_url="/api/openapi.json",
+                  lifespan=_lifespan)
     app.state.settings = settings
     app.state.graph = graph
     app.state.live_hub = hub
@@ -60,7 +81,7 @@ def create_app(settings: Optional[Settings] = None,
         try:
             while True:
                 raw = await websocket.receive_text()
-                await hub.handle_client_message(raw)
+                await hub.handle_client_message(raw, websocket)
         except WebSocketDisconnect:
             pass
         finally:
@@ -70,17 +91,23 @@ def create_app(settings: Optional[Settings] = None,
 
     @app.get("/{full_path:path}")
     def spa(full_path: str) -> Any:
-        """Serve the built SPA: real files first, then index.html (SPA routes)."""
+        """Serve the built SPA: real files first, then index.html (SPA routes).
+
+        An unmatched ``/api/`` or ``/ws/`` path is answered 404 JSON — an API
+        typo must never masquerade as a valid HTML page.
+        """
         if not os.path.isdir(dist):
             return JSONResponse(
                 {"error": "frontend build not found",
                  "expected": settings.rel(dist),
                  "hint": "run `npm ci && npm run build` in frontend/"},
                 status_code=503)
-        if full_path and not full_path.startswith("api/"):
-            candidate = os.path.normpath(os.path.join(dist, full_path))
-            if candidate.startswith(os.path.normpath(dist)) and os.path.isfile(candidate):
-                return FileResponse(candidate)
+        if full_path.startswith("api/") or full_path.startswith("ws/"):
+            return JSONResponse({"error": "unknown API route", "path": full_path},
+                                status_code=404)
+        candidate = _safe_dist_path(dist, full_path) if full_path else None
+        if candidate:
+            return FileResponse(candidate)
         index = os.path.join(dist, "index.html")
         if os.path.isfile(index):
             return FileResponse(index)

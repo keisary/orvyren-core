@@ -44,6 +44,9 @@ class Settings:
     port: int = 8321
     ws_tick_seconds: float = 0.6
     ws_heartbeat_seconds: float = 25.0
+    #: Per-client send budget: a slow client is dropped instead of stalling
+    #: the whole fan-out (backpressure).
+    ws_send_timeout_seconds: float = 5.0
     ring_size: int = 512
 
     @property

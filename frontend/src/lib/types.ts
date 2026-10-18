@@ -102,6 +102,7 @@ export interface ChainReport {
   recomputed_head?: string;
   recorded_head?: string;
   verified?: boolean;
+  error?: string;
 }
 
 export interface RunVerification {

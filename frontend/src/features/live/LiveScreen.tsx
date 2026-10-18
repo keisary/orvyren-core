@@ -3,7 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useLiveStore } from "@/lib/store";
 import { subscribeRun } from "@/lib/live-bridge";
 import { api } from "@/lib/api";
-import type { JournalEntry, RunEvent, RunSummary } from "@/lib/types";
+import type { RunEvent, RunSummary } from "@/lib/types";
 import {
   fmtCompact,
   fmtHash,
@@ -123,7 +123,6 @@ export default function LiveScreen() {
   const [runId, setRunId] = useState<string>("");
   const liveStatus = useLiveStore((s) => s.status);
   const liveEvents = useLiveStore((s) => s.events);
-  const liveBudget = useLiveStore((s) => s.budget);
 
   useEffect(() => {
     if (!runId && runs.length > 0) {
@@ -153,28 +152,57 @@ export default function LiveScreen() {
     refetchInterval: liveStatus === "live" ? false : 10_000,
   });
 
-  // Flux WS pour ce run (fallback REST quand le socket est coupé).
-  const wsEvents = useMemo(
-    () =>
-      liveEvents
-        .filter((e) => e.run_id === runId)
-        .map((e) => ({
-          seq: Number(e.payload?.run_seq ?? e.seq),
-          type: e.type,
-          run_id: e.run_id,
-          ts: e.ts,
-          payload: e.payload,
-        })) as RunEvent[],
-    [liveEvents, runId],
-  );
+  // Flux WS pour ce run (fallback REST quand le socket est coupé). Le hub
+  // reboucle le run enregistré pour la démo : une seule occurrence par
+  // événement (run_seq/journal_id) est gardée, sinon la timeline et les
+  // compteurs se répètent à chaque boucle.
+  const wsEvents = useMemo(() => {
+    const seen = new Set<string>();
+    const out: RunEvent[] = [];
+    for (const e of liveEvents) {
+      if (e.run_id !== runId) continue;
+      const payload = e.payload ?? {};
+      const key = String(payload.journal_id ?? payload.run_seq ?? e.seq);
+      if (seen.has(key)) continue;
+      seen.add(key);
+      out.push({
+        seq: Number(payload.run_seq ?? e.seq),
+        type: e.type,
+        run_id: e.run_id,
+        ts: e.ts,
+        payload,
+      });
+    }
+    return out;
+  }, [liveEvents, runId]);
   const timeline: RunEvent[] =
     liveStatus === "live" && wsEvents.length > 0 ? wsEvents : (eventsQuery.data?.events ?? []);
+
+  // Budget en direct = flux WS dédupliqué de CE run (un run réellement live
+  // n'a pas encore d'outcome). Voir aussi ``budget`` plus bas : jamais
+  // outcome + flux WS additionnés, le flux rejoue le même journal.
+  const liveBudget = useMemo(() => {
+    const acc = { cost_usd: 0, tokens_in: 0, tokens_out: 0, llm_calls: 0, tool_calls: 0 };
+    for (const event of wsEvents) {
+      const payload = event.payload ?? {};
+      if (typeof payload.cost_usd === "number") acc.cost_usd += payload.cost_usd;
+      if (typeof payload.tokens_in === "number") acc.tokens_in += payload.tokens_in;
+      if (typeof payload.tokens_out === "number") acc.tokens_out += payload.tokens_out;
+      if (payload.llm && typeof payload.llm === "object") acc.llm_calls += 1;
+      if (event.type === "agent.evidence" && payload.kind === "TOOL_CALL") acc.tool_calls += 1;
+    }
+    return acc;
+  }, [wsEvents]);
 
   const bundle = bundleQuery.data;
   const spec = bundle?.spec ?? null;
   const outcome = (bundle?.outcome ?? {}) as Record<string, unknown>;
   const budgetUsed = (outcome.budget_used ?? {}) as Record<string, number>;
   const run = runs.find((r) => r.run_id === runId) ?? ({} as RunSummary);
+  // Budget affiché = UNE source : l'outcome enregistré du run s'il existe,
+  // sinon le flux WS en direct. Jamais la somme des deux : le flux rejoue le
+  // même journal et doublerait le compte à chaque boucle.
+  const budget = Object.keys(budgetUsed).length > 0 ? budgetUsed : liveBudget;
   const evidence = bundle?.exchanges?.find((x) => x.name.includes("evidence"));
   const critique = bundle?.exchanges?.find((x) => x.name.includes("critique"));
   const claims = (evidence?.data?.claims as Record<string, unknown>[] | undefined) ?? [];
@@ -212,19 +240,17 @@ export default function LiveScreen() {
       <div className="mb-3 flex flex-wrap gap-2.5">
         <Kpi
           label="coût cumulé"
-          value={`$${fmtNumber((budgetUsed.cost_usd ?? 0) + liveBudget.cost_usd, 4)}`}
+          value={`$${fmtNumber(budget.cost_usd ?? 0, 4)}`}
           hint={`budget ${fmtNumber(run.budget?.cost_usd ?? spec?.budget?.cost_usd ?? 0, 2)} $`}
         />
         <Kpi
           label="tokens in / out"
-          value={`${fmtCompact((budgetUsed.tokens_in ?? 0) + liveBudget.tokens_in)} / ${fmtCompact(
-            (budgetUsed.tokens_out ?? 0) + liveBudget.tokens_out,
-          )}`}
-          hint={`appels LLM ${fmtCompact((budgetUsed.llm_calls ?? 0) + liveBudget.llm_calls)}`}
+          value={`${fmtCompact(budget.tokens_in ?? 0)} / ${fmtCompact(budget.tokens_out ?? 0)}`}
+          hint={`appels LLM ${fmtCompact(budget.llm_calls ?? 0)}`}
         />
         <Kpi
           label="appels d'outils"
-          value={fmtCompact((budgetUsed.tool_calls ?? 0) + liveBudget.tool_calls)}
+          value={fmtCompact(budget.tool_calls ?? 0)}
           hint={`journal ${run.journals?.orchestrator?.lines ?? 0} lignes`}
         />
         <Kpi
@@ -436,5 +462,3 @@ function hypotheseLabel(etat: string): string {
   };
   return map[etat] ?? etat;
 }
-
-export type { JournalEntry };

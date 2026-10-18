@@ -48,8 +48,8 @@ def _etag_for(payload: Any) -> str:
 
 def _matches(if_none_match: str, etag: str) -> bool:
     """RFC 7232 ``If-None-Match`` check (list form and ``*`` supported)."""
-    candidates = [item.strip().lstrip("W/") for item in if_none_match.split(",")]
-    return etag.strip().lstrip("W/") in candidates or "*" in candidates
+    candidates = [item.strip().removeprefix("W/") for item in if_none_match.split(",")]
+    return etag.strip().removeprefix("W/") in candidates or "*" in candidates
 
 
 def _cached(request: Request, response: Response, payload: Any) -> Any:
@@ -107,8 +107,8 @@ def build_router(settings: Settings, graph: GraphService) -> APIRouter:
     @router.get("/api/runs/{run_id}/journal")
     def run_journal(run_id: str,
                     agent: str = Query("orchestrator"),
-                    after_seq: int = Query(0),
-                    limit: int = Query(300)) -> Dict[str, Any]:
+                    after_seq: int = Query(0, ge=0),
+                    limit: int = Query(300, ge=0, le=2000)) -> Dict[str, Any]:
         try:
             rows = artifacts.load_journal(run_id, agent, settings)
         except FileNotFoundError as exc:
@@ -118,8 +118,8 @@ def build_router(settings: Settings, graph: GraphService) -> APIRouter:
                 "returned": len(window), "entries": window}
 
     @router.get("/api/runs/{run_id}/events")
-    def run_events(run_id: str, after_seq: int = Query(0),
-                   limit: int = Query(300)) -> Dict[str, Any]:
+    def run_events(run_id: str, after_seq: int = Query(0, ge=0),
+                   limit: int = Query(300, ge=0, le=2000)) -> Dict[str, Any]:
         try:
             events = artifacts.build_run_events(run_id, settings)
         except FileNotFoundError as exc:
@@ -156,7 +156,7 @@ def build_router(settings: Settings, graph: GraphService) -> APIRouter:
 
     @router.get("/api/graph/neighbors/{node_id:path}")
     def graph_neighbors(request: Request, response: Response,
-                        node_id: str, depth: int = Query(1)) -> Any:
+                        node_id: str, depth: int = Query(1, ge=1, le=3)) -> Any:
         return _cached(request, response, graph.neighbors(node_id, depth))
 
     @router.get("/api/graph/node/{node_id:path}")
@@ -175,8 +175,8 @@ def build_router(settings: Settings, graph: GraphService) -> APIRouter:
                     relation_id: Optional[str] = Query(None),
                     as_of: Optional[str] = Query(None),
                     as_of_block: Optional[int] = Query(None),
-                    max_depth: Optional[int] = Query(None),
-                    limit: Optional[int] = Query(None),
+                    max_depth: Optional[int] = Query(None, ge=0, le=8),
+                    limit: Optional[int] = Query(None, ge=0, le=5000),
                     kinds: Optional[str] = Query(None)) -> Dict[str, Any]:
         key = name.lower()
         if key not in ("q1", "q2", "q3", "q4", "q5", "q6", "q7", "q8", "snapshot"):
@@ -270,8 +270,8 @@ def build_router(settings: Settings, graph: GraphService) -> APIRouter:
 
     @router.get("/api/audit/stream")
     def audit_stream(name: str = Query("exec"),
-                     after_seq: int = Query(0),
-                     limit: int = Query(200)) -> Dict[str, Any]:
+                     after_seq: int = Query(0, ge=0),
+                     limit: int = Query(200, ge=0, le=1000)) -> Dict[str, Any]:
         try:
             return artifacts.audit_stream(name, after_seq, limit, settings)
         except FileNotFoundError as exc:

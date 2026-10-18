@@ -65,6 +65,28 @@ def _sha(*parts: Any) -> str:
     return digest.hexdigest()
 
 
+def _bounded_int(value: Any, name: str, hi: int) -> int:
+    """Parse and bound an integer query argument.
+
+    ``0`` is a legal bounded value (empty page / zero depth) and is never
+    rewritten; anything negative or above ``hi`` is an explicit error
+    (``LIMIT -1`` would mean "no limit" in SQLite).
+    """
+    try:
+        number = int(value)
+    except (TypeError, ValueError):
+        raise ValueError("%s must be an integer, got %r" % (name, value))
+    if not 0 <= number <= hi:
+        raise ValueError("%s must be within [0, %d], got %d" % (name, hi, number))
+    return number
+
+
+def _pick(params: Dict[str, Any], name: str, default: int) -> int:
+    """``params[name]`` with ``None`` falling back to ``default`` (0 stays 0)."""
+    value = params.get(name)
+    return default if value is None else int(value)
+
+
 class GraphService:
     """Read-only view over the ORVYREN graph database."""
 
@@ -214,8 +236,12 @@ class GraphService:
                     "y": round(y, 3),
                 })
             counts = {"nodes": len(out_nodes), "edges": len(edges)}
+            # Content digest over EVERY id (sorted, so row order cannot move the
+            # hash): a graph whose 65th edge changes must get a new version —
+            # the client caches its layout per ``graph_version``.
             version = _sha(self.db_path, counts["nodes"], counts["edges"],
-                           *(str(e["id"]) for e in edges[:64]))
+                           ",".join(sorted(node["id"] for node in out_nodes)),
+                           ",".join(sorted(str(edge["id"]) for edge in edges)))
             payload = {
                 "graph_version": version,
                 "db": self.settings.rel(self.db_path),
@@ -257,8 +283,12 @@ class GraphService:
                    + (", sign_prior" if "sign_prior" in rel_cols else "")
                    + " FROM relations WHERE " + " AND ".join(where) + " LIMIT 200")
             relations = [dict(r) for r in con.execute(sql, (node_id, node_id)).fetchall()]
+            total = int(con.execute(
+                "SELECT COUNT(*) FROM relations WHERE src = ? OR dst = ?",
+                (node_id, node_id)).fetchone()[0])
             detail["relations"] = relations
-            detail["relation_count"] = len(relations)
+            detail["relation_count"] = total
+            detail["relations_truncated"] = total > len(relations)
             detail.setdefault("label", node_id)
             return detail
         finally:
@@ -305,38 +335,46 @@ class GraphService:
         """Run one read-contract query; errors surface as honest statuses."""
         from orvyren.graph import api as graph_api
 
+        try:
+            clean: Dict[str, Any] = dict(params)
+            if params.get("max_depth") is not None:
+                clean["max_depth"] = _bounded_int(params["max_depth"], "max_depth", 8)
+            if params.get("limit") is not None:
+                clean["limit"] = _bounded_int(params["limit"], "limit", 5000)
+        except ValueError as exc:
+            return {"query": name, "status": "BAD_ARGS", "detail": str(exc)}
+
         dispatch = {
             "q1": lambda: graph_api.exposure(
-                self.db_path, params.get("holder", ""),
-                as_of=params.get("as_of"), as_of_block=params.get("as_of_block"),
-                max_depth=int(params.get("max_depth", 3) or 3)),
+                self.db_path, clean.get("holder", ""),
+                as_of=clean.get("as_of"), as_of_block=clean.get("as_of_block"),
+                max_depth=_pick(clean, "max_depth", 3)),
             "q2": lambda: graph_api.dependency_paths(
-                self.db_path, params.get("src", ""), params.get("dst", ""),
-                kinds=tuple(params.get("kinds") or ()),
-                max_depth=int(params.get("max_depth", 4) or 4),
-                as_of=params.get("as_of"), as_of_block=params.get("as_of_block")),
+                self.db_path, clean.get("src", ""), clean.get("dst", ""),
+                kinds=tuple(clean.get("kinds") or ()),
+                max_depth=_pick(clean, "max_depth", 4),
+                as_of=clean.get("as_of"), as_of_block=clean.get("as_of_block")),
+            "q3": lambda: self._q3(clean),
             "q4": lambda: graph_api.pit(
-                self.db_path, as_of=params.get("as_of"),
-                as_of_block=params.get("as_of_block"),
-                limit=int(params.get("limit", 100) or 100)),
+                self.db_path, as_of=clean.get("as_of"),
+                as_of_block=clean.get("as_of_block"),
+                limit=_pick(clean, "limit", 100)),
             "q5": lambda: graph_api.timeline(
-                self.db_path, as_of=params.get("as_of"),
-                as_of_block=params.get("as_of_block"),
-                limit=int(params.get("limit", 50) or 50)),
+                self.db_path, as_of=clean.get("as_of"),
+                as_of_block=clean.get("as_of_block"),
+                limit=_pick(clean, "limit", 50)),
             "q6": lambda: graph_api.provenance(
-                self.db_path, relation_id=params.get("relation_id", "")),
+                self.db_path, relation_id=clean.get("relation_id", "")),
             "q7": lambda: graph_api.concentration(
-                self.db_path, params.get("asset", ""),
-                as_of=params.get("as_of"), as_of_block=params.get("as_of_block")),
+                self.db_path, clean.get("asset", ""),
+                as_of=clean.get("as_of"), as_of_block=clean.get("as_of_block")),
             "q8": lambda: graph_api.permissions(
-                self.db_path, params.get("subject", ""),
-                as_of=params.get("as_of"), as_of_block=params.get("as_of_block")),
+                self.db_path, clean.get("subject", ""),
+                as_of=clean.get("as_of"), as_of_block=clean.get("as_of_block")),
             "snapshot": lambda: graph_api.snapshot(
-                self.db_path, as_of=params.get("as_of"),
-                as_of_block=params.get("as_of_block")),
+                self.db_path, as_of=clean.get("as_of"),
+                as_of_block=clean.get("as_of_block")),
         }
-        if name == "q3":
-            return self._q3(params)
         handler = dispatch.get(name)
         if handler is None:
             return {"query": name, "status": "UNKNOWN_QUERY"}

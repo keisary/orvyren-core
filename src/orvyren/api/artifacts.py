@@ -242,20 +242,32 @@ def verify_journal_chain(run_id: str, settings: Optional[Settings] = None) -> Di
         if not os.path.exists(fpath):
             result["agents"][agent] = {"present": False}
             continue
-        rows = read_jsonl(fpath)
+        try:
+            rows = read_jsonl(fpath)
+        except ValueError as exc:
+            # A broken line is a broken chain: report it, never crash the endpoint.
+            result["agents"][agent] = {"present": True, "lines": 0, "links_ok": False,
+                                       "verified": False, "error": str(exc)}
+            continue
         known = {f for f in JournalEntry.__dataclass_fields__}  # type: ignore[attr-defined]
         previous = GENESIS_HASH
         links_ok = True
         head = GENESIS_HASH
-        for row in rows:
+        error = ""
+        for index, row in enumerate(rows):
             payload = {k: v for k, v in row.items() if k in known and k != "prev_hash"}
-            entry = JournalEntry(**payload)
+            try:
+                entry = JournalEntry(**payload)
+            except (TypeError, ValueError) as exc:
+                links_ok = False
+                error = "unreadable journal line %d: %s" % (index, exc)
+                break
             if row.get("prev_hash") != previous:
                 links_ok = False
             previous = entry_hash(entry)
             head = previous
         recorded = expected.get(agent, "")
-        result["agents"][agent] = {
+        report = {
             "present": True,
             "lines": len(rows),
             "links_ok": links_ok,
@@ -263,6 +275,9 @@ def verify_journal_chain(run_id: str, settings: Optional[Settings] = None) -> Di
             "recorded_head": recorded,
             "verified": bool(recorded) and head == recorded and links_ok,
         }
+        if error:
+            report["error"] = error
+        result["agents"][agent] = report
     return result
 
 
@@ -402,16 +417,25 @@ def load_episode(episode_id: str, settings: Optional[Settings] = None) -> Dict[s
 
 
 def _iso(ts: Any) -> int:
-    """Epoch seconds for Lightweight Charts (UTC)."""
+    """Epoch seconds for Lightweight Charts (UTC).
+
+    A timestamp that carries an offset keeps it (``2023-03-11T00:00:00+02:00``
+    is 2023-03-10 22:00 UTC); only naive timestamps are read as UTC. An
+    unparseable value degrades to 0 (the chart shows a gap) instead of
+    failing the whole series.
+    """
     if isinstance(ts, (int, float)):
         return int(ts)
     from datetime import datetime, timezone
 
     text = str(ts).replace("Z", "+00:00")
     try:
-        return int(datetime.fromisoformat(text).replace(tzinfo=timezone.utc).timestamp())
+        moment = datetime.fromisoformat(text)
     except ValueError:
         return 0
+    if moment.tzinfo is None:
+        moment = moment.replace(tzinfo=timezone.utc)
+    return int(moment.timestamp())
 
 
 def episode_series(episode_id: str, settings: Optional[Settings] = None) -> Dict[str, Any]:

@@ -29,9 +29,11 @@ self.onmessage = (event: MessageEvent<Request>) => {
       graph.addNode(node.id, { x: node.x, y: node.y, size: 1 });
     }
   }
-  for (const edge of edges) {
+  for (const [index, edge] of edges.entries()) {
     if (graph.hasNode(edge.source) && graph.hasNode(edge.target)) {
-      graph.addEdgeWithKey(edge.id, edge.source, edge.target, {});
+      // Unique keys only: a repeated relation id (revisions) would throw.
+      const key = graph.hasEdge(edge.id) ? `${edge.id}#${index}` : edge.id;
+      graph.addEdgeWithKey(key, edge.source, edge.target, {});
     }
   }
   const settings = inferSettings(graph);
