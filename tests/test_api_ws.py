@@ -76,5 +76,27 @@ class TestApiWebSocket(unittest.TestCase):
             self.assertTrue(got_pong)
 
 
+@unittest.skipUnless(HAS_FASTAPI, SKIP_REASON)
+class TestWebSocketCompressionContract(unittest.TestCase):
+    """permessage-deflate (RFC 7692) is pinned in the uvicorn server options.
+
+    The handshake/extension itself belongs to uvicorn's WS implementation
+    (the TestClient transport does not negotiate extensions); what the app
+    owns — and what can silently regress — is the server option, so that is
+    the contract here.
+    """
+
+    def test_per_message_deflate_is_pinned_on(self):
+        from orvyren.api.main import _uvicorn_kwargs
+        options = _uvicorn_kwargs()
+        self.assertIs(options["ws_per_message_deflate"], True)
+
+    def test_explicit_override_still_wins(self):
+        from orvyren.api.main import _uvicorn_kwargs
+        self.assertIs(
+            _uvicorn_kwargs(ws_per_message_deflate=False)["ws_per_message_deflate"],
+            False)
+
+
 if __name__ == "__main__":
     unittest.main()

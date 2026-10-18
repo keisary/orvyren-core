@@ -11,9 +11,10 @@ This module is the lazy FastAPI boundary: importing it requires fastapi.
 from __future__ import annotations
 
 import os
-from typing import Any, Optional
+from typing import Any, Dict, Optional
 
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
+from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.responses import FileResponse, JSONResponse
 
 from orvyren.api.config import Settings, load_settings
@@ -35,6 +36,12 @@ def create_app(settings: Optional[Settings] = None,
     app.state.settings = settings
     app.state.graph = graph
     app.state.live_hub = hub
+
+    # gzip the JSON bodies (the graph payload is megabytes and compresses
+    # several-fold). Level 6 is the speed/size balance: level 9 (the Starlette
+    # default) spends CPU on a payload the demo serves repeatedly. A client
+    # that does not send ``Accept-Encoding: gzip`` gets the plain body.
+    app.add_middleware(GZipMiddleware, minimum_size=1024, compresslevel=6)
 
     # API routes BEFORE any static handling (mount-at-root would shadow them).
     app.include_router(build_router(settings, graph))
@@ -89,6 +96,20 @@ def _dumps(payload: Any) -> str:
     return json.dumps(payload, ensure_ascii=False, default=str)
 
 
+def _uvicorn_kwargs(host: str = "127.0.0.1", port: int = 8321,
+                   **kwargs: Any) -> Dict[str, Any]:
+    """uvicorn options for the offline demo (single testable contract).
+
+    ``ws_per_message_deflate`` (RFC 7692) is uvicorn's default today; it is
+    pinned explicitly so a future default flip cannot silently drop WebSocket
+    frame compression (research 2026-10-18, axe 3 R17).
+    """
+    options: Dict[str, Any] = {"host": host, "port": port, "log_level": "info",
+                               "ws_per_message_deflate": True}
+    options.update(kwargs)
+    return options
+
+
 def run_server(host: str = "127.0.0.1", port: int = 8321, **kwargs: Any) -> None:
     """Run uvicorn on the app (Windows: SelectorEventLoop for WS stability)."""
     import asyncio
@@ -98,7 +119,7 @@ def run_server(host: str = "127.0.0.1", port: int = 8321, **kwargs: Any) -> None
         asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
     import uvicorn
 
-    uvicorn.run(create_app(), host=host, port=port, log_level="info", **kwargs)
+    uvicorn.run(create_app(), **_uvicorn_kwargs(host, port, **kwargs))
 
 
 def __getattr__(name: str) -> Any:

@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { lazy, Suspense, useEffect, useRef } from "react";
 import { NavLink, Navigate, Route, Routes } from "react-router-dom";
 import {
   Activity,
@@ -12,11 +12,14 @@ import { Badge } from "@/components/ui/badge";
 import { useLiveStore } from "@/lib/store";
 import { LiveSocket } from "@/lib/ws";
 import { setLiveSocket } from "@/lib/live-bridge";
-import LiveScreen from "@/features/live/LiveScreen";
-import GraphScreen from "@/features/graph/GraphScreen";
-import MarketsScreen from "@/features/markets/MarketsScreen";
-import DecisionScreen from "@/features/decision/DecisionScreen";
-import AuditScreen from "@/features/audit/AuditScreen";
+
+// Per-screen code splitting (React.lazy): each route pulls its own chunk on
+// entry; routing is unchanged (same paths, same screens).
+const LiveScreen = lazy(() => import("@/features/live/LiveScreen"));
+const GraphScreen = lazy(() => import("@/features/graph/GraphScreen"));
+const MarketsScreen = lazy(() => import("@/features/markets/MarketsScreen"));
+const DecisionScreen = lazy(() => import("@/features/decision/DecisionScreen"));
+const AuditScreen = lazy(() => import("@/features/audit/AuditScreen"));
 
 const NAV = [
   { to: "/live", label: "Live", icon: Activity },
@@ -108,15 +111,17 @@ export default function App() {
         </div>
       </aside>
       <main className="flex min-w-0 flex-1 flex-col overflow-hidden">
-        <Routes>
-          <Route path="/" element={<Navigate to="/live" replace />} />
-          <Route path="/live" element={<LiveScreen />} />
-          <Route path="/graph" element={<GraphScreen />} />
-          <Route path="/markets" element={<MarketsScreen />} />
-          <Route path="/decision" element={<DecisionScreen />} />
-          <Route path="/audit" element={<AuditScreen />} />
-          <Route path="*" element={<Navigate to="/live" replace />} />
-        </Routes>
+        <Suspense fallback={<div className="h-full w-full" />}>
+          <Routes>
+            <Route path="/" element={<Navigate to="/live" replace />} />
+            <Route path="/live" element={<LiveScreen />} />
+            <Route path="/graph" element={<GraphScreen />} />
+            <Route path="/markets" element={<MarketsScreen />} />
+            <Route path="/decision" element={<DecisionScreen />} />
+            <Route path="/audit" element={<AuditScreen />} />
+            <Route path="*" element={<Navigate to="/live" replace />} />
+          </Routes>
+        </Suspense>
       </main>
     </div>
   );

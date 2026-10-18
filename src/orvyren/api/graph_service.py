@@ -29,6 +29,7 @@ import urllib.parse
 from typing import Any, Dict, List, Optional, Sequence, Tuple
 
 from orvyren.api.config import Settings, load_settings, resolve_graph_db
+from orvyren.graph.api import apply_read_pragmas
 
 
 def _connect(path: str) -> sqlite3.Connection:
@@ -38,6 +39,7 @@ def _connect(path: str) -> sqlite3.Connection:
     uri = "file:%s?mode=ro" % urllib.parse.quote(absolute, safe="/:")
     connection = sqlite3.connect(uri, uri=True)
     connection.row_factory = sqlite3.Row
+    apply_read_pragmas(connection)
     return connection
 
 

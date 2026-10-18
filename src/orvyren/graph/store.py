@@ -42,6 +42,23 @@ __all__ = ["GraphStore", "SCHEMA_VERSION", "GRAPH_VERSION"]
 SCHEMA_VERSION = 3
 GRAPH_VERSION = "orvyren-graph-v1"
 
+#: Write-connection performance pragmas (research 2026-10-18, axe 1 R1/R3).
+#: ``busy_timeout`` turns ``SQLITE_BUSY`` into a queue, ``cache_size`` and
+#: ``mmap_size`` speed up large reads, and ``journal_mode=WAL`` +
+#: ``synchronous=NORMAL`` keep the append-only write path fast while staying
+#: durable against application crashes (a power cut can lose the last
+#: transactions but never corrupts the file). WAL is persistent in the file;
+#: the chained append-only journal stays the source of truth. These are
+#: performance-only: a pragma the build does not support is skipped, never
+#: fatal.
+_WRITE_PRAGMAS = (
+    "PRAGMA busy_timeout=5000",
+    "PRAGMA cache_size=-16000",
+    "PRAGMA mmap_size=268435456",
+    "PRAGMA journal_mode=WAL",
+    "PRAGMA synchronous=NORMAL",
+)
+
 #: (table, logical-id column) in the order used for snapshots.
 _TABLES = (
     ("sources", "source_id"),
@@ -343,6 +360,7 @@ class GraphStore:
         self.path = path
         self.connection = sqlite3.connect(path)
         self.connection.row_factory = sqlite3.Row
+        self._apply_pragmas()
         self._init_schema()
 
     # -- lifecycle -----------------------------------------------------------
@@ -354,13 +372,26 @@ class GraphStore:
         self.close()
 
     def close(self) -> None:
-        """Close the underlying connection."""
+        """Refresh SQLite's statistics opportunistically, then close."""
+        try:
+            self.connection.execute("PRAGMA optimize")
+        except sqlite3.Error:
+            pass  # best effort: never make close() fail on maintenance
         self.connection.close()
+
+    def _apply_pragmas(self) -> None:
+        """Apply the write-connection performance pragmas (perf-only)."""
+        for statement in _WRITE_PRAGMAS:
+            try:
+                self.connection.execute(statement)
+            except sqlite3.Error:
+                pass  # unsupported pragma: skip, the store stays correct
 
     def _init_schema(self) -> None:
         with self.connection:
             self.connection.executescript(_SCHEMA)
             self._migrate_relation_columns()
+            self._migrate_pit_indexes()
             for table, _ in _TABLES:
                 self.connection.executescript(
                     _APPEND_ONLY_TRIGGERS.format(table=table))
@@ -431,6 +462,34 @@ class GraphStore:
             # covering index). Materialize `edge_current` before indexing it.
             "CREATE INDEX IF NOT EXISTS idx_rel_current_v2 ON relations(relation_id, inserted_at)",
             "CREATE INDEX IF NOT EXISTS idx_rel_valid_v2 ON relations(valid_from, valid_to)",
+        ):
+            self.connection.execute(statement)
+
+    def _migrate_pit_indexes(self) -> None:
+        """Additive, idempotent PIT index migration (perf-only, no data change).
+
+        The Q4/Q5 PIT filters touch the temporal columns below; every index is
+        ``CREATE INDEX IF NOT EXISTS`` so re-opening any database (fresh v3 or
+        migrated v2) is a no-op once they exist. The ``julianday(...)``
+        expression indexes pair with the plain-column ones so the OR-wrapped
+        PIT predicates (``col IS NULL OR julianday(col) <= julianday(?)``)
+        resolve as MULTI-INDEX OR searches instead of full scans — SQLite does
+        no algebra, so the expression must match the clause verbatim
+        (research 2026-10-18, axe 1 R2). ``events(block_number, log_index)``
+        serves Q5's ``ORDER BY block_number DESC, log_index DESC LIMIT n``
+        without a temp B-tree. ``relations(valid_from_block, valid_to_block)``
+        serves the block-validity bounds of Q1/Q4/Q7/Q8. Kept off ``(src,
+        kind)`` / ``(dst, kind)`` on purpose (see the MiniMax note above).
+        ``EXPLAIN QUERY PLAN`` is pinned in ``tests.test_graph_pit_fixes``.
+        """
+        for statement in (
+            "CREATE INDEX IF NOT EXISTS idx_events_evt_time ON events(event_time)",
+            "CREATE INDEX IF NOT EXISTS idx_events_obs_time ON events(observation_time)",
+            "CREATE INDEX IF NOT EXISTS idx_events_time_jd ON events(julianday(event_time))",
+            "CREATE INDEX IF NOT EXISTS idx_events_obs_jd ON events(julianday(observation_time))",
+            "CREATE INDEX IF NOT EXISTS idx_events_block_log ON events(block_number, log_index)",
+            "CREATE INDEX IF NOT EXISTS idx_rel_block_valid "
+            "ON relations(valid_from_block, valid_to_block)",
         ):
             self.connection.execute(statement)
 

@@ -89,18 +89,24 @@ export default function SigmaGraph({ payload, selected, onSelect, onLayout }: Pr
       }
     }
 
-    // Réglages perf Sigma vérifiés (doc « Improve rendering performances ») :
-    // pas d'anti-aliasing sur les arêtes, pas d'événements d'arêtes, couleurs
-    // pleines (jamais d'opacité < 1), primitives minimales.
+    // Sigma perf settings ("Improve rendering performances", 16k nodes):
+    // minimal primitives (edge "line" = 4 vertices, never arrow/triangle), no
+    // edge events (avoids a second picking render pass), full colours (never
+    // opacity < 1), reduced anti-aliasing via antiAliasingFeather (the
+    // `antialiasEdges` option only exists in sigma v4: kept for the upgrade,
+    // ignored by 3.0.3), labels culled by density AND by rendered size.
     const settings = {
       renderEdgeLabels: false,
       enableEdgeEvents: false,
       antialiasEdges: false,
+      defaultEdgeType: "line",
+      antiAliasingFeather: 0.5,
       labelFont: "ui-monospace, Consolas, monospace",
       labelSize: 10,
       labelColor: { color: "#8fa3bb" },
       labelDensity: 0.08,
       labelGridCellSize: 110,
+      labelRenderedSizeThreshold: 8,
       stagePadding: 40,
       minCameraRatio: 0.03,
       maxCameraRatio: 4,

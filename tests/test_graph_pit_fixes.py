@@ -22,6 +22,7 @@ Execution: ``python -m unittest tests.test_graph_pit_fixes -v``
 """
 
 import os
+import sqlite3
 import sys
 import tempfile
 import unittest
@@ -38,6 +39,35 @@ from orvyren.graph.temporal import covers, pit_at  # noqa: E402
 
 #: The replayed decision moment (rsETH episode: 2026-04-18 17:35 UTC).
 T = "2026-04-18T17:35:00Z"
+
+#: The additive PIT indexes (perf-only, ``CREATE INDEX IF NOT EXISTS``).
+PIT_INDEXES = (
+    "idx_events_evt_time", "idx_events_obs_time",
+    "idx_events_time_jd", "idx_events_obs_jd",
+    "idx_events_block_log", "idx_rel_block_valid",
+)
+
+#: Q5's read shape (``orvyren.graph.api.timeline``) verbatim.
+_Q5_SHAPE = (
+    "SELECT event_id, event_type FROM events WHERE "
+    "(event_time IS NULL OR julianday(event_time) <= julianday(?)) "
+    "AND (block_number IS NULL OR block_number <= ?) "
+    "AND (observation_time IS NULL OR julianday(observation_time) <= julianday(?)) "
+    "ORDER BY block_number DESC, log_index DESC LIMIT ?")
+
+#: Q5's PIT filter without the ordering tail (the filter itself must not
+#: degrade to a bare scan when no LIMIT-driven plan wins).
+_Q5_FILTER_SHAPE = (
+    "SELECT event_id FROM events WHERE "
+    "(event_time IS NULL OR julianday(event_time) <= julianday(?)) "
+    "AND (observation_time IS NULL OR julianday(observation_time) <= julianday(?))")
+
+#: Q4's block-validity bounds (``_validity`` + ``_active``) verbatim.
+_Q4_BLOCK_SHAPE = (
+    "SELECT r.relation_id FROM relations r WHERE "
+    "r.lifecycle = 'ACTIVE' AND r.validation_status = 'VALIDATED' "
+    "AND (r.valid_from_block IS NULL OR r.valid_from_block <= ?) "
+    "AND (r.valid_to_block IS NULL OR r.valid_to_block > ?)")
 
 
 def _event(event_id, block, log_index, event_time, observation_time):
@@ -302,6 +332,126 @@ class TemporalInstantGuardTest(unittest.TestCase):
             valid_from="2026-04-18T17:00:00+00:00",
             valid_to="2026-04-18T12:36:00-05:00")   # 17:36Z
         self.assertTrue(covers(open_record, T))
+
+
+class PitIndexContractTest(unittest.TestCase):
+    """Additive PIT index migration + ``EXPLAIN QUERY PLAN`` contract.
+
+    The query shapes below mirror :mod:`orvyren.graph.api` (Q5 timeline and
+    the Q4 block-validity bounds) verbatim: SQLite does no algebra, so a
+    rewritten clause would silently stop matching its index. The migration
+    itself is additive and idempotent (``CREATE INDEX IF NOT EXISTS``): a
+    fresh v3 database and a migrated legacy one converge to the same indexes.
+    """
+
+    def setUp(self):
+        self.tmp = tempfile.TemporaryDirectory()
+        self.db = os.path.join(self.tmp.name, "graph.sqlite")
+        with GraphStore(self.db) as store:
+            store.insert_event(_event("ev-idx", 7, 1,
+                                      "2026-04-18T17:00:00+00:00",
+                                      "2026-04-18T17:05:00+00:00"))
+            store.insert_relation_record(make_record(
+                "HOLDS", relation_id="rel-idx",
+                valid_from="2026-04-18T17:00:00+00:00",
+                valid_from_block=10, valid_to_block=20,
+                inserted_at="2026-04-18T17:10:00+00:00"))
+            # Bulk rows so the query planner plans against a populated table
+            # (with ANALYZE statistics, as after ``PRAGMA optimize`` on a real
+            # database): on a 2-row table a full scan is genuinely cheapest
+            # and the plan says nothing about production behaviour.
+            store.connection.executemany(
+                "INSERT INTO events (event_id, event_type, chain_id,"
+                " block_number, tx_hash, log_index, event_time, observation_time)"
+                " VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+                [("ev-bulk-%03d" % i, "SUPPLY", 8453, i, "0x" + "ab" * 8,
+                  i % 7, "2026-04-18T%02d:%02d:00+00:00" % (i % 24, i % 60),
+                  "2026-04-18T%02d:%02d:00+00:00" % (i % 24, (i + 3) % 60))
+                 for i in range(300)])
+            store.connection.executemany(
+                "INSERT INTO relations (relation_id, revision, inserted_at,"
+                " src, dst, kind, sign_prior, lifecycle, validation_status,"
+                " valid_from, valid_from_block, valid_to_block)"
+                " VALUES (?, ?, ?, ?, ?, ?, '+', 'ACTIVE', 'VALIDATED',"
+                " '2026-04-18T17:00:00+00:00', ?, ?)",
+                [("rel-bulk-%03d" % i, 1, "2026-04-18T17:10:00+00:00",
+                  "node-a-%d" % (i % 50), "node-b-%d" % (i % 37), "HOLDS",
+                  None if i % 3 == 0 else i,
+                  None if i % 4 == 0 else i + 100)
+                 for i in range(300)])
+            store.connection.commit()
+            store.connection.execute("ANALYZE")
+
+    def tearDown(self):
+        self.tmp.cleanup()
+
+    def _index_names(self):
+        con = sqlite3.connect(self.db)
+        try:
+            return {row[0] for row in con.execute(
+                "SELECT name FROM sqlite_master WHERE type='index'")}
+        finally:
+            con.close()
+
+    def _plan(self, sql, params):
+        con = sqlite3.connect(self.db)
+        try:
+            return [row[3] for row in con.execute(
+                "EXPLAIN QUERY PLAN " + sql, params)]
+        finally:
+            con.close()
+
+    def test_pit_indexes_exist(self):
+        names = self._index_names()
+        for index in PIT_INDEXES:
+            self.assertIn(index, names)
+
+    def test_migration_is_idempotent_on_reopen(self):
+        # Re-opening replays the additive migration on a populated database.
+        with GraphStore(self.db) as store:
+            store.insert_event(_event("ev-idx-2", 8, 1,
+                                      "2026-04-18T17:20:00+00:00",
+                                      "2026-04-18T17:21:00+00:00"))
+        con = sqlite3.connect(self.db)
+        try:
+            rows = con.execute(
+                "SELECT name, COUNT(*) FROM sqlite_master "
+                "WHERE type='index' GROUP BY name HAVING COUNT(*) > 1").fetchall()
+        finally:
+            con.close()
+        self.assertEqual(rows, [])
+        for index in PIT_INDEXES:
+            self.assertIn(index, self._index_names())
+
+    def test_q5_ordered_plan_uses_block_log_index(self):
+        # Q5's "ORDER BY block_number DESC, log_index DESC LIMIT n" reads the
+        # index in order: no temp B-tree for the sort.
+        plan = "\n".join(self._plan(_Q5_SHAPE, ("x", 1, "x", 5)))
+        self.assertIn("idx_events_block_log", plan)
+        self.assertNotIn("TEMP B-TREE", plan)
+
+    def test_q5_pit_filter_plan_uses_the_pit_indexes(self):
+        # OR-wrapped PIT predicates ("col IS NULL OR julianday(col) <= ...")
+        # resolve through the plain + julianday() index pair, never a bare
+        # full scan of events.
+        plan = "\n".join(self._plan(_Q5_FILTER_SHAPE, ("x", "x")))
+        self.assertIn("USING INDEX", plan)
+        self.assertNotIn("\nSCAN events\n", "\n" + plan + "\n")
+        self.assertTrue("idx_events_time_jd" in plan
+                        or "idx_events_evt_time" in plan, plan)
+
+    def test_block_validity_plan_uses_block_index(self):
+        plan = "\n".join(self._plan(_Q4_BLOCK_SHAPE, (10, 20)))
+        self.assertIn("idx_rel_block_valid", plan)
+
+    def test_indexes_do_not_change_query_results(self):
+        # Perf-only: the PIT answers are unchanged with the indexes present
+        # (the exhaustive non-regression lives in the PIT tests above).
+        result = api.timeline(self.db, as_of=T, limit=500)
+        ids = [row["event_id"] for row in result["rows"]]
+        self.assertIn("ev-idx", ids)
+        result = api.pit(self.db, as_of=T, as_of_block=15, limit=500)
+        self.assertIn("rel-idx", [row["relation_id"] for row in result["rows"]])
 
 
 if __name__ == "__main__":

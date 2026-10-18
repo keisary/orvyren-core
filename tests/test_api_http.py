@@ -164,5 +164,116 @@ class TestApiHttp(unittest.TestCase):
             self.assertIn("frontend build not found", response.text)
 
 
+class _FakeGraph:
+    """Minimal ``GraphService`` stand-in: deterministic payloads, any DB.
+
+    Lets the caching/compression contract run against a payload whose size
+    and volatility are chosen by the test (the real graph payload depends on
+    which database the environment resolves).
+    """
+
+    db_path = "fake-graph.sqlite"
+
+    def __init__(self) -> None:
+        self.calls = 0
+
+    def full(self, refresh: bool = False):
+        self.calls += 1
+        return {
+            "graph_version": "fake-v1",
+            "counts": {"nodes": 400, "edges": 1},
+            # 400 nodes: well over the 1 KiB gzip threshold, so compression
+            # is exercised deterministically whatever the environment holds.
+            "nodes": [{"id": "n%04d" % i, "label": "node %d" % i, "x": 0, "y": 0}
+                      for i in range(400)],
+            "edges": [{"id": "e0", "source": "n0000", "target": "n0001"}],
+            # Volatile by construction: it changes on every call.
+            "latency_ms": float(self.calls),
+        }
+
+    def schema_info(self):
+        return {"schema": "fake", "latency_ms": float(self.calls)}
+
+    def query(self, name, **params):
+        return {"query": name.upper(), "count": 0, "rows": [],
+                "latency_ms": float(self.calls)}
+
+    def neighbors(self, node_id, depth=1):
+        return {"root": node_id, "depth": depth, "nodes": [node_id],
+                "edges": [], "count_nodes": 1, "count_edges": 0}
+
+    def node_detail(self, node_id):
+        return {"id": node_id, "found": False}
+
+
+@unittest.skipUnless(HAS_FASTAPI and HAS_HTTPX, SKIP_REASON)
+class TestApiCachingAndCompression(unittest.TestCase):
+    """gzip bodies + payload-hash ETag/304 on the graph reads (no behaviour
+    change: the JSON payloads are identical, only the transport is optimised).
+    """
+
+    @classmethod
+    def setUpClass(cls):
+        from fastapi.testclient import TestClient
+
+        from orvyren.api.main import create_app
+        cls.app = create_app(graph=_FakeGraph())
+        cls.client = TestClient(cls.app)
+
+    def test_gzip_middleware_is_registered(self):
+        from fastapi.middleware.gzip import GZipMiddleware
+        self.assertIn(GZipMiddleware,
+                      [middleware.cls for middleware in self.app.user_middleware])
+
+    def test_graph_full_is_gzipped_for_gzip_clients(self):
+        response = self.client.get(
+            "/api/graph/full", headers={"Accept-Encoding": "gzip"})
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.headers.get("content-encoding"), "gzip")
+        body = response.json()  # httpx transparently decodes the gzip body
+        self.assertEqual(body["graph_version"], "fake-v1")
+
+    def test_graph_full_stays_plain_without_gzip_accept(self):
+        response = self.client.get(
+            "/api/graph/full", headers={"Accept-Encoding": "identity"})
+        self.assertEqual(response.status_code, 200)
+        self.assertIsNone(response.headers.get("content-encoding"))
+        self.assertIn("fake-v1", response.text)
+
+    def test_etag_is_stable_across_volatile_measurements(self):
+        first = self.client.get("/api/graph/full")
+        second = self.client.get("/api/graph/full")
+        self.assertEqual(first.status_code, 200)
+        self.assertNotEqual(first.json()["latency_ms"],
+                            second.json()["latency_ms"])
+        self.assertEqual(first.headers["etag"], second.headers["etag"])
+        self.assertEqual(first.headers["cache-control"], "no-cache")
+
+    def test_if_none_match_returns_304_without_body(self):
+        for url in ("/api/graph/full", "/api/graph/query/q4",
+                    "/api/graph/info", "/api/graph/snapshot"):
+            with self.subTest(url=url):
+                fresh = self.client.get(url)
+                self.assertEqual(fresh.status_code, 200, url)
+                etag = fresh.headers["etag"]
+                cached = self.client.get(url, headers={"If-None-Match": etag})
+                self.assertEqual(cached.status_code, 304, url)
+                self.assertEqual(cached.content, b"", url)
+                self.assertEqual(cached.headers["etag"], etag, url)
+
+    def test_if_none_match_accepts_weak_and_list_forms(self):
+        etag = self.client.get("/api/graph/full").headers["etag"]
+        weak = self.client.get("/api/graph/full",
+                               headers={"If-None-Match": "W/" + etag})
+        self.assertEqual(weak.status_code, 304)
+        listed = self.client.get(
+            "/api/graph/full",
+            headers={"If-None-Match": '"other", %s' % etag})
+        self.assertEqual(listed.status_code, 304)
+        stale = self.client.get("/api/graph/full",
+                                headers={"If-None-Match": '"stale"'})
+        self.assertEqual(stale.status_code, 200)
+
+
 if __name__ == "__main__":
     unittest.main()

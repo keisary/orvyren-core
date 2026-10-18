@@ -25,6 +25,27 @@ DEFAULT_DB = os.environ.get(
     "ORVYREN_GRAPH_DB", r"D:/orvyren_10h_2026-10-17/graph_v3.sqlite")
 CHAIN_ID = 8453
 
+#: Read-connection performance pragmas (research 2026-10-18, axe 1 R1/R3):
+#: ``busy_timeout`` queues on ``SQLITE_BUSY`` instead of failing, ``cache_size``
+#: and ``mmap_size`` speed up the 16k-node reads, and ``PRAGMA optimize`` lets
+#: SQLite refresh its statistics opportunistically. Performance-only: a pragma
+#: a build cannot apply (read-only file, older SQLite) is skipped, never fatal.
+_READ_PRAGMAS = (
+    "PRAGMA busy_timeout=5000",
+    "PRAGMA cache_size=-16000",
+    "PRAGMA mmap_size=268435456",
+    "PRAGMA optimize",
+)
+
+
+def apply_read_pragmas(connection: sqlite3.Connection) -> None:
+    """Best-effort perf pragmas for a read-only graph connection."""
+    for statement in _READ_PRAGMAS:
+        try:
+            connection.execute(statement)
+        except sqlite3.Error:
+            pass
+
 
 def _connect(path: Optional[str] = None) -> sqlite3.Connection:
     db = path or os.environ.get("ORVYREN_GRAPH_DB", DEFAULT_DB)
@@ -34,6 +55,7 @@ def _connect(path: Optional[str] = None) -> sqlite3.Connection:
     uri = "file:%s?mode=ro" % urllib.parse.quote(absolute, safe="/:")
     connection = sqlite3.connect(uri, uri=True)
     connection.row_factory = sqlite3.Row
+    apply_read_pragmas(connection)
     return connection
 
 

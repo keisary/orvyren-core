@@ -6,6 +6,8 @@ actually built (lazy boundary documented in :mod:`orvyren.api`).
 
 from __future__ import annotations
 
+import hashlib
+import json
 import os
 from typing import Any, Dict, Optional
 
@@ -16,6 +18,56 @@ from orvyren.api.config import Settings
 from orvyren.api.graph_service import GraphService
 
 API_VERSION = "orvyren/api/v1"
+
+#: Volatile measurement fields excluded from the ETag hash: they change on
+#: every call while the payload itself is identical, which would defeat any
+#: conditional request (research 2026-10-18, axe 3 R14).
+_VOLATILE_KEYS = ("latency_ms",)
+
+
+def _condense(payload: Any) -> Any:
+    """Copy of ``payload`` without the volatile measurement fields."""
+    if isinstance(payload, dict):
+        return {key: _condense(value) for key, value in payload.items()
+                if key not in _VOLATILE_KEYS}
+    if isinstance(payload, list):
+        return [_condense(item) for item in payload]
+    return payload
+
+
+def _etag_for(payload: Any) -> str:
+    """Stable strong ETag: sha256 of the canonical JSON, minus volatility.
+
+    Keys are sorted and separators fixed, so two identical payloads hash
+    identically no matter how the dicts were built.
+    """
+    body = json.dumps(_condense(payload), sort_keys=True, ensure_ascii=False,
+                      default=str, separators=(",", ":"))
+    return '"%s"' % hashlib.sha256(body.encode("utf-8")).hexdigest()
+
+
+def _matches(if_none_match: str, etag: str) -> bool:
+    """RFC 7232 ``If-None-Match`` check (list form and ``*`` supported)."""
+    candidates = [item.strip().lstrip("W/") for item in if_none_match.split(",")]
+    return etag.strip().lstrip("W/") in candidates or "*" in candidates
+
+
+def _cached(request: Request, response: Response, payload: Any) -> Any:
+    """Attach ETag/Cache-Control and answer 304 when the client is current.
+
+    ``Cache-Control: no-cache`` keeps revalidation on every use: the client
+    re-asks, but an unchanged payload costs one 304 without a body (the graph
+    payload is megabytes; the 304 path is the whole point).
+    """
+    etag = _etag_for(payload)
+    if _matches(request.headers.get("if-none-match", ""), etag):
+        empty = Response(status_code=304)
+        empty.headers["ETag"] = etag
+        empty.headers["Cache-Control"] = "no-cache"
+        return empty
+    response.headers["ETag"] = etag
+    response.headers["Cache-Control"] = "no-cache"
+    return payload
 
 
 def build_router(settings: Settings, graph: GraphService) -> APIRouter:
@@ -87,34 +139,34 @@ def build_router(settings: Settings, graph: GraphService) -> APIRouter:
     # -- graph -------------------------------------------------------------
 
     @router.get("/api/graph/info")
-    def graph_info() -> Dict[str, Any]:
-        return graph.schema_info()
+    def graph_info(request: Request, response: Response) -> Any:
+        return _cached(request, response, graph.schema_info())
 
     @router.get("/api/graph/full")
-    def graph_full(response: Response, request: Request) -> Any:
-        payload = graph.full()
-        etag = '"%s"' % payload["graph_version"]
-        if request.headers.get("if-none-match") == etag:
-            return Response(status_code=304)
-        response.headers["ETag"] = etag
-        response.headers["Cache-Control"] = "no-cache"
-        return payload
+    def graph_full(request: Request, response: Response) -> Any:
+        return _cached(request, response, graph.full())
 
     @router.get("/api/graph/snapshot")
-    def graph_snapshot(as_of: Optional[str] = Query(None),
-                       as_of_block: Optional[int] = Query(None)) -> Dict[str, Any]:
-        return graph.query("snapshot", as_of=as_of, as_of_block=as_of_block)
+    def graph_snapshot(request: Request, response: Response,
+                       as_of: Optional[str] = Query(None),
+                       as_of_block: Optional[int] = Query(None)) -> Any:
+        return _cached(request, response,
+                       graph.query("snapshot", as_of=as_of,
+                                   as_of_block=as_of_block))
 
     @router.get("/api/graph/neighbors/{node_id:path}")
-    def graph_neighbors(node_id: str, depth: int = Query(1)) -> Dict[str, Any]:
-        return graph.neighbors(node_id, depth)
+    def graph_neighbors(request: Request, response: Response,
+                        node_id: str, depth: int = Query(1)) -> Any:
+        return _cached(request, response, graph.neighbors(node_id, depth))
 
     @router.get("/api/graph/node/{node_id:path}")
-    def graph_node(node_id: str) -> Dict[str, Any]:
-        return graph.node_detail(node_id)
+    def graph_node(request: Request, response: Response,
+                   node_id: str) -> Any:
+        return _cached(request, response, graph.node_detail(node_id))
 
     @router.get("/api/graph/query/{name}")
     def graph_query(name: str,
+                    request: Request, response: Response,
                     holder: Optional[str] = Query(None),
                     src: Optional[str] = Query(None),
                     dst: Optional[str] = Query(None),
@@ -135,7 +187,7 @@ def build_router(settings: Settings, graph: GraphService) -> APIRouter:
             "as_of_block": as_of_block, "max_depth": max_depth, "limit": limit,
             "kinds": [k for k in (kinds or "").split(",") if k],
         }
-        return graph.query(key, **params)
+        return _cached(request, response, graph.query(key, **params))
 
     # -- markets -----------------------------------------------------------
 
