@@ -329,14 +329,29 @@ class TestPolicyBoundary(unittest.TestCase):
     """The policy is pure: no network, no LLM, no agents."""
 
     def test_module_sans_reseau_ni_llm(self):
+        import ast
         import orvyren.policy as policy_module
-        sources = [open(policy_module.__file__, encoding="utf-8").read()]
-        yaml_path = os.path.join(os.path.dirname(policy_module.__file__), "miniyaml.py")
-        sources.append(open(yaml_path, encoding="utf-8").read())
-        blob = "\n".join(sources)
-        for banned in ("import socket", "import urllib", "import requests", "import http",
-                       "openai", "anthropic", "import random"):
-            self.assertNotIn(banned, blob, f"forbidden in the policy module: {banned}")
+        package_dir = os.path.dirname(policy_module.__file__)
+        allowed = {
+            "__future__", "hashlib", "json", "math", "os", "dataclasses",
+            "decimal", "datetime", "typing", "re", "pathlib", "collections",
+            "functools", "itertools", "statistics", "enum", "miniyaml",
+        }
+        for name in sorted(os.listdir(package_dir)):
+            if not name.endswith(".py"):
+                continue
+            path = os.path.join(package_dir, name)
+            with open(path, encoding="utf-8") as handle:
+                tree = ast.parse(handle.read(), filename=path)
+            modules = set()
+            for node in ast.walk(tree):
+                if isinstance(node, ast.Import):
+                    modules.update(alias.name.split(".")[0] for alias in node.names)
+                elif isinstance(node, ast.ImportFrom):
+                    if node.module != "__future__":
+                        modules.add((node.module or "").split(".")[0])
+            forbidden = modules - allowed
+            self.assertFalse(forbidden, f"{name}: imports hors allow-list: {sorted(forbidden)}")
 
 
 if __name__ == "__main__":
