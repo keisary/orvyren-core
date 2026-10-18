@@ -2,16 +2,20 @@
 # -*- coding: utf-8 -*-
 """ORVYREN-Core — DEV/EVAL evaluation CLI (W7, L7.6; B7 §d.2.5, §e).
 
-    python run_evaluation.py --set dev                     # full offline harness
-    python run_evaluation.py --set eval [--force] [--calibration-periods 2025-01,2025-02]
+    python run_evaluation.py --set dev --calibration-periods 2023-02,2023-03
+    python run_evaluation.py --set eval --calibration-periods 2025-01,2025-02 [--force]
 
 Gates (refusal to write, code 2):
 
 * ``frozen/G1–G6`` freeze absent, incomplete or non-matching — **both sets**;
+* a code hash announced inside the Gx documents does not match the working
+  tree (``harness.verify_code_hashes``) — **both sets**;
+* ``--calibration-periods`` omitted — **both sets**: the cross-calibration
+  embargo (B7 §d.2.4) is mandatory, an undeclared embargo is refused (exit 2),
+  never silently skipped;
 * ``--set eval``: ``eval_run.lock`` present (second run forbidden without
   ``--force`` — an "evaluation re-run" mention is added to the report);
-* ``--set eval``: a CALM EVAL window overlaps the declared calibration period
-  (``--calibration-periods``).
+* a CALM EVAL window overlaps a declared calibration period.
 
 Outputs (``--out-dir``, default ``evidence/evaluation/``):
 ``evaluation_report.{json,md}`` (mandatory banner + N), ``windows/<id>.json``,
@@ -47,7 +51,8 @@ def main(argv=None) -> int:
     parser.add_argument("--force", action="store_true",
                         help="allow an EVAL re-run (mandatory mention in the report)")
     parser.add_argument("--calibration-periods", default=None,
-                        help="comma-separated YYYY-MM months (cross-calibration embargo)")
+                        help="MANDATORY (both sets): comma-separated YYYY-MM months used to "
+                             "calibrate the thresholds (cross-calibration embargo, B7 §d.2.4)")
     parser.add_argument("--lock-path", default=None)
     args = parser.parse_args(argv)
 

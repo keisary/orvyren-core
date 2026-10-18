@@ -36,11 +36,15 @@ DECISION = os.path.join(ROOT, "evidence", "decision_usdc-2023-03.json")
 BASELINE = os.path.join(ROOT, "evidence", "baseline_report.json")
 CORPUS_CSV = os.path.join(ROOT, "corpus", "usdc_observations.csv")
 
+#: Threshold-calibration months declared by the DEV harness runs (mandatory
+#: cross-calibration embargo, B7 §d.2.4).
+DEV_PERIODS = ["2023-02", "2023-03"]
+
 
 class HarnessDevTest(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.result = harness.run_set("dev")
+        cls.result = harness.run_set("dev", calibration_periods=DEV_PERIODS)
         cls.content = cls.result["content"]
 
     def test_dev_run_shape(self):
@@ -61,7 +65,7 @@ class HarnessDevTest(unittest.TestCase):
             self.assertAlmostEqual(detail["configs"]["A0"]["loss"], expected, delta=1e-9)
 
     def test_determinism_two_runs_same_content_hash(self):
-        second = harness.run_set("dev")
+        second = harness.run_set("dev", calibration_periods=DEV_PERIODS)
         self.assertEqual(harness.content_hash(self.content),
                          harness.content_hash(second["content"]))
 
@@ -77,7 +81,7 @@ class HarnessDevTest(unittest.TestCase):
                                   side_effect=[ok_detail, skipped_detail]), \
                 mock.patch.object(windows_mod, "verify_frozen_package",
                                   return_value={"G1": "x"}):
-            result = harness.run_set("dev", b0_draws=1)
+            result = harness.run_set("dev", b0_draws=1, calibration_periods=DEV_PERIODS)
         content = result["content"]
         self.assertEqual(1, content["n_windows"])
         self.assertEqual(1, content["n_windows_skipped"])
@@ -105,9 +109,11 @@ class HarnessDevTest(unittest.TestCase):
             set_label="eval", kind="calme",
             start_utc="2025-01-05T00:00:00Z", end_utc="2025-01-20T00:00:00Z",
             sources=("inexistant.json",), role="test window (never used in a real run)")
+        lock = os.path.join(tempfile.mkdtemp(prefix="orvyren_xcal_"), "absent.lock")
         with mock.patch.object(windows_mod, "EVAL_WINDOWS", (synthetic,)):
-            with self.assertRaises(harness.HarnessError):
-                harness.run_set("eval", calibration_periods=["2025-01"], lock_path=None)
+            with self.assertRaises(harness.HarnessError) as caught:
+                harness.run_set("eval", calibration_periods=["2025-01"], lock_path=lock)
+        self.assertIn("overlap", str(caught.exception))
 
     def test_a2_mapping_from_dossier(self):
         actions, notes = harness.a2_actions_from_dossier(DECISION)

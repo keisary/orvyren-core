@@ -18,10 +18,20 @@ Honesty of substitutions (always written, never silent):
 * any window whose series does not resolve is **SKIPPED with a reason**, never
   filled with invented data.
 
-Freeze gate (B7 §d.2.5): any write requires matching ``frozen/G1–G6``;
+Freeze gate (B7 §d.2.5): any write requires matching ``frozen/G1–G6`` **and**
+the code hashes announced inside the Gx documents (``loss.py``,
+``comparators.py``, ``windows.py``, ``calibration.py``, ``forecasts.py``,
+``outcomes.py`` + executable proofs) to match the working tree — a code file
+modified after the freeze is a refusal, never a silent pass;
 ``--set eval`` additionally requires the absence of ``eval_run.lock`` (unless
-``--force`` + mention) and the absence of overlap between CALM EVAL windows and
-the declared calibration period.
+``--force`` + mention). The cross-calibration embargo is **mandatory**: the
+months used to calibrate thresholds (``calibration_periods``) must be declared
+on every run, and no declared month may overlap a CALM EVAL window.
+
+G5 §b.3 cascade: applied to the **content actually computed** — the
+superiority tests (Wilson, exact McNemar, block bootstrap) are computed only at
+N ≥ 100 and the status label follows the computed content (report.py applies
+the same cascade to bootstrap CI / ECE / BSS of the calibration report).
 """
 
 from __future__ import annotations
@@ -30,6 +40,7 @@ import datetime as _dt
 import hashlib
 import json
 import os
+import re
 from typing import Any, Dict, List, Optional, Sequence, Tuple
 
 from orvyren.evaluation import calibration as calibration_mod
@@ -77,6 +88,80 @@ def _value_at(points: Sequence[Tuple[str, float]], moment_utc: str) -> Optional[
             break
     return value
 
+
+# --------------------------------------------------------------------------- #
+# Freeze gate — code hashes announced by the Gx documents (B7 §d.2.1)
+# --------------------------------------------------------------------------- #
+
+#: `` `path` — sha256 `hex64` `` announcement inside a Gx document. Whitespace
+#: between the name and the digest is immaterial, so multi-line announcements
+#: (G5's "Code gelé" block) are read back correctly.
+CODE_HASH_ANNOUNCEMENT = re.compile(
+    r"`([^`]+)`\s*[-—–]?\s*sha256\s*`([0-9a-f]{64})`")
+
+def _resolve_announced_target(target: str, repo_root: str) -> str:
+    """Resolve an announced file name against the repository.
+
+    Gx documents announce either repo-relative paths
+    (``src/orvyren/evaluation/loss.py``) or bare module names (G5's
+    ``calibration.py``) — resolved under ``src/orvyren/evaluation``. An
+    announcement naming an absent file is a freeze violation.
+    """
+    relative = target.replace("/", os.sep).replace("\\", os.sep)
+    candidates = (os.path.join(repo_root, relative),
+                  os.path.join(repo_root, "src", "orvyren", "evaluation", relative))
+    for candidate in candidates:
+        if os.path.isfile(candidate):
+            return candidate
+    raise windows_mod.FreezeGateError(
+        "les documents Gx annoncent le hash d'un fichier absent : %s" % target)
+
+def verify_code_hashes(frozen_dir: str, repo_root: str = REPO_ROOT) -> Dict[str, str]:
+    """Verify the code hashes **announced inside the Gx documents**.
+
+    The ``Gx.sha256`` manifests pin the documents (see
+    :func:`orvyren.evaluation.windows.verify_frozen_package`); the documents
+    themselves pin the code (``loss.py``, ``comparators.py``, ``windows.py``,
+    ``calibration.py``, ``forecasts.py``, ``outcomes.py`` and the executable
+    proofs). Every announcement is recomputed against the working tree with the
+    same convention as the manifests (:func:`windows.sha256_file`): a stale,
+    modified or missing code file is a :class:`windows.FreezeGateError`, never
+    a silent pass. Two documents announcing divergent digests for the same file
+    are refused as well.
+
+    Returns ``{repo-relative path: sha256}`` for every verified announcement.
+    """
+    digests: Dict[str, str] = {}
+    for name in windows_mod.FROZEN_FILES:
+        manifest = os.path.join(frozen_dir, "%s.sha256" % name)
+        if not os.path.isfile(manifest):
+            raise windows_mod.FreezeGateError(f"manifeste de gel manquant : {manifest}")
+        for _document_digest, referenced in windows_mod._read_sha256sum(manifest):
+            document = (referenced if os.path.isabs(referenced)
+                        else os.path.join(frozen_dir, referenced))
+            if not os.path.isfile(document):
+                raise windows_mod.FreezeGateError(
+                    f"{manifest} référence un fichier absent : {referenced}")
+            with open(document, "r", encoding="utf-8") as handle:
+                flat = re.sub(r"\s+", " ", handle.read())
+            for target, announced in CODE_HASH_ANNOUNCEMENT.findall(flat):
+                path = _resolve_announced_target(target.strip(), repo_root)
+                relative = os.path.relpath(path, repo_root).replace(os.sep, "/")
+                if relative in digests and digests[relative] != announced:
+                    raise windows_mod.FreezeGateError(
+                        f"les documents Gx annoncent des hashes divergents pour {relative} : "
+                        f"{digests[relative]} ≠ {announced}")
+                digests[relative] = announced
+                actual = windows_mod.sha256_file(path)
+                if actual != announced:
+                    raise windows_mod.FreezeGateError(
+                        f"empreinte de code non concordante pour {relative} : "
+                        f"{actual} ≠ {announced} (annoncé dans {referenced}) — "
+                        f"code modifié après le gel ?")
+    if not digests:
+        raise windows_mod.FreezeGateError(
+            "aucun hash de code annoncé dans les documents Gx — vérification impossible (refus)")
+    return dict(sorted(digests.items()))
 
 # --------------------------------------------------------------------------- #
 # A2 actions — deterministic dossier (declared DEV substitution)
@@ -293,6 +378,82 @@ def runs_for_set(set_label: str):
     raise HarnessError("unknown dataset: %r" % set_label)
 
 
+def _numeric_loss(detail: Dict[str, Any], label: str) -> Optional[float]:
+    """Loss of ``label`` **actually computed** for that window (content, not a
+    status label) — ``None`` when the config carries no computed loss."""
+    value = ((detail.get("configs") or {}).get(label) or {}).get("loss")
+    return value if isinstance(value, (int, float)) else None
+
+
+def paired_superiority(ran: Sequence[Dict[str, Any]], *,
+                       bootstrap_reps: int = calibration_mod.BOOTSTRAP_REPLICATIONS) -> Dict[str, Any]:
+    """§3 comparison statistics — the G5 §b.3 cascade applied to CONTENT.
+
+    Per config pair, over windows where **both** losses were actually computed:
+    exact McNemar on the discordant pairs (``b`` = wins of the first config,
+    ``c`` = wins of the second), Wilson interval on the win share of the
+    discordant pairs, and the C6 block-bootstrap CI on the paired per-window
+    loss differences (``L(second) − L(first)``). No single aggregate score is
+    ever published (B7 §e.5).
+
+    The tests are computed only at ``N ≥ 100`` and the status label follows the
+    content actually computed — never the other way round.
+    """
+    n = len(ran)
+    if n < calibration_mod.N_CLAIM_MIN:
+        return {"n": n,
+                "status": "NON CALCULÉ — N < %d (cascade B7 §b.3)" % calibration_mod.N_CLAIM_MIN,
+                "mcnemar": None, "tests": None,
+                "note": ("tests de supériorité (Wilson, McNemar exact, bootstrap par blocs) exécutés "
+                         "seulement quand N ≥ %d — le statut suit le contenu réellement calculé ; "
+                         "le harnais refuse de publier un score agrégé unique (B7 §e.5)"
+                         % calibration_mod.N_CLAIM_MIN)}
+    tests: Dict[str, Any] = {}
+    mcnemar: Dict[str, Any] = {}
+    labels = [label for label in CONFIG_LABELS
+              if any(_numeric_loss(detail, label) is not None for detail in ran)]
+    for index, first in enumerate(labels):
+        for second in labels[index + 1:]:
+            paired = [detail for detail in ran
+                      if _numeric_loss(detail, first) is not None
+                      and _numeric_loss(detail, second) is not None]
+            if not paired:
+                continue
+            wins = sum(1 for detail in paired
+                       if _numeric_loss(detail, first) < _numeric_loss(detail, second))
+            losses = sum(1 for detail in paired
+                         if _numeric_loss(detail, first) > _numeric_loss(detail, second))
+            ties = len(paired) - wins - losses
+            discordant = wins + losses
+            differences = [_numeric_loss(detail, second) - _numeric_loss(detail, first)
+                           for detail in paired]
+            entry: Dict[str, Any] = {
+                "first": first, "second": second, "n_paired": len(paired),
+                "wins_first": wins, "wins_second": losses, "ties": ties,
+                "mcnemar_exact_p": (calibration_mod.mcnemar_exact(wins, losses)
+                                    if discordant else None),
+                "wilson_win_share_first": (list(calibration_mod.wilson_interval(wins, discordant))
+                                           if discordant else None),
+            }
+            if len(differences) >= 2:
+                ci = calibration_mod.block_bootstrap_ci(differences, n_reps=bootstrap_reps)
+                entry["paired_loss_diff_bootstrap"] = {
+                    "series": "L(%s) − L(%s)" % (second, first),
+                    "mean": ci["mean"], "ci_low": ci["ci_low"], "ci_high": ci["ci_high"],
+                    "block_size": ci["block_size"], "n_reps": ci["n_reps"], "seed": ci["seed"]}
+            else:
+                entry["paired_loss_diff_bootstrap"] = None
+            tests["%s_vs_%s" % (first, second)] = entry
+            mcnemar["%s_vs_%s" % (first, second)] = entry["mcnemar_exact_p"]
+    status = ("CALCULÉ — Wilson, McNemar exact, bootstrap par blocs par paire "
+              "(aucun score agrégé unique)" if tests else
+              "NON CALCULÉ — contenu non calculable (aucune paire de configs avec pertes calculées)")
+    return {"n": n, "status": status,
+            "mcnemar": mcnemar if tests else None, "tests": tests if tests else None,
+            "note": ("tests par paire sur les pertes appariées par fenêtre ; le statut reflète "
+                     "le contenu réellement calculé (B7 §e.5)")}
+
+
 def run_set(set_label: str, *, frozen_dir: str = DEFAULT_FROZEN_DIR,
             b0_draws: int = comparators_mod.B0_MIN_DRAWS,
             decision_path: str = DEFAULT_DECISION,
@@ -300,27 +461,41 @@ def run_set(set_label: str, *, frozen_dir: str = DEFAULT_FROZEN_DIR,
             lock_path: Optional[str] = None, force: bool = False) -> Dict[str, Any]:
     """Run a complete dataset with the **freeze gate** — or refuse to write.
 
+    Gates (any failure = refusal, nothing written): matching ``frozen/G1–G6``,
+    matching code hashes announced by the Gx documents, the EVAL run lock, and
+    the **mandatory** cross-calibration embargo (``calibration_periods`` must
+    be declared on every run; a declared month overlapping a CALM EVAL window
+    is refused).
+
     Returns the machine content of the report (real execution fields excluded);
     the banner and the write go through ``report.py``.
     """
     frozen_hashes = windows_mod.verify_frozen_package(frozen_dir)  # refuses without a freeze
+    code_hashes = verify_code_hashes(frozen_dir, repo_root=REPO_ROOT)  # announced Gx code hashes
     forced_mention = None
     if set_label == windows_mod.SET_EVAL:
         if lock_path is None:
             raise HarnessError("EVAL requires an explicit lock_path (the set must be burned)")
         forced_mention = windows_mod.eval_run_gate(frozen_dir, lock_path=lock_path, force=force)
-        if calibration_periods is not None:
-            eval_calm = [w for w in windows_mod.EVAL_WINDOWS if w.kind == windows_mod.KIND_CALME]
-            violations = windows_mod.cross_calibration_violations(list(calibration_periods),
-                                                                  eval_calm)
-            if violations:
-                raise HarnessError("CALM EVAL window × calibration period overlap: %s"
-                                   % violations)
+    if not calibration_periods:
+        raise HarnessError(
+            "calibration embargo (B7 §d.2.4) is MANDATORY: declare the months used to calibrate "
+            "the thresholds (--calibration-periods YYYY-MM,...) — a run with an undeclared "
+            "embargo is refused, never silently skipped")
+    periods = [str(period).strip() for period in calibration_periods]
+    eval_calm = [w for w in windows_mod.EVAL_WINDOWS if w.kind == windows_mod.KIND_CALME]
+    violations = windows_mod.cross_calibration_violations(periods, eval_calm)
+    if violations:
+        raise HarnessError("CALM EVAL window × calibration period overlap: %s" % violations)
     windows = runs_for_set(set_label)
     window_details = [run_window(window, decision_path=decision_path, b0_draws=b0_draws)
                       for window in windows]
-    ran = [detail for detail in window_details if detail.get("status") == "OK"]
-    skipped = [detail for detail in window_details if detail.get("status") != "OK"]
+    # The cascade N counts the windows whose content was actually computed —
+    # never a status label alone.
+    ran = [detail for detail in window_details
+           if _numeric_loss(detail, "A0") is not None]
+    skipped = [detail for detail in window_details
+               if _numeric_loss(detail, "A0") is None]
 
     aggregates: Dict[str, Any] = {}
     for label in CONFIG_LABELS:
@@ -345,12 +520,16 @@ def run_set(set_label: str, *, frozen_dir: str = DEFAULT_FROZEN_DIR,
         "set": set_label,
         "banner": ("EVAL" if set_label == windows_mod.SET_EVAL else "DEV"),
         "frozen": {"dir": os.path.relpath(frozen_dir, REPO_ROOT).replace(os.sep, "/"),
-                   "hashes": frozen_hashes},
+                   "hashes": frozen_hashes,
+                   "code_hashes": code_hashes},
         "params": {"q": Q_DEV_USDC, "p_ref": P_REF, "k": COST_K, "b0_draws": b0_draws,
+                   "calibration_periods": periods,
                    "note": NOTE_PARAMS},
         "n_windows": n_display, "n_windows_skipped": len(skipped),
         "validity": validity,
-        "skipped": [{"window_id": detail["window_id"], "reason": detail.get("reason")}
+        "skipped": [{"window_id": detail["window_id"],
+                     "reason": detail.get("reason")
+                               or "aucune perte calculée — contenu absent (jamais remplacé)"}
                     for detail in skipped],
         "windows": [{"window_id": detail["window_id"], "status": detail.get("status"),
                      "notes": detail.get("notes", []),
@@ -362,13 +541,7 @@ def run_set(set_label: str, *, frozen_dir: str = DEFAULT_FROZEN_DIR,
                                         if detail.get("status") == "OK" else {})}
                     for detail in window_details],
         "aggregates": aggregates,
-        "superiority": {
-            "status": "NON CALCULÉ — N < 100" if n_display < 100 else "CALCULÉ",
-            "mcnemar": None,
-            "note": ("tests de supériorité (Wilson, McNemar exact, bootstrap par blocs) exécutés "
-                     "seulement quand N ≥ 100 — le harnais refuse de publier un score agrégé "
-                     "unique (B7 §e.5)"),
-        },
+        "superiority": paired_superiority(ran),
         "forced_mention": forced_mention,
     }
     return {"content": content, "window_details": window_details}
