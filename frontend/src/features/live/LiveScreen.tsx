@@ -8,15 +8,16 @@ import {
   fmtCompact,
   fmtHash,
   fmtNumber,
+  fmtSeconds,
   fmtTime,
   truncate,
   verdictVariant,
 } from "@/lib/format";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ScrollArea, Select } from "@/components/ui/input";
 import { ScreenShell } from "@/components/ScreenShell";
+import { SubstitutionBanner } from "@/components/SubstitutionBanner";
 
 const TYPE_COLOR: Record<string, "info" | "violet" | "warn" | "ok" | "deny" | "neutral"> = {
   "agent.thought": "info",
@@ -46,7 +47,7 @@ function EventRow({ event }: { event: RunEvent }) {
   const [open, setOpen] = useState(false);
   const payload = event.payload ?? {};
   const kind = String(payload.kind ?? "");
-  const agent = String(payload.agent ?? payload.exchange ?? "système");
+  const agent = String(payload.agent ?? payload.exchange ?? "system");
   const status = String(payload.status ?? "");
   const content = String(payload.content ?? "");
   const refs = (payload.refs as string[] | undefined) ?? [];
@@ -93,7 +94,7 @@ function EventRow({ event }: { event: RunEvent }) {
       ) : null}
       {(payload.exchange as string | undefined) ? (
         <div className="mono mt-1 text-[10px] text-accent2">
-          échange : {String(payload.exchange)}
+          exchange: {String(payload.exchange)}
         </div>
       ) : null}
       {Object.keys(llm).length > 0 || validation.motif ? (
@@ -105,7 +106,7 @@ function EventRow({ event }: { event: RunEvent }) {
             </span>
           ) : null}
           {validation.provenance_ok === false ? (
-            <span className="text-down">provenance incomplète · </span>
+            <span className="text-down">incomplete provenance · </span>
           ) : null}
           {validation.motif ? <span>{String(validation.motif)}</span> : null}
           {payload.prev_hash ? (
@@ -152,10 +153,10 @@ export default function LiveScreen() {
     refetchInterval: liveStatus === "live" ? false : 10_000,
   });
 
-  // Flux WS pour ce run (fallback REST quand le socket est coupé). Le hub
-  // reboucle le run enregistré pour la démo : une seule occurrence par
-  // événement (run_seq/journal_id) est gardée, sinon la timeline et les
-  // compteurs se répètent à chaque boucle.
+  // WS stream for this run (REST fallback when the socket is down). The hub
+  // loops the recorded run for the demo: only one occurrence per event
+  // (run_seq/journal_id) is kept, otherwise the timeline and the counters
+  // would repeat on every loop.
   const wsEvents = useMemo(() => {
     const seen = new Set<string>();
     const out: RunEvent[] = [];
@@ -178,11 +179,13 @@ export default function LiveScreen() {
   const timeline: RunEvent[] =
     liveStatus === "live" && wsEvents.length > 0 ? wsEvents : (eventsQuery.data?.events ?? []);
 
-  // Budget en direct = flux WS dédupliqué de CE run (un run réellement live
-  // n'a pas encore d'outcome). Voir aussi ``budget`` plus bas : jamais
-  // outcome + flux WS additionnés, le flux rejoue le même journal.
+  // Live budget = deduplicated WS stream of THIS run (a genuinely live run has
+  // no outcome yet). See also ``budget`` below: never outcome + WS stream
+  // summed — the stream replays the same journal.
   const liveBudget = useMemo(() => {
-    const acc = { cost_usd: 0, tokens_in: 0, tokens_out: 0, llm_calls: 0, tool_calls: 0 };
+    const acc = { cost_usd: 0, tokens_in: 0, tokens_out: 0, llm_calls: 0, tool_calls: 0, wall_seconds: 0 };
+    let firstMs = Number.POSITIVE_INFINITY;
+    let lastMs = Number.NEGATIVE_INFINITY;
     for (const event of wsEvents) {
       const payload = event.payload ?? {};
       if (typeof payload.cost_usd === "number") acc.cost_usd += payload.cost_usd;
@@ -190,6 +193,14 @@ export default function LiveScreen() {
       if (typeof payload.tokens_out === "number") acc.tokens_out += payload.tokens_out;
       if (payload.llm && typeof payload.llm === "object") acc.llm_calls += 1;
       if (event.type === "agent.evidence" && payload.kind === "TOOL_CALL") acc.tool_calls += 1;
+      const tsMs = Date.parse(String(event.ts ?? ""));
+      if (Number.isFinite(tsMs)) {
+        firstMs = Math.min(firstMs, tsMs);
+        lastMs = Math.max(lastMs, tsMs);
+      }
+    }
+    if (Number.isFinite(firstMs) && Number.isFinite(lastMs) && lastMs > firstMs) {
+      acc.wall_seconds = (lastMs - firstMs) / 1000;
     }
     return acc;
   }, [wsEvents]);
@@ -199,10 +210,14 @@ export default function LiveScreen() {
   const outcome = (bundle?.outcome ?? {}) as Record<string, unknown>;
   const budgetUsed = (outcome.budget_used ?? {}) as Record<string, number>;
   const run = runs.find((r) => r.run_id === runId) ?? ({} as RunSummary);
-  // Budget affiché = UNE source : l'outcome enregistré du run s'il existe,
-  // sinon le flux WS en direct. Jamais la somme des deux : le flux rejoue le
-  // même journal et doublerait le compte à chaque boucle.
+  // Displayed budget = ONE source: the recorded outcome of the run when it
+  // exists, otherwise the live WS stream. Never the sum of both: the stream
+  // replays the same journal and would double the count on every loop.
   const budget = Object.keys(budgetUsed).length > 0 ? budgetUsed : liveBudget;
+  // Budget ceilings = the run spec (real artefact: run.json "budget").
+  const budgetLimits = (
+    run.budget && Object.keys(run.budget).length > 0 ? run.budget : (spec?.budget ?? {})
+  ) as Record<string, number>;
   const evidence = bundle?.exchanges?.find((x) => x.name.includes("evidence"));
   const critique = bundle?.exchanges?.find((x) => x.name.includes("critique"));
   const claims = (evidence?.data?.claims as Record<string, unknown>[] | undefined) ?? [];
@@ -212,10 +227,10 @@ export default function LiveScreen() {
 
   return (
     <ScreenShell
-      title="Live — agents en cours"
+      title="Live — agents running"
       subtitle={
         <span className="mono">
-          journal chaîné par hash · hypothèses · claims référencés · verdicts du critique
+          hash-chained journal · hypotheses · referenced claims · critic verdicts
         </span>
       }
       actions={
@@ -232,45 +247,68 @@ export default function LiveScreen() {
             ))}
           </Select>
           <Badge variant={liveStatus === "live" ? "live" : "warn"}>
-            {liveStatus === "live" ? "flux WS actif" : "repli polling REST"}
+            {liveStatus === "live" ? "WS stream live" : "REST polling fallback"}
           </Badge>
         </>
       }
     >
+      <div className="mb-3">
+        <SubstitutionBanner substitution={bundle?.substitution ?? run.substitution ?? null} />
+      </div>
+
+      <div className="mb-3 rounded-md border border-accent/25 bg-accent/[0.04] p-2.5">
+        <div className="mb-2 flex flex-wrap items-center gap-2">
+          <span className="text-[9.5px] font-semibold uppercase tracking-[0.16em] text-muted">
+            run budget — used / budget
+          </span>
+          <Badge variant="ok">≈ $0.04 per full run</Badge>
+        </div>
+        <div className="flex flex-wrap gap-2.5">
+          <Kpi
+            label="llm calls"
+            value={`${fmtNumber(budget.llm_calls ?? 0, 0)} / ${fmtNumber(budgetLimits.llm_calls ?? 0, 0)}`}
+          />
+          <Kpi
+            label="tool calls"
+            value={`${fmtNumber(budget.tool_calls ?? 0, 0)} / ${fmtNumber(budgetLimits.tool_calls ?? 0, 0)}`}
+          />
+          <Kpi
+            label="wall time"
+            value={`${fmtSeconds(budget.wall_seconds ?? 0)} / ${fmtSeconds(budgetLimits.wall_seconds ?? 0)}`}
+            hint="run latency vs time budget"
+          />
+          <Kpi
+            label="cost"
+            value={`$${fmtNumber(budget.cost_usd ?? 0, 4)} / $${fmtNumber(budgetLimits.cost_usd ?? 0, 2)}`}
+            hint="≈ $0.04 per full run (measured)"
+          />
+        </div>
+      </div>
+
       <div className="mb-3 flex flex-wrap gap-2.5">
-        <Kpi
-          label="coût cumulé"
-          value={`$${fmtNumber(budget.cost_usd ?? 0, 4)}`}
-          hint={`budget ${fmtNumber(run.budget?.cost_usd ?? spec?.budget?.cost_usd ?? 0, 2)} $`}
-        />
         <Kpi
           label="tokens in / out"
           value={`${fmtCompact(budget.tokens_in ?? 0)} / ${fmtCompact(budget.tokens_out ?? 0)}`}
-          hint={`appels LLM ${fmtCompact(budget.llm_calls ?? 0)}`}
+          hint={`llm calls ${fmtCompact(budget.llm_calls ?? 0)}`}
         />
         <Kpi
-          label="appels d'outils"
-          value={fmtCompact(budget.tool_calls ?? 0)}
-          hint={`journal ${run.journals?.orchestrator?.lines ?? 0} lignes`}
-        />
-        <Kpi
-          label="hypothèses"
+          label="hypotheses"
           value={String(spec?.hypotheses?.length ?? run.hypotheses ?? 0)}
-          hint={`lacunes ${spec?.lacunes?.length ?? run.lacunes ?? 0}`}
+          hint={`gaps ${spec?.lacunes?.length ?? run.lacunes ?? 0}`}
         />
         <Kpi
-          label="événements"
+          label="events"
           value={`${timeline.length}${eventsQuery.data?.total ? ` / ${eventsQuery.data.total}` : ""}`}
           hint={
             verify?.verified
-              ? "chaîne vérifiée ✓"
+              ? "chain verified ✓"
               : verify
-                ? "chaîne NON vérifiée"
-                : "vérification…"
+                ? "chain NOT verified"
+                : "verifying…"
           }
         />
         <Kpi
-          label="état run"
+          label="run state"
           value={String(outcome.state ?? run.state ?? "—")}
           hint={String(outcome.stop_condition ?? run.stop_condition ?? "")}
         />
@@ -279,7 +317,7 @@ export default function LiveScreen() {
       <div className="grid grid-cols-1 gap-3 xl:grid-cols-3">
         <Card className="xl:col-span-2">
           <CardHeader>
-            <CardTitle>timeline d'exécution</CardTitle>
+            <CardTitle>execution timeline</CardTitle>
             <div className="mono flex flex-wrap gap-1.5 text-[10px] text-muted">
               {Object.entries(kinds).map(([kind, count]) => (
                 <Badge key={kind} variant="neutral">
@@ -290,7 +328,7 @@ export default function LiveScreen() {
           </CardHeader>
           <ScrollArea className="max-h-[560px] rounded-none border-0">
             {timeline.length === 0 ? (
-              <div className="p-6 text-center text-muted">chargement du journal…</div>
+              <div className="p-6 text-center text-muted">loading journal…</div>
             ) : (
               timeline.map((event) => (
                 <EventRow
@@ -305,7 +343,7 @@ export default function LiveScreen() {
         <div className="flex flex-col gap-3">
           <Card>
             <CardHeader>
-              <CardTitle>hypothèses & lacunes</CardTitle>
+              <CardTitle>hypotheses & gaps</CardTitle>
               <Badge variant="info">{spec?.case_id ?? run.case_id ?? ""}</Badge>
             </CardHeader>
             <CardContent className="space-y-2.5">
@@ -313,7 +351,7 @@ export default function LiveScreen() {
                 <div key={hypothesis.id} className="rounded-md border border-line bg-surface2/40 p-2.5">
                   <div className="flex items-center gap-2">
                     <Badge variant="info">{hypothesis.id}</Badge>
-                    <Badge variant={verdictVariant(hypothesis.etat)}>{hypotheseLabel(hypothesis.etat)}</Badge>
+                    <Badge variant={verdictVariant(hypothesis.etat)}>{hypothesisLabel(hypothesis.etat)}</Badge>
                   </div>
                   <div className="mt-1.5 text-[11.5px] leading-relaxed text-ink/90">
                     {hypothesis.enonce}
@@ -321,7 +359,7 @@ export default function LiveScreen() {
                   <div className="mono mt-1 space-y-0.5 text-[10px] text-muted">
                     {Object.entries(hypothesis.criteres ?? {}).map(([key, value]) => (
                       <div key={key}>
-                        <span className="text-accent2">{key}</span> : {value}
+                        <span className="text-accent2">{key}</span>: {value}
                       </div>
                     ))}
                   </div>
@@ -338,7 +376,7 @@ export default function LiveScreen() {
 
           <Card>
             <CardHeader>
-              <CardTitle>paquet de preuves</CardTitle>
+              <CardTitle>evidence packet</CardTitle>
               <Badge variant="violet">{evidence ? claims.length : 0} claims</Badge>
             </CardHeader>
             <CardContent className="space-y-2">
@@ -355,7 +393,7 @@ export default function LiveScreen() {
                         {String(claim.journal_id)}
                         {((claim.refs as string[]) ?? []).length > 0
                           ? ` · refs: ${((claim.refs as string[]).join(", "))}`
-                          : " · sans refs (non utilisable)"}
+                          : " · no refs (unusable)"}
                       </div>
                     </div>
                   ))}
@@ -366,14 +404,14 @@ export default function LiveScreen() {
                   ) : null}
                 </>
               ) : (
-                <div className="text-[11px] text-muted">aucun paquet d'échanges pour ce run</div>
+                <div className="text-[11px] text-muted">no exchange packet for this run</div>
               )}
             </CardContent>
           </Card>
 
           <Card>
             <CardHeader>
-              <CardTitle>critique & outcome</CardTitle>
+              <CardTitle>critic & outcome</CardTitle>
               <Badge variant={verdictVariant(outcome.state ?? run.state)}>
                 {String(outcome.state ?? run.state ?? "—")}
               </Badge>
@@ -381,22 +419,22 @@ export default function LiveScreen() {
             <CardContent className="space-y-2">
               <div className="mono text-[10.5px] leading-relaxed text-ink/85">
                 <div>
-                  <span className="text-muted">arrêt : </span>
+                  <span className="text-muted">stop: </span>
                   {String(outcome.stop_condition ?? "—")}
                 </div>
                 <div>
-                  <span className="text-muted">motif : </span>
+                  <span className="text-muted">reason: </span>
                   {String(outcome.motif ?? run.motif ?? "—")}
                 </div>
                 <div>
-                  <span className="text-muted">verdict critique : </span>
+                  <span className="text-muted">critic verdict: </span>
                   {String(outcome.critique_verdict || criticReport.$status || "—")}
                 </div>
               </div>
               {(outcome.non_recherche as string[] | undefined)?.length ? (
                 <div>
                   <div className="text-[9.5px] uppercase tracking-[0.14em] text-muted">
-                    non recherché
+                    not searched
                   </div>
                   {(outcome.non_recherche as string[]).map((line, index) => (
                     <div key={index} className="mt-1 text-[10.5px] leading-relaxed text-warn/90">
@@ -407,7 +445,7 @@ export default function LiveScreen() {
               ) : null}
               {(criticReport.errors as string[] | undefined)?.length ? (
                 <div>
-                  <div className="text-[9.5px] uppercase tracking-[0.14em] text-down">erreurs critique</div>
+                  <div className="text-[9.5px] uppercase tracking-[0.14em] text-down">critic errors</div>
                   {(criticReport.errors as string[]).map((line, index) => (
                     <div key={index} className="mono mt-1 text-[10px] text-down/90">
                       {truncate(line, 180)}
@@ -418,13 +456,13 @@ export default function LiveScreen() {
               {verify ? (
                 <div className="mono rounded border border-line bg-surface2/40 p-2 text-[10px]">
                   <div className={verify.verified ? "text-up" : "text-down"}>
-                    chaîne journal : {verify.verified ? "VÉRIFIÉE" : "ÉCART"}
+                    journal chain: {verify.verified ? "VERIFIED" : "DRIFT"}
                   </div>
                   <div className="mt-1 text-muted">
-                    head recalculé {fmtHash(verify.recomputed_head, 12)}
+                    recomputed head {fmtHash(verify.recomputed_head, 12)}
                   </div>
                   <div className="text-muted">
-                    head enregistré {fmtHash(verify.recorded_head, 12)}
+                    recorded head {fmtHash(verify.recorded_head, 12)}
                   </div>
                 </div>
               ) : null}
@@ -434,13 +472,13 @@ export default function LiveScreen() {
           {(bundle?.tool_calls ?? []).length > 0 ? (
             <Card>
               <CardHeader>
-                <CardTitle>appels d'outils (store)</CardTitle>
+                <CardTitle>tool calls (store)</CardTitle>
                 <Badge variant="neutral">{bundle!.tool_calls.length}</Badge>
               </CardHeader>
               <ScrollArea className="max-h-52 rounded-none border-0">
                 {bundle!.tool_calls.map((call, index) => (
                   <div key={index} className="mono border-b border-line/60 px-3 py-1.5 text-[10px]">
-                    <div className="text-accent">{String(call.tool ?? call.name ?? "appel")}</div>
+                    <div className="text-accent">{String(call.tool ?? call.name ?? "call")}</div>
                     <div className="text-muted">{truncate(JSON.stringify(call.args ?? call), 140)}</div>
                   </div>
                 ))}
@@ -453,12 +491,12 @@ export default function LiveScreen() {
   );
 }
 
-function hypotheseLabel(etat: string): string {
+function hypothesisLabel(etat: string): string {
   const map: Record<string, string> = {
-    UNDER_TEST: "en test",
-    SUPPORTED: "soutenue",
-    REFUTED: "réfutée",
-    INCONCLUSIVE: "non concluant",
+    UNDER_TEST: "under test",
+    SUPPORTED: "supported",
+    REFUTED: "refuted",
+    INCONCLUSIVE: "inconclusive",
   };
   return map[etat] ?? etat;
 }

@@ -1,4 +1,4 @@
-/** Client WebSocket — reconnexion, reprise `since_seq`, détection de trous. */
+/** WebSocket client — reconnection, `since_seq` resume, gap detection. */
 
 export type WsStatus = "connecting" | "live" | "degraded" | "offline";
 
@@ -88,7 +88,7 @@ export class LiveSocket {
         this.handlers.onStatus("live", latency);
       }
       if (envelope.type === "ping") {
-        // heartbeat serveur : accusé immédiat, mesure de latence
+        // server heartbeat: immediate ack, latency measurement
         this.pingSentAt = Date.now();
         socket.send(JSON.stringify({ type: "ping" }));
       }
@@ -98,7 +98,7 @@ export class LiveSocket {
       }
       if (typeof envelope.seq === "number") {
         if (this.lastSeq && envelope.seq > this.lastSeq + 1) {
-          // trou détecté : le store passera en "dégradé" jusqu'au resync
+          // gap detected: the store goes "degraded" until the next resync
           this.handlers.onStatus("degraded", null);
         }
         this.lastSeq = Math.max(this.lastSeq, envelope.seq);

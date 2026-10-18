@@ -1,9 +1,9 @@
-/** Formatteurs — chiffres tabulaires, hashes, temps, statuts. */
+/** Formatters — tabular numbers, hashes, times, statuses. */
 
 export function fmtNumber(value: unknown, digits = 2): string {
   const n = typeof value === "number" ? value : Number(value);
   if (!Number.isFinite(n)) return "—";
-  return n.toLocaleString("fr-FR", {
+  return n.toLocaleString("en-GB", {
     minimumFractionDigits: digits,
     maximumFractionDigits: digits,
   });
@@ -13,7 +13,7 @@ export function fmtCompact(value: unknown): string {
   const n = typeof value === "number" ? value : Number(value);
   if (!Number.isFinite(n)) return "—";
   const abs = Math.abs(n);
-  if (abs >= 1e9) return `${fmtNumber(n / 1e9, 2)} Md`;
+  if (abs >= 1e9) return `${fmtNumber(n / 1e9, 2)} B`;
   if (abs >= 1e6) return `${fmtNumber(n / 1e6, 2)} M`;
   if (abs >= 1e3) return `${fmtNumber(n / 1e3, 1)} k`;
   return fmtNumber(n, abs < 1 ? 4 : 2);
@@ -47,6 +47,12 @@ export function fmtUnix(unix: unknown): string {
   const n = typeof unix === "number" ? unix : Number(unix);
   if (!Number.isFinite(n) || n <= 0) return "—";
   return new Date(n * 1000).toISOString().replace("T", " ").slice(0, 16) + "Z";
+}
+
+export function fmtSeconds(value: unknown): string {
+  const n = typeof value === "number" ? value : Number(value);
+  if (!Number.isFinite(n)) return "—";
+  return `${fmtNumber(n, n < 100 ? 1 : 0)} s`;
 }
 
 export function verdictVariant(

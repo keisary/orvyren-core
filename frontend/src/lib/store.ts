@@ -1,7 +1,7 @@
 import { create } from "zustand";
 import type { WsEnvelope, WsStatus } from "./ws";
 
-/** Flux live (événements WS) — séparé du cache des requêtes REST. */
+/** Live stream (WS events) — kept separate from the REST query cache. */
 
 export interface LiveEvent extends WsEnvelope {
   receivedAt: number;

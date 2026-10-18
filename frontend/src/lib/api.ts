@@ -14,7 +14,7 @@ import type {
   RunVerification,
 } from "./types";
 
-/** Client REST minimaliste — mêmes origines, 100 % offline. */
+/** Minimal REST client — same origins, 100 % offline. */
 
 async function get<T>(path: string): Promise<T> {
   const response = await fetch(path, { headers: { Accept: "application/json" } });

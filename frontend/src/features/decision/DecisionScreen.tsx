@@ -101,10 +101,10 @@ function ReceiptTable({ receipts }: { receipts: Receipt[] }) {
       <THead>
         <TR>
           <TH>tx hash</TH>
-          <TH>statut</TH>
-          <TH>bloc</TH>
-          <TH>de → vers</TH>
-          <TH>gaz</TH>
+          <TH>status</TH>
+          <TH>block</TH>
+          <TH>from → to</TH>
+          <TH>gas</TH>
           <TH>logs</TH>
           <TH>source</TH>
         </TR>
@@ -117,7 +117,7 @@ function ReceiptTable({ receipts }: { receipts: Receipt[] }) {
             </TD>
             <TD>
               <Badge variant={receipt.status === "0x1" ? "ok" : "deny"}>
-                {receipt.status === "0x1" ? "succès" : receipt.status}
+                {receipt.status === "0x1" ? "success" : receipt.status}
               </Badge>
             </TD>
             <TD className="mono text-[10px]">{fmtCompact(Number(receipt.block_number) || receipt.block_number)}</TD>
@@ -161,10 +161,10 @@ export default function DecisionScreen() {
 
   return (
     <ScreenShell
-      title="Décision & Politique"
+      title="Decision & Policy"
       subtitle={
         <span className="mono">
-          3 axes jamais fusionnés · RDOF (recherche discriminante) · verrous policy P1–P14 · intents → reçus
+          3 axes never merged · RDOF (discriminative search by falsification) · policy locks P1–P14 · intents → receipts
         </span>
       }
       actions={
@@ -177,19 +177,19 @@ export default function DecisionScreen() {
       <div className="space-y-3">
         <div className="flex flex-wrap gap-3">
           <AxisCard
-            title="axe 1 — épistémique"
+            title="axis 1 — epistemic"
             value={String(axes.epistemic_verdict ?? "—")}
-            detail={`hypothèses soutenues : ${((axes.supported_hypotheses as string[]) ?? []).join(", ") || "—"}`}
+            detail={`supported hypotheses: ${((axes.supported_hypotheses as string[]) ?? []).join(", ") || "—"}`}
             variant={verdictVariant(axes.epistemic_verdict) as "ok" | "deny" | "warn" | "info"}
           />
           <AxisCard
-            title="axe 2 — économique"
+            title="axis 2 — economic"
             value={String(axes.economic_action ?? "—")}
-            detail={`taille x* = ${fmtNumber(axes.x_star_usdc ?? 0, 2)} USDC test (paramètres de démonstration)`}
+            detail={`size x* = ${fmtNumber(axes.x_star_usdc ?? 0, 2)} USDC test (demonstration parameters)`}
             variant="info"
           />
           <AxisCard
-            title="axe 3 — autorisation (policy)"
+            title="axis 3 — authorisation (policy)"
             value={String(axes.authorization_verdict ?? policyQuery.data?.cases?.[0]?.verdict ?? "—")}
             detail={truncate(
               String((axes.authorization_detail as Record<string, unknown>)?.note ?? axes.separation_note ?? ""),
@@ -200,18 +200,18 @@ export default function DecisionScreen() {
         </div>
         <Card>
           <CardContent className="mono px-4 py-2.5 text-[10px] text-muted">
-            séparation des axes : {String(axes.separation_note ?? "")}
+            axis separation: {String(axes.separation_note ?? "")}
           </CardContent>
         </Card>
 
         <div className="grid grid-cols-1 gap-3 xl:grid-cols-2">
           <Card>
             <CardHeader>
-              <CardTitle>RDOF — recherche discriminante par falsification</CardTitle>
+              <CardTitle>RDOF — discriminative search by falsification</CardTitle>
               <div className="flex gap-1.5">
                 <Badge variant="violet">dominant {String(rdof.dominant_final ?? "—")}</Badge>
                 <Badge variant={rdof.stop_rule === "c1" ? "ok" : "warn"}>
-                  arrêt {String(rdof.stop_rule ?? "—")}
+                  stop {String(rdof.stop_rule ?? "—")}
                 </Badge>
               </div>
             </CardHeader>
@@ -220,15 +220,15 @@ export default function DecisionScreen() {
                 {String(rdof.stop ?? "")}
               </div>
               <div className="mono text-[10px] text-muted">
-                budget : {JSON.stringify(rdof.budget ?? {})}
+                budget: {JSON.stringify(rdof.budget ?? {})}
               </div>
               <Table>
                 <THead>
                   <TR>
-                    <TH>étape</TH>
-                    <TH>prédicat</TH>
-                    <TH>effet</TH>
-                    <TH>coût</TH>
+                    <TH>step</TH>
+                    <TH>predicate</TH>
+                    <TH>effect</TH>
+                    <TH>cost</TH>
                   </TR>
                 </THead>
                 <TBody>
@@ -247,7 +247,7 @@ export default function DecisionScreen() {
                 </TBody>
               </Table>
               <div>
-                <div className="text-[9.5px] uppercase tracking-[0.14em] text-muted">non recherché</div>
+                <div className="text-[9.5px] uppercase tracking-[0.14em] text-muted">not searched</div>
                 {((rdof.not_searched as string[]) ?? []).map((line, index) => (
                   <div key={index} className="mt-1 text-[10px] leading-relaxed text-warn/90">
                     • {truncate(line, 200)}
@@ -259,16 +259,16 @@ export default function DecisionScreen() {
 
           <Card>
             <CardHeader>
-              <CardTitle>verdicts d'hypothèses & convention de prix</CardTitle>
+              <CardTitle>hypothesis verdicts & price convention</CardTitle>
               <Badge variant={conventions.ambiguous ? "warn" : "ok"}>
-                {conventions.ambiguous ? "écart entre conventions" : "concordant"}
+                {conventions.ambiguous ? "gap between conventions" : "concordant"}
               </Badge>
             </CardHeader>
             <CardContent className="space-y-2.5">
               <Table>
                 <THead>
                   <TR>
-                    <TH>hypothèse</TH>
+                    <TH>hypothesis</TH>
                     <TH>verdict</TH>
                     <TH>close</TH>
                     <TH>low</TH>
@@ -305,10 +305,10 @@ export default function DecisionScreen() {
               </Table>
               <div className="mono rounded border border-line bg-surface2/40 p-2 text-[10px] text-muted">
                 <div>
-                  convention : alerte sur <span className="text-accent">low</span>, décision sur{" "}
+                  convention: alert on <span className="text-accent">low</span>, decision on{" "}
                   <span className="text-accent">close + low</span> ({String(priceConvention.version ?? "")})
                 </div>
-                <div className="mt-1">écart mesuré : {truncate(JSON.stringify(measuredGap), 200)}</div>
+                <div className="mt-1">measured gap: {truncate(JSON.stringify(measuredGap), 200)}</div>
                 <div className="mt-1 text-[9.5px]">{String(priceConvention.ref ?? "")}</div>
               </div>
             </CardContent>
@@ -317,13 +317,13 @@ export default function DecisionScreen() {
 
         <Card>
           <CardHeader>
-            <CardTitle>politique — évaluation des intents (14 règles)</CardTitle>
+            <CardTitle>policy — intent evaluation (14 rules)</CardTitle>
             <div className="mono text-[10px] text-muted">
               {String(policyQuery.data?.chain ?? "")} · policy {String((policyQuery.data?.policy ?? {}).version ?? "")}
               {" · hash "}
               {fmtHash(String((policyQuery.data?.policy ?? {}).policy_hash ?? ""), 12)}
-              {" · agent détient la clé : "}
-              {policyQuery.data?.agent_holds_key ? "OUI" : "non"}
+              {" · agent holds the key: "}
+              {policyQuery.data?.agent_holds_key ? "YES" : "no"}
             </div>
           </CardHeader>
           <CardContent className="space-y-3">
@@ -343,16 +343,16 @@ export default function DecisionScreen() {
                 <div>
                   <Tabs value={caseTab} onValueChange={setCaseTab}>
                     <TabsList>
-                      <TabsTrigger value="rules">règles évaluées ({activeCase.rules_evaluated.length})</TabsTrigger>
-                      <TabsTrigger value="instruction">instruction non signée</TabsTrigger>
+                      <TabsTrigger value="rules">evaluated rules ({activeCase.rules_evaluated.length})</TabsTrigger>
+                      <TabsTrigger value="instruction">unsigned instruction</TabsTrigger>
                     </TabsList>
                     <TabsContent value="rules">
                       <ScrollArea className="max-h-80">
                         <Table>
                           <THead>
                             <TR>
-                              <TH>règle</TH>
-                              <TH>résultat</TH>
+                              <TH>rule</TH>
+                              <TH>result</TH>
                               <TH>code / note</TH>
                             </TR>
                           </THead>
@@ -384,7 +384,7 @@ export default function DecisionScreen() {
                           <div className="text-accent2">{activeCase.instruction.note}</div>
                         </div>
                       ) : (
-                        <div className="text-muted">pas d'instruction pour ce verdict</div>
+                        <div className="text-muted">no instruction for this verdict</div>
                       )}
                     </TabsContent>
                   </Tabs>
@@ -392,7 +392,7 @@ export default function DecisionScreen() {
                 <div className="space-y-2">
                   <div className="rounded border border-line bg-surface2/40 p-2.5">
                     <div className="text-[9.5px] uppercase tracking-[0.14em] text-muted">
-                      garde-fous d'exécution
+                      execution guardrails
                     </div>
                     {(policyQuery.data?.guard_blocks ?? []).map((block, index) => (
                       <div key={index} className="mono mt-1 text-[10px] leading-relaxed text-warn/90">
@@ -402,7 +402,7 @@ export default function DecisionScreen() {
                   </div>
                   <div className="rounded border border-line bg-surface2/40 p-2.5">
                     <div className="text-[9.5px] uppercase tracking-[0.14em] text-muted">
-                      enveloppe (fixture rôles)
+                      envelope (roles fixture)
                     </div>
                     <div className="mt-1 flex flex-wrap gap-1">
                       {envelopeChecks.map((check) => (
@@ -412,25 +412,25 @@ export default function DecisionScreen() {
                       ))}
                     </div>
                     <div className="mono mt-1.5 text-[9.5px] text-muted">
-                      statut enveloppe : {String(policyState.envelope_status ?? "—")} (source{" "}
+                      envelope status: {String(policyState.envelope_status ?? "—")} (source{" "}
                       {String(policyState.envelope_source ?? "—")})
                     </div>
                   </div>
                   <div className="rounded border border-line bg-surface2/40 p-2.5">
                     <div className="text-[9.5px] uppercase tracking-[0.14em] text-muted">
-                      plafond 24 h (redémarrage simulé)
+                      24 h cap (simulated restart)
                     </div>
                     <div className="mono mt-1 space-y-0.5 text-[10px] text-muted">
                       <div>
-                        cumul dépensé après restart :{" "}
+                        cumulative spent after restart:{" "}
                         {fmtNumber(periodCap.spent_24h_after_restart ?? 0, 2)} USDC
                       </div>
                       <div>
-                        4ᵉ intent : {String(periodCap.fourth_verdict ?? "—")}{" "}
+                        4th intent: {String(periodCap.fourth_verdict ?? "—")}{" "}
                         {((periodCap.fourth_deny_codes as string[]) ?? []).join(", ")}
                       </div>
                       <div>
-                        ledger après restart : {String(periodCap.ledger_entries_after_restart ?? "—")} entrées
+                        ledger after restart: {String(periodCap.ledger_entries_after_restart ?? "—")} entries
                       </div>
                     </div>
                   </div>
@@ -443,14 +443,14 @@ export default function DecisionScreen() {
         <div className="grid grid-cols-1 gap-3 xl:grid-cols-2">
           <Card>
             <CardHeader>
-              <CardTitle>décision finale</CardTitle>
+              <CardTitle>final decision</CardTitle>
               <Badge variant={verdictVariant(decisionBlock.verdict)}>
                 {String(decisionBlock.verdict ?? "—")}
               </Badge>
             </CardHeader>
             <CardContent className="space-y-2">
               <div className="mono text-[10px] text-muted">
-                action : {truncate(JSON.stringify(decisionBlock.action ?? {}), 200)}
+                action: {truncate(JSON.stringify(decisionBlock.action ?? {}), 200)}
               </div>
               <div>
                 <div className="text-[9.5px] uppercase tracking-[0.14em] text-muted">rationale</div>
@@ -469,7 +469,7 @@ export default function DecisionScreen() {
                 ))}
               </div>
               <div>
-                <div className="text-[9.5px] uppercase tracking-[0.14em] text-muted">limites</div>
+                <div className="text-[9.5px] uppercase tracking-[0.14em] text-muted">limits</div>
                 {((decisionBlock.limits as string[]) ?? []).map((line, index) => (
                   <div key={index} className="mt-1 text-[10px] leading-relaxed text-muted">
                     • {line}
@@ -481,11 +481,11 @@ export default function DecisionScreen() {
 
           <Card>
             <CardHeader>
-              <CardTitle>reçus on-chain (Base Sepolia)</CardTitle>
+              <CardTitle>on-chain receipts (Base Sepolia)</CardTitle>
               <Badge variant="neutral">
                 {(receiptsQuery.data?.chain_receipts ?? []).length +
                   (receiptsQuery.data?.setup_receipts ?? []).length}{" "}
-                reçus
+                receipts
               </Badge>
             </CardHeader>
             <ScrollArea className="max-h-96 rounded-none border-0">
@@ -497,10 +497,10 @@ export default function DecisionScreen() {
               />
             </ScrollArea>
             <CardContent className="mono text-[9.5px] text-muted">
-              mode : {String(intentsQuery.data?.execution_config?.mode ?? "instruction non signée + exécution humaine")}
-              {" · rpc : "}
+              mode: {String(intentsQuery.data?.execution_config?.mode ?? "unsigned instruction + human execution")}
+              {" · rpc: "}
               {String(intentsQuery.data?.execution_config?.rpc_url_masked ?? "")}
-              {" · dernier statut de vérification : "}
+              {" · last verification status: "}
               {String((policyQuery.data?.receipt_verification ?? {}).status ?? "—")}
             </CardContent>
           </Card>
@@ -508,18 +508,18 @@ export default function DecisionScreen() {
 
         <Card>
           <CardHeader>
-            <CardTitle>fenêtre & corpus</CardTitle>
+            <CardTitle>window & corpus</CardTitle>
             <Badge variant="neutral">{fmtTime(String(decision.window?.start ?? ""))} → {fmtTime(String(decision.window?.end ?? ""))}</Badge>
           </CardHeader>
           <CardContent className="mono grid grid-cols-1 gap-1.5 text-[10px] text-muted lg:grid-cols-2">
             <div>
-              corpus : {String((decision.inputs_summary?.corpus as Record<string, unknown>)?.path ?? "")}
+              corpus: {String((decision.inputs_summary?.corpus as Record<string, unknown>)?.path ?? "")}
               {" · "}
               {String((decision.inputs_summary?.corpus as Record<string, unknown>)?.observations_in_window ?? "?")}{" "}
-              observations dans la fenêtre
+              observations in window
             </div>
             <div>
-              seuils pré-enregistrés :{" "}
+              pre-registered thresholds:{" "}
               {truncate(JSON.stringify(decision.inputs_summary?.pre_registered_thresholds ?? {}), 180)}
             </div>
           </CardContent>

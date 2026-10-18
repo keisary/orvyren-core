@@ -11,7 +11,7 @@ import { Table, TBody, TD, TH, THead, TR } from "@/components/ui/table";
 import { ScreenShell } from "@/components/ScreenShell";
 import SigmaGraph from "./SigmaGraph";
 
-/** Valeurs de démonstration = `evidence/ui_snapshot.json` (run réel du graphe). */
+/** Demonstration values = `evidence/ui_snapshot.json` (real graph run). */
 const DEFAULTS: Record<string, string> = {
   holder: "addr:eip155:8453:0xbe00a0de23a02a85d7fb7451ab9b69d84fd61fe3",
   src: "addr:eip155:8453:0x2b8ce2c87c166d8e24e186e7e4253c11fc805427",
@@ -32,15 +32,15 @@ interface QueryDef {
 }
 
 const QUERIES: Record<string, QueryDef> = {
-  q1: { label: "Q1 — exposition consolidée (directe + indirecte)", fields: ["holder", "as_of", "as_of_block", "max_depth"] },
-  q2: { label: "Q2 — chemins de dépendance signés", fields: ["src", "dst", "kinds", "max_depth", "as_of", "as_of_block"] },
-  q3: { label: "Q3 — contradictions ouvertes", fields: [] },
-  q4: { label: "Q4 — état point-in-time", fields: ["as_of", "as_of_block", "limit"] },
-  q5: { label: "Q5 — timeline d'événements", fields: ["as_of", "as_of_block", "limit"] },
-  q6: { label: "Q6 — provenance d'une relation", fields: ["relation_id"] },
-  q7: { label: "Q7 — concentration contreparties (HHI)", fields: ["asset", "as_of", "as_of_block"] },
-  q8: { label: "Q8 — permissions (rôles, allowances)", fields: ["subject", "as_of", "as_of_block"] },
-  snapshot: { label: "Snapshot — hash déterministe du graphe", fields: ["as_of", "as_of_block"] },
+  q1: { label: "Q1 — consolidated exposure (direct + indirect)", fields: ["holder", "as_of", "as_of_block", "max_depth"] },
+  q2: { label: "Q2 — signed dependency paths", fields: ["src", "dst", "kinds", "max_depth", "as_of", "as_of_block"] },
+  q3: { label: "Q3 — open contradictions", fields: [] },
+  q4: { label: "Q4 — point-in-time state", fields: ["as_of", "as_of_block", "limit"] },
+  q5: { label: "Q5 — event timeline", fields: ["as_of", "as_of_block", "limit"] },
+  q6: { label: "Q6 — relation provenance", fields: ["relation_id"] },
+  q7: { label: "Q7 — counterparty concentration (HHI)", fields: ["asset", "as_of", "as_of_block"] },
+  q8: { label: "Q8 — permissions (roles, allowances)", fields: ["subject", "as_of", "as_of_block"] },
+  snapshot: { label: "Snapshot — deterministic graph hash", fields: ["as_of", "as_of_block"] },
 };
 
 function ResultTable({ result }: { result: GraphQueryResult }) {
@@ -110,18 +110,18 @@ export default function GraphScreen() {
 
   return (
     <ScreenShell
-      title="Graphe de risque on-chain"
+      title="On-chain risk graph"
       subtitle={
         <span className="mono">
-          sigma.js v3 (WebGL) · {payload ? `${fmtCompact(payload.counts.nodes)} nœuds / ${fmtCompact(payload.counts.edges)} arêtes · ${payload.db}` : "chargement…"}
-          {layoutState === "computing" ? " · layout FA2 en cours…" : ""}
-          {layoutState === "done" ? " · layout FA2 calculé et persisté ✓" : ""}
-          {layoutState === "cached" ? " · layout pré-calculé ✓" : ""}
+          sigma.js v3 (WebGL) · {payload ? `${fmtCompact(payload.counts.nodes)} nodes / ${fmtCompact(payload.counts.edges)} edges · ${payload.db}` : "loading…"}
+          {layoutState === "computing" ? " · FA2 layout running…" : ""}
+          {layoutState === "done" ? " · FA2 layout computed and persisted ✓" : ""}
+          {layoutState === "cached" ? " · layout pre-computed ✓" : ""}
         </span>
       }
       actions={
         <>
-          <Badge variant="info">Q1–Q8 · contrat de lecture</Badge>
+          <Badge variant="info">Q1–Q8 · read contract</Badge>
           {payload ? <Badge variant="neutral">version {fmtHash(payload.graph_version, 8)}</Badge> : null}
         </>
       }
@@ -153,19 +153,18 @@ export default function GraphScreen() {
               />
             ) : (
               <div className="flex h-full items-center justify-center text-muted">
-                {graphQuery.isError ? "base graphe indisponible" : "chargement du graphe…"}
+                {graphQuery.isError ? "graph database unavailable" : "loading graph…"}
               </div>
             )}
             <div className="pointer-events-none absolute bottom-2 left-2 rounded border border-line bg-surface/90 px-2 py-1 mono text-[9.5px] text-muted">
-              clic nœud = fiche · molette = zoom · clic vide = déselection
+              click node = details · wheel = zoom · click empty = deselect
             </div>
           </div>
         </Card>
-
         <div className="flex min-h-0 flex-col gap-3">
           <Card>
             <CardHeader>
-              <CardTitle>requêtes Q1–Q8</CardTitle>
+              <CardTitle>queries Q1–Q8</CardTitle>
             </CardHeader>
             <CardContent className="space-y-2.5">
               <Select value={queryName} onChange={(e) => setQueryName(e.target.value)}>
@@ -184,7 +183,7 @@ export default function GraphScreen() {
                       onChange={(e) =>
                         setParams((prev) => ({ ...prev, [field]: e.target.value }))
                       }
-                      placeholder="(vide)"
+                      placeholder="(empty)"
                     />
                   </div>
                 ))}
@@ -195,17 +194,17 @@ export default function GraphScreen() {
                     runQuery.refetch().then(({ data }) => setRan(data ?? null));
                   }}
                 >
-                  exécuter la requête
+                  run query
                 </Button>
                 <Button
                   variant="ghost"
                   size="sm"
                   onClick={() => setParams({ ...DEFAULTS })}
                 >
-                  valeurs du snapshot
+                  snapshot values
                 </Button>
               </div>
-              {runQuery.isFetching ? <div className="text-muted">exécution…</div> : null}
+              {runQuery.isFetching ? <div className="text-muted">running…</div> : null}
               {ran ? (
                 <div className="mono flex flex-wrap gap-1.5 text-[10px]">
                   <Badge variant={ran.status && ran.status !== "OK" ? "warn" : "ok"}>
@@ -219,7 +218,7 @@ export default function GraphScreen() {
                     <Badge variant="info">HHI {fmtNumber(ran.hhi, 4)}</Badge>
                   ) : null}
                   {typeof ran.counterparties === "number" ? (
-                    <Badge variant="neutral">{ran.counterparties} contreparties</Badge>
+                    <Badge variant="neutral">{ran.counterparties} counterparties</Badge>
                   ) : null}
                   {ran.graph_hash ? (
                     <Badge variant="violet">hash {fmtHash(String(ran.graph_hash), 10)}</Badge>
@@ -236,14 +235,14 @@ export default function GraphScreen() {
 
           <Card>
             <CardHeader>
-              <CardTitle>fiche nœud</CardTitle>
+              <CardTitle>node details</CardTitle>
               {selected ? <Badge variant="info">{shortAddress(selected)}</Badge> : null}
             </CardHeader>
             <CardContent>
               {!selected ? (
                 <div className="text-[11px] text-muted">
-                  sélectionnez un nœud dans le graphe pour voir son identité, ses
-                  relations et son degré.
+                  select a node in the graph to see its identity, relations and
+                  degree.
                 </div>
               ) : detailQuery.data ? (
                 <div className="space-y-2">
@@ -255,7 +254,7 @@ export default function GraphScreen() {
                   </div>
                   {detailQuery.data.address ? (
                     <div className="mono text-[10px] text-muted">
-                      adresse {String(detailQuery.data.address)}
+                      address {String(detailQuery.data.address)}
                     </div>
                   ) : null}
                   <ScrollArea className="max-h-52">
@@ -286,7 +285,7 @@ export default function GraphScreen() {
                   </ScrollArea>
                 </div>
               ) : (
-                <div className="text-muted">chargement…</div>
+                <div className="text-muted">loading…</div>
               )}
             </CardContent>
           </Card>

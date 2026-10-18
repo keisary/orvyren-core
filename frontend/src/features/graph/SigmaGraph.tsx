@@ -3,7 +3,7 @@ import Graph from "graphology";
 import Sigma from "sigma";
 import type { GraphPayload } from "@/lib/types";
 
-/** Canvas Sigma.js v3 (WebGL) — un seul contexte WebGL à l'écran. */
+/** Sigma.js v3 canvas (WebGL) — a single WebGL context on screen. */
 
 const PALETTE = [
   "#22d3ee", "#818cf8", "#34d399", "#fbbf24", "#f472b6",
@@ -152,7 +152,7 @@ export default function SigmaGraph({ payload, selected, onSelect, onLayout }: Pr
     sigma.on("enterNode", ({ node }) => setHovered(node));
     sigma.on("leaveNode", () => setHovered(null));
 
-    // Layout FA2 en worker (une fois), positions persistées par graph_version.
+    // FA2 layout in a worker (once), positions persisted per graph_version.
     if (!positions) {
       const worker = new Worker(new URL("./fa2.worker.ts", import.meta.url), {
         type: "module",
@@ -173,7 +173,7 @@ export default function SigmaGraph({ payload, selected, onSelect, onLayout }: Pr
             JSON.stringify(computed),
           );
         } catch {
-          // quota dépassé : le layout restera non persisté, pas bloquant
+          // quota exceeded: the layout stays unpersisted, not blocking
         }
         onLayout?.("done");
         worker.terminate();
@@ -201,7 +201,7 @@ export default function SigmaGraph({ payload, selected, onSelect, onLayout }: Pr
     sigmaRef.current?.refresh();
   }, [hovered, selected]);
 
-  // Recentre la caméra sur le nœud sélectionné.
+  // Re-centre the camera on the selected node.
   useEffect(() => {
     const sigma = sigmaRef.current;
     if (!sigma || !selected) return;

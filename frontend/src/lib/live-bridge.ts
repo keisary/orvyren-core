@@ -1,6 +1,6 @@
 import type { LiveSocket } from "./ws";
 
-/** Singleton du socket live : les écrans peuvent s'abonner à un run précis. */
+/** Live socket singleton: screens can subscribe to a specific run. */
 let socket: LiveSocket | null = null;
 
 export function setLiveSocket(instance: LiveSocket | null) {

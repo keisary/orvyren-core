@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/input";
 import { Table, TBody, TD, TH, THead, TR } from "@/components/ui/table";
 import { ScreenShell } from "@/components/ScreenShell";
+import { SubstitutionBanner } from "@/components/SubstitutionBanner";
 
 function StatusDot({ ok, label }: { ok: boolean; label: string }) {
   return (
@@ -32,28 +33,31 @@ export default function AuditScreen() {
   const summary = summaryQuery.data;
   const effective = (policyQuery.data?.effective ?? {}) as Record<string, unknown>;
   const chain = summary?.chains?.[0];
+  const substitution = summary?.scenario_substitution ?? null;
 
   return (
     <ScreenShell
       title="Audit — dossier & provenance"
       subtitle={
         <span className="mono">
-          chaînes de hachage recalculées · snapshots point-in-time · paquets scellés · flux d'exécution
+          recomputed hash chains · point-in-time snapshots · sealed packets · execution stream
         </span>
       }
       actions={
         chain ? (
           <Badge variant={chain.verified ? "ok" : "deny"}>
-            chaîne audit : {chain.verified ? "VÉRIFIÉE" : "ÉCART"}
+            audit chain: {chain.verified ? "VERIFIED" : "DRIFT"}
           </Badge>
         ) : null
       }
     >
       <div className="space-y-3">
+        <SubstitutionBanner substitution={substitution} />
+
         <div className="grid grid-cols-1 gap-3 lg:grid-cols-3">
           <Card>
             <CardHeader>
-              <CardTitle>chaînes de journal (runs agents)</CardTitle>
+              <CardTitle>journal chains (agent runs)</CardTitle>
             </CardHeader>
             <CardContent className="space-y-2">
               {(summary?.runs ?? []).map((run) => {
@@ -65,30 +69,30 @@ export default function AuditScreen() {
                     {orch?.present ? (
                       <StatusDot
                         ok={Boolean(orch.verified)}
-                        label={`orchestrator · ${orch.lines} lignes · head ${fmtHash(orch.recomputed_head, 10)}`}
+                        label={`orchestrator · ${orch.lines} lines · head ${fmtHash(orch.recomputed_head, 10)}`}
                       />
                     ) : null}
                     {critic?.present ? (
                       <StatusDot
                         ok={Boolean(critic.verified)}
-                        label={`critic · ${critic.lines} lignes · head ${fmtHash(critic.recomputed_head, 10)}`}
+                        label={`critic · ${critic.lines} lines · head ${fmtHash(critic.recomputed_head, 10)}`}
                       />
                     ) : null}
                   </div>
                 );
               })}
               {(summary?.runs ?? []).length === 0 ? (
-                <div className="text-muted">aucun run enregistré</div>
+                <div className="text-muted">no recorded run</div>
               ) : null}
             </CardContent>
           </Card>
 
           <Card>
             <CardHeader>
-              <CardTitle>chaîne d'exécution on-chain</CardTitle>
+              <CardTitle>on-chain execution chain</CardTitle>
               {chain ? (
                 <Badge variant={verdictVariant(chain.verified ? "VERIFIED" : "DRIFT")}>
-                  {chain.verified ? "vérifiée" : "non vérifiée"}
+                  {chain.verified ? "verified" : "not verified"}
                 </Badge>
               ) : null}
             </CardHeader>
@@ -96,12 +100,12 @@ export default function AuditScreen() {
               {chain ? (
                 <>
                   <div className="text-ink/90">{chain.name}</div>
-                  <StatusDot ok={chain.links_ok} label={`liaisons prev_hash → record_hash (${chain.records} enregistrements)`} />
-                  <StatusDot ok={chain.genesis_ok} label={`genèse ${chain.genesis_ok ? "conforme" : "non conforme"}`} />
+                  <StatusDot ok={chain.links_ok} label={`prev_hash → record_hash links (${chain.records} records)`} />
+                  <StatusDot ok={chain.genesis_ok} label={`genesis ${chain.genesis_ok ? "compliant" : "non-compliant"}`} />
                   <div className="text-muted">
-                    forme de hachage reproduite : <span className="text-accent2">{chain.hash_form}</span>
+                    reproduced hash form: <span className="text-accent2">{chain.hash_form}</span>
                   </div>
-                  <div className="text-muted">head : {fmtHash(chain.head, 16)}</div>
+                  <div className="text-muted">head: {fmtHash(chain.head, 16)}</div>
                   <div className="text-muted">
                     run {chain.run_id} · {chain.first_kind} → {chain.last_kind}
                   </div>
@@ -117,32 +121,32 @@ export default function AuditScreen() {
                   ) : null}
                 </>
               ) : (
-                <div className="text-muted">pas de chaîne d'exécution enregistrée</div>
+                <div className="text-muted">no execution chain recorded</div>
               )}
             </CardContent>
           </Card>
 
           <Card>
             <CardHeader>
-              <CardTitle>politique effective</CardTitle>
+              <CardTitle>effective policy</CardTitle>
               <Badge variant="neutral">{String(effective.policy_version ?? "")}</Badge>
             </CardHeader>
             <CardContent className="mono space-y-1 text-[10px] text-muted">
               <div>
-                policy_hash :{" "}
+                policy_hash:{" "}
                 <span className="text-accent2">{fmtHash(String(effective.policy_hash ?? (policyQuery.data?.effective as Record<string, unknown>)?.policy_hash ?? ""), 16)}</span>
               </div>
-              <div>yaml sha256 : {fmtHash(String(effective.yaml_sha256 ?? ""), 16)}</div>
-              <div>chaîne : {String(effective.chain_id ?? "")}</div>
-              <div>actif : {String(effective.asset_symbol ?? "")} ({String(effective.asset ?? "")})</div>
+              <div>yaml sha256: {fmtHash(String(effective.yaml_sha256 ?? ""), 16)}</div>
+              <div>chain: {String(effective.chain_id ?? "")}</div>
+              <div>asset: {String(effective.asset_symbol ?? "")} ({String(effective.asset ?? "")})</div>
               <div>
-                plafonds : {String(effective.max_per_tx ?? "")} / tx ·{" "}
+                caps: {String(effective.max_per_tx ?? "")} / tx ·{" "}
                 {String(effective.max_cumulative_24h ?? "")} / 24 h ·{" "}
-                {String(effective.max_calls_24h ?? "")} appels
+                {String(effective.max_calls_24h ?? "")} calls
               </div>
-              <div>rôle agent : {String(effective.role_key ?? "")}</div>
+              <div>agent role: {String(effective.role_key ?? "")}</div>
               <div className="text-warn/90">
-                révocation planifiée : {String(effective.revocation_scheduled_at ?? "")}
+                scheduled revocation: {String(effective.revocation_scheduled_at ?? "")}
               </div>
             </CardContent>
           </Card>
@@ -152,12 +156,12 @@ export default function AuditScreen() {
           {(summary?.snapshots ?? []).map((snapshot) => (
             <Card key={snapshot.id}>
               <CardHeader>
-                <CardTitle>snapshot point-in-time</CardTitle>
+                <CardTitle>point-in-time snapshot</CardTitle>
                 <Badge variant="violet">{snapshot.id}</Badge>
               </CardHeader>
               <CardContent className="space-y-2">
                 <div className="mono text-[10px] text-muted">
-                  as_of {String(snapshot.snapshot?.as_of ?? "")} · {snapshot.snapshot?.counts.records ?? 0} relations
+                  as_of {String(snapshot.snapshot?.as_of ?? "")} · {snapshot.snapshot?.counts.records ?? 0} records
                 </div>
                 <div className="flex flex-wrap gap-1">
                   {Object.entries(snapshot.snapshot?.counts.by_kind ?? {}).map(([kind, count]) => (
@@ -173,7 +177,7 @@ export default function AuditScreen() {
                 <StatusDot
                   ok={Boolean(snapshot.provenance?.hashes_complete)}
                   label={`provenance_hash ${fmtHash(snapshot.provenance?.provenance_hash ?? "", 14)} · ${
-                    snapshot.provenance?.hashes_complete ? "hashes complets" : "hashes incomplets"
+                    snapshot.provenance?.hashes_complete ? "hashes complete" : "hashes incomplete"
                   }`}
                 />
                 {snapshot.manifest ? (
@@ -193,25 +197,25 @@ export default function AuditScreen() {
 
         <Card>
           <CardHeader>
-            <CardTitle>paquets d'audit scellés</CardTitle>
-            <Badge variant="neutral">{(summary?.packets ?? []).length} paquets</Badge>
+            <CardTitle>sealed audit packets</CardTitle>
+            <Badge variant="neutral">{(summary?.packets ?? []).length} packets</Badge>
           </CardHeader>
           <CardContent className="space-y-2">
             {(summary?.packets ?? []).map((packet) => (
               <div key={packet.name} className="rounded border border-line bg-surface2/40 p-2.5">
                 <div className="flex flex-wrap items-center gap-2">
                   <span className="mono text-[10.5px] text-ink/90">{packet.name}</span>
-                  <Badge variant="neutral">{fmtCompact(packet.size)} octets</Badge>
-                  <Badge variant="neutral">{packet.files.length} fichiers</Badge>
+                  <Badge variant="neutral">{fmtCompact(packet.size)} bytes</Badge>
+                  <Badge variant="neutral">{packet.files.length} files</Badge>
                 </div>
                 {packet.sha256_file ? (
                   <div className="mono mt-1 text-[9.5px] text-muted">
-                    sha256 annoncé : {packet.sha256_file}
+                    published sha256: {packet.sha256_file}
                   </div>
                 ) : null}
                 <details className="mt-1">
                   <summary className="mono cursor-pointer text-[9.5px] text-muted hover:text-ink">
-                    contenu du paquet
+                    packet contents
                   </summary>
                   <div className="mono mt-1 grid grid-cols-2 gap-x-3 text-[9.5px] text-muted lg:grid-cols-3">
                     {packet.files.map((file) => (
@@ -228,7 +232,7 @@ export default function AuditScreen() {
 
         <Card>
           <CardHeader>
-            <CardTitle>flux d'exécution (audit.jsonl)</CardTitle>
+            <CardTitle>execution stream (audit.jsonl)</CardTitle>
             <div className="flex items-center gap-2">
               <Badge variant="neutral">
                 {streamQuery.data ? `${streamQuery.data.returned} / ${streamQuery.data.total}` : "…"}
@@ -239,7 +243,7 @@ export default function AuditScreen() {
                 onClick={() => setAfterSeq(0)}
                 disabled={afterSeq === 0}
               >
-                début
+                start
               </Button>
               <Button
                 variant="secondary"
@@ -253,7 +257,7 @@ export default function AuditScreen() {
                 }
                 disabled={!streamQuery.data?.has_more}
               >
-                page suivante
+                next page
               </Button>
             </div>
           </CardHeader>

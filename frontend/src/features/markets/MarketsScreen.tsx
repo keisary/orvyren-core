@@ -67,6 +67,7 @@ function summarizeValue(value: unknown): string {
   if (typeof value === "number") return fmtNumber(value, 4);
   if (typeof value === "object") {
     const record = value as Record<string, unknown>;
+    // "decote_bps" is an artefact key (kept as-is), never renamed.
     const interesting = ["utc", "ts", "discount_bps", "block", "low", "decote_bps"].filter(
       (key) => record[key] !== undefined,
     );
@@ -113,10 +114,10 @@ export default function MarketsScreen() {
 
   return (
     <ScreenShell
-      title="Marchés — épisodes de stress"
+      title="Markets — stress episodes"
       subtitle={
         <span className="mono">
-          séries mesurées (RPC + venues) · prix & expositions · TradingView Lightweight Charts v5
+          measured series (RPC + venues) · prices & exposures · TradingView Lightweight Charts v5
         </span>
       }
       actions={
@@ -140,21 +141,21 @@ export default function MarketsScreen() {
       }
     >
       {!series ? (
-        <div className="p-8 text-center text-muted">chargement des séries…</div>
+        <div className="p-8 text-center text-muted">loading series…</div>
       ) : (
         <div className="space-y-3">
           <Card>
             <CardHeader>
               <CardTitle>{series.title}</CardTitle>
               <div className="mono text-[10px] text-muted">
-                fenêtre {JSON.stringify(series.window).slice(0, 90)}
+                window {JSON.stringify(series.window).slice(0, 90)}
               </div>
             </CardHeader>
             <CardContent className="space-y-2.5">
               <HeadlineGrid headline={series.headline} />
               {series.events.length > 0 ? (
                 <div>
-                  <Label>jalons documentés de l'épisode</Label>
+                  <Label>documented episode milestones</Label>
                   <ScrollArea className="mt-1 max-h-40">
                     {series.events.map((event, index) => (
                       <div key={index} className="border-b border-line/60 px-2.5 py-1.5">
@@ -174,8 +175,8 @@ export default function MarketsScreen() {
           <div className="grid grid-cols-1 gap-3 xl:grid-cols-2">
             <Card>
               <CardHeader>
-                <CardTitle>prix / décote</CardTitle>
-                <Badge variant="neutral">{priceLines.length} séries</Badge>
+                <CardTitle>price / discount</CardTitle>
+                <Badge variant="neutral">{priceLines.length} series</Badge>
               </CardHeader>
               <CardContent className="space-y-2">
                 <SeriesToggles lines={priceLines} visible={visible} onToggle={toggle} />
@@ -188,9 +189,9 @@ export default function MarketsScreen() {
 
             <Card>
               <CardHeader>
-                <CardTitle>exposition & signaux</CardTitle>
+                <CardTitle>exposure & signals</CardTitle>
                 <Badge variant="neutral">
-                  {exposureLines.length + bars.length} séries
+                  {exposureLines.length + bars.length} series
                 </Badge>
               </CardHeader>
               <CardContent className="space-y-2">
@@ -201,7 +202,7 @@ export default function MarketsScreen() {
                 />
                 {bars.filter((line) => visible[line.id] !== false).length > 0 ? (
                   <>
-                    <Label>histogramme de signaux ({bars[0].unit})</Label>
+                    <Label>signal histogram ({bars[0].unit})</Label>
                     <PriceChart
                       series={bars.filter((line) => visible[line.id] !== false)}
                       variant="histogram"
@@ -210,7 +211,7 @@ export default function MarketsScreen() {
                     />
                   </>
                 ) : null}
-                <Label>expositions mesurées</Label>
+                <Label>measured exposures</Label>
                 <PriceChart
                   series={exposureLines.filter((line) => visible[line.id] !== false)}
                   height={190}
@@ -223,16 +224,16 @@ export default function MarketsScreen() {
           <div className="grid grid-cols-1 gap-3 lg:grid-cols-3">
             <Card>
               <CardHeader>
-                <CardTitle>provenance RPC</CardTitle>
+                <CardTitle>RPC provenance</CardTitle>
               </CardHeader>
               <CardContent className="mono space-y-1 text-[10px] text-muted">
                 {Object.entries(series.rpc_provenance).map(([key, value]) => (
                   <div key={key}>
-                    <span className="text-accent2">{key}</span> : {truncate(String(value), 110)}
+                    <span className="text-accent2">{key}</span>: {truncate(String(value), 110)}
                   </div>
                 ))}
                 {Object.keys(series.rpc_provenance).length === 0 ? (
-                  <div>métadonnées RPC absentes de cet artefact</div>
+                  <div>RPC metadata absent from this artefact</div>
                 ) : null}
               </CardContent>
             </Card>
@@ -251,8 +252,8 @@ export default function MarketsScreen() {
             </Card>
             <Card>
               <CardHeader>
-                <CardTitle>limites déclarées</CardTitle>
-                <Badge variant="warn">honnêteté démonstration</Badge>
+                <CardTitle>declared limitations</CardTitle>
+                <Badge variant="warn">declared honestly</Badge>
               </CardHeader>
               <CardContent className="space-y-1.5">
                 {series.limitations.map((limitation, index) => (

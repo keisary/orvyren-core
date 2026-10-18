@@ -171,6 +171,9 @@ def discover_runs(settings: Optional[Settings] = None) -> List[Dict[str, Any]]:
             "has_store": os.path.isdir(os.path.join(path, "store_live")),
             "chain_heads": {k: v.get("chain_head", "")
                             for k, v in (run_outcome.get("journals", {}) or {}).items()},
+            "substitution": (scenario_substitution(settings)
+                             if is_rseth_scenario_run(run_id, spec.get("case_id", ""))
+                             else None),
         })
     return runs
 
@@ -201,6 +204,11 @@ def load_run_bundle(run_id: str, settings: Optional[Settings] = None) -> Dict[st
     store_calls = os.path.join(path, "store_live", "calls.jsonl")
     bundle["tool_calls"] = (read_jsonl(store_calls)
                             if os.path.exists(store_calls) else [])
+    bundle["substitution"] = (
+        scenario_substitution(settings)
+        if is_rseth_scenario_run(run_id,
+                                 (bundle.get("spec") or {}).get("case_id", ""))
+        else None)
     return bundle
 
 
@@ -214,6 +222,85 @@ def load_journal(run_id: str, agent: str = "orchestrator",
     for index, row in enumerate(rows):
         row["seq"] = index
     return rows
+
+
+# --------------------------------------------------------------------------
+# declared substitutions (scenario honesty — never hidden from the reader)
+# --------------------------------------------------------------------------
+
+#: Fixed wording of the declared-substitution banner (facts: scenario report
+#: §6/§7 — the execution leg replays the pilot USDC decision as a mechanism
+#: demo; the rsETH-specific conclusion is the agents' abstention).
+SUBSTITUTION_BANNER = (
+    "declared substitution: the execution leg replays the pilot USDC "
+    "decision (mechanism demo) — the rsETH conclusion is the agents' "
+    "abstention"
+)
+
+#: Case id of the rsETH / KelpDAO April 2026 scenario.
+RSETH_CASE_ID = "rseth-2026-04"
+
+
+def is_rseth_scenario_run(run_id: str, case_id: str = "") -> bool:
+    """True when a run belongs to the rsETH scenario (case id or run id)."""
+    rid = str(run_id or "").lower()
+    return (str(case_id or "") == RSETH_CASE_ID
+            or rid.startswith("rseth-2026-04")
+            or rid.startswith("scenario-rseth"))
+
+
+def scenario_substitution(settings: Optional[Settings] = None) -> Dict[str, Any]:
+    """Declared substitutions of the rsETH scenario, read from real artefacts.
+
+    Every dynamic fact (case id, budget, probe refusal code, abstention
+    verdict) is read from ``evidence/scenario_rseth/``; when that directory is
+    absent the declaration is ``declared: False`` — nothing is ever invented.
+    """
+    settings = settings or load_settings()
+    base = os.path.join(settings.evidence_dir, "scenario_rseth")
+    spec = read_json(os.path.join(base, "run.json")) if _exists(base, "run.json") else {}
+    outcome = (read_json(os.path.join(base, "outcome_orchestrator.json"))
+               if _exists(base, "outcome_orchestrator.json") else {})
+    scenario_run = (read_json(os.path.join(base, "scenario_run.json"))
+                    if _exists(base, "scenario_run.json") else {})
+    abstention_path = os.path.join(base, "decision",
+                                   "abstention_%s.json" % RSETH_CASE_ID)
+    abstention = (read_json(abstention_path)
+                  if _exists(abstention_path) else {})
+    refusal = ""
+    probe_path = os.path.join(base, "execution", "case_attempt", "journal.jsonl")
+    if _exists(probe_path):
+        for row in read_jsonl(probe_path):
+            code = re.search(r"E_[A-Z0-9_]+", str(row.get("error", "")))
+            if code:
+                refusal = code.group(0)
+                break
+    escalade = (abstention.get("escalade", {}) or {}) if isinstance(abstention, dict) else {}
+    sources = [settings.rel(os.path.join(base, name))
+               for name in ("scenario_report.md", "run.json",
+                            "outcome_orchestrator.json", "decision",
+                            os.path.join("execution", "case_attempt"))
+               if _exists(base, name)]
+    return {
+        "declared": bool(spec) or bool(outcome),
+        "banner": SUBSTITUTION_BANNER,
+        "case_id": str(spec.get("case_id")
+                       or (abstention.get("case_id", "") if isinstance(abstention, dict) else "")
+                       or RSETH_CASE_ID),
+        "agents_run_id": str(scenario_run.get("agents_run_id", "")),
+        "executor_run_id": str(scenario_run.get("executor_run_id", "")),
+        "execution_leg": ("the execution leg replays the pilot USDC decision "
+                          "(--case usdc-2023-03), chained under this scenario run id"),
+        "execution_probe_refusal": refusal,
+        "agents_abstention": str(escalade.get("sortie", "")),
+        "epistemic_verdict": str(abstention.get("epistemic_verdict", "")
+                                 if isinstance(abstention, dict) else ""),
+        "state": outcome.get("state", ""),
+        "stop_condition": outcome.get("stop_condition", ""),
+        "budget": spec.get("budget", {}),
+        "budget_used": outcome.get("budget_used", {}),
+        "sources": sources,
+    }
 
 
 # --------------------------------------------------------------------------
@@ -739,6 +826,9 @@ def audit_summary(settings: Optional[Settings] = None) -> Dict[str, Any]:
     manifest = os.path.join(chain_dir, "MANIFEST.sha256")
     if os.path.exists(manifest):
         out["manifest"] = read_text(manifest)
+    # Added field only: the declared substitutions of the rsETH scenario this
+    # audit chain belongs to (the chain run id is the scenario run id).
+    out["scenario_substitution"] = scenario_substitution(settings)
     return out
 
 

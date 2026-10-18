@@ -10,9 +10,9 @@ import {
 import type { SeriesLine } from "@/lib/types";
 
 /**
- * Wrapper maison (~80 lignes) autour de TradingView Lightweight Charts v5 :
+ * Hand-rolled wrapper (~80 lines) around TradingView Lightweight Charts v5:
  * `createChart` + `addSeries(LineSeries|HistogramSeries)` + `setData`.
- * Le canvas est détruit au démontage (`chart.remove()`).
+ * The canvas is destroyed on unmount (`chart.remove()`).
  */
 export default function PriceChart({
   series,

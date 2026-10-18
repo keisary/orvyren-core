@@ -23,9 +23,9 @@ const AuditScreen = lazy(() => import("@/features/audit/AuditScreen"));
 
 const NAV = [
   { to: "/live", label: "Live", icon: Activity },
-  { to: "/graph", label: "Graphe", icon: Network },
-  { to: "/markets", label: "Marchés", icon: LineChart },
-  { to: "/decision", label: "Décision & Politique", icon: Scale },
+  { to: "/graph", label: "Graph", icon: Network },
+  { to: "/markets", label: "Markets", icon: LineChart },
+  { to: "/decision", label: "Decision & Policy", icon: Scale },
   { to: "/audit", label: "Audit", icon: ShieldCheck },
 ];
 
@@ -38,10 +38,10 @@ function WsStatusBadge() {
     status === "live"
       ? `LIVE${latency !== null ? ` ${latency}ms` : ""}`
       : status === "degraded"
-        ? "DÉGRADÉ"
+        ? "DEGRADED"
         : status === "connecting"
-          ? "CONNEXION"
-          : "HORS LIGNE";
+          ? "CONNECTING"
+          : "OFFLINE";
   return <Badge variant={variant}>{label}</Badge>;
 }
 
@@ -100,13 +100,13 @@ export default function App() {
         </nav>
         <div className="border-t border-line px-4 py-3">
           <div className="mb-1.5 text-[9.5px] uppercase tracking-[0.18em] text-muted">
-            flux agents
+            agent stream
           </div>
           <WsStatusBadge />
           <div className="mt-2 mono text-[9.5px] leading-relaxed text-muted/80">
-            artefacts réels · démo offline
+            real artefacts · offline demo
             <br />
-            FastAPI + WebSocket local
+            FastAPI + local WebSocket
           </div>
         </div>
       </aside>

@@ -1,6 +1,6 @@
 import * as React from "react";
 
-/** Coque d'écran : en-tête dense + zone scrollable (thème terminal). */
+/** Screen shell: dense header + scrollable body (terminal theme). */
 export function ScreenShell({
   title,
   subtitle,

@@ -1,6 +1,6 @@
 /// <reference lib="webworker" />
-// ForceAtlas2 en Web Worker : calculé une fois, positions persistées côté
-// client (le layout est le calcul le plus coûteux de la feature graphe).
+// ForceAtlas2 in a Web Worker: computed once, positions persisted client-side
+// (the layout is the most expensive computation of the graph feature).
 import Graph from "graphology";
 import fa2Layout, { inferSettings } from "graphology-layout-forceatlas2";
 

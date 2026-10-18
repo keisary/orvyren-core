@@ -1,4 +1,22 @@
-/** Types des artefacts réels servis par l'API (alignés sur src/orvyren/api). */
+/** Types of the real artefacts served by the API (aligned on src/orvyren/api). */
+
+/** Declared substitution of the rsETH scenario (honest replay disclosure). */
+export interface ScenarioSubstitution {
+  declared: boolean;
+  banner: string;
+  case_id: string;
+  agents_run_id?: string;
+  executor_run_id?: string;
+  execution_leg?: string;
+  execution_probe_refusal?: string;
+  agents_abstention?: string;
+  epistemic_verdict?: string;
+  state?: string;
+  stop_condition?: string;
+  budget?: Record<string, number>;
+  budget_used?: Record<string, number>;
+  sources?: string[];
+}
 
 export interface JournalSummary {
   present: boolean;
@@ -26,6 +44,7 @@ export interface RunSummary {
   exchanges: string[];
   has_store: boolean;
   chain_heads: Record<string, string>;
+  substitution?: ScenarioSubstitution | null;
 }
 
 export interface Hypothesis {
@@ -93,6 +112,7 @@ export interface RunBundle {
   worker_done_critic: Record<string, unknown> | null;
   exchanges: { name: string; data: Record<string, unknown> }[];
   tool_calls: Record<string, unknown>[];
+  substitution?: ScenarioSubstitution | null;
 }
 
 export interface ChainReport {
@@ -295,6 +315,7 @@ export interface AuditSummary {
   chains: AuditChain[];
   manifest?: string;
   runs: { run_id: string; verify: RunVerification }[];
+  scenario_substitution?: ScenarioSubstitution;
 }
 
 export interface AuditStream {
