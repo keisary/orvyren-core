@@ -1,0 +1,32 @@
+{
+  "$schema": "orvyren/orch/v1",
+  "lacune_id": "L-1",
+  "tache": {
+    "question": "What rsETH market price does an archived price series record at or just before the freeze instant, and does it sit near the retained oracle reading or far below it?",
+    "outil": "read_prices",
+    "args": {
+      "asset": "rsETH",
+      "quote": "USD",
+      "at_or_before": "2026-04-18T19:03:59Z",
+      "selection": "last archived observation at or before the instant",
+      "series": "archived_market_series"
+    },
+    "critere_discriminant": "Si la série archivée donne un prix de marché proche de la lecture oracle retenue à l'instant du gel, HYP-002 est réfutée (la divergence documentée serait un artefact d'échantillonnage) ; si elle donne un prix de marché très inférieur à la lecture oracle sur la même fenêtre, HYP-002 est confirmée et la valorisation oracle surestime la valeur réalisable du collatéral.",
+    "branches_concernees": [
+      "HYP-002"
+    ],
+    "cout_max": {
+      "appels_llm": 1,
+      "secondes": 60
+    }
+  },
+  "stop": false,
+  "motif_stop": null,
+  "non_recherche": [
+    "L-2 (fraîcheur oracle via latestRoundData) : le flux plafonné rsETH/ETH/USD revert, aucun updatedAt lisible — pas de résultat falsifiable dans le budget.",
+    "L-3 (dette irrécouvrable par compte) : le registre par compte est hors de cette couche de données, aucune observation accessible ne départagerait les hypothèses.",
+    "L-4 (valeur réalisable du collatéral gelé) : aucune venue liquide lisible pour un rsETH volé/non adossé — une requête ne produirait pas de mesure exploitable.",
+    "HYP-004 (saturation d'utilisation) : déjà départagée par un fait du snapshot, une mesure supplémentaire n'ajouterait pas de pouvoir discriminant.",
+    "HYP-003 (antériorité de la saturation des caps) : l'ordre temporel est déjà établi par le snapshot, aucune recherche externe n'est nécessaire."
+  ]
+}

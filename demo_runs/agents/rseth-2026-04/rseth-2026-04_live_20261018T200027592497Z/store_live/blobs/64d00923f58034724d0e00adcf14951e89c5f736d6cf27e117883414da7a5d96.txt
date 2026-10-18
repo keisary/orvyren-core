@@ -1,0 +1,32 @@
+{
+  "lacune_id": "L-1",
+  "$schema": "orvyren/orch/v1",
+  "tache": {
+    "question": "Does an archived market series confirm that rsETH traded far below the retained oracle reading across the freeze window, rather than near it?",
+    "outil": "read_prices",
+    "args": {
+      "asset": "rsETH",
+      "quote": "USD",
+      "series_type": "archived_market_prints",
+      "window_end": "snapshot_at",
+      "note": "return documented venue prices with their timestamps; no post-snapshot observation admissible"
+    },
+    "critere_discriminant": "Should the archived market prints sit far below the retained oracle level throughout the window, HYP-002 is supported (an oracle-based valuation overstates the realisable value of the collateral). Should the prints instead track the oracle within the documented tolerance, HYP-002 is refuted and the divergence claim must be dropped.",
+    "branches_concernees": [
+      "HYP-002"
+    ],
+    "cout_max": {
+      "appels_llm": 1,
+      "secondes": 60
+    }
+  },
+  "stop": false,
+  "motif_stop": null,
+  "non_recherche": [
+    "L-2 (oracle freshness): latestRoundData() is documented as reverting on the capped feed, so no updatedAt is obtainable from the allowed tools — no discriminative value expected.",
+    "L-3 (per-account bad debt): the per-account debt ledger lies outside this data layer; no allowed tool exposes it, so any task would be unfalsifiable here.",
+    "L-4 (realisable value of frozen collateral): no liquid venue is readable for stolen or unbacked rsETH; a search would return no discriminating observation.",
+    "No attempt to re-derive the freeze block or the supply-cap saturation: both are already fixed facts in the snapshot.",
+    "No attempt to widen sources, create tools, or extend the budget."
+  ]
+}

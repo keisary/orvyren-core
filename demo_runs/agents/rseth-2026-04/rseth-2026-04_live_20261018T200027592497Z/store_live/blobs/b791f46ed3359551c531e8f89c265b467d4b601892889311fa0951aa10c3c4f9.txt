@@ -1,0 +1,86 @@
+{
+  "$schema": "orvyren/crit/v1",
+  "verdict_lecture": "INCOHERENTE",
+  "findings": [
+    {
+      "type": "MANQUE",
+      "gravite": "BLOQUANT",
+      "enonce": "Aucune ref du paquet ne couvre rsETH : toutes les refs listées pointent vers des séries USDC/USD0 (calm_windows, usd0pp, klines, ohlc, defillama). Les mesures isFrozen, cap_ratio, utilisation et prix oracle sont sans preuve.",
+      "refs": ["hypothesis:HYP-001", "hypothesis:HYP-002", "hypothesis:HYP-003", "hypothesis:HYP-004"],
+      "test_discriminant": "Retrouver dans le corpus une entrée nommant rsETH, isFrozen, cap_ratio ou l'adresse de la réserve Aave ; à défaut, les hypothèses restent non vérifiables."
+    },
+    {
+      "type": "CONTRADICTION",
+      "gravite": "MAJEUR",
+      "enonce": "HYP-002 annonce -31 % d'écart mais ce pourcentage ne se déduit pas des valeurs qu'il cite (1 686 contre 2 513-2 526) : contradiction interne entre l'écart revendiqué et les prix retenus.",
+      "refs": ["hypothesis:HYP-002"],
+      "test_discriminant": "Recalculer l'écart relatif à partir des prix retenus ; si le résultat diffère de -31 %, l'énoncé est fautif."
+    },
+    {
+      "type": "PIT",
+      "gravite": "MAJEUR",
+      "enonce": "HYP-003 fonde cap_ratio_max sur une seule mesure à 2026-04-18T18:00:00Z : un point unique ne prouve ni le max sur la fenêtre ni la persistance de la saturation jusqu'à l'instant du gel.",
+      "refs": ["hypothesis:HYP-003", "hypothesis:HYP-001"],
+      "test_discriminant": "Exiger la série cap_ratio sur l'intervalle jusqu'à l'instant du gel ; toute relâche avant annule la contrainte invoquée."
+    },
+    {
+      "type": "CONTRADICTION",
+      "gravite": "MAJEUR",
+      "enonce": "HYP-003 conclut qu'aucune nouvelle offre ne pouvait entrer alors que le ratio cité est 99,999 % et non un plafond fermé : un résiduel de capacité subsiste, la conclusion dépasse la mesure.",
+      "refs": ["hypothesis:HYP-003"],
+      "test_discriminant": "Vérifier la définition du cap_ratio et si le résiduel non saturé permettait encore des dépôts avant le gel."
+    },
+    {
+      "type": "MANQUE",
+      "gravite": "MAJEUR",
+      "enonce": "HYP-001 situe le flip isFrozen au bloc 24 908 723 par recherche binaire supposant la monotonie, sans log d'événements ni hash de transaction : un aller-retour 0→1→0 dans la fenêtre échappe au critère.",
+      "refs": ["hypothesis:HYP-001"],
+      "test_discriminant": "Vérifier par log d'événements ou état par bloc si isFrozen est monotone ; tout retour à 0 invalide le bloc unique."
+    },
+    {
+      "type": "ALTERNATIVE",
+      "gravite": "MAJEUR",
+      "enonce": "HYP-002 : l'écart oracle/marché peut s'expliquer par un décalage temporel entre relevés ou des actifs distincts ; aucune ref ne fixe la source du prix 1 686 ni la fenêtre des relevés oracles.",
+      "refs": ["hypothesis:HYP-002"],
+      "test_discriminant": "Comparer prix marché et oracle sur les mêmes horodatages ; si les fenêtres diffèrent, l'écart invoqué n'est pas une divergence oracle."
+    },
+    {
+      "type": "DEPENDANCE",
+      "gravite": "MAJEUR",
+      "enonce": "Les centaines de refs listées proviennent de quelques fichiers seulement (calm_windows, usd0pp, klines USDC) : sources dépendantes, non cumulables comme preuves indépendantes.",
+      "refs": ["hypothesis:HYP-003", "hypothesis:HYP-004"],
+      "test_discriminant": "Compter les sources distinctes réellement mobilisées par mesure ; une seule source par mesure interdit tout cumul de preuves."
+    },
+    {
+      "type": "MANQUE",
+      "gravite": "BLOQUANT",
+      "enonce": "claim 0003 déclare VOI_NOT_ESTIMABLE et garde un ordre fixe en secours : la session repose sur une valeur d'information non estimée, sans preuve d'admissibilité de la solution de secours.",
+      "refs": ["claim:rseth-2026-04_live_20261018T200027592497Z-orchestrator-0003"],
+      "test_discriminant": "Exiger la preuve que l'ordre fixe borné est admissible et documenté ; sinon les conclusions issues de la session sont non fondées."
+    },
+    {
+      "type": "MANQUE",
+      "gravite": "MAJEUR",
+      "enonce": "claims 0001 et 0010 sont deux refus de schéma identiques, sans refs : rien n'établit qu'un plan valide a été produit après les re-prompts annoncés.",
+      "refs": ["claim:rseth-2026-04_live_20261018T200027592497Z-orchestrator-0001", "claim:rseth-2026-04_live_20261018T200027592497Z-orchestrator-0010"],
+      "test_discriminant": "Retrouver le plan effectivement retenu après chaque re-prompt ; s'il est absent, aucun plan valide n'est démontré."
+    },
+    {
+      "type": "OBSOLESCENCE",
+      "gravite": "MINEUR",
+      "enonce": "Session live horodatée 2026-10-18 mais snapshot ancré 2026-04-18 : une mesure dite live prise à la session ne décrit pas l'état de la réserve au moment du gel sans archive.",
+      "refs": ["claim:rseth-2026-04_live_20261018T200027592497Z-orchestrator-0003", "hypothesis:HYP-001"],
+      "test_discriminant": "Établir si les mesures citées proviennent de l'état archivé au bloc daté ou de l'état courant au moment de la session."
+    }
+  ],
+  "preuves_manquantes": [
+    "Série isFrozen par bloc sur toute la fenêtre (état archivé, non estimation binaire)",
+    "Log d'événements ou hash de la transaction de gel administratif",
+    "Série cap_ratio de la réserve rsETH jusqu'à l'instant du gel",
+    "Série d'utilisation de la réserve rsETH autour du gel (critère R de HYP-004)",
+    "Source et horodatage du prix marché 1 686 et des relevés oracles 2 513-2 526",
+    "Estimateur NetVoI ou justification documentée de l'ordre fixe en secours",
+    "Toute ref corpus nommant rsETH, Aave v3 core ou l'adresse de la réserve"
+  ],
+  "note": "Le paquet est structurellement incohérent : le corpus cité porte sur USD0/USDC alors que toutes les hypothèses portent sur rsETH, et HYP-002 contient une contradiction numérique interne. Les claims de session sont non référencés et laissent une VOI non estimée."
+}
