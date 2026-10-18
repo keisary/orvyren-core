@@ -52,6 +52,22 @@ Collects the versioned artifacts of the executed live run into
 (risk → hypotheses → evidence → decision → policy → execution) is
 `evidence/scenario_rseth/scenario_report.md`.
 
+**Honest reading of the execution leg (declared substitution).** The rsETH
+conclusion is the agents' abstention (ARRET-3, critic INCOHERENTE →
+REQUIRE_APPROVAL). The execution tick in the artifacts replays the **pilot
+USDC decision** to demonstrate the mechanism (policy → chained journal →
+run_id): the rsETH case decision follows the documented abstention path
+(`E_WHAT_WOULD_CHANGE_REQUIRED` on the probe is the recorded refusal, kept as
+evidence). Do not project the execution journal without this reading — the
+dashboard shows the same banner.
+
+**Graph data used by the demo.** The redistributable demo graph is
+`evidence/graph.sqlite` (520 observations, schema v2) + `evidence/ui_snapshot.json`;
+the 16,174-node / 12,937-edge Aave v3 database (~50 MB) is a **local artifact**
+(`D:/orvyren_10h_2026-10-17/graph_v3.sqlite`) with its reconstruction pipeline,
+not in the repository. The dashboard and the scenario state which database
+they are on; nothing claims the 16k graph comes from a clone.
+
 ## 5. Run the scenario LIVE (optional — needs the keys of step 0)
 
 ```
@@ -73,6 +89,22 @@ python run_benchmark_ab.py --cases usdc-2023-03 placebo-calm-2023-03 --runs 3 --
 Expected: `report.json` + `report.md` with the mandatory small-N banner
 ("no superiority claim"), the placebo labelled synthetic, and the honesty
 sections (when agents help / add nothing / must abstain) always rendered.
+Read the report WITH its three caveats in the same view: the A2 leg is one
+recorded run replayed (not independent samples), the placebo A2 leg may be
+`not_executed`, and A0 runs without the pilot RDOF outside `usdc-2023-03`.
+The benchmark shows an auditable brake; agent usefulness is **not** measured.
+
+## 6b. Fallback plan if a live LLM provider is down
+
+The demo never depends on a provider being up:
+
+```
+python run_agents.py --case usdc-2023-03 --replay journal --session evidence/demo_replay
+```
+
+Deterministic recorded replay (~1 s), same journals, same hash chains.
+A live run that meets a dead provider stops honestly (bounded retries, stable
+error codes, never a fake OK) — switch to the replay and continue.
 
 ## 7. Verify an audit packet (third-party check, no repo needed)
 
