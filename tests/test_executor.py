@@ -348,7 +348,8 @@ class TestPeriodCapPersistence(ExecutorTestCase):
 
 class TestExecuteFailClosed(ExecutorTestCase):
     def test_execute_without_key_or_library_returns_non_zero_before_any_tick(self):
-        code, _, _ = invoke_cli(["--execute", "--ticks", "1",
+        code, _, _ = invoke_cli(["--execute", "--run-id", "run-20261018T120000000000Z-001122334455",
+                                 "--ticks", "1",
                                  "--journal", self.journal, "--ledger", self.ledger])
         self.assertEqual(executor.EXIT_EXECUTE, code)
         self.assertFalse(os.path.exists(self.journal))

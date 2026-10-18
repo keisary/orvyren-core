@@ -25,6 +25,11 @@ Invariants:
   ``ORVYREN_K0_PAUSE_FLAG`` file) is re-read before every evaluation; a
   pause produces a journaled refusal, never a crash;
 * **chained journal** JSONL (``prev_hash`` / ``record_hash``) append-only;
+* **shared run chain** (``orvyren.chain``): one ``run_id`` for decision ->
+  policy -> execution, event-sourced transitions, hashed artifacts (intent,
+  policy decision, receipt) and verified handoffs — a contract failure stops
+  the run fail-closed, and real (``--execute``) runs are refused without an
+  explicit ``run_id`` (``E_CHAIN_RUN_ID_REQUIRED``);
 * **24 h ledger** JSON written atomically (temporary file +
   ``os.replace``, ``newline="\\n"``): every ALLOW adds
   ``(ts, intent_id, amount)``, a DENY consumes nothing;
@@ -44,11 +49,11 @@ import os
 import sys
 import tempfile
 import time
-import uuid
 from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
 from typing import Any, Callable, Dict, List, Mapping, Optional, Tuple
 
+from orvyren.chain import ChainContractError, ChainRunIdRequired, RunChain, new_run_id
 from orvyren.execution import chain as chain_client
 from orvyren.execution.guard import DEFAULT_RESERVE_ADDRESS
 from orvyren.execution.verify import value_to_base_units, verify_receipt
@@ -1005,6 +1010,24 @@ def _intent_view(intent: Intent) -> Dict[str, Any]:
     }
 
 
+def _chain_intent_view(intent: Intent) -> Dict[str, Any]:
+    """Intent projection for hashed run-chain artifacts.
+
+    Wall-clock free by contract (``ts_utc`` of the run-chain event is the
+    single signed time field): ``created_at`` is carried by the tick record,
+    never inside a hashed payload.
+    """
+    return {
+        "intent_id": intent.intent_id,
+        "action": intent.action,
+        "chain_id": intent.chain_id,
+        "asset": intent.asset,
+        "amount": intent.amount,
+        "recipient": intent.recipient,
+        "justification": intent.justification,
+    }
+
+
 def run_loop(bundle: PolicyBundle, *, case: str, recipient: str,
              journal_path: str, ledger_path: Optional[str],
              ticks: int = DEFAULT_TICKS, interval_s: float = DEFAULT_INTERVAL_S,
@@ -1018,12 +1041,24 @@ def run_loop(bundle: PolicyBundle, *, case: str, recipient: str,
              signer: Any = None,
              execute: Optional[Callable[[Intent, Dict[str, Any]], Dict[str, Any]]] = None,
              rpc_url: Optional[str] = None,
-             receipt_timeout: int = DEFAULT_RECEIPT_TIMEOUT) -> Dict[str, Any]:
+             receipt_timeout: int = DEFAULT_RECEIPT_TIMEOUT,
+             run_id: Optional[str] = None,
+             parent_run_id: str = "",
+             chain_root: Optional[str] = None) -> Dict[str, Any]:
     """Run ``ticks`` ticks and return the summary (JSON-serializable dict).
 
     Each tick journals exactly one record, whatever the
     verdict. A denial (policy, pause, budget) does not stop the loop;
     an execution error stops it (fail-closed).
+
+    The run is event-sourced under one shared ``run_id``
+    (``orvyren.chain.RunChain``): every tick records the decision -> policy ->
+    execution transitions, writes the hashed artifacts (intent, policy
+    decision, receipt) and verifies the handoffs between stages. A dry-run
+    without ``run_id`` gets an auto-generated one; a real run (``dry_run`` off)
+    without an explicit ``run_id`` is refused before the first tick
+    (:class:`orvyren.chain.ChainRunIdRequired`, ``E_CHAIN_RUN_ID_REQUIRED``).
+    Any chain contract failure stops the run fail-closed.
     """
     if not isinstance(ticks, int) or isinstance(ticks, bool) or ticks < 0:
         raise ValueError("ticks must be an integer >= 0")
@@ -1039,21 +1074,60 @@ def run_loop(bundle: PolicyBundle, *, case: str, recipient: str,
     sleeper = sleep or time.sleep
     provider = decision_provider or _default_decision_provider(case, corpus_path, recipient)
 
+    # Shared run identity: explicit for real execution, auto-generated only in
+    # dry-run (never in --execute). A re-run carries the original run_id as
+    # parent_run_id — identifiers are never reused.
+    chain_run_id = (run_id or "").strip()
+    if not chain_run_id:
+        if dry_run:
+            chain_run_id = new_run_id()
+        else:
+            raise ChainRunIdRequired(
+                "real execution requires an explicit run_id (CLI --run-id): "
+                "fail-closed, never auto-generated in --execute mode")
+    chain_parent = (parent_run_id or "").strip()
+    if chain_parent and chain_parent == chain_run_id:
+        raise ChainContractError(
+            "parent_run_id must differ from run_id (identifiers are never reused)")
+    chain_dir = (chain_root or "").strip() or os.path.join(
+        os.path.dirname(os.path.abspath(journal_path)), "chain", chain_run_id)
+
     journal = ChainedJournal(journal_path)
     ledger = PeriodLedger(ledger_path)
     budget_cap = decision_budget_cap(bundle)
-    run_id = uuid.uuid4().hex[:8]
     mode = "dry-run" if dry_run else "execute"
     spent_before = ledger.spent(now_fn())
     records: List[Dict[str, Any]] = []
     stopped = ""
     last_envelope: Dict[str, Any] = {"status": None, "source": None, "checks": []}
     paused_engaged = False
+    chain: Optional[RunChain] = None
+
+    def append_tick(rec: Dict[str, Any]) -> None:
+        """Journal one tick record carrying the run-chain ``verify()`` result."""
+        ok, message = (chain.verify() if chain is not None else (True, ""))
+        rec["chain"] = {
+            "run_id": chain_run_id,
+            "parent_run_id": chain_parent,
+            "root_dir": chain_dir,
+            "verify_ok": ok,
+            "verify_error": message,
+            "events_head": chain.manifest()["events_head"] if chain is not None else GENESIS_HASH,
+        }
+        journal.append(rec)
+        records.append(rec)
+        if not ok:
+            raise ChainContractError(
+                "run chain verification failed (fail-closed): {}".format(message))
 
     for tick in range(1, ticks + 1):
         if tick > 1 and interval_s > 0:
             sleeper(interval_s)
         now = now_fn()
+        # Build/load the shared run chain on EVERY tick: a tampered chain is
+        # refused at load, never silently continued.
+        chain = RunChain(chain_run_id, case, parent_run_id=chain_parent,
+                         root_dir=chain_dir)
         # Kill switch re-read on EVERY tick (env or flag file).
         paused = resolve_pause(environment)
         agent_member = resolve_agent_member(environment)
@@ -1068,7 +1142,7 @@ def run_loop(bundle: PolicyBundle, *, case: str, recipient: str,
 
         record: Dict[str, Any] = {
             "case": case,
-            "run_id": run_id,
+            "run_id": chain_run_id,
             "tick": tick,
             "ts_utc": _iso(now),
             "mode": mode,
@@ -1103,23 +1177,40 @@ def run_loop(bundle: PolicyBundle, *, case: str, recipient: str,
         try:
             decision_record = provider(tick, now)
         except Exception as exc:  # noqa: BLE001 — an unreadable decision stops the run
+            chain.record("decision", "DECISION_ERROR",
+                         {"tick": tick, "error": str(exc)})
             record.update(outcome="ERROR", verdict="ERROR",
                           error="decision unavailable: {}".format(exc))
-            journal.append(record)
-            records.append(record)
+            append_tick(record)
             stopped = "decision"
             break
 
         intent, problem, decision_summary = _build_intent(
-            decision_record, case=case, tick=tick, now=now, run_id=run_id)
+            decision_record, case=case, tick=tick, now=now, run_id=chain_run_id)
         record["decision_summary"] = decision_summary
+        chain.record("decision", "DECISION_REPLAYED", {
+            "tick": tick,
+            "intent_id": intent.intent_id if intent is not None else None,
+            "epistemic_verdict": decision_summary.get("epistemic_verdict"),
+            "economic_action": decision_summary.get("economic_action"),
+            "authorization_verdict": decision_summary.get("authorization_verdict"),
+        })
         if intent is None:
+            chain.record("decision", "NO_ACTIONABLE_INTENT",
+                         {"tick": tick, "problem": problem})
             record.update(outcome="NO_ACTION", reasons=[NO_INTENT_CODE], error=problem)
-            journal.append(record)
-            records.append(record)
+            append_tick(record)
             continue
 
         record["intent"] = _intent_view(intent)
+        # Decision -> policy handoff: hashed intent artifact, verified.
+        intent_name = "intent-t{:03d}.json".format(tick)
+        intent_sha = chain.write_artifact("decision", intent_name,
+                                          _chain_intent_view(intent))
+        chain.record("decision", "TRANSITION", {
+            "tick": tick, "stage_from": "decision", "stage_to": "policy",
+            "artifacts": {intent_name: intent_sha}})
+        chain.handoff("decision", "policy", [intent_name])
         try:
             decision = evaluate(intent, bundle.config, now=now,
                                 seen_intent_ids=ledger.seen_intent_ids(),
@@ -1143,10 +1234,26 @@ def run_loop(bundle: PolicyBundle, *, case: str, recipient: str,
         record["policy_hash"] = decision.policy_hash
         record["safe_mode"] = bool(decision.safe_mode)
 
+        # Policy decision artifact: wall-clock free by contract (the
+        # ``rules_evaluated`` notes are time-derived and stay in the tick
+        # record only, never inside a hashed payload).
+        policy_name = "policy-t{:03d}.json".format(tick)
+        policy_payload = {
+            "tick": tick,
+            "intent_id": intent.intent_id,
+            "verdict": decision.verdict,
+            "reasons": list(decision.reasons),
+            "skipped_rules": list(record["skipped_rules"]),
+            "policy_version": decision.policy_version,
+            "policy_hash": decision.policy_hash,
+            "safe_mode": bool(decision.safe_mode),
+        }
+        chain.record("policy", "POLICY_DECIDED", policy_payload)
+        policy_sha = chain.write_artifact("policy", policy_name, policy_payload)
+
         if decision.verdict != "ALLOW":
             record["outcome"] = "DENIED_POLICY"
-            journal.append(record)
-            records.append(record)
+            append_tick(record)
             continue
 
         # Per-tick budget guard (outside the policy): denial without consumption.
@@ -1154,9 +1261,14 @@ def run_loop(bundle: PolicyBundle, *, case: str, recipient: str,
             record["verdict"] = "DENY"
             record["outcome"] = "DENIED_TICK_BUDGET"
             record["reasons"] = list(decision.reasons) + [TICK_BUDGET_CODE]
-            journal.append(record)
-            records.append(record)
+            append_tick(record)
             continue
+
+        # Policy -> execution handoff: hashed policy artifact, verified.
+        chain.record("policy", "TRANSITION", {
+            "tick": tick, "stage_from": "policy", "stage_to": "execution",
+            "artifacts": {policy_name: policy_sha}})
+        chain.handoff("policy", "execution", [policy_name])
 
         if dry_run:
             # DRY-RUN report: no signature, no key read, no network.
@@ -1164,8 +1276,13 @@ def run_loop(bundle: PolicyBundle, *, case: str, recipient: str,
             record["executed"] = False
             ledger.record(now, intent.intent_id, intent.amount)
             record["ledger_spent_after"] = ledger.spent(now)
-            journal.append(record)
-            records.append(record)
+            chain.record("execution", "EXECUTION_RESULT", {
+                "tick": tick, "intent_id": intent.intent_id,
+                "outcome": "DRY_RUN", "executed": False, "tx_hash": None})
+            chain.write_artifact("execution", "receipt-t{:03d}.json".format(tick), {
+                "intent_id": intent.intent_id, "outcome": "DRY_RUN",
+                "executed": False, "tx_hash": None, "receipt_verification": None})
+            append_tick(record)
             continue
 
         # Real mode: signer imported lazily, then receipt verification.
@@ -1177,31 +1294,46 @@ def run_loop(bundle: PolicyBundle, *, case: str, recipient: str,
                 result = _execute_intent(intent, signer=active_signer, rpc_url=rpc_url,
                                          timeout=30, receipt_timeout=receipt_timeout)
         except Exception as exc:  # noqa: BLE001 — key/dependency/network: fail-closed stop
+            chain.record("execution", "EXECUTION_ERROR",
+                         {"tick": tick, "intent_id": intent.intent_id,
+                          "error": str(exc)})
             record.update(outcome="ERROR", verdict="ERROR", executed=False,
                           error="execution refused: {}".format(exc))
-            journal.append(record)
-            records.append(record)
+            append_tick(record)
             stopped = "execute"
             break
 
         record["tx_hash"] = result.get("tx_hash")
         record["receipt_verification"] = result.get("receipt_verification")
         record["error"] = result.get("error")
+        receipt_outcome = ("RECEIPT_UNVERIFIED" if result.get("tx_hash") else "ERROR") \
+            if result.get("error") else "SIGNED"
+        chain.record("execution", "EXECUTION_RESULT", {
+            "tick": tick, "intent_id": intent.intent_id,
+            "outcome": receipt_outcome, "executed": bool(result.get("sent")),
+            "tx_hash": result.get("tx_hash")})
+        chain.write_artifact("execution", "receipt-t{:03d}.json".format(tick), {
+            "intent_id": intent.intent_id, "outcome": receipt_outcome,
+            "executed": bool(result.get("sent")), "tx_hash": result.get("tx_hash"),
+            "receipt_verification": result.get("receipt_verification")})
         if result.get("tx_hash"):
             ledger.record(now, intent.intent_id, intent.amount)
             record["ledger_spent_after"] = ledger.spent(now)
         if result.get("error"):
             record["outcome"] = "RECEIPT_UNVERIFIED" if result.get("tx_hash") else "ERROR"
             record["executed"] = bool(result.get("sent"))
-            journal.append(record)
-            records.append(record)
+            append_tick(record)
             stopped = "receipt"
             break
         record["outcome"] = "SIGNED"
         record["executed"] = True
-        journal.append(record)
-        records.append(record)
+        append_tick(record)
 
+    if chain is None:  # zero ticks: still build/load the chain for the summary
+        chain = RunChain(chain_run_id, case, parent_run_id=chain_parent,
+                         root_dir=chain_dir)
+    chain_ok, chain_error = chain.verify()
+    chain_manifest = chain.manifest()
     chain_state = verify_journal(journal_path)
     counts = {
         "allow": sum(1 for record in records if record.get("verdict") == "ALLOW"),
@@ -1221,6 +1353,18 @@ def run_loop(bundle: PolicyBundle, *, case: str, recipient: str,
         "ticks": ticks,
         "ticks_run": len(records),
         "recipient": recipient,
+        "run_id": chain_run_id,
+        "parent_run_id": chain_parent,
+        "chain": {
+            "run_id": chain_run_id,
+            "parent_run_id": chain_parent,
+            "case_id": case,
+            "root_dir": chain_dir,
+            "verify_ok": chain_ok,
+            "verify_error": chain_error,
+            "events_head": chain_manifest["events_head"],
+            "artifacts": len(chain_manifest["artifacts"]),
+        },
         "policy": {"path": policy_path, "version": bundle.version,
                    "policy_hash": bundle.policy_hash, "yaml_sha256": bundle.yaml_sha256},
         "envelope": {"status": last_envelope.get("status"),

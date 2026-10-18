@@ -14,9 +14,16 @@ ALLOW verdict in dry-run produces a DRY-RUN report without signature; with
 receipt is verified — without a key or without ``eth-account``, the run is
 refused before the first tick (code 4).
 
+Every run is event-sourced under one shared ``run_id`` (``orvyren.chain``):
+decision -> policy -> execution transitions are recorded, the intent, policy
+decision and receipt are hashed artifacts, and each stage handoff is verified
+(contract failure = fail-closed stop). ``--run-id`` names the run (a re-run
+also passes ``--parent-run-id``); in dry-run a run_id is auto-generated, in
+``--execute`` mode it is mandatory (``E_CHAIN_RUN_ID_REQUIRED``, code 4).
+
 Exit codes: 0 run finished · 2 configuration/recipient · 3 pause
 (kill switch) · 4 real execution unavailable · 5 execution error
-(ledger/journal/network/receipt).
+(ledger/journal/network/receipt/chain contract).
 
 No key is read in dry-run. No secret is printed in any mode whatsoever.
 """
@@ -35,6 +42,7 @@ ROOT = os.path.dirname(os.path.abspath(__file__))
 if os.path.join(ROOT, "src") not in sys.path:
     sys.path.insert(0, os.path.join(ROOT, "src"))
 
+from orvyren.chain import ChainContractError, E_CHAIN_RUN_ID_REQUIRED  # noqa: E402
 from orvyren.execution import loop as executor  # noqa: E402
 from orvyren.execution.chain import ChainError  # noqa: E402
 
@@ -67,6 +75,13 @@ def build_parser() -> argparse.ArgumentParser:
                         help="24 h JSON ledger (default: demo_runs/executor/<case>/ledger.json)")
     parser.add_argument("--journal", default=None,
                         help="chained JSONL journal (default: demo_runs/executor/<case>/journal.jsonl)")
+    parser.add_argument("--run-id", default=None,
+                        help="shared run identifier (event-sourced chain) — mandatory "
+                             "with --execute (E_CHAIN_RUN_ID_REQUIRED), auto-generated "
+                             "in dry-run")
+    parser.add_argument("--parent-run-id", default="",
+                        help="run identifier of the replayed run (re-run): carried by "
+                             "every event and artifact, must differ from --run-id")
     parser.add_argument("--json", action="store_true",
                         help="machine output (one JSON object on stdout)")
     parser.add_argument("--demo-defaults", action="store_true",
@@ -148,6 +163,18 @@ def main(argv: Optional[list] = None, env: Optional[Mapping[str, str]] = None,
         print("ERROR: --max-usd must be a finite number >= 0", file=sys.stderr)
         return executor.EXIT_USAGE
 
+    run_id = (args.run_id or "").strip()
+    parent_run_id = (args.parent_run_id or "").strip()
+    if args.execute and not run_id:
+        print("ERROR --execute: E_CHAIN_RUN_ID_REQUIRED — a real run requires an "
+              "explicit --run-id (fail-closed, never auto-generated); a re-run also "
+              "passes --parent-run-id.", file=sys.stderr)
+        return executor.EXIT_EXECUTE
+    if run_id and parent_run_id and run_id == parent_run_id:
+        print("ERROR --parent-run-id: E_CHAIN_CONTRACT — parent_run_id must differ "
+              "from run_id (identifiers are never reused).", file=sys.stderr)
+        return executor.EXIT_USAGE
+
     policy_path = args.policy if os.path.isabs(args.policy) else os.path.join(ROOT, args.policy)
     if not os.path.exists(policy_path):
         print("ERROR: policy_v1.yaml not found: {}".format(policy_path), file=sys.stderr)
@@ -214,6 +241,8 @@ def main(argv: Optional[list] = None, env: Optional[Mapping[str, str]] = None,
             clock=now_fn,
             signer=signer,
             rpc_url=str(effective_env.get("ORVYREN_RPC_URL_BASE_SEPOLIA") or "") or None,
+            run_id=run_id or None,
+            parent_run_id=parent_run_id,
         )
     except (executor.LedgerError, executor.JournalError, executor.PolicyLoadError) as exc:
         print("ERROR execution: {}".format(exc), file=sys.stderr)
@@ -221,6 +250,10 @@ def main(argv: Optional[list] = None, env: Optional[Mapping[str, str]] = None,
     except ChainError as exc:
         print("ERROR network: {}".format(exc), file=sys.stderr)
         return executor.EXIT_RUNTIME
+    except ChainContractError as exc:
+        print("ERROR chain [{}]: {}".format(exc.code, exc), file=sys.stderr)
+        return executor.EXIT_EXECUTE if exc.code == E_CHAIN_RUN_ID_REQUIRED \
+            else executor.EXIT_RUNTIME
 
     summary["demo_defaults"] = bool(args.demo_defaults)
     if args.json:
