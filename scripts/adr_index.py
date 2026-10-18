@@ -144,9 +144,19 @@ def rewrite_readme(decisions_dir, entries):
         text = handle.read()
     if REGISTRE_HEADER not in text:
         raise SystemExit("E_ADR_README: section '%s' not found in %s" % (REGISTRE_HEADER, readme_path))
-    head = text.split(REGISTRE_HEADER)[0] + REGISTRE_HEADER + "\n\n"
+    start = text.index(REGISTRE_HEADER)
+    after = text[start + len(REGISTRE_HEADER):]
+    # Replace only the registry section; preserve any later sections verbatim
+    # instead of truncating the README at the table.
+    next_section = re.search(r"(?m)^##\s+", after)
+    tail = after[next_section.start():] if next_section else ""
+    head = text[:start] + REGISTRE_HEADER + "\n\n" + render_registry(entries)
+    if tail:
+        head = head.rstrip("\n") + "\n\n" + tail.lstrip("\n")
+    else:
+        head = head.rstrip("\n") + "\n"
     with open(readme_path, "w", encoding="utf-8", newline="\n") as handle:
-        handle.write(head + render_registry(entries))
+        handle.write(head)
     return readme_path
 
 

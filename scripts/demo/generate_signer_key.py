@@ -73,7 +73,8 @@ def _write_lines(path: str, lines: List[str]) -> None:
         pass
 
 
-def _assign(lines: List[str], pattern: "re.Pattern[str]", value: str) -> List[str]:
+def _assign(lines: List[str], pattern: "re.Pattern[str]", value: str,
+            key_name: str) -> List[str]:
     replaced = False
     result: List[str] = []
     for line in lines:
@@ -84,7 +85,7 @@ def _assign(lines: List[str], pattern: "re.Pattern[str]", value: str) -> List[st
         else:
             result.append(line)
     if not replaced:
-        result.append("%s%s" % (pattern.pattern.split("\\")[0].rstrip("= "), value))
+        result.append("%s=%s" % (key_name, value))
     return result
 
 
@@ -135,8 +136,8 @@ def generate(env_path: str, *, force: bool) -> Dict[str, Any]:
     if not private_key.startswith("0x"):
         private_key = "0x" + private_key
     address = account.address
-    lines = _assign(lines, KEY_LINE, private_key)
-    lines = _assign(lines, ADDRESS_LINE, address)
+    lines = _assign(lines, KEY_LINE, private_key, "ORVYREN_PRIVATE_KEY")
+    lines = _assign(lines, ADDRESS_LINE, address, "ORVYREN_AGENT_ADDRESS")
     _write_lines(env_path, lines)
     return {"env_file": common.display_path(env_path), "agent_address": address,
             "wrote_key": True, "note": "throwaway key — destroy it after the demo "

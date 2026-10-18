@@ -78,6 +78,14 @@ def _is_hex_key(value: str) -> bool:
     return len(body) == 64 and all(c in "0123456789abcdefABCDEF" for c in body)
 
 
+def _account_from_key(account, key: str):
+    """Derive the local account without ever echoing key material."""
+    try:
+        return account.from_key(key)
+    except Exception as exc:
+        raise SignerError("private key rejected by eth-account — no signature issued") from exc
+
+
 def fake_tx_hash(tx: Dict[str, Any]) -> str:
     """**Placeholder** deterministic hash of a simulated transaction (never a chain hash)."""
     return "0x" + common.sha256_hex(common.canonical_json(tx).encode("utf-8"))
@@ -125,8 +133,9 @@ class Signer:
         if not _is_hex_key(key):
             raise SignerError(
                 "{} missing or malformed (32 hex bytes expected) — no signature issued".format(KEY_ENV_NAME))
-        account = _import_account().from_key(key)
-        self._address = str(account.address).lower()
+        account = _import_account()
+        local = _account_from_key(account, key)
+        self._address = str(local.address).lower()
         return self._address
 
     # --- signature ------------------------------------------------------------
@@ -142,7 +151,11 @@ class Signer:
         for forbidden in ("privateKey", "private_key", "secret", "mnemonic"):
             if forbidden in tx:
                 raise SignerError("forbidden field in a transaction: {!r}".format(forbidden))
-        if int(tx.get("chainId", self.chain_id)) != self.chain_id:
+        try:
+            tx_chain_id = int(tx.get("chainId", self.chain_id))
+        except (TypeError, ValueError) as exc:
+            raise SignerError("transaction chainId is not an integer") from exc
+        if tx_chain_id != self.chain_id:
             raise SignerError("transaction chainId ≠ pinned chain {}".format(self.chain_id))
 
         if self.dry_run:
@@ -166,7 +179,7 @@ class Signer:
         if not _is_hex_key(key):
             raise SignerError(
                 "{} missing or malformed — real signing refused".format(KEY_ENV_NAME))
-        local = account.from_key(key)
+        local = _account_from_key(account, key)
         if "from" in tx:
             # eth-account requires the exact EIP-55 address in 'from' (stdlib builders
             # normalize addresses to lowercase): check, then rewrite with the key's casing.

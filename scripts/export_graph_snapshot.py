@@ -29,6 +29,12 @@ from orvyren.graph.export import write_snapshot_dir  # noqa: E402
 from orvyren.graph.queries import load_fixture_records  # noqa: E402
 
 
+def _safe_token(value: str) -> str:
+    token = str(value).replace("\\", "/").split("/")[-1]
+    token = "".join(ch if (ch.isalnum() or ch in "._-@") else "-" for ch in token)
+    return token.strip("-.") or "unknown"
+
+
 def main(argv=None) -> int:
     parser = argparse.ArgumentParser(prog="export_graph_snapshot.py")
     parser.add_argument("--case", required=True,
@@ -39,14 +45,14 @@ def main(argv=None) -> int:
                         help="output directory (default evidence/graph_snapshots/<case>@<as_of>)")
     args = parser.parse_args(argv)
 
-    fixture = os.path.join(REPO_ROOT, "fixtures", "graphs", "%s.json" % args.case)
+    fixture = os.path.join(REPO_ROOT, "fixtures", "graphs", "%s.json" % _safe_token(args.case))
     if not os.path.exists(fixture):
         raise SystemExit("E_CASE_UNKNOWN: %s missing" % fixture)
     records = load_fixture_records(fixture)
 
-    compact = args.as_of.replace(":", "").replace("-", "")
+    compact = _safe_token(args.as_of.replace(":", "").replace("-", ""))
     out_dir = args.out or os.path.join(REPO_ROOT, "evidence", "graph_snapshots",
-                                       "%s@%s" % (args.case, compact))
+                                       "%s@%s" % (_safe_token(args.case), compact))
     paths = write_snapshot_dir(records, args.case, args.as_of, out_dir)
     print("ORVYREN — graph snapshot exported (L1.6)")
     print("  case      : %s @ %s" % (args.case, args.as_of))

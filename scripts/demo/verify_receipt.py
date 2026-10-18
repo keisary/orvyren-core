@@ -97,7 +97,10 @@ def verify_full(receipt: Dict[str, Any], *, intent: Dict[str, Any], safe: str, m
     agent_n = common.normalize_address(agent, "agent")
     token = common.normalize_address(intent.get("asset"), "intent.asset")
     recipient = common.normalize_address(intent.get("recipient"), "intent.recipient")
-    amount_base_units = int(intent.get("amount_base_units"))
+    try:
+        amount_base_units = int(intent.get("amount_base_units"))
+    except (TypeError, ValueError) as exc:
+        raise ValueError("intent.amount_base_units is required and must be an integer") from exc
 
     expected = {
         "token": token,

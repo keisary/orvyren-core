@@ -34,7 +34,7 @@ sys.path.insert(0, os.path.join(ROOT, "src"))
 sys.path.insert(0, ROOT)
 sys.path.insert(0, os.path.join(ROOT, "scripts"))
 
-from demo import build_audit_packet, calls, common, demo, intents  # noqa: E402
+from demo import build_audit_packet, calls, common, demo, generate_signer_key, intents  # noqa: E402
 from demo import preflight as preflight_mod  # noqa: E402
 from demo import signer as signer_mod  # noqa: E402
 from demo import verify_receipt  # noqa: E402
@@ -1043,6 +1043,13 @@ class TestKitConstraints(unittest.TestCase):
     def test_config_example_has_empty_private_key(self):
         text = open(os.path.join(DEMO_DIR, "config.example.env"), "r", encoding="utf-8").read()
         self.assertIn("ORVYREN_PRIVATE_KEY=\n", text)
+
+
+class GenerateSignerKeyTests(unittest.TestCase):
+    def test_assign_appends_full_key_line_when_missing(self):
+        lines = generate_signer_key._assign(["# env"], generate_signer_key.KEY_LINE,
+                                            "0xabc", "ORVYREN_PRIVATE_KEY")
+        self.assertIn("ORVYREN_PRIVATE_KEY=0xabc", lines)
 
 
 if __name__ == "__main__":

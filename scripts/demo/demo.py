@@ -1168,7 +1168,7 @@ def run_e(ctx: DemoContext) -> Dict[str, Any]:
         "",
     ])
     report_path = os.path.join(ctx.session_dir, "report.md")
-    with open(report_path, "w", encoding="utf-8") as handle:
+    with open(report_path, "w", encoding="utf-8", newline="\n") as handle:
         handle.write("\n".join(report_lines))
     ctx.journal.append("OUTCOME", payload={"run": "E", "export": "export/manifest.json",
                                            "report": "report.md", "chain_ok": chain_report["ok"],

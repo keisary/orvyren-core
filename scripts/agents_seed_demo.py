@@ -114,16 +114,17 @@ def main(argv=None) -> int:
     args = parser.parse_args(argv)
 
     inputs = run_agents.load_case_inputs(args.case)
-    store_dir = os.path.join(REPO_ROOT, "fixtures", "agents", "store_%s" % args.case)
+    case_slug = run_agents._safe_case(args.case)
+    store_dir = os.path.join(REPO_ROOT, "fixtures", "agents", "store_%s" % case_slug)
     calls_path = os.path.join(store_dir, "calls.jsonl")
     if os.path.exists(calls_path) and not args.force:
         raise SystemExit("E_SEED_EXISTS: %s already exists — refusing to overwrite a store "
                          "(a live recording? use --force if this really is a scripted seed)"
                          % calls_path)
 
-    session = args.session or os.path.join(REPO_ROOT, "demo_runs", "agents_seed", args.case)
+    session = args.session or os.path.join(REPO_ROOT, "demo_runs", "agents_seed", case_slug)
     stamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
-    run_dir = os.path.join(session, "%s_seed_%s" % (args.case, stamp))
+    run_dir = os.path.join(session, "%s_seed_%s" % (case_slug, stamp))
     os.makedirs(os.path.join(run_dir, "exchanges"), exist_ok=True)
 
     spec = {

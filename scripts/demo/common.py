@@ -158,7 +158,7 @@ def write_json(path: str, payload: Any) -> None:
     if directory:
         os.makedirs(directory, exist_ok=True)
     temporary = "{}.tmp".format(path)
-    with open(temporary, "w", encoding="utf-8") as handle:
+    with open(temporary, "w", encoding="utf-8", newline="\n") as handle:
         json.dump(payload, handle, indent=2, ensure_ascii=False, sort_keys=False)
         handle.write("\n")
         handle.flush()

@@ -74,5 +74,18 @@ class AdrIndexTests(unittest.TestCase):
             self.assertTrue(any("duplicate" in problem for problem in problems), problems)
 
 
+    def test_rewrite_preserves_sections_after_registry(self):
+        with tempfile.TemporaryDirectory(prefix="orvyren_adr_") as tmp:
+            _write_adr(tmp, 1, "one")
+            readme = os.path.join(tmp, "README.md")
+            with open(readme, "w", encoding="utf-8", newline="\n") as handle:
+                handle.write("# ADRs\n\n## Registre\n\n| old | table |\n\n## Notes\n\nkeep me\n")
+            adr_index.rewrite_readme(tmp, adr_index.scan(tmp))
+            with open(readme, "r", encoding="utf-8") as handle:
+                rewritten = handle.read()
+            self.assertIn("## Notes\n\nkeep me", rewritten)
+            self.assertNotIn("| old | table |", rewritten)
+
+
 if __name__ == "__main__":
     unittest.main()
