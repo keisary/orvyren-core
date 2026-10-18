@@ -55,6 +55,10 @@ Après fusion : **1 061 passed, 3 skipped**.
 | `generate_signer_key` : ligne de clé manquante écrite sans `=` | clé explicite passée à `_assign` + test | `f50dc8b` |
 | `common.write_json` et rapport demo écrivaient du JSON en CRLF sous Windows | `newline="\n"` explicite | `f50dc8b` |
 | `export_graph_snapshot` / seed agents : `--case` pouvait sortir du dossier | token fichiers-safe | `f50dc8b` |
+| API graphe : chemin SQLite avec `?`/`#`/espaces mal encodé dans l’URI read-only | URI construite avec `os.path.abspath` + `urllib.parse.quote` | `dea7f44` |
+| Q7 graphe : un `supply_cap` négatif produisait un ratio négatif | cap non positif → ratio `None` | `dea7f44` |
+| Axe épistémique : toutes hypothèses `REFUTED` donnait `INCONCLUSIVE` | décidable si chaque hypothèse est `SUPPORTED` ou `REFUTED` | `d761f4c` |
+| `load_policy` : champs numériques/listes mal typés provoquaient un traceback | validation explicite → `MiniYamlError` | `d761f4c` |
 
 ## 4. Limites de la revue
 
