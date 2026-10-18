@@ -409,6 +409,10 @@ class VerifierZipSafetyTest(_TempRootTest):
         finally:
             os.remove(outside)
 
+    def test_non_http_rpc_scheme_is_refused(self):
+        with self.assertRaises(ValueError):
+            engine_mod._rpc("file:///tmp/rpc.json", "eth_chainId", [])
+
     def test_valid_packet_zip_is_extracted(self):
         packet = os.path.join(self.root, "packet")
         os.makedirs(os.path.join(packet, "pkt"))

@@ -36,6 +36,7 @@ import stat
 import sys
 import tempfile
 import urllib.error
+import urllib.parse
 import urllib.request
 import zipfile
 from decimal import Decimal, InvalidOperation
@@ -925,6 +926,9 @@ def check_a8_receipts(root: str, manifest: Dict[str, Any]) -> List[Dict[str, Any
 # --------------------------------------------------------------------------- #
 
 def _rpc(url: str, method: str, params: List[Any], timeout: float = 20.0) -> Any:
+    parts = urllib.parse.urlsplit(str(url))
+    if parts.scheme not in ("http", "https"):
+        raise ValueError("unsupported RPC URL scheme: %r" % (parts.scheme or "<empty>"))
     body = json.dumps({"jsonrpc": "2.0", "id": 1, "method": method, "params": params}).encode("utf-8")
     request = urllib.request.Request(
         url, data=body, headers={"Content-Type": "application/json",
@@ -951,7 +955,7 @@ def check_b_chain(root: str, manifest: Dict[str, Any], rpc_url: str) -> Tuple[Li
     if chain_id != expected_chain:
         return checks, "rogue"
     exec_decl = (manifest.get("streams") or {}).get("exec") or {}
-    records = [record for record in read_jsonl(os.path.join(root, exec_decl.get("path", "audit.jsonl")))
+    records = [record for record in _safe_read_jsonl(root, exec_decl.get("path", "audit.jsonl"))
                if isinstance(record, dict) and record.get("kind") == "RECEIPT"]
     for record in records:
         payload = record.get("payload") or {}
