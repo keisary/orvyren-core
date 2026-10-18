@@ -1002,7 +1002,7 @@ def check_c_coverage(root: str, manifest: Dict[str, Any]) -> List[Dict[str, Any]
     # refs resolution across the exec journal: every intent_id reference must
     # resolve to an INTENT record (B6 §2.6 rule 2, scoped to what v1 records)
     exec_decl = streams.get("exec") or {}
-    records = [record for record in read_jsonl(os.path.join(root, exec_decl.get("path", "audit.jsonl")))
+    records = [record for record in _safe_read_jsonl(root, exec_decl.get("path", "audit.jsonl"))
                if isinstance(record, dict)]
     intent_ids = {(record.get("payload") or {}).get("intent_id")
                   for record in records if record.get("kind") == "INTENT"}
