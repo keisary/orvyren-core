@@ -74,6 +74,9 @@ def render_evaluation_report(*, content: Dict[str, Any], out_dir: str) -> Dict[s
     lines.append("")
     lines.append("# Rapport d'évaluation ORVYREN — %s" % banner)
     lines.append("")
+    if content.get("forced_mention"):
+        lines.append("> ⚠ **%s**" % content["forced_mention"])
+        lines.append("")
     lines.append("*hash de contenu* : `%s` · *généré* : %s · *fenêtres sautées* : %d"
                  % (content_sha, generated_at, content.get("n_windows_skipped", 0)))
     lines.append("")

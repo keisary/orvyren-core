@@ -78,7 +78,8 @@ def main(argv=None) -> int:
                                        out_dir=args.out_dir)
 
     lock_written = False
-    if args.set_label == "eval" and not os.path.exists(lock_path):
+    if (args.set_label == "eval" and content["n_windows"] > 0
+            and not os.path.exists(lock_path)):
         os.makedirs(os.path.dirname(os.path.abspath(lock_path)), exist_ok=True)
         with open(lock_path, "w", encoding="utf-8", newline="\n") as handle:
             handle.write("# first EVAL pass — the set is burned (B7 §d.2.5)\n%s\n"

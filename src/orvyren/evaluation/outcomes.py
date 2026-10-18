@@ -276,8 +276,9 @@ def resolve_forecast(
 
 
 def outcome_hash(record: Dict) -> str:
-    """Empreinte d'un outcome (champ ``signature`` absent : calcul direct)."""
-    return hashlib.sha256(canonical_bytes(record)).hexdigest()
+    """Empreinte d'un outcome (le champ ``signature`` s'auto-exclut)."""
+    body = {key: value for key, value in record.items() if key != "signature"}
+    return hashlib.sha256(canonical_bytes(body)).hexdigest()
 
 
 def load_outcomes(path: str) -> List[Dict]:
@@ -307,6 +308,9 @@ def verify_outcome_chain(records: Sequence[Dict], path: str = "<mémoire>") -> L
                 f"{path} ligne {index} : chaînage cassé (prev_hash {record.get('prev_hash')} ≠ {previous})"
             )
         previous = outcome_hash(record)
+        if record.get("signature") and record["signature"] != previous:
+            raise OutcomeError(
+                f"{path} ligne {index} : signature d'outcome non concordante")
         ids.append(record["outcome_id"])
     return ids
 
@@ -321,6 +325,13 @@ def _validate_outcome(record: Dict) -> None:
         raise OutcomeError(f"y hors {{0, 1}} : {record['y']!r}")
     if not record["evidence_refs"]:
         raise OutcomeError("evidence_refs vide : un outcome sans preuve n'est pas recevable")
+    forecast_hash = record.get("forecast_hash")
+    if not isinstance(forecast_hash, str) or len(forecast_hash) != 64 or any(
+            ch not in "0123456789abcdef" for ch in forecast_hash):
+        raise OutcomeError("forecast_hash invalide (sha256 hex attendu)")
+    horizon = record.get("horizon")
+    if not isinstance(horizon, dict) or not horizon.get("t_resolution_window_utc"):
+        raise OutcomeError("horizon.t_resolution_window_utc manquant : resolution non datée")
     if record["resolver"].get("mode") != RESOLVER_MODE_DETERMINISTIC:
         raise OutcomeError(
             "mode de résolution non déterministe : les outcomes 'operator' se publient séparément (B7 §a.2)"
@@ -378,6 +389,8 @@ def append_outcome(
             raise OutcomeError(f"supersedes référence un outcome inconnu : {outcome['supersedes']}")
     final = dict(outcome)
     final["prev_hash"] = outcome_hash(existing[-1]) if existing else forecasts_mod.GENESIS_HASH
+    final["signature"] = outcome_hash(final)
+    os.makedirs(os.path.dirname(os.path.abspath(path)), exist_ok=True)
     with open(path, "a", encoding="utf-8", newline="\n") as handle:
         handle.write(json.dumps(final, sort_keys=True, separators=(",", ":"), ensure_ascii=False) + "\n")
     return final

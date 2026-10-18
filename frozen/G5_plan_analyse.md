@@ -4,7 +4,7 @@
 Code gelé : `calibration.py` sha256
 `0a90281453610c1b6258a99540d0d060132c56264aab2039921f81ce845fad13`,
 `forecasts.py` sha256 `b5857165694ae06f736018531c4d295031f30060af563a2f2f7b162047452d8d`,
-`outcomes.py` sha256 `e5bd5f2ec897fb03cedc3df5da8587ecf6f38cc9b065c52cad8bd280e32bdd92`.
+`outcomes.py` sha256 `9677a1c0970ad49487e122ca03b365fa723682d1d476fa5f2321ab52ad4168df`.
 
 ## 1. Métriques publiées (C1–C7) et formules
 

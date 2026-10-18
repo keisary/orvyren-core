@@ -169,9 +169,12 @@ def oracle_feasible_loss(points: Sequence[Tuple[str, float]], *, q: float = Q_DE
                     "famille G1) — borne inférieure du regret, pas une vérité terrain"}
 
 
-def regret_pair(loss_value: float, oracle_loss: float) -> Dict[str, Any]:
+def regret_pair(loss_value: float, oracle_loss: float,
+                no_action_loss: float) -> Dict[str, Any]:
     regret = loss_mod.regret(loss_value, oracle_loss)
-    return {"R": regret, "R_plus": max(regret, 0.0), "R_minus": min(regret, 0.0),
+    return {"R": regret,
+            "R_plus": loss_mod.regret_positive(loss_value, no_action_loss),
+            "R_minus": loss_mod.regret_negative(loss_value, no_action_loss),
             "note": "R⁻ et R⁺ ne sont jamais moyennés ensemble (règle de langage B7 §e.5)"}
 
 
@@ -245,7 +248,8 @@ def run_window(window, *, decision_path: str = DEFAULT_DECISION,
     # R per available config
     for label, config in configs.items():
         if isinstance(config.get("loss"), (int, float)):
-            config["regret"] = regret_pair(config["loss"], oracle["loss"])
+            config["regret"] = regret_pair(config["loss"], oracle["loss"],
+                                           configs["A0"]["loss"])
 
     # B0 — paired placebo (A2 if available, otherwise A1 — declared substitution)
     paired_label = "A2" if isinstance(configs["A2"].get("loss"), (int, float)) else "A1"
@@ -302,6 +306,8 @@ def run_set(set_label: str, *, frozen_dir: str = DEFAULT_FROZEN_DIR,
     frozen_hashes = windows_mod.verify_frozen_package(frozen_dir)  # refuses without a freeze
     forced_mention = None
     if set_label == windows_mod.SET_EVAL:
+        if lock_path is None:
+            raise HarnessError("EVAL requires an explicit lock_path (the set must be burned)")
         forced_mention = windows_mod.eval_run_gate(frozen_dir, lock_path=lock_path, force=force)
         if calibration_periods is not None:
             eval_calm = [w for w in windows_mod.EVAL_WINDOWS if w.kind == windows_mod.KIND_CALME]
