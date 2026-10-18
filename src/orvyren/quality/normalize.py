@@ -193,6 +193,9 @@ def load_observations(csv_path: str) -> Tuple[List[Observation], Dict[str, objec
             if not venue:
                 _reject(report, row_no, "missing_field:venue")
                 continue
+            if venue not in VENUE_SOURCES:
+                _reject(report, row_no, "unknown_venue:%s" % venue)
+                continue
 
             metric = (row.get("metric") or "").strip()
             if metric not in METRIC_UNITS:
