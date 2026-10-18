@@ -49,6 +49,12 @@ Après fusion : **1 061 passed, 3 skipped**.
 | BlockIndex `usdc` supposait `timestamp` toujours présent | timestamp invalide → `None` explicite | `c2d1f83` |
 | Cache rsETH avec entrée non-dict | entrée ignorée, pas de crash | `c2d1f83` |
 | `urlopen` sur URL non HTTP(S) dans les reconstructeurs | schéma validé avant appel | `c2d1f83` |
+| `adr_index --write` tronquait les sections README après `## Registre` | remplacement limité à la section, tail préservé + test | `f50dc8b` |
+| Signer : `chainId` non entier ou clé rejetée par `eth-account` provoquait un crash | erreurs converties en `SignerError`, aucun matériau de clé affiché | `f50dc8b` |
+| `verify_receipt` : `amount_base_units` absent → `TypeError` non géré | refus `ValueError` explicite | `f50dc8b` |
+| `generate_signer_key` : ligne de clé manquante écrite sans `=` | clé explicite passée à `_assign` + test | `f50dc8b` |
+| `common.write_json` et rapport demo écrivaient du JSON en CRLF sous Windows | `newline="\n"` explicite | `f50dc8b` |
+| `export_graph_snapshot` / seed agents : `--case` pouvait sortir du dossier | token fichiers-safe | `f50dc8b` |
 
 ## 4. Limites de la revue
 
