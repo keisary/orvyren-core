@@ -325,7 +325,7 @@ def _number(record: RelationRecord, key: str) -> Optional[float]:
 def _supply_cap_ratio(record: RelationRecord) -> Optional[float]:
     cap = _number(record, "supply_cap")
     supply = _number(record, "supply")
-    if cap and supply is not None:
+    if cap is not None and cap > 0 and supply is not None:
         return supply / cap
     return None
 

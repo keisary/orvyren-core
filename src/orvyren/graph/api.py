@@ -17,6 +17,7 @@ import json
 import os
 import sqlite3
 import time
+import urllib.parse
 from typing import Any, Dict, List, Mapping, Optional, Sequence, Tuple
 
 DEFAULT_DB = os.environ.get(
@@ -28,7 +29,9 @@ def _connect(path: Optional[str] = None) -> sqlite3.Connection:
     db = path or os.environ.get("ORVYREN_GRAPH_DB", DEFAULT_DB)
     if not os.path.exists(db):
         raise FileNotFoundError("graph database not found: %s" % db)
-    connection = sqlite3.connect("file:%s?mode=ro" % db, uri=True)
+    absolute = os.path.abspath(db).replace("\\", "/")
+    uri = "file:%s?mode=ro" % urllib.parse.quote(absolute, safe="/:")
+    connection = sqlite3.connect(uri, uri=True)
     connection.row_factory = sqlite3.Row
     return connection
 
