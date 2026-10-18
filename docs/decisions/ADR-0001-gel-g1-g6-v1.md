@@ -68,6 +68,6 @@ posteriori.
 
 ## Références
 
-`FREEZE_V2.md` §7 et §I1 · `ORVYREN_DOC2_TECHNIQUE_COMPLET.md` §5.8 ·
+`FREEZE_V2.md` §7 et §I1 · the v1 design notes (archived out of the repository) §5.8 ·
 B7 §d.2, §e.1, §e.6, §e.7, §b.2–b.4 (archive) · W2-D §B.1/B.6, §C.4 (archive) ·
 `frozen/` (paquet v1, empreintes `Gx.sha256`).

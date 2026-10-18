@@ -49,7 +49,8 @@ CORPUS_PATH = os.path.join(ROOT, "fixtures", "agents", "rseth-2026-04",
                            "corpus_rseth.csv")
 EPISODE_PATH = os.path.join(ROOT, "evidence", "episode_rseth_2026-04.json")
 GRAPH_PATH = os.path.join(ROOT, "fixtures", "graphs", "rseth_2026-04.json")
-DOC2_PATH = os.path.join(ROOT, "ORVYREN_DOC2_TECHNIQUE_COMPLET.md")
+SOURCE_NOTE_PATH = os.path.join(ROOT, "fixtures", "sources",
+                                "RSETH_MEASURE_2.md")
 
 #: The frozen case-input schema of the usdc case (fixture/agents/<case>/).
 SCHEMA = "orvyren/agent-case/v1"
@@ -297,7 +298,7 @@ class SourceFilesTest(unittest.TestCase):
     """The declared sources must exist before anything is crossed."""
 
     def test_declared_source_files_are_present(self):
-        for path in (FIXTURE_PATH, EPISODE_PATH, GRAPH_PATH, DOC2_PATH):
+        for path in (FIXTURE_PATH, EPISODE_PATH, GRAPH_PATH, SOURCE_NOTE_PATH):
             self.assertTrue(os.path.isfile(path), path)
 
 
@@ -346,7 +347,7 @@ class CrossingTest(unittest.TestCase):
                          "fixture figures without a declared source")
 
     def test_every_scenario_timestamp_appears_in_the_sources(self):
-        texts = [load_text(EPISODE_PATH), load_text(DOC2_PATH),
+        texts = [load_text(EPISODE_PATH), load_text(SOURCE_NOTE_PATH),
                  load_text(GRAPH_PATH)]
         for stamp in timestamp_strings(self.fixture):
             self.assertTrue(any(stamp in text for text in texts),
@@ -355,7 +356,7 @@ class CrossingTest(unittest.TestCase):
     def test_document_fixture_carries_no_orphan_figure(self):
         documents = self.fixture["tool_fixtures"]["documents"]
         sources = normalize_digit_groups(
-            load_text(EPISODE_PATH) + load_text(DOC2_PATH) + load_text(GRAPH_PATH))
+            load_text(EPISODE_PATH) + load_text(SOURCE_NOTE_PATH) + load_text(GRAPH_PATH))
         for url in sorted(documents):
             body = normalize_digit_groups(documents[url])
             for token in re.findall(r"\d+(?:\.\d+)?(?:e-?\d+)?", body):
@@ -396,7 +397,7 @@ class CrossSourceAgreementTest(unittest.TestCase):
                           if row["relation_id"] == "rseth-freeze-constrains-market"]
         self.assertEqual(len(freeze_records), 1)
         self.assertEqual(block, freeze_records[0]["payload"]["block"])
-        self.assertIn("bloc 24 908 723", load_text(DOC2_PATH))
+        self.assertIn("block 24 908 723", load_text(SOURCE_NOTE_PATH))
 
     def test_saturation_and_utilisation_agree_with_the_episode(self):
         fixture = load_json(FIXTURE_PATH)
@@ -410,8 +411,7 @@ class CrossSourceAgreementTest(unittest.TestCase):
         # The counter-intuitive claim of the old briefs is refuted on disk:
         # the rsETH reserve was almost unused (~0.008 %), never at 100 %.
         self.assertLess(facts["rseth_utilisation_at_freeze"], 0.001)
-        self.assertIn("utilisation de la réserve rsETH était ≈ 0,008 %",
-                      load_text(DOC2_PATH))
+        self.assertIn("0,008 %", load_text(SOURCE_NOTE_PATH))
 
 
 class HypothesesAndGapsTest(unittest.TestCase):

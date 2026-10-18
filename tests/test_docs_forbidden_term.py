@@ -1,32 +1,56 @@
 # -*- coding: utf-8 -*-
-"""W8 (L8.7) — règle 0 : les quatre documents finaux ne mentionnent jamais le nom
-du système amont. Le contrôle est exécuté par la suite de tests (donc en CI) :
-toute occurrence fait échouer la livraison."""
+"""W8 (L8.7) — rule 0 over the public documentation surface.
+
+The public repository must never name the upstream system. The scope is the
+documentation a third party actually reads: ``README.md`` and every Markdown
+file under ``docs/`` (including sub-directories). Internal research and review
+material lives outside the repository and is therefore out of scope by
+construction, not by exception.
+
+Guarded against a silently empty scope: the test fails if fewer than three
+public documents are found.
+"""
 
 import os
 import unittest
 
 _ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+FORBIDDEN_TERM = "mimir"  # rule 0 of the freeze: no upstream system name
+MINIMUM_DOCUMENTS = 3
 
-FINAL_DOCUMENTS = (
-    "ORVYREN_DOC1_EXPLICATION_SIMPLE.md",
-    "ORVYREN_DOC2_TECHNIQUE_COMPLET.md",
-    "ORVYREN_DOC3_PROPOSITIONS_ET_ECARTES.md",
-    "ORVYREN_DOC4_PLAN_IMPLEMENTATION.md",
-)
-FORBIDDEN_TERM = "mimir"  # règle 0 du gel : aucun nom propre du système amont
+
+def public_documents():
+    """README + every Markdown file under ``docs/`` (recursive, sorted)."""
+    paths = [os.path.join(_ROOT, "README.md")]
+    docs_dir = os.path.join(_ROOT, "docs")
+    for dirpath, dirnames, filenames in os.walk(docs_dir):
+        dirnames.sort()
+        for name in sorted(filenames):
+            if name.lower().endswith(".md"):
+                paths.append(os.path.join(dirpath, name))
+    return paths
 
 
 class ForbiddenTermTests(unittest.TestCase):
-    def test_the_four_final_documents_are_clean(self):
-        for name in FINAL_DOCUMENTS:
-            path = os.path.join(_ROOT, name)
-            self.assertTrue(os.path.isfile(path), f"document manquant : {name}")
+    def test_the_public_documents_are_clean(self):
+        documents = public_documents()
+        self.assertGreaterEqual(len(documents), MINIMUM_DOCUMENTS,
+                                "the public documentation surface is empty")
+        for path in documents:
+            self.assertTrue(os.path.isfile(path), "document manquant : %s" % path)
             with open(path, "r", encoding="utf-8") as handle:
                 text = handle.read().lower()
             self.assertNotIn(
                 FORBIDDEN_TERM, text,
-                f"{name} contient un nom propre interdit par la règle 0 (gel v2)")
+                "%s contains a proper name forbidden by rule 0 (freeze v2)"
+                % os.path.relpath(path, _ROOT))
+
+    def test_the_scope_is_the_documentation_surface_not_a_fixed_list(self):
+        names = {os.path.relpath(path, _ROOT).replace(os.sep, "/")
+                 for path in public_documents()}
+        self.assertIn("README.md", names)
+        self.assertTrue(any(name.startswith("docs/") for name in names),
+                        "docs/ contributes no Markdown file to the scope")
 
 
 if __name__ == "__main__":

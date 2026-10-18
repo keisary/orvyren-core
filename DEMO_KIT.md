@@ -7,7 +7,7 @@ document. Le kit vit dans `scripts/demo/` et ses tests hors chaîne dans
 
 Références internes qui font autorité : `FREEZE_V2.md` (E1 signer jetable,
 E2 100 USDC, E5 deux USDC distincts, F* audit, J2 wallet testnet) ·
-`ORVYREN_DOC2_TECHNIQUE_COMPLET.md` §5.5–5.7 (politique, exécution, audit).
+the v1 design notes (archived out of the repository) §5.5–5.7 (politique, exécution, audit).
 Les études de recherche d'origine (schéma d'intent, préflight, plan des 5 runs,
 montage Safe 2/3 + module Roles) sont archivées hors dépôt — voir `README.md`.
 
@@ -393,7 +393,7 @@ et `https://docs.cdp.coinbase.com/faucets/introduction/welcome` (plafonds CDP :
 `https://www.ethereum-ecosystem.com/faucets/base-sepolia` (sans login, 0,5 ETH/24 h) ·
 `app.safe.global` (Safe{Wallet}) · `roles.gnosisguild.org` (app Roles, diff de politique).
 
-**Internes** : `FREEZE_V2.md` · `ORVYREN_DOC2_TECHNIQUE_COMPLET.md` ·
+**Internes** : `FREEZE_V2.md` · the v1 design notes (archived out of the repository) ·
 `demo_runs/` (sorties d'exécution du kit : captures, préflight en ligne, dry-runs —
 créé au premier lancement ; les sondes d'origine sont archivées hors dépôt).
 

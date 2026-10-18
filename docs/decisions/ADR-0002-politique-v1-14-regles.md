@@ -95,7 +95,7 @@ activer la pause = « sens sûr », applicable immédiatement (journalisé, rég
 
 ## Références
 
-`FREEZE_V2.md` §D1 · `ORVYREN_DOC2_TECHNIQUE_COMPLET.md` §5.5 (§5.5.2 règles, §5.5.3
-bundle/version, §5.5.4 dérive) · `ORVYREN_DOC4_PLAN_IMPLEMENTATION.md` §W4 (L4.1–L4.4) ·
+`FREEZE_V2.md` §D1 · the v1 design notes (archived out of the repository) §5.5 (§5.5.2 règles, §5.5.3
+bundle/version, §5.5.4 dérive) · the v1 design notes (archived out of the repository) §W4 (L4.1–L4.4) ·
 `policy_v1.yaml` · `src/orvyren/policy/` · `scripts/run_drift_check.py` ·
 `fixtures/roles_agent_config.json` · `evidence/envelope_drift_report.json`.

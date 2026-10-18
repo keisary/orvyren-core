@@ -18,24 +18,16 @@ ORVYREN est un système d'agents qui transforme des signaux financiers publics e
 
 | Fichier | Rôle |
 |---|---|
-| `ORVYREN_DOC1_EXPLICATION_SIMPLE.md` | comprendre ORVYREN en 2-3 pages (schémas + cas réels chiffrés) |
-| `ORVYREN_DOC2_TECHNIQUE_COMPLET.md` | document technique complet — philosophie → architecture v1 → décisions |
-| `ORVYREN_DOC3_PROPOSITIONS_ET_ECARTES.md` | tout ce qui a été exploré, écarté et classé V2 (banques, ML avancé, VoI…) |
-| `ORVYREN_DOC4_PLAN_IMPLEMENTATION.md` | plan de travail : workstreams, sprints, répartition par personne |
 | `FREEZE_V2.md` | **registre des décisions gelées** (autorité sur tout le reste) |
 | `DEMO_KIT.md` | runbook de la démo testnet : robinets **gratuits**, Safe + module, 5 runs |
 | `ARCHITECTURE_V1.md` | carte des modules du code |
 | `SECURITY_SELF_ASSESSMENT.md` | auto-évaluation sécurité (niveaux de permission, risques connus) |
 | `LICENSES.md` | composants tiers et licences |
-| `AUDIT_PROMPT.md` | prompt d'audit externe (outil interne — pas une pièce de soumission) |
-| `docs/GRAPH_A_V3_RESULTS_2026-10-17.md` | mesures du slice graphe |
-| `docs/RAPPORT_10H_2026-10-17.md` | rapport d'exécution de la session 10 h |
-| `docs/CODE_REVIEW_2026-10-17.md` | revue de code et corrections de bugs |
 
 ## Démarrage rapide
 
 ```bash
-python -m pytest tests/ -q                                   # 1415 passed, 3 skipped, 289 subtests (18/10/2026)
+python -m pytest tests/ -q                                   # 1486 tests (3 skipped) — measured 2026-10-18
 PYTHONPATH=src python -m orvyren.decide --case usdc-2023-03 --replay   # décision complète en une commande (3 axes, hors-ligne)
 python run_pipeline.py                                       # pipeline complet (corpus archivé)
 python scripts/reconstruct_rseth_episode.py --from-cache     # reconstruction hors-ligne (idem steth / usdc)
@@ -73,7 +65,6 @@ orvyren_core/
 ├── fixtures/         # mesures archivées (15/10) utilisées par les tests et les modes hors-ligne
 ├── evidence/         # preuves : épisodes reconstruits (rsETH 2026, stETH 2022, USDC 2023) + dossiers
 ├── corpus/           # observations USDC/SVB mars 2023 (rejeu hors-ligne)
-├── figures/          # figures du projet
 └── docs/decisions/   # registre ADR (décisions futures, format Nygard/MADR)
 ```
 
@@ -88,7 +79,7 @@ orvyren_core/
 1. **Aucun calcul financier ne sort d'un modèle de langage** — les agents structurent et expliquent ; des fonctions déterministes calculent, vérifient, refusent.
 2. **Point-in-time** : une analyse historique n'utilise que ce qui était disponible à l'instant simulé.
 3. **Testnet uniquement** pour l'exécution (les prix de testnet ne servent jamais de contexte de marché).
-4. **Archives hors dépôt** : les matériaux de recherche intermédiaires (études, matières brutes, historique) sont archivés dans `D:\orvyren_archive_2026-10-15\` ; leurs conclusions sont gelées dans `FREEZE_V2.md` et décrites dans les DOC 1–4.
+4. **Archives hors dépôt** : les matériaux de recherche intermédiaires et les notes de conception v1 ne sont pas versionnés ; leurs conclusions sont gelées dans `FREEZE_V2.md`.
 
 ## Licence
 

@@ -10,7 +10,7 @@ actually delivered. Other documents rank as follows:
 | `frozen/G1..G6` + `scripts/verify_frozen.py` | Frozen evaluation protocol (byte-identical recalculation, `COMPLIANT`) |
 | `docs/CODE_REVIEW_2026-10-17.md`, `docs/CODE_REVIEW_SUBAGENTS_2026-10-18.md` | Review records (findings + fixes) |
 | `docs/AUDIT_CONSOLIDE_2026-10-18.md` | External audit + correction plan (source material — not a claim) |
-| `ORVYREN_DOC1..DOC4` | Product/technical narrative (French); where a figure and a measurement disagree, the measurement wins and the docs are reconciled |
+| the v1 design notes | Archived out of the repository (2026-10-18); a figure that disagrees with a measurement is corrected in the measurement’s favour |
 
 Not delivered, not claimed: anything listed in the gap register below.
 Research reports are research, not capability.

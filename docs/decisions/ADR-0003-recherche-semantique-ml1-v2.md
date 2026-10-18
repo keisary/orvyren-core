@@ -2,7 +2,7 @@
 
 **Date :** 2026-10-17 · **Statut : ACCEPTÉE** — actée le 2026-10-17 (chef d'équipe, mandat de
 finalisation du périmètre restant) · **Portée :** bloc B (graphe & ML) — précision du gel
-`FREEZE_V2.md` §B3 et des propositions B.4/B.5 de `ORVYREN_DOC3_PROPOSITIONS_ET_ECARTES.md`.
+`FREEZE_V2.md` §B3 et des propositions B.4/B.5 de the v1 design notes (archived out of the repository).
 
 ## Contexte
 
@@ -39,6 +39,6 @@ en chemin décisionnel. Toute réintroduction suit le protocole ADR (proposition
 
 ## Références
 
-- `FREEZE_V2.md` §B2, §B3 · `ORVYREN_DOC3_PROPOSITIONS_ET_ECARTES.md` B.4/B.5 ·
-  `ORVYREN_DOC4_PLAN_IMPLEMENTATION.md` (lots W1–W8 : aucun lot ne porte ML-1) ·
-  `docs/RAPPORT_COMPLETION_2026-10-17.md` (gap déclaré, item « gelé orphelin »).
+- `FREEZE_V2.md` §B2, §B3 · the v1 design notes (archived out of the repository) B.4/B.5 ·
+  the v1 design notes (archived out of the repository) (lots W1–W8 : aucun lot ne porte ML-1) ·
+  the v1 design notes (archived out of the repository) (gap déclaré, item « gelé orphelin »).
