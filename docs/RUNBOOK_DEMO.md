@@ -116,5 +116,39 @@ Expected: `OFFLINE_PASS` (class-A checks recomputed, mutations detected).
 
 ## Known gaps
 
-See `docs/SUBMISSION_SCOPE_AND_GAPS.md` (gap register G-1..G-11) — nothing
-outside that register is claimed.
+See `docs/SUBMISSION_SCOPE_AND_GAPS.md` (gap register) — nothing outside that
+register is claimed. `docs/ECARTS_REGISTRE.md` lists every deferred technical
+finding with its file:line and reason.
+
+## Jury questions — ready answers (say it before they ask)
+
+1. **"Where is the executed rsETH decision?"** — There is none: the execution
+   tick replays the pilot USDC decision (declared substitution, banner shown).
+   The rsETH conclusion is the agents-chain abstention; the rsETH probe is
+   refused `E_WHAT_WOULD_CHANGE_REQUIRED` and that refusal is kept as evidence.
+2. **"Show one real transaction."** — The `--execute` path is preflighted but
+   never exercised by the system; the demo run is dry-run. The safety proof is
+   the fail-closed DENY on unreadable state. We never present a dry-run as an
+   on-chain proof (gap G-12).
+3. **"What does the benchmark prove?"** — Read it with its three caveats: one
+   A2 recording replayed (not independent samples), placebo A2 leg
+   `not_executed`, A0 without the pilot RDOF elsewhere. It shows an auditable
+   brake; the agents' added value is **not** measured (G-9).
+4. **"Does the graph come from the clone?"** — The clone holds the
+   redistributable 520-observation snapshot; the 16,174-node database is a
+   local artifact with its reconstruction pipeline (G-14). The dashboard says
+   which database it serves.
+5. **"Q7 shows 190M of exposure?"** — No: `q7 debt_backed` is a contract figure
+   summing all visible `OWES` rows without an asset filter (G-15); the
+   filtered measure is `graph/api.concentration`. The 190M is a sourced
+   exploit fact, not an exposure metric.
+6. **"Is P0-6 closed?"** — Two active gates (loop intake, evidence packet) plus
+   one deliberately deferred gate (the critic side, to preserve the sealed
+   replay). An invented reference is rejected and visible; it never reaches
+   the decision engine (ADR-0004).
+7. **"Why do USDC series appear in the rsETH packet?"** — The live corpus has
+   no rsETH series; the system's own critic flagged it BLOQUANT and the run
+   abstained. That is the product working (G-2), not a silent fabrication.
+8. **"Tests contain frozen tautologies?"** — Two, in hash-frozen test files;
+   the fixes are written and verified, the visible re-seal procedure is in
+   `frozen/INDEX.md`; we declared them instead of patching silently (G-5).
