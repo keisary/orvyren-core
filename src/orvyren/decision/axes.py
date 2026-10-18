@@ -30,7 +30,7 @@ from orvyren.decision.exposure import Exposure
 from orvyren.decision.predicates import BY_ID
 from orvyren.decision.rdof import (FROZEN_HYPOTHESIS_ORDER, action_candidate,
                                    rdof_run)
-from orvyren.decision.scenarios import (SUPPORTED, classify_hypotheses,
+from orvyren.decision.scenarios import (REFUTED, SUPPORTED, classify_hypotheses,
                                         integrity_flags, observations_in_window,
                                         parse_window_bound)
 
@@ -162,6 +162,12 @@ def authorization_via_policy(amount_usdc, reserve_recipient, created_at=None,
             "intent_id": intent.intent_id, "evaluated": True}
 
 
+def _epistemic_verdict(verdicts):
+    """Conclusive when every registered hypothesis is decided (supported or refuted)."""
+    states = [verdict.get("verdict") for verdict in verdicts.values()]
+    return "CONCLUANT" if all(state in (SUPPORTED, REFUTED) for state in states) else "INCONCLUSIVE"
+
+
 def build_dossier(case_id, observations, window_start, window_end,
                   rdof=None, reserve_recipient=None, policy_now=None,
                   exposure=None, integrity=None):
@@ -181,7 +187,7 @@ def build_dossier(case_id, observations, window_start, window_end,
 
     supported = [h for h in FROZEN_HYPOTHESIS_ORDER
                  if verdicts[h]["verdict"] == SUPPORTED]
-    epistemic_verdict = "CONCLUANT" if supported else "INCONCLUSIVE"
+    epistemic_verdict = _epistemic_verdict(verdicts)
 
     kind = rdof["final_action_candidate"]["kind"]
     economic_action = _AXES_KIND_TO_ECONOMIC[kind]

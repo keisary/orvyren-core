@@ -23,8 +23,8 @@ sys.path.insert(0, os.path.join(REPO_ROOT, "src"))
 
 from orvyren.decision.abstention import detect_conditions  # noqa: E402
 from orvyren.decision.axes import (FROZEN_CONVENTION_APPLIES, PRICE_CONVENTION,  # noqa: E402
-                                   authorization_via_policy, build_dossier,
-                                   convention_divergence_bps,
+                                   _epistemic_verdict, authorization_via_policy,
+                                   build_dossier, convention_divergence_bps,
                                    verdicts_under_conventions)
 from orvyren.decision.scenarios import (SUPPLY_VENUE, load_observations,  # noqa: E402
                                         parse_window_bound)
@@ -78,6 +78,18 @@ class TestAxesSeparation(unittest.TestCase):
     def test_dossier_conditions_exclude_a5_thanks_to_the_frozen_convention(self):
         self.assertTrue(FROZEN_CONVENTION_APPLIES)
         self.assertNotIn("A5", self.dossier["axes"]["conditions_declenchees"])
+
+
+class TestEpistemicVerdict(unittest.TestCase):
+    def test_all_refuted_is_conclusive(self):
+        verdicts = {"H%d" % i: {"verdict": "REFUTED"} for i in range(1, 4)}
+        self.assertEqual(_epistemic_verdict(verdicts), "CONCLUANT")
+
+    def test_one_undecided_is_inconclusive(self):
+        verdicts = {"H1": {"verdict": "REFUTED"},
+                    "H2": {"verdict": "INCONCLUSIVE"},
+                    "H3": {"verdict": "REFUTED"}}
+        self.assertEqual(_epistemic_verdict(verdicts), "INCONCLUSIVE")
 
 
 class TestInconclusivePath(unittest.TestCase):

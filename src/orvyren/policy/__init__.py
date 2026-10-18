@@ -265,11 +265,11 @@ def load_policy(path, recipients: Optional[dict] = None) -> PolicyBundle:
         raise MiniYamlError("policy_v1.yaml: 'policy_version' missing")
 
     chains = data.get("chain_ids") or ([data["chain_id"]] if data.get("chain_id") is not None else [])
-    if not chains:
-        raise MiniYamlError("policy_v1.yaml: no allowed chain")
+    if not isinstance(chains, (list, tuple)) or not chains:
+        raise MiniYamlError("policy_v1.yaml: 'chain_ids' must be a non-empty list")
     assets = data.get("assets") or ([data["asset"]] if data.get("asset") else [])
-    if not assets:
-        raise MiniYamlError("policy_v1.yaml: no allowed asset")
+    if not isinstance(assets, (list, tuple)) or not assets:
+        raise MiniYamlError("policy_v1.yaml: 'assets' must be a non-empty list")
 
     resolved, unresolved = set(), []
     for entry in (data.get("recipients") or []):
@@ -308,21 +308,28 @@ def load_policy(path, recipients: Optional[dict] = None) -> PolicyBundle:
         raise MiniYamlError("policy_v1.yaml: 'max_per_tx' must be finite and > 0")
     if not _finite_number(max_cumulative) or max_cumulative <= 0:
         raise MiniYamlError("policy_v1.yaml: 'max_cumulative_24h' must be finite and > 0")
-    asset_decimals = (int(data["asset_decimals"])
-                      if data.get("asset_decimals") is not None else None)
+    try:
+        allowed_chain_ids = frozenset(int(c) for c in chains)
+        asset_decimals = (int(data["asset_decimals"])
+                          if data.get("asset_decimals") is not None else None)
+        intent_ttl = (timedelta(minutes=int(data["ttl_intent_minutes"]))
+                      if data.get("ttl_intent_minutes") is not None else None)
+        clock_skew = timedelta(seconds=int(data.get(
+            "clock_skew_seconds", int(CLOCK_SKEW_TOLERANCE.total_seconds()))))
+    except (TypeError, ValueError) as exc:
+        raise MiniYamlError(
+            "policy_v1.yaml: invalid chain/decimals/TTL/clock-skew value: %s" % exc) from exc
     if asset_decimals is not None and asset_decimals < 0:
         raise MiniYamlError("policy_v1.yaml: 'asset_decimals' must be an integer >= 0")
 
     config = PolicyConfig(
-        allowed_chain_ids=frozenset(int(c) for c in chains),
+        allowed_chain_ids=allowed_chain_ids,
         allowed_assets=frozenset(_norm(a) for a in assets),
         allowed_recipients=frozenset(resolved),
         max_per_tx=max_per_tx,
         max_cumulative=max_cumulative,
-        intent_ttl=(timedelta(minutes=int(data["ttl_intent_minutes"]))
-                    if data.get("ttl_intent_minutes") is not None else None),
-        clock_skew=timedelta(seconds=int(data.get("clock_skew_seconds",
-                                                  int(CLOCK_SKEW_TOLERANCE.total_seconds())))),
+        intent_ttl=intent_ttl,
+        clock_skew=clock_skew,
         asset_decimals=asset_decimals,
         allowed_operations=frozenset(operations),
         allowed_targets=frozenset(targets),
