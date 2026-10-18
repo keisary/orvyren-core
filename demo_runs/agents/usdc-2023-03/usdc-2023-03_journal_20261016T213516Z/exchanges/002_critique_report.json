@@ -1,0 +1,19 @@
+{
+ "$schema": "orvyren/crit/v1",
+ "findings": [
+  {
+   "enonce": "les agrégateurs peuvent partager la même venue sous-jacente — l'indépendance des sources n'est pas démontrée",
+   "gravite": "MAJEUR",
+   "refs": [
+    "observation:defillama/usdc-usd/2023-03-11T12:00Z"
+   ],
+   "test_discriminant": "vérifier la méthodologie d'agrégation de chaque source",
+   "type": "DEPENDANCE"
+  }
+ ],
+ "note": "",
+ "preuves_manquantes": [
+  "indépendance des méthodes d'agrégation"
+ ],
+ "verdict_lecture": "FRAGILE"
+}

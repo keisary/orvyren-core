@@ -1,0 +1,344 @@
+{
+  "rpc": "https://sepolia.base.org",
+  "chain_id": 84532,
+  "chain_id_ok": true,
+  "block": 48188888,
+  "codes": {
+    "safe_proxy_factory_candidat_1": {
+      "address": "0x4e1dcf7a71ccf7de11cacc46791b8d99d1babec0",
+      "code_size": 0,
+      "sha256": null,
+      "present": false,
+      "metadata": null
+    },
+    "safe_proxy_factory_candidat_2": {
+      "address": "0x4e1dcf7ad4e460cfd30791ccc4f9c8a4f820ec67",
+      "code_size": 3054,
+      "sha256": "a01f78c95e8982e0dfc891d0e26ded7547d0d1d1a2d73ad5e43e157340aa24ff",
+      "present": true,
+      "metadata": {
+        "found": true,
+        "solc": "67.0.7",
+        "ipfs": "12200fd975ca8e62d9bf08aa3d09c74b9bdc9d7acba7621835be4187989ddd0e"
+      }
+    },
+    "safe_l2_singleton_141": {
+      "address": "0x29fcb43b46531bca003ddc8fcb67ffe91900c762",
+      "code_size": 24421,
+      "sha256": "c44b4d05d68c38405960653358247a004d6cf74c9ee508c250b7999f1aa8d524",
+      "present": true,
+      "metadata": {
+        "found": true,
+        "solc": "67.0.7",
+        "ipfs": "1220cd2bdb262f44c0636136d3c6bfed2c2458921f82c3bf476053bd2e9ac618"
+      }
+    },
+    "fallback_handler_compat_141": {
+      "address": "0xfd0732dc9e303f09fcef3a7388ad10a83459ec99",
+      "code_size": 5637,
+      "sha256": "8143b6ff3cf48028121244d88321907a1bddc24f1a6f12db01364511e816259a",
+      "present": true,
+      "metadata": {
+        "found": true,
+        "solc": "67.0.7",
+        "ipfs": "12201b4a724e94687b6683f72064694993023a1b3dbf13a3418c0926ebb253c0"
+      }
+    },
+    "zodiac_module_proxy_factory": {
+      "address": "0x000000000000addb49795b0f9ba5bc298cdda236",
+      "code_size": 2046,
+      "sha256": "971cdae03ce44d95a1321e7fe22d77d65cbc71c1864670de723c249fa84e75b9",
+      "present": true,
+      "metadata": {
+        "found": true,
+        "solc": "67.0.8",
+        "ipfs": "122068cfe87f5242e3087c0b46218f6f8e6b1a5960ed6b562cb03d27ec764881"
+      }
+    },
+    "roles_v2_mastercopy": {
+      "address": "0xf2964ce6161ce0e75964fe7927ce114cb0b283d5",
+      "code_size": 24409,
+      "sha256": "89c5dc3313b5669f669232de7033734b4ee10339297cdf523bee5eb1b093cd05",
+      "present": true,
+      "metadata": {
+        "found": true,
+        "solc": "67.0.8",
+        "ipfs": "12208665ce7fa8abc34a53bbec2c11c0d182f6fe289381f7b2722be2b96ee92e"
+      }
+    },
+    "usdc_circle_base_sepolia": {
+      "address": "0x036cbd53842c5426634e7929541ec2318f3dcf7e",
+      "code_size": 1798,
+      "sha256": "e878b99fc0c17354c86c7edeb999c70c18cfd925abb0958496f027cbad996d28",
+      "present": true,
+      "metadata": {
+        "found": true,
+        "solc": "67.0.6",
+        "ipfs": "12206f0bb189a04c9e932c2fc652002537537a56c29703f60e541f9d2fffcf6f"
+      }
+    },
+    "multisend_call_only_141": {
+      "address": "0x40a2accbd92bca938b02010e17a5b8929b49130d",
+      "code_size": 410,
+      "sha256": "9be28ce198f1732867140d9a7425494c3a48e9785839c1104b275d2458ceefac",
+      "present": true,
+      "metadata": {
+        "found": true,
+        "solc": "67.0.7",
+        "ipfs": "122035246402746c96964495cae5b36461fd44dfb89f8e6cf6f6b8d60c0aa89f"
+      }
+    }
+  },
+  "balances_wei": {
+    "owner1": 0,
+    "owner2": 0,
+    "owner3": 0,
+    "agent": 0
+  },
+  "gas_price_wei": 6000000,
+  "selectors": {
+    "roles:roles_v2_mastercopy": {
+      "address": "0xF2964CE6161ce0e75964Fe7927cE114cb0B283D5",
+      "sigs": {
+        "setUp(bytes)": {
+          "selector": "0xa4f9edbf",
+          "present": true
+        },
+        "setAllowance(bytes32,uint128,uint128,uint128,uint64,uint64)": {
+          "selector": "0xa8ec43ee",
+          "present": true
+        },
+        "setAllowance(bytes32,bytes32,uint128,uint128,uint64)": {
+          "selector": "0x9b786b93",
+          "present": false
+        },
+        "scopeTarget(bytes32,address)": {
+          "selector": "0x0c6c76b8",
+          "present": true
+        },
+        "scopeFunction(bytes32,address,bytes4,(uint8,uint8,uint8,bytes)[],uint8)": {
+          "selector": "0x7508dd98",
+          "present": true
+        },
+        "allowTarget(bytes32,address,uint8)": {
+          "selector": "0x7b0da5b2",
+          "present": true
+        },
+        "assignRoles(address,bytes32[],bool[])": {
+          "selector": "0x957ed2b3",
+          "present": true
+        },
+        "execTransactionWithRole(address,uint256,bytes,uint8,bytes32,bool)": {
+          "selector": "0xc6fe8747",
+          "present": true
+        },
+        "execTransactionWithRoleReturnData(address,uint256,bytes,uint8,bytes32,bool)": {
+          "selector": "0x2b99e506",
+          "present": true
+        },
+        "execTransactionFromModule(address,uint256,bytes,uint8)": {
+          "selector": "0x468721a7",
+          "present": true
+        },
+        "owner()": {
+          "selector": "0x8da5cb5b",
+          "present": true
+        },
+        "avatar()": {
+          "selector": "0x5aef7de6",
+          "present": true
+        },
+        "target()": {
+          "selector": "0xd4b83992",
+          "present": true
+        },
+        "allowances(bytes32)": {
+          "selector": "0x5e7c9fe8",
+          "present": true
+        },
+        "defaultRoles(address)": {
+          "selector": "0x2d3c2547",
+          "present": true
+        },
+        "setDefaultRole(address,bytes32)": {
+          "selector": "0x946d364e",
+          "present": true
+        },
+        "getModulesPaginated(address,uint256)": {
+          "selector": "0xcc2f8452",
+          "present": true
+        },
+        "isModuleEnabled(address)": {
+          "selector": "0x2d9ad53d",
+          "present": true
+        },
+        "enableModule(address)": {
+          "selector": "0x610b5925",
+          "present": true
+        },
+        "disableModule(address,address)": {
+          "selector": "0xe009cfde",
+          "present": true
+        }
+      }
+    },
+    "mpf:zodiac_module_proxy_factory": {
+      "address": "0x000000000000aDdB49795b0f9bA5BC298cDda236",
+      "sigs": {
+        "deployModule(address,bytes,uint256)": {
+          "selector": "0xf1ab873c",
+          "present": true
+        },
+        "setUp(bytes)": {
+          "selector": "0xa4f9edbf",
+          "present": false
+        },
+        "createProxy(address,bytes32)": {
+          "selector": "0xadbb19c5",
+          "present": false
+        },
+        "createProxyWithNonce(address,bytes,uint256)": {
+          "selector": "0x1688f0b9",
+          "present": false
+        }
+      }
+    },
+    "safe_factory:candidat_2": {
+      "address": "0x4e1DCf7AD4e460CfD30791CCC4F9c8a4f820ec67",
+      "sigs": {
+        "createProxyWithNonce(address,bytes,uint256)": {
+          "selector": "0x1688f0b9",
+          "present": true
+        },
+        "createChainSpecificProxyWithNonce(address,bytes,uint256)": {
+          "selector": "0xec9e80bb",
+          "present": true
+        },
+        "proxyCreationCode()": {
+          "selector": "0x53e5d935",
+          "present": true
+        },
+        "getChainId()": {
+          "selector": "0x3408e470",
+          "present": true
+        }
+      }
+    },
+    "safe_singleton:safe_l2_singleton_141": {
+      "address": "0x29fcB43b46531BcA003ddC8FCB67FFE91900C762",
+      "sigs": {
+        "setup(address[],uint256,address,bytes,address,address,uint256,address)": {
+          "selector": "0xb63e800d",
+          "present": true
+        },
+        "execTransaction(address,uint256,bytes,uint8,uint256,uint256,uint256,address,address,bytes)": {
+          "selector": "0x6a761202",
+          "present": true
+        },
+        "getTransactionHash(address,uint256,bytes,uint8,uint256,uint256,uint256,address,address,uint256)": {
+          "selector": "0xd8d11f78",
+          "present": true
+        },
+        "enableModule(address)": {
+          "selector": "0x610b5925",
+          "present": true
+        },
+        "getOwners()": {
+          "selector": "0xa0e67e2b",
+          "present": true
+        },
+        "getThreshold()": {
+          "selector": "0xe75235b8",
+          "present": true
+        },
+        "nonce()": {
+          "selector": "0xaffed0e0",
+          "present": true
+        },
+        "VERSION()": {
+          "selector": "0xffa1ad74",
+          "present": true
+        },
+        "domainSeparator()": {
+          "selector": "0xf698da25",
+          "present": true
+        },
+        "encodeTransactionData(address,uint256,bytes,uint8,uint256,uint256,uint256,address,address,uint256)": {
+          "selector": "0xe86637db",
+          "present": true
+        }
+      }
+    },
+    "multisend:multisend_call_only_141": {
+      "address": "0x40A2aCCbd92BCA938b02010E17A5b8929b49130D",
+      "sigs": {
+        "multiSend(bytes)": {
+          "selector": "0x8d80ff0a",
+          "present": true
+        }
+      }
+    }
+  },
+  "events": {
+    "roles": {
+      "address": "0xF2964CE6161ce0e75964Fe7927cE114cb0B283D5",
+      "events": {
+        "RolesModSetup(address,address,address,address)": {
+          "topic0": "0x34d3b96a088381c6843a1f9d94d251afa88f83cc7a0d17fc23a7057506a3fc6d",
+          "present": true
+        },
+        "SetAllowance(bytes32,uint128,uint128,uint128,uint64,uint64)": {
+          "topic0": "0x63d7ec44a20b176da1d60d75259d264ee67b3d8213706afa71a28f69ed8ebece",
+          "present": true
+        },
+        "ScopeFunction(bytes32,address,bytes4,(uint8,uint8,uint8,bytes)[],uint8)": {
+          "topic0": "0x4f6c340456f64db31a3d003c1224ba1de058557b1cdf71f21ae48ce4a4f64f52",
+          "present": true
+        },
+        "ScopeTarget(bytes32,address)": {
+          "topic0": "0x277465b84f512b759d745fab70327b693ee21ce592fca91a3f491739a25fa76a",
+          "present": true
+        },
+        "AllowTarget(bytes32,address,uint8)": {
+          "topic0": "0x05e4ec9b54e94ad676ef61d57214f6d57d752ed2022dea5e5f956d5df7ccb250",
+          "present": true
+        },
+        "AssignRoles(address,bytes32[],bool[])": {
+          "topic0": "0x9f8368fa4ddcbd561efd7ad2a2174235bf5b840a73fb18f20db9705c11462498",
+          "present": true
+        },
+        "ConsumeAllowance(bytes32,uint128,uint128)": {
+          "topic0": "0x90355d540c2980efb4c360996dfc5405ee87e812e4f3db843857547cbdb5af65",
+          "present": true
+        }
+      }
+    },
+    "mpf": {
+      "address": "0x000000000000aDdB49795b0f9bA5BC298cDda236",
+      "events": {
+        "ModuleProxyCreation(address,address)": {
+          "topic0": "0x2150ada912bf189ed721c44211199e270903fc88008c2a1e1e889ef30fe67c5f",
+          "present": true
+        }
+      }
+    },
+    "safe_factory": {
+      "address": "0x4e1DCf7A71CCf7De11caCC46791B8d99d1BAbec0",
+      "events": {
+        "ProxyCreation(address,address)": {
+          "topic0": "0x4f51faf6c4561ff95f067657e43439f0f856d97c04d9ec9070a6199ad418e235",
+          "present": false
+        }
+      }
+    },
+    "safe_singleton": {
+      "address": "0x29fcB43b46531BcA003ddC8FCB67FFE91900C762",
+      "events": {
+        "SafeSetup(address,address[],uint256,address,address)": {
+          "topic0": "0x141df868a6331af528e38c83b7aa03edc19be66e37ae67f9285bf4f8e3c6a1a8",
+          "present": true
+        }
+      }
+    }
+  }
+}

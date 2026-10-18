@@ -1,0 +1,118 @@
+{
+ "$schema": "orvyren/crit/v1",
+ "findings": [
+  {
+   "enonce": "Le seul ref est un snapshot daté de 2023 alors que les claims sont horodatés 2026 ; la lecture traite une observation historique comme admissible pour un état présent de marché.",
+   "gravite": "BLOQUANT",
+   "refs": [
+    "claim:usdc-2023-03_live_20261017T012413Z-orchestrator-0003",
+    "graph_snapshot:usdc-2023-03@2023-03-11T12:00:00Z"
+   ],
+   "test_discriminant": "Vérifier si un snapshot de marché contemporain de l'horodatage du journal existe ; sinon la lecture est inadmissible temporellement.",
+   "type": "PIT"
+  },
+  {
+   "enonce": "Les hypothèses portent un état et des critères R/S alors que l'évaluation a été refusée pour schéma : aucun événement d'évaluation ne peut avoir produit ces états.",
+   "gravite": "BLOQUANT",
+   "refs": [
+    "claim:usdc-2023-03_live_20261017T012413Z-orchestrator-0017",
+    "hypothesis:HYP-001",
+    "hypothesis:HYP-002"
+   ],
+   "test_discriminant": "Exiger la trace d'une évaluation acceptée dont les résultats portent explicitement R/S pour chaque hypothèse.",
+   "type": "CONTRADICTION"
+  },
+  {
+   "enonce": "Aucune observation de prix par venue n'est fournie ; les claims sont tous des événements de process avec refs vides. Le critère S de HYP-001 n'a aucun support factuel.",
+   "gravite": "BLOQUANT",
+   "refs": [
+    "hypothesis:HYP-001",
+    "claim:usdc-2023-03_live_20261017T012413Z-orchestrator-0003"
+   ],
+   "test_discriminant": "Fournir des cotations horodatées identifiant chaque venue et son niveau, sinon HYP-001 reste invérifiable.",
+   "type": "MANQUE"
+  },
+  {
+   "enonce": "L'indépendance des venues n'est pas démontrée : deux cotations issues d'un même flux agrégé ou d'un même teneur de marché ramènent le critère S à une seule source.",
+   "gravite": "MAJEUR",
+   "refs": [
+    "hypothesis:HYP-001"
+   ],
+   "test_discriminant": "Documenter la provenance de chaque cotation (flux, contreparties, teneurs distincts) ; un flux commun invalide S.",
+   "type": "DEPENDANCE"
+  },
+  {
+   "enonce": "L'énoncé de HYP-001 conclut sur une dislocation 'réalisable' mais ses critères R/S ne testent que des niveaux de prix ; la réalisabilité n'appartient qu'à HYP-002.",
+   "gravite": "MAJEUR",
+   "refs": [
+    "hypothesis:HYP-001",
+    "hypothesis:HYP-002"
+   ],
+   "test_discriminant": "Restreindre l'énoncé de HYP-001 à la dispersion de prix, ou ajouter un critère de réalisabilité qui le discriminerait réellement.",
+   "type": "CONTRADICTION"
+  },
+  {
+   "enonce": "L'ordre borné du fallback est retenu sans borne chiffrée ni unité (notional, % du livre, profondeur venue) ; aucune comparaison possible avec les tailles trésorerie de HYP-002.",
+   "gravite": "MAJEUR",
+   "refs": [
+    "claim:usdc-2023-03_live_20261017T012413Z-orchestrator-0003",
+    "hypothesis:HYP-002"
+   ],
+   "test_discriminant": "Fournir la borne de l'ordre avec son unité et la taille de trésorerie de référence ; sans cela R/S de HYP-002 est inapplicable.",
+   "type": "UNITE"
+  },
+  {
+   "enonce": "Le claim 're-prompting once' n'est suivi d'aucune trace de sortie aboutie ; deux refus de plan successifs sans résultat documenté ne montrent aucune correction effective.",
+   "gravite": "MAJEUR",
+   "refs": [
+    "claim:usdc-2023-03_live_20261017T012413Z-orchestrator-0001",
+    "claim:usdc-2023-03_live_20261017T012413Z-orchestrator-0012"
+   ],
+   "test_discriminant": "Produire le journal du second passage (plan/eval acceptés) ; à défaut, les refus restent non résolus.",
+   "type": "MANQUE"
+  },
+  {
+   "enonce": "La décote peut être l'artefact d'un point unique en phase de stress de désancrage plutôt qu'une dislocation inter-venues persistante ; un snapshot isolé ne discrimine pas ces deux explications.",
+   "gravite": "MAJEUR",
+   "refs": [
+    "hypothesis:HYP-001",
+    "graph_snapshot:usdc-2023-03@2023-03-11T12:00:00Z"
+   ],
+   "test_discriminant": "Comparer une série autour du point : persistance multi-horaires soutient la dislocation, reversion rapide soutient l'artefact transitoire.",
+   "type": "ALTERNATIVE"
+  },
+  {
+   "enonce": "HYP-001 et HYP-002 reposent sur le même snapshot et les mêmes quotes absentes ; elles ne sont pas des preuves indépendantes et s'effondrent ensemble si la source est invalide.",
+   "gravite": "MAJEUR",
+   "refs": [
+    "hypothesis:HYP-001",
+    "hypothesis:HYP-002",
+    "graph_snapshot:usdc-2023-03@2023-03-11T12:00:00Z"
+   ],
+   "test_discriminant": "Exiger des sources de profondeur de carnet distinctes des sources de prix pour découpler les deux hypothèses.",
+   "type": "DEPENDANCE"
+  },
+  {
+   "enonce": "Les claims -0001 et -0012 ont un texte identique et des refs vides ; indiscernables, ils peuvent être un replay d'un même événement plutôt que deux incidents distincts.",
+   "gravite": "MINEUR",
+   "refs": [
+    "claim:usdc-2023-03_live_20261017T012413Z-orchestrator-0001",
+    "claim:usdc-2023-03_live_20261017T012413Z-orchestrator-0012"
+   ],
+   "test_discriminant": "Vérifier les horodatages internes de chaque entrée de journal ; un même instant trahit un doublon.",
+   "type": "OBSOLESCENCE"
+  }
+ ],
+ "note": "Les quatre claims sont des événements de process (refus de schéma, fallback VOI) sans aucune observation de marché ; le paquet ne contient qu'un ref, un snapshot historique unique. Rien dans les preuves fournies ne discrimine dislocation réalisable et artefact de source unique ou de stress transitoire. La lecture courante n'est pas seulement fragile : elle est contradictoire (états d'hypothèses assignés malgré une évaluation refusée) et temporellement inadmissible.",
+ "preuves_manquantes": [
+  "Cotations horodatées par venue (niveaux et provenance) pour tout ou moins deux venues",
+  "Justification d'indépendance des venues (flux, teneurs, contreparties distincts)",
+  "Profondeur de carnet mesurée par venue aux tailles pertinentes, avec unités explicites",
+  "Série temporelle autour du snapshot pour distinguer transitoire et persistant",
+  "Journal du re-prompt abouti après chaque refus de schéma",
+  "Borne chiffrée de l'ordre fixe du fallback et réconciliation avec la taille de trésorerie",
+  "Évaluation acceptée produisant explicitement R/S pour HYP-001 et HYP-002",
+  "Lien entre le cadre 'usdc-2023-03' et l'horodatage du journal 2026"
+ ],
+ "verdict_lecture": "INCOHERENTE"
+}

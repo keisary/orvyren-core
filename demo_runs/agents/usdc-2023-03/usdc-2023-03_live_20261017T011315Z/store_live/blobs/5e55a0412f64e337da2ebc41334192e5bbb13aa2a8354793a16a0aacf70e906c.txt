@@ -1,0 +1,13 @@
+{
+  "insuffisance": {
+    "motif": "Les éléments fournis pour cet épisode ne contiennent que des références, sans aucune valeur de cotation attachée. Le graph_snapshot référence trois venues déclarées (chainlink, defillama, bitstamp) pour usdc-usd, mais aucune donnée chiffrée n'accompagne ces références. Il est donc impossible de mesurer l'écart de chaque venue vis-à-vis du pair, ni d'établir si l'écart global est porté par une seule venue ou par plusieurs. Faute de valeurs observables, la tâche ne peut départager les branches R et S de HYP-001 : ni la dislocation multi-venues ni l'artefact de source unique ne peuvent être soutenus ou réfutés. Aucun claim chiffré ne peut être émis sans inventer un nombre, ce qui est proscrit.",
+    "ce_qui_manque": "Les valeurs de cotation horodatées au snapshot pour chaque venue (chainlink, defillama, bitstamp) et le pair de référence utilisé pour calculer l'écart.",
+    "refs": [
+      "graph_snapshot:usdc-2023-03@2023-03-11T12:00:00Z",
+      "observation:chainlink/usdc-usd/2023-03-11T12:00Z",
+      "observation:defillama/usdc-usd/2023-03-11T12:00Z",
+      "observation:bitstamp/usdc-usd/2023-03-11T12:00Z"
+    ]
+  },
+  "claims": []
+}

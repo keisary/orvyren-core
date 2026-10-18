@@ -1,0 +1,18 @@
+{
+ "claims": [
+  {
+   "journal_id": "demo-usdc-2023-03-orchestrator-0001",
+   "refs": [],
+   "text": "plan refused (schema): re-prompting once with the error injected"
+  },
+  {
+   "journal_id": "demo-usdc-2023-03-orchestrator-0003",
+   "refs": [],
+   "text": "VOI_NOT_ESTIMABLE: no NetVoI estimator injected — fixed bounded order kept (documented fallback)"
+  }
+ ],
+ "packet_id": "demo-usdc-2023-03-packet",
+ "refs": [],
+ "snapshot_ref": "graph_snapshot:usdc-2023-03@2023-03-11T12:00:00Z",
+ "summary": "paquet de preuves du tour borné (2 réflexions)"
+}

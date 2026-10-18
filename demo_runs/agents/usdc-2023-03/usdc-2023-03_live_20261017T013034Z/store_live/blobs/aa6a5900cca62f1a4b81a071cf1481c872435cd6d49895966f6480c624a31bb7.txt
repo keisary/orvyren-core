@@ -1,0 +1,25 @@
+{
+  "$schema": "orvyren/orch/v1",
+  "lacune_id": "L-1",
+  "tache": {
+    "question": "Les cotations par venue du pair stablecoin dollar enregistrées dans le graphe sont-elles toutes au pair, ou au moins deux venues indépendantes cotent-elles sous le pair ?",
+    "outil": "graph_query",
+    "args": {
+      "cible": "cotations par venue du pair stablecoin/dollar",
+      "fenetre": "instant du snapshot uniquement",
+      "ref": "graph_snapshot:usdc-2023-03@2023-03-11T12:00:00Z",
+      "retour_attendu": "liste des venues distinctes avec leur position relative au pair"
+    },
+    "critere_discriminant": "Si toutes les venues observées sont au pair, la dispersion est un artefact d'une seule source et HYP-001 est réfutée ; si au moins deux venues indépendantes cotent sous le pair, la dislocation est corroborée et HYP-001 est soutenue.",
+    "branches_concernees": ["HYP-001"],
+    "cout_max": { "appels_llm": 1, "secondes": 60 }
+  },
+  "stop": false,
+  "motif_stop": null,
+  "non_recherche": [
+    "Aucune interrogation de read_prices : cet outil figure dans les sources autorisées mais est déclaré indisponible.",
+    "Aucune recherche sur la profondeur d'exécution réalisable (HYP-002 / L-2) : elle exige des carnets par taille et serait confondue avec la mesure de dispersion visée ici.",
+    "Aucun document externe récupéré par fetch_document : contenu non fiable et risque d'objet postérieur à l'instant d'analyse.",
+    "Aucune valeur numérique, estimation de prix, de décote ou de probabilité produite par cette tâche."
+  ]
+}

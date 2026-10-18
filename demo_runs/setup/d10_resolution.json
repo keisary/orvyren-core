@@ -1,0 +1,22 @@
+{
+ "resolved_at": "2026-10-16",
+ "chain_id": 84532,
+ "module": "0x7e2b7798ab4b4db837b30107f0d2a3ffb24e95e8",
+ "mastercopy": "0xF2964CE6161ce0e75964Fe7927cE114cb0B283D5",
+ "mastercopy_code_sha256": "89c5dc3313b5669f669232de7033734b4ee10339297cdf523bee5eb1b093cd05",
+ "mastercopy_code_size": 24409,
+ "version": "v2.1.1",
+ "source_match": {
+  "v2.1.1": "26/26 fichiers",
+  "v2.1.0": "24/26 fichiers"
+ },
+ "patched_files_in_our_code": [
+  "@gnosis.pm/zodiac/contracts/signature/SignatureChecker.sol",
+  "contracts/PermissionChecker.sol"
+ ],
+ "sources": [
+  "https://github.com/zodiaceco/zodiac-modifier-roles (README §Deployments — Base Sepolia listé)",
+  "https://base-sepolia.blockscout.com/api/v2/smart-contracts/0xF2964CE6161ce0e75964Fe7927cE114cb0B283D5",
+  "post-mortem local : D:/orvyren_archive_2026-10-15/research/raw_w2c/https_engineering_gnosisguild_org_posts_zodiac_post_mortem.md"
+ ]
+}

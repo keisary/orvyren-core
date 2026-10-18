@@ -1,0 +1,30 @@
+{
+  "lacune_id": "L-2",
+  "tache": {
+    "question": "Sur les venues présentant le décrochage, la profondeur d'exécution disponible permet-elle d'absorber une taille de trésorerie sans ramener le prix au pair ?",
+    "outil": "read_prices",
+    "args": {
+      "cible": "venues du snapshot",
+      "champs": [
+        "prix_par_venue",
+        "profondeur_par_niveau",
+        "taille_executable_au_prix_affiche"
+      ]
+    },
+    "critere_discriminant": "Si la profondeur couvre les tailles de trésorerie au prix décoté, HYP-002 est réfutée (décote réalisable) ; si la profondeur s'épuise nettement en deçà de ces tailles, HYP-002 est confirmée ; si la profondeur n'existe que sur une seule venue et est absente ailleurs, la lecture 'artefact d'une source' gagne du poids pour HYP-001 via L-1.",
+    "branches_concernees": [
+      "HYP-002"
+    ],
+    "cout_max": {
+      "appels_llm": 1,
+      "secondes": 60
+    }
+  },
+  "stop": false,
+  "motif_stop": null,
+  "non_recherche": [
+    "Aucune donnée postérieure au snapshot n'est interrogée (contrainte point-in-time).",
+    "Aucune estimation de probabilité, de prix cible ou de valorisation chiffrée n'est produite par l'orchestrateur.",
+    "L'identité ou la solvabilité des contreparties n'est pas recherchée : hors périmètre des lacunes déclarées."
+  ]
+}

@@ -1,0 +1,29 @@
+{
+  "$schema": "orvyren/orch/v1",
+  "lacune_id": "L-1",
+  "tache": {
+    "question": "Plusieurs venues indépendantes affichent-elles au même instant une décote du pair USDC/USD, ou la dispersion ne provient-elle que d'une source isolée ?",
+    "outil": "read_prices",
+    "args": {
+      "paire": "USDC/USD",
+      "fenetre": "instant_du_snapshot",
+      "multi_venues": true,
+      "venues_independantes_uniquement": true
+    },
+    "critere_discriminant": "Si au moins deux venues indépendantes cotent le pair sous le pair au même instant, la dispersion n'est pas un artefact de source unique et HYP-001 est corroborée ; si une seule venue porte l'écart et les autres cotent au pair, HYP-001 est réfutée comme artefact de source isolée.",
+    "branches_concernees": [
+      "HYP-001"
+    ],
+    "cout_max": {
+      "appels_llm": 1,
+      "secondes": 60
+    }
+  },
+  "stop": false,
+  "motif_stop": null,
+  "non_recherche": [
+    "La profondeur d'exécution aux tailles de trésorerie : elle relève de HYP-002 et de la lacune L-2, non visée par cette tâche.",
+    "Les causes macro de la crise bancaire en cours : hors périmètre de la dislocation du pair.",
+    "Tout objet ou cotation postérieur à l'instant du snapshot : inadmissible."
+  ]
+}

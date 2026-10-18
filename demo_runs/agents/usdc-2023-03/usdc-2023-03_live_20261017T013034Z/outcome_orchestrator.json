@@ -1,0 +1,18 @@
+{
+ "budget_used": {
+  "cost_usd": 0.019194689999999997,
+  "llm_calls": 18.0,
+  "tool_calls": 12.0,
+  "wall_seconds": 137.46900000000005
+ },
+ "critique_verdict": "",
+ "inconclusive": true,
+ "motif": "budget exhausted: tool_calls",
+ "non_recherche": [
+  "Les venues indépendantes cotées au même instant affichent-elles toutes le même écart au pair, ou l'écart observé provient-il d'une seule d'entre elles ?",
+  "Une source on-chain indépendante confirme-t-elle, à l'instant du cliché, une profondeur d'exécution suffisante pour rendre la décote réalisable aux tailles pertinentes pour une trésorerie ?",
+  "Sur le pair USDC/USD, plusieurs venues indépendantes cotent-elles sous le pair au même instant, ou la dispersion observée provient-elle d'une seule source divergente ?"
+ ],
+ "state": "DONE",
+ "stop_condition": "ARRET-2"
+}

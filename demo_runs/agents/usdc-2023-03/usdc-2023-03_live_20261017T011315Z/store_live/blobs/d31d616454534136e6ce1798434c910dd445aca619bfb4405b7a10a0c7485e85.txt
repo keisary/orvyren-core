@@ -1,0 +1,26 @@
+{
+  "$schema": "orvyren/orch/v1",
+  "lacune_id": "L-1",
+  "tache": {
+    "question": "Les cotations par venue derrière la dispersion proviennent-elles de sources réellement indépendantes, ou d'un flux unique dupliqué ?",
+    "outil": "graph_query",
+    "args": {
+      "ref": "graph_snapshot:usdc-2023-03@2023-03-11T12:00:00Z",
+      "entite": "USDC/USD",
+      "champ": "cotations_par_venue"
+    },
+    "critere_discriminant": "Si la requête restitue au moins deux venues distinctes avec des cotations sous le pair et des chaînes de provenance séparées, la branche S de HYP-001 est soutenue (dispersion réelle). Si elle ne restitue qu'une source unique, ou des venues toutes au pair, la branche R est soutenue (la dispersion est un artefact d'une seule source).",
+    "branches_concernees": ["HYP-001"],
+    "cout_max": {
+      "appels_llm": 1,
+      "secondes": 60
+    }
+  },
+  "stop": false,
+  "motif_stop": null,
+  "non_recherche": [
+    "La profondeur d'exécution et le caractère réalisable aux tailles de trésorerie (HYP-002 / L-2) : réservée à une tâche ultérieure, pour ne traiter qu'une lacune à la fois.",
+    "Toute cotation via read_prices : l'outil figure dans outils_indisponibles, donc inadmissible comme source.",
+    "Tout contenu externe non vérifié (documents, pages) comme preuve de provenance des venues : donnée non fiable."
+  ]
+}

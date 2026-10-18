@@ -1,0 +1,17 @@
+{
+  "type": "insuffisance",
+  "claims": [],
+  "insuffisance": {
+    "motif": "Le retour de la tâche se limite à l'objet graph_snapshot:usdc-2023-03@2023-03-11T12:00:00Z, dont la seule charge exploitable est une liste de provenance (observation:chainlink/usdc-usd/2023-03-11T12:00Z, observation:defillama/usdc-usd/2023-03-11T12:00Z, observation:bitstamp/usdc-usd/2023-03-11T12:00Z). Aucune cotation par venue n'est restituée : ni de sens d'écart, ni d'ampleur d'écart, ni de contribution relative de chaque venue à l'écart global.",
+    "critere_non_satisfait": "Le critere_discriminant de la tâche exige que le graphe expose, par venue, un écart de cotation avec provenance. La branche R n'est soutenue que si plusieurs venues déclarées indépendantes dévient chacune sous le pair ; la branche S n'est soutenue que si l'écart global est porté par une seule venue. Le résultat fourni ne contient aucune valeur par venue : il ne permet donc ni d'établir la branche R, ni d'établir la branche S, ni de réfuter HYP-001. Conformément au critère énoncé, un graphe muet sans provenance par venue « ne départage rien et ne compte pas comme résultat ».",
+    "ce_qui_manque": "Les cotation/écarts par venue telles qu'enregistrées dans le graphe à l'instant d'analyse (une valeur par venue citée), et l'attribution de l'écart global à ces venues. La simple coexistence de plusieurs refs de source ne démontre pas une déviation concordante : elle prouve tout au plus que des sources distinctes sont indexées.",
+    "refs": [
+      "graph_snapshot:usdc-2023-03@2023-03-11T12:00:00Z",
+      "observation:chainlink/usdc-usd/2023-03-11T12:00Z",
+      "observation:defillama/usdc-usd/2023-03-11T12:00Z",
+      "observation:bitstamp/usdc-usd/2023-03-11T12:00Z"
+    ],
+    "consequence": "Aucun claim ne peut être émis sans inventer une valeur numérique, ce qui est prohibé. HYP-001 demeure non départagée par ce retour ; le budget (appels_llm, outils) n'est pas le facteur limitant — c'est le contenu restitué qui est insuffisant.",
+    "condition_de_levement": "Un retour de graph_query exposant, pour chaque venue déclarée indépendante, la cotation enregistrée avec sa ref propre, à l'instant d'analyse, permettrait de trancher entre branche R et branche S et de produire des claims référencés."
+  }
+}

@@ -1,0 +1,232 @@
+{
+ "schema": "orvyren-envelope/v1",
+ "captured_at": "2026-10-16T10:52:31Z",
+ "chain_id": 84532,
+ "block_number": 48189829,
+ "gas": {
+  "gas_price_baseline_wei": 6000000,
+  "captured_at_utc": "2026-10-16T10:52:31Z"
+ },
+ "contracts": {
+  "module_roles_officiel": {
+   "address": "0xf2964ce6161ce0e75964fe7927ce114cb0b283d5",
+   "code_size_bytes": 24409,
+   "code_sha256": "89c5dc3313b5669f669232de7033734b4ee10339297cdf523bee5eb1b093cd05"
+  },
+  "usdc_circle_base_sepolia": {
+   "address": "0x036cbd53842c5426634e7929541ec2318f3dcf7e",
+   "code_size_bytes": 1798,
+   "code_sha256": "e878b99fc0c17354c86c7edeb999c70c18cfd925abb0958496f027cbad996d28"
+  },
+  "usdc_aave_base_sepolia": {
+   "address": "0xba50cd2a20f6da35d788639e581bca8d0b5d4d5f",
+   "code_size_bytes": 3981,
+   "code_sha256": "8f420989c42d99c936774330737b86eec0dccbb44b60343493a8266632d93518"
+  },
+  "weth_predeploy": {
+   "address": "0x4200000000000000000000000000000000000006",
+   "code_size_bytes": 2041,
+   "code_sha256": "0b4867c60e2c1404e78a40ff738ebcf733152e803fed63dae9fadcf3d58e86cc"
+  },
+  "safe_l2_singleton_1_4_1": {
+   "address": "0x29fcb43b46531bca003ddc8fcb67ffe91900c762",
+   "code_size_bytes": 24421,
+   "code_sha256": "c44b4d05d68c38405960653358247a004d6cf74c9ee508c250b7999f1aa8d524"
+  },
+  "safe_proxy_factory_1_4_1": {
+   "address": "0x4e1dcf7ad4e460cfd30791ccc4f9c8a4f820ec67",
+   "code_size_bytes": 3054,
+   "code_sha256": "a01f78c95e8982e0dfc891d0e26ded7547d0d1d1a2d73ad5e43e157340aa24ff"
+  },
+  "multisend_call_only_1_4_1": {
+   "address": "0x40a2accbd92bca938b02010e17a5b8929b49130d",
+   "code_size_bytes": 410,
+   "code_sha256": "9be28ce198f1732867140d9a7425494c3a48e9785839c1104b275d2458ceefac"
+  },
+  "swap_router02": {
+   "address": "0x94cc0aac535ccdb3c01d6787d6413c739ae12bc4",
+   "code_size_bytes": 24497,
+   "code_sha256": "5f9b9142814fcf305577856d54ee6f5d4816eaf1f72159e535bfd9473c995c7c"
+  },
+  "uniswap_v3_factory": {
+   "address": "0x4752ba5dbc23f44d87826276bf6fd6b1c372ad24",
+   "code_size_bytes": 24535,
+   "code_sha256": "2e3c9aa72d26cfbcdc2358f85decb5bbd56331b90175f5da562c687f1a93a164"
+  },
+  "quoter_v2": {
+   "address": "0xc5290058841028f1614f3a6f0f5816cad0df5e27",
+   "code_size_bytes": 8273,
+   "code_sha256": "211b6433d647b3de01199619ce6ff15652990454331e1e835a50f272807cc7f2"
+  },
+  "aave_v3_pool": {
+   "address": "0x8bab6d1b75f19e9ed9fce8b9bd338844ff79ae27",
+   "code_size_bytes": 1853,
+   "code_sha256": "7f6e6738c22d16e74829a7c13ec40f05610c45b18c9823578fea98e24d5606fd"
+  },
+  "eas": {
+   "address": "0x4200000000000000000000000000000000000021",
+   "code_size_bytes": 2059,
+   "code_sha256": "30ccc4ce49c00fae11d7118fc244f29a13788fb32cd4022ee69acc2f15c0e2f5"
+  },
+  "orvyren_safe_address": {
+   "address": "0x000e11a54daadf202542a0136f974f24d7c38be0",
+   "code_size_bytes": 171,
+   "code_sha256": "a8a0fbd3cdf49e751346664e01b529a58322a814cf8df8d85deb20e63bd6415e"
+  },
+  "orvyren_agent_address": {
+   "address": "0xe1039e345fa2ad9ecceab7bb160fd5e53f58f01c",
+   "code_size_bytes": 0,
+   "code_sha256": ""
+  },
+  "orvyren_module_address": {
+   "address": "0x7e2b7798ab4b4db837b30107f0d2a3ffb24e95e8",
+   "code_size_bytes": 45,
+   "code_sha256": "09bfac6bbbcc2243f8768c9967697a3599bb1274d71154cca75b4cd910cf2c14"
+  },
+  "orvyren_usdc_address": {
+   "address": "0x036cbd53842c5426634e7929541ec2318f3dcf7e",
+   "code_size_bytes": 1798,
+   "code_sha256": "e878b99fc0c17354c86c7edeb999c70c18cfd925abb0958496f027cbad996d28"
+  },
+  "orvyren_recipient_b": {
+   "address": "0x37877f6ffb6656e752bf4807b9c3c7b761a953a3",
+   "code_size_bytes": 0,
+   "code_sha256": ""
+  },
+  "orvyren_recipient_c": {
+   "address": "0x9f59adcdea0341e258e3ac98e7f9c57a2277760e",
+   "code_size_bytes": 0,
+   "code_sha256": ""
+  }
+ },
+ "probes": [
+  {
+   "id": "modules.agent",
+   "check": "D3",
+   "to": "0x7e2b7798ab4b4db837b30107f0d2a3ffb24e95e8",
+   "data": "0x2d9ad53d000000000000000000000000e1039e345fa2ad9ecceab7bb160fd5e53f58f01c",
+   "decode": {
+    "type": "bool"
+   },
+   "expect": true,
+   "note": "isModuleEnabled(agent) : dans cette version de Roles, execTransactionWithRole est moduleOnly — le membre doit être un module activé (auto-activé par assignRoles, tx 0x994e762c…)"
+  },
+  {
+   "id": "allowance.usdc_daily.refill",
+   "check": "D7",
+   "to": "0x7e2b7798ab4b4db837b30107f0d2a3ffb24e95e8",
+   "data": "0x5e7c9fe8757364635f6461696c7900000000000000000000000000000000000000000000",
+   "decode": {
+    "type": "uint256"
+   },
+   "expect": 300000000,
+   "note": "allowances(usdc_daily).refill = 300 000 000 (1er mot de la structure)"
+  },
+  {
+   "id": "allowance.calls_daily.refill",
+   "check": "D8",
+   "to": "0x7e2b7798ab4b4db837b30107f0d2a3ffb24e95e8",
+   "data": "0x5e7c9fe863616c6c735f6461696c79000000000000000000000000000000000000000000",
+   "decode": {
+    "type": "uint256"
+   },
+   "expect": 10,
+   "note": "allowances(calls_daily).refill = 10"
+  }
+ ],
+ "note": "enveloppe capturée par lecture seule — `role` (cibles/conditions/allowances) et `probes` (calldata des getters) restent à confirmer sur le contrat déployé (B4 §d.3, annexe 4) | COMPLÉTÉE le 2026-10-16 avec les faits vérifiés du montage (role.* et probes.* : valeurs lues on-chain et/ou prouvées par les événements des transactions du montage — voir docs/demo/SETUP_RESULTS.md).",
+ "module": {
+  "address": "0x7e2b7798ab4b4db837b30107f0d2a3ffb24e95e8",
+  "code_size_expected": 45,
+  "code_sha256_expected": "09bfac6bbbcc2243f8768c9967697a3599bb1274d71154cca75b4cd910cf2c14",
+  "version": "v2.1.1",
+  "advisory_clear": true,
+  "address_note": "instance PROPRE du montage (clone EIP-1167 du mastercopy 0xF2964CE6…83D5)",
+  "mastercopy": "0xF2964CE6161ce0e75964Fe7927cE114cb0B283D5",
+  "mastercopy_code_sha256": "89c5dc3313b5669f669232de7033734b4ee10339297cdf523bee5eb1b093cd05",
+  "mastercopy_code_size": 24409,
+  "version_evidence": "source vérifiée Blockscout identique 26/26 à l'artefact publié v2.1.1 (dont SignatureChecker.sol + PermissionChecker.sol — les deux fichiers corrigés après l'incident 06/2026) ; codehash identique Ethereum/Base/Base Sepolia ; adresse listée par le README officiel (relevé 2026-10-16)",
+  "advisory_evidence": "correctifs ERC-1271 (v2.1.0→v2.1.1) et MultiSend présents dans le code comparé ; audits G0/Omniscia + audit V3 10/2026 listés par les mainteneurs"
+ },
+ "avatar": {
+  "address": "0x000e11a54daadf202542a0136f974f24d7c38be0",
+  "label": "Safe de démonstration 2/3 (owners O1/O2/O3, seuil 2)"
+ },
+ "agent": {
+  "address": "0xe1039e345Fa2AD9EcCeab7bb160FD5e53f58F01c",
+  "label": "EOA jetable membre du rôle AGENT (gas 0,0015 ETH)"
+ },
+ "assets": {
+  "usdc_circle": "0x036cbd53842c5426634e7929541ec2318f3dcf7e",
+  "usdc_aave": "0xba50cd2a20f6da35d788639e581bca8d0b5d4d5f",
+  "weth_predeploy": "0x4200000000000000000000000000000000000006"
+ },
+ "session_env_keys": [
+  "ORVYREN_AGENT_ADDRESS",
+  "ORVYREN_CHAIN_ID",
+  "ORVYREN_K0_PAUSED",
+  "ORVYREN_MODULE_ADDRESS",
+  "ORVYREN_PRIVATE_KEY",
+  "ORVYREN_RECIPIENT_B",
+  "ORVYREN_RECIPIENT_C",
+  "ORVYREN_RECIPIENT_UNLISTED",
+  "ORVYREN_RPC_TIMEOUT_SECONDS",
+  "ORVYREN_RPC_URL_BASE_SEPOLIA",
+  "ORVYREN_SAFE_ADDRESS",
+  "ORVYREN_USDC_ADDRESS"
+ ],
+ "revocation_scheduled_at": "2026-11-15T23:59:59Z",
+ "role": {
+  "targets": [
+   {
+    "address": "0x036CbD53842c5426634e7929541eC2318f3dCF7e",
+    "clearance": "Function",
+    "note": "USDC Circle uniquement — cloisonnement vérifié par RUN B (refus d'un destinataire non listé)"
+   }
+  ],
+  "functions": [
+   {
+    "target": "0x036CbD53842c5426634e7929541eC2318f3dCF7e",
+    "signature": "transfer(address,uint256)",
+    "selector": "0xa9059cbb",
+    "clearance": "Function",
+    "operation": "CALL",
+    "note": "évidence : événement ScopeFunction (tx 0xf623f087…)"
+   }
+  ],
+  "conditions": {
+   "param0": {
+    "kind": "or_equal",
+    "values": [
+     "0x37877F6ffb6656E752Bf4807b9C3c7B761A953a3",
+     "0x9f59ADcdeA0341e258e3AC98E7f9c57A2277760E"
+    ],
+    "note": "Or(EqualTo(B), EqualTo(C)) — vérifié par RUN B : ConditionViolation(status=5, OrViolation)"
+   },
+   "param1": {
+    "kind": "within_allowance",
+    "allowance_key": "usdc_daily",
+    "note": "plafond par transaction = solde d'allowance (300 USDC)"
+   },
+   "quota": {
+    "kind": "call_within_allowance",
+    "allowance_key": "calls_daily",
+    "note": "10 appels / 24 h (amortisseur anti-rejeu)"
+   }
+  },
+  "allowances": {
+   "usdc_daily": {
+    "refill_base_units": 300000000,
+    "max_refill_base_units": 300000000,
+    "period_seconds": 86400,
+    "evidence": "tx 0x5c13a9a8… (événement SetAllowance) + lecture allowances(usdc_daily)"
+   }
+  },
+  "call_quota": {
+   "key": "calls_daily",
+   "max_per_period": 10,
+   "period_seconds": 86400,
+   "evidence": "tx 0x0977f870… (événement SetAllowance) + lecture allowances(calls_daily)"
+  }
+ }
+}

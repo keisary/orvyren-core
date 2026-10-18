@@ -1,0 +1,23 @@
+[ok] chaîne 84532 (bloc 48189758, gasPrice 6000000 wei)
+[ok] configuration chargée : Safe 2/3 depuis scripts/demo/owners.env (3 adresses), agent 0xe1039e…58f01c, USDC 0x036cbd…3dcf7e
+[ok] infrastructure vérifiée (code + VERSION 1.4.1 + sélecteurs du module Roles)
+[ok] arbre de conditions validé on-chain (bibliothèque Integrity ; contrôle négatif reverti)
+[ok] adresses prédites : Safe 0x000e11a54daadf202542a0136f974f24d7c38be0 · module 0x7e2b7798ab4b4db837b30107f0d2a3ffb24e95e8
+[ok] déploiements simulés : les adresses rendues correspondent aux prédictions CREATE2
+[ok] 8 calldata préparés et empreints (aucun envoi)
+[chk] soldes : 0xd438ee…52df91=0.003492 ETH, 0xb70341…4100bb=0.000000 ETH, 0x157f74…1cb3a7=0.000000 ETH
+[SKIP] agent_fund {"agent": "0xe1039e345fa2ad9ecceab7bb160fd5e53f58f01c", "balance_wei": 1500000000000000, "reason": "solde déjà suffisant"}
+[ok] gaz de l'agent : 0.001500 ETH (avant 0.001500)
+[OK] skip_config {"safe": "0x000e11a54daadf202542a0136f974f24d7c38be0", "module": "0x7e2b7798ab4b4db837b30107f0d2a3ffb24e95e8", "reason": "--skip-config : déploiements et configuration considérés déjà en place"}
+[note] RUN A : autorisation validée — le transfert interne échoue car la Safe ne détient aucun USDC (solde 0)
+[ok] RUN A : AUTORISATION VALIDÉE (revert ModuleTransactionFailed = échec interne) ; transfert réel impossible : Safe sans USDC de test | RUN B : REFUS de la portée — ConditionViolation(status=5)
+[ok] scripts/demo/.env : ORVYREN_SAFE_ADDRESS et ORVYREN_MODULE_ADDRESS mis à jour (autres lignes intactes)
+[ok] artefacts écrits dans demo_runs/setup
+
+=== RÉSUMÉ ===
+mode            : execute
+Safe (prédite)  : 0x000e11a54daadf202542a0136f974f24d7c38be0
+module (prédit) : 0x7e2b7798ab4b4db837b30107f0d2a3ffb24e95e8
+Safe déployée   : 0x000e11a54daadf202542a0136f974f24d7c38be0
+module déployé  : 0x7e2b7798ab4b4db837b30107f0d2a3ffb24e95e8
+EXIT=0

@@ -1,0 +1,26 @@
+{
+  "$schema": "orvyren/orch/v1",
+  "lacune_id": "L-1",
+  "tache": {
+    "question": "Les cotations par venue derrière la dispersion proviennent-elles de sources réellement indépendantes, ou d'un flux unique dupliqué ?",
+    "outil": "graph_query",
+    "args": {
+      "ref": "graph_snapshot:usdc-2023-03@2023-03-11T12:00:00Z",
+      "entite": "USDC/USD",
+      "champ": "cotations_par_venue"
+    },
+    "critere_discriminant": "Si la requête restitue des venues distinctes, dotées de chaînes de provenance séparées et de cotations sous le pair, la branche soutenant une dispersion réalisable est confirmée. Si elle ne restitue qu'une source unique dupliquée, ou des venues toutes au pair, la branche de l'artefact d'une seule source est soutenue.",
+    "branches_concernees": ["HYP-001"],
+    "cout_max": {
+      "appels_llm": 1,
+      "secondes": 60
+    }
+  },
+  "stop": false,
+  "motif_stop": null,
+  "non_recherche": [
+    "La profondeur d'exécution et le caractère réalisable aux tailles de trésorerie : lacune distincte, réservée à une tâche ultérieure pour ne traiter qu'une lacune à la fois.",
+    "Toute cotation via l'outil de prix : il figure parmi les outils indisponibles, donc inadmissible comme source.",
+    "Tout document ou page externe présenté comme preuve de provenance des venues : contenu non fiable, ignoré comme donnée probante."
+  ]
+}

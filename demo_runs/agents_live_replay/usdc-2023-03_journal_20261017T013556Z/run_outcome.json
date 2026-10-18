@@ -1,0 +1,45 @@
+{
+ "case_id": "usdc-2023-03",
+ "critique": {
+  "$status": "QUARANTINED",
+  "errors": [
+   "E_LLM_CALL_FAILED: E_LLM_NOT_RECORDED:7910e2d3c5b7823a619d8e6d7bac8573903c2054b75d4edb1cd3529ab4c4c69a"
+  ]
+ },
+ "escalation": null,
+ "journals": {
+  "critic": {
+   "agent_ids": [
+    "critic"
+   ],
+   "chain_head": "fd8ef19feae469ec032442c6cb9ccd29fe759c43eba481af4463cdfd6f8d603d",
+   "lines": 1
+  },
+  "orchestrator": {
+   "agent_ids": [
+    "orchestrator"
+   ],
+   "chain_head": "364bcc26e83cb406e48d6d7736cff2368cfd060a9fb45803da08d27f54538302",
+   "lines": 15
+  }
+ },
+ "mode": "journal",
+ "outcome": {
+  "budget_used": {
+   "cost_usd": 0.0018620219999999999,
+   "llm_calls": 5.0,
+   "tool_calls": 3.0,
+   "wall_seconds": 0.16000000000000003
+  },
+  "critique_verdict": "",
+  "inconclusive": true,
+  "motif": "E_LLM_CALL_FAILED: LLM unavailable after 3 attempts (E_LLM_NOT_RECORDED:7a796fd5ea861f312ebe5afcc368a118197cab9ae305864a8283a7542a261a45)",
+  "non_recherche": [
+   "Les venues indépendantes cotées au même instant affichent-elles toutes le même écart au pair, ou l'écart observé provient-il d'une seule d'entre elles ?"
+  ],
+  "state": "ABORTED",
+  "stop_condition": "ARRET-3"
+ },
+ "run_dir": "demo_runs/agents_live_replay\\usdc-2023-03_journal_20261017T013556Z",
+ "schema": "orvyren/agent-run-outcome/v1"
+}

@@ -1,0 +1,16 @@
+{
+  "enforce_selector": "0x783a9047",
+  "valid": {
+    "ok": true,
+    "result": "0x"
+  },
+  "bad_bfs": {
+    "ok": false,
+    "error": "eth_call failed: code=3 message=execution reverted"
+  },
+  "bad_type": {
+    "ok": false,
+    "error": "eth_call failed: code=3 message=execution reverted"
+  },
+  "calldata_valid_len": 1348
+}

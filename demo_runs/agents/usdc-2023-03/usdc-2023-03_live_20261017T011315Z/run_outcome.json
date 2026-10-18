@@ -1,0 +1,161 @@
+{
+ "case_id": "usdc-2023-03",
+ "critique": {
+  "$schema": "orvyren/crit/v1",
+  "findings": [
+   {
+    "enonce": "Aucune valeur chiffrée de cotation n'est attachée aux trois venues ; l'évaluation elle-même constate que les refs ne contiennent que des identifiants sans valeurs, donc aucune branche de HYP-001 n'est discriminable.",
+    "gravite": "BLOQUANT",
+    "refs": [
+     "claim:usdc-2023-03_live_20261017T011315Z-orchestrator-0018",
+     "observation:graph_snapshot:usdc-2023-03@2023-03-11T12:00:00Z",
+     "hypothesis:HYP-001"
+    ],
+    "test_discriminant": "Produire les valeurs horodatées de chainlink/usdc-usd, defillama/usdc-usd, bitstamp/usdc-usd au snapshot 2023-03-11T12:00:00Z avec leur source primaire ; leur absence infirme toute lecture de dispersion.",
+    "type": "MANQUE"
+   },
+   {
+    "enonce": "HYP-001 énonce une « dispersion inter-venues » comme fait observé, alors qu'aucune observation du paquet n'établit qu'une dispersion existe ; l'énoncé présuppose le phénomène qu'il prétend tester.",
+    "gravite": "BLOQUANT",
+    "refs": [
+     "hypothesis:HYP-001",
+     "claim:usdc-2023-03_live_20261017T011315Z-orchestrator-0018"
+    ],
+    "test_discriminant": "Exiger une observation de dispersion (écart mesuré entre venues) antérieure à la formulation de HYP-001 ; sans elle, l'hypothèse est circulaire.",
+    "type": "CONTRADICTION"
+   },
+   {
+    "enonce": "Snapshot daté 2023-03-11T12:00:00Z mais journal et orchestration horodatés 2026-10-17 : tout énoncé de réalisabilité (HYP-002) est admissible seulement si la profondeur de marché est celle du snapshot, pas celle de 2026.",
+    "gravite": "MAJEUR",
+    "refs": [
+     "observation:graph_snapshot:usdc-2023-03@2023-03-11T12:00:00Z",
+     "claim:usdc-2023-03_live_20261017T011315Z-orchestrator-0018",
+     "hypothesis:HYP-002"
+    ],
+    "test_discriminant": "Vérifier que les données de profondeur citées portent l'horodatage 2023-03-11T12:00:00Z ; si elles sont postérieures, HYP-002 est inadmissible temporellement.",
+    "type": "PIT"
+   },
+   {
+    "enonce": "HYP-002 parle de « tailles pertinentes pour une trésorerie » sans que le paquet ne définisse aucun montant, aucune devise de trésorerie, ni aucune métrique de profondeur ; le critère R/S n'est pas opérationnalisable.",
+    "gravite": "MAJEUR",
+    "refs": [
+     "hypothesis:HYP-002",
+     "claim:usdc-2023-03_live_20261017T011315Z-orchestrator-0018"
+    ],
+    "test_discriminant": "Fournir un référentiel de taille (montant plancher, fenêtre de slippage acceptée) et une mesure de profondeur par venue ; sans cela, les critères R et S ne sont pas testables.",
+    "type": "MANQUE"
+   },
+   {
+    "enonce": "Le critère « toutes les venues au pair » de HYP-001 ne définit ni l'unité du pair (USD/USDC ? USDC/USD ?), ni une tolérance d'écart, ni une précision décimale ; « au pair » et « sous le pair » sont indécidables sans seuil.",
+    "gravite": "MAJEUR",
+    "refs": [
+     "hypothesis:HYP-001",
+     "observation:graph_snapshot:usdc-2023-03@2023-03-11T12:00:00Z"
+    ],
+    "test_discriminant": "Figer un seuil numérique explicite (par exemple ±X bp autour de 1.0000) et confirmer le sens de cotation de chaque venue ; sinon les critères R et S ne sont pas discriminants.",
+    "type": "UNITE"
+   },
+   {
+    "enonce": "Les trois observations venues (chainlink, defillama, bitstamp) dérivent toutes du même graph_snapshot ; elles ne sont pas des sources indépendantes et une erreur du snapshot invalide simultanément les trois.",
+    "gravite": "MAJEUR",
+    "refs": [
+     "observation:graph_snapshot:usdc-2023-03@2023-03-11T12:00:00Z",
+     "claim:usdc-2023-03_live_20261017T011315Z-orchestrator-0018",
+     "hypothesis:HYP-001"
+    ],
+    "test_discriminant": "Exiger une source primaire par venue (feed chainlink direct, API defillama, carnet bitstamp) ; si les trois ne remontent qu'au snapshot, la notion d'indépendance dans le critère S est invalide.",
+    "type": "DEPENDANCE"
+   },
+   {
+    "enonce": "Un écart observé pourrait s'expliquer par un décalage horaire entre venues (fréquence de mise à jour différente) ou un dénominateur distinct, sans dislocation ni artefact unique ; ces alternatives ne sont pas exclues.",
+    "gravite": "MAJEUR",
+    "refs": [
+     "hypothesis:HYP-001",
+     "observation:graph_snapshot:usdc-2023-03@2023-03-11T12:00:00Z"
+    ],
+    "test_discriminant": "Comparer les horodatages internes de chaque venue (timestamp du dernier tick) ; un désalignement > fréquence d'émission invalide l'interprétation en dispersion réalisable.",
+    "type": "ALTERNATIVE"
+   },
+   {
+    "enonce": "L'explication « artefact d'une seule source » (branche S de HYP-001) pourrait être une venue stale ou hors ligne plutôt qu'une source dégradée ; les critères R/S ne distinguent pas staleness et dislocation.",
+    "gravite": "MAJEUR",
+    "refs": [
+     "hypothesis:HYP-001",
+     "claim:usdc-2023-03_live_20261017T011315Z-orchestrator-0018"
+    ],
+    "test_discriminant": "Vérifier la fraîcheur (heartbeat, âge du dernier tick) de chaque venue au snapshot ; un tick âgé signale stale feed, pas dislocation.",
+    "type": "ALTERNATIVE"
+   },
+   {
+    "enonce": "Le fallback VOI_NOT_ESTIMABLE justifie l'ordre borné fixe, mais aucune réévaluation postérieure n'est consignée après les refus de schéma successifs ; la décision de fallback reste adossée à un état de données non mis à jour.",
+    "gravite": "MINEUR",
+    "refs": [
+     "claim:usdc-2023-03_live_20261017T011315Z-orchestrator-0003",
+     "claim:usdc-2023-03_live_20261017T011315Z-orchestrator-0012",
+     "claim:usdc-2023-03_live_20261017T011315Z-orchestrator-0020"
+    ],
+    "test_discriminant": "Tracer si un estimateur NetVoI a été injecté après 0003 ; si non, le fallback est la seule lecture possible et doit être signalé comme non-optimal, pas comme résultat.",
+    "type": "OBSOLESCENCE"
+   },
+   {
+    "enonce": "Trois refus de schéma (plan/eval) sont consignés après la mise en fallback, mais le fil journal n'indique pas si les sorties ultérieures ont repris les corrections ; la continuité du raisonnement est non vérifiable.",
+    "gravite": "MINEUR",
+    "refs": [
+     "claim:usdc-2023-03_live_20261017T011315Z-orchestrator-0001",
+     "claim:usdc-2023-03_live_20261017T011315Z-orchestrator-0017",
+     "claim:usdc-2023-03_live_20261017T011315Z-orchestrator-0025"
+    ],
+    "test_discriminant": "Exiger un lien de version entre refus de schéma et la sortie finale acceptée ; sans lien, on ne peut écarter qu'une sortie antérieure ait été réutilisée.",
+    "type": "CONTRADICTION"
+   }
+  ],
+  "note": "Le paquet ne contient que des identifiants et un constat d'absence de valeurs ; aucune lecture chiffrée de HYP-001 ni HYP-002 n'est tenable en l'état. L'unique évaluation (0018) conclut elle-même à l'indécidabilité, ce qui rend toute lecture favorable contradictoire avec le contenu fourni. Verdict INCOHERENTE : l'énoncé de HYP-001 présuppose un phénomène (dispersion) non observé, et HYP-002 invoque une taille non définie.",
+  "preuves_manquantes": [
+   "Valeurs de cotation horodatées par venue (chainlink, defillama, bitstamp) au 2023-03-11T12:00:00Z",
+   "Sens de cotation et dénominateur commun utilisé pour les écarts",
+   "Seuil numérique de tolérance définissant « au pair » et « sous le pair »",
+   "Métrique de profondeur de carnet par venue avec taille de référence de trésorerie",
+   "Horodatage interne (dernier tick) de chaque venue pour écarter staleness",
+   "Référentiel de taille de trésorerie (montant plancher, fenêtre de slippage)",
+   "Source primaire indépendante par venue (au-delà du graph_snapshot)",
+   "Traçabilité de version entre refus de schéma et sorties acceptées"
+  ],
+  "verdict_lecture": "INCOHERENTE"
+ },
+ "escalation": "REQUIRE_APPROVAL",
+ "journals": {
+  "critic": {
+   "agent_ids": [
+    "critic"
+   ],
+   "chain_head": "ec7ed000069587e9c0b5902dc9a39c592f74ea0db7f9658d105b51924823a0da",
+   "lines": 1
+  },
+  "orchestrator": {
+   "agent_ids": [
+    "orchestrator"
+   ],
+   "chain_head": "3b6ee0e8a375d3d64db157804fc062b05fff7f29387ad04268a7bc08e8550b9a",
+   "lines": 28
+  }
+ },
+ "mode": "live",
+ "outcome": {
+  "budget_used": {
+   "cost_usd": 0.014379641999999998,
+   "llm_calls": 10.0,
+   "tool_calls": 5.0,
+   "wall_seconds": 147.3119999999999
+  },
+  "critique_verdict": "",
+  "inconclusive": true,
+  "motif": "E_LOOP_OUTPUT_INVALID: evaluation invalid after re-prompt (unknown fields: $schema, lacune_id, motif_stop, non_recherche, stop, tache; claims must be a list)",
+  "non_recherche": [
+   "Plusieurs venues indépendantes affichent-elles au même instant une décote du pair USDC/USD, ou la dispersion ne provient-elle que d'une source isolée ?"
+  ],
+  "state": "ABORTED",
+  "stop_condition": "ARRET-3"
+ },
+ "run_dir": "D:\\orvyren_core\\demo_runs\\agents\\usdc-2023-03\\usdc-2023-03_live_20261017T011315Z",
+ "schema": "orvyren/agent-run-outcome/v1"
+}

@@ -1,0 +1,32 @@
+{
+  "started_at": "2026-10-16T10:25:31Z",
+  "integrity_code_size": 5637,
+  "enforce_candidate": {
+    "ok": false,
+    "error": "eth_call failed: code=3 message=execution reverted"
+  },
+  "enforce_invalid_bfs": {
+    "ok": false,
+    "error": "eth_call failed: code=3 message=execution reverted"
+  },
+  "mpf_NEW_STYLE (calldata complet)": {
+    "result": {
+      "ok": true,
+      "result": "0x000000000000000000000000e19c0f528139e91cfa31a774ec4ab0f19f17e065"
+    },
+    "predicted": "0xe19c0f528139e91cfa31a774ec4ab0f19f17e065"
+  },
+  "mpf_OLD_STYLE (bare encode)": {
+    "result": {
+      "ok": false,
+      "error": "eth_call failed: code=3 message=execution reverted"
+    },
+    "predicted": "0x35c7615cfe168c23cb1064912475dad2ab167dd8"
+  },
+  "safe_proxy_creation_code_len": 486,
+  "safe_predicted": "0x000e11a54daadf202542a0136f974f24d7c38be0",
+  "safe_sim": {
+    "ok": true,
+    "result": "0x000000000000000000000000000e11a54daadf202542a0136f974f24d7c38be0"
+  }
+}

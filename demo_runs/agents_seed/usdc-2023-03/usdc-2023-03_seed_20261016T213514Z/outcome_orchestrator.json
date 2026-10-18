@@ -1,0 +1,16 @@
+{
+ "budget_used": {
+  "cost_usd": 0.0018269999999999998,
+  "llm_calls": 5.0,
+  "tool_calls": 2.0,
+  "wall_seconds": 0.14
+ },
+ "critique_verdict": "",
+ "inconclusive": false,
+ "motif": "plus aucune tâche à valeur positive dans le plan",
+ "non_recherche": [
+  "profondeur d'exécution réalisable non mesurée"
+ ],
+ "state": "DONE",
+ "stop_condition": "ARRET-1"
+}

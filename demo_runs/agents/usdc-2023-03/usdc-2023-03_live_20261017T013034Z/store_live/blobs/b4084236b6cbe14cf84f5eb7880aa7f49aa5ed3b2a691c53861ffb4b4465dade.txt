@@ -1,0 +1,87 @@
+{
+  "verdict_lecture": "INCOHERENTE",
+  "findings": [
+    {
+      "type": "MANQUE",
+      "gravite": "BLOQUANT",
+      "enonce": "L'instantané ne restitue aucune valeur de cotation ni aucune position venue par venue : l'existence même d'une dispersion inter-venues n'est donc pas établie par les éléments fournis.",
+      "refs": ["observation:graph_snapshot:usdc-2023-03@2023-03-11T12:00:00Z", "claim:usdc-2023-03_live_20261017T013034Z-orchestrator-0025", "claim:usdc-2023-03_live_20261017T013034Z-orchestrator-0033", "hypothesis:HYP-001"],
+      "test_discriminant": "Fournir les cotation de chainlink, defillama et bitstamp à l'horodatage du snapshot ; sans elles, aucune dispersion mesurable ne peut être constatée ni infirmée."
+    },
+    {
+      "type": "MANQUE",
+      "gravite": "BLOQUANT",
+      "enonce": "Aucun critère R ni S de HYP-001 n'est applicable : l'exigence « toutes les venues au pair » et « au moins deux venues indépendantes sous le pair » ne peut être ni satisfaite ni réfutée avec les éléments fournis.",
+      "refs": ["claim:usdc-2023-03_live_20261017T013034Z-orchestrator-0034", "hypothesis:HYP-001", "observation:graph_snapshot:usdc-2023-03@2023-03-11T12:00:00Z"],
+      "test_discriminant": "Obtenir une table venue-valeur-position couvrant l'univers complet des venues, ou une déclaration d'indépendance vérifiable entre au moins deux venues sous le pair."
+    },
+    {
+      "type": "DEPENDANCE",
+      "gravite": "BLOQUANT",
+      "enonce": "L'indépendance entre les trois sources n'est pas démontrée : le snapshot est un unique nœud agrégateur, sans métadonnée de lignée ni déclaration d'absence de dérivation amont.",
+      "refs": ["observation:graph_snapshot:usdc-2023-03@2023-03-11T12:00:00Z", "claim:usdc-2023-03_live_20261017T013034Z-orchestrator-0042", "claim:usdc-2023-03_live_20261017T013034Z-orchestrator-0043", "claim:usdc-2023-03_live_20261017T013034Z-orchestrator-0025"],
+      "test_discriminant": "Établir les chaînes d'agrégation propres à chaque fournisseur pour vérifier qu'aucun ne dérive d'un marché amont commun ; à défaut, le critère S reste non vérifiable."
+    },
+    {
+      "type": "CONTRADICTION",
+      "gravite": "MAJEUR",
+      "enonce": "Deux affirmations du même corpus se contredisent sur l'indépendance : l'une déclare qu'aucun champ d'indépendance n'est exposé, l'autre affirme qu'aucune source n'est déclarée dérivée d'une autre, ce qui suggère une indépendance non prouvée.",
+      "refs": ["claim:usdc-2023-03_live_20261017T013034Z-orchestrator-0025", "claim:usdc-2023-03_live_20261017T013034Z-orchestrator-0042"],
+      "test_discriminant": "Comparer les champs effectivement présents dans le snapshot : une absence de mention de dérivation ne vaut pas preuve d'indépendance."
+    },
+    {
+      "type": "MANQUE",
+      "gravite": "BLOQUANT",
+      "enonce": "Aucune preuve de profondeur d'exécution, de carnet d'ordres ou de taille exécutable n'est fournie : HYP-002 et son critère S « profondeur d'exécution insuffisante mesurée » sont totalement dépourvus d'assise observationnelle.",
+      "refs": ["hypothesis:HYP-002", "claim:usdc-2023-03_live_20261017T013034Z-orchestrator-0033", "observation:graph_snapshot:usdc-2023-03@2023-03-11T12:00:00Z"],
+      "test_discriminant": "Fournir des mesures de profondeur ou de carnet par venue à l'instant d'analyse ; sans cela, ni la réalisabilité ni la non-réalisabilité aux tailles pertinentes ne peut être tranchée."
+    },
+    {
+      "type": "ALTERNATIVE",
+      "gravite": "MAJEUR",
+      "enonce": "Une dislocation USDC/USD n'est pas la seule explication d'une dispersion éventuelle : un artefact d'horodatage, un défaut de collecte ou une source obsolète produiraient le même signal non discriminé.",
+      "refs": ["observation:graph_snapshot:usdc-2023-03@2023-03-11T12:00:00Z", "hypothesis:HYP-001", "claim:usdc-2023-03_live_20261017T013034Z-orchestrator-0024"],
+      "test_discriminant": "Vérifier que chaque venue rapporte bien une cotation effective à l'horodatage exact, et non une valeur rémanente ou interpolée."
+    },
+    {
+      "type": "PIT",
+      "gravite": "MAJEUR",
+      "enonce": "L'horodatage du snapshot et des cotations est celui de l'instant d'analyse, mais rien ne garantit que chaque source y est observée à ce même PIT : l'alignement temporel est affirmé, non démontré.",
+      "refs": ["claim:usdc-2023-03_live_20261017T013034Z-orchestrator-0024", "claim:usdc-2023-03_live_20261017T013034Z-orchestrator-0040", "observation:graph_snapshot:usdc-2023-03@2023-03-11T12:00:00Z"],
+      "test_discriminant": "Exiger les horodatages propres à chaque observation de venue pour confirmer qu'aucun n'est antérieur ou postérieur au snapshot_at."
+    },
+    {
+      "type": "OBSOLESCENCE",
+      "gravite": "MINEUR",
+      "enonce": "Les sources citées (chainlink, defillama, bitstamp) sont déclarées à l'instant d'analyse, mais aucune garantie n'est donnée sur leur fraîcheur effective ni sur l'absence de valeurs périmées agrégées.",
+      "refs": ["observation:chainlink/usdc-usd/2023-03-11T12:00Z", "observation:defillama/usdc-usd/2023-03-11T12:00Z", "observation:bitstamp/usdc-usd/2023-03-11T12:00Z", "claim:usdc-2023-03_live_20261017T013034Z-orchestrator-0024"],
+      "test_discriminant": "Contrôler les timestamps internes de chaque observation de venue pour écarter toute valeur antérieure à l'instant d'analyse."
+    },
+    {
+      "type": "MANQUE",
+      "gravite": "MAJEUR",
+      "enonce": "VOI_NOT_ESTIMABLE est déclaré faute d'estimateur NetVoI injecté : la décision d'ordre repose sur un repli documenté, sans support quantitatif dans le corpus.",
+      "refs": ["claim:usdc-2023-03_live_20261017T013034Z-orchestrator-0003"],
+      "test_discriminant": "Fournir l'estimateur NetVoI ou les données permettant de le reconstruire ; sinon toute décision dérivée reste non fondée."
+    },
+    {
+      "type": "MANQUE",
+      "gravite": "MAJEUR",
+      "enonce": "Répétitions de « plan refused (schema) » : le pipeline d'extraction a échoué au moins cinq fois, ce qui fragilise la complétude et la fidélité de toutes les affirmations produites.",
+      "refs": ["claim:usdc-2023-03_live_20261017T013034Z-orchestrator-0001", "claim:usdc-2023-03_live_20261017T013034Z-orchestrator-0012", "claim:usdc-2023-03_live_20261017T013034Z-orchestrator-0018", "claim:usdc-2023-03_live_20261017T013034Z-orchestrator-0027", "claim:usdc-2023-03_live_20261017T013034Z-orchestrator-0036", "claim:usdc-2023-03_live_20261017T013034Z-orchestrator-0045", "claim:usdc-2023-03_live_20261017T013034Z-orchestrator-0055"],
+      "test_discriminant": "Auditer les étapes de planification rejetées pour identifier quelles données ou méta-informations ont pu être perdues lors des re-prompts."
+    }
+  ],
+  "preuves_manquantes": [
+    "Cotations numériques par venue (chainlink, defillama, bitstamp) à l'instant d'analyse",
+    "Position venue par venue au pair (au pair, sous le pair, au-dessus)",
+    "Déclaration ou preuve d'indépendance entre les trois sources (chaînes d'agrégation, opérateur de collecte)",
+    "Métadonnées de lignée : flux d'exécution, dépendances amont entre sources",
+    "Mesures de profondeur d'exécution ou carnet d'ordres par venue",
+    "Horodatages propres à chaque observation de venue pour vérifier l'alignement PIT",
+    "Estimateur NetVoI ou données permettant de le reconstruire",
+    "Définition de « tailles pertinentes pour une trésorerie » utilisée dans HYP-002",
+    "Univers complet des venues du pair pour vérifier le critère R « toutes les venues »"
+  ],
+  "note": "Le corpus décrit la structure d'un instantané mais n'en fournit aucune valeur exploitable. Les deux hypothèses restent non testables en l'état : aucune dispersion mesurable, aucune indépendance vérifiée, aucune profondeur d'exécution. Les affirmations 0025 et 0042 entrent en tension sur l'indépendance des sources, et les échecs répétés de schéma du pipeline sapent la complétude du journal. La lecture favorable n'est pas soutenable en l'absence des preuves listées."
+}

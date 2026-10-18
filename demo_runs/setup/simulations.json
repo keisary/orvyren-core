@@ -1,0 +1,113 @@
+{
+  "deployments": {
+    "safe_deploy": {
+      "ok": true,
+      "skipped": true,
+      "reason": "la Safe prédite a déjà du code (redéploiement inutile)"
+    },
+    "module_deploy": {
+      "ok": true,
+      "skipped": true,
+      "reason": "le module prédit a déjà du code (redéploiement inutile)"
+    }
+  },
+  "conditions_validation": {
+    "library": "0x6a6Af4b16458Bc39817e4019fB02BD3b26d41049",
+    "selector": "0x783a9047",
+    "tree": [
+      {
+        "parent": 0,
+        "paramType": 5,
+        "operator": 5,
+        "compValue": "0x"
+      },
+      {
+        "parent": 0,
+        "paramType": 0,
+        "operator": 2,
+        "compValue": "0x"
+      },
+      {
+        "parent": 0,
+        "paramType": 1,
+        "operator": 28,
+        "compValue": "0x757364635f6461696c7900000000000000000000000000000000000000000000"
+      },
+      {
+        "parent": 0,
+        "paramType": 0,
+        "operator": 30,
+        "compValue": "0x63616c6c735f6461696c79000000000000000000000000000000000000000000"
+      },
+      {
+        "parent": 1,
+        "paramType": 1,
+        "operator": 16,
+        "compValue": "0x00000000000000000000000037877f6ffb6656e752bf4807b9c3c7b761a953a3"
+      },
+      {
+        "parent": 1,
+        "paramType": 1,
+        "operator": 16,
+        "compValue": "0x0000000000000000000000009f59adcdea0341e258e3ac98e7f9c57a2277760e"
+      }
+    ],
+    "positive_eth_call": "+OK (pas de revert)",
+    "negative_eth_call": "revert attendu (contrôle négatif)"
+  },
+  "runs": {
+    "amount_base_units": 100000000,
+    "allowances_avant": {
+      "usdc_daily": {
+        "refill": 300000000,
+        "maxRefill": 300000000,
+        "period": 86400,
+        "balance": 300000000,
+        "timestamp": 1792147546
+      },
+      "calls_daily": {
+        "refill": 10,
+        "maxRefill": 10,
+        "period": 86400,
+        "balance": 10,
+        "timestamp": 1792147552
+      }
+    },
+    "safe_usdc_balance": 0,
+    "run_a": {
+      "ok": false,
+      "error": "eth_call failed: code=3 message=execution reverted",
+      "revert_data": "0xd27b44a9"
+    },
+    "run_a_soft": {
+      "ok": true,
+      "result": "0x0000000000000000000000000000000000000000000000000000000000000000"
+    },
+    "run_a_revert_selector": "0xd27b44a9",
+    "run_a_verdict": "AUTORISATION VALIDÉE (revert ModuleTransactionFailed = échec interne) ; transfert réel impossible : Safe sans USDC de test",
+    "run_b": {
+      "ok": false,
+      "error": "eth_call failed: code=3 message=execution reverted",
+      "revert_data": "0xd0a9bf5800000000000000000000000000000000000000000000000000000000000000050000000000000000000000000000000000000000000000000000000000000000"
+    },
+    "run_b_revert_selector": "0xd0a9bf58",
+    "run_b_condition_status": 5,
+    "run_b_verdict": "REFUS de la portée — ConditionViolation(status=5)",
+    "allowances_apres": {
+      "usdc_daily": {
+        "refill": 300000000,
+        "maxRefill": 300000000,
+        "period": 86400,
+        "balance": 300000000,
+        "timestamp": 1792147546
+      },
+      "calls_daily": {
+        "refill": 10,
+        "maxRefill": 10,
+        "period": 86400,
+        "balance": 10,
+        "timestamp": 1792147552
+      }
+    }
+  }
+}

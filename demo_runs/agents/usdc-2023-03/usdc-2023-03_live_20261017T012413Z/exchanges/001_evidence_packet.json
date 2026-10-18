@@ -1,0 +1,30 @@
+{
+ "claims": [
+  {
+   "journal_id": "usdc-2023-03_live_20261017T012413Z-orchestrator-0001",
+   "refs": [],
+   "text": "plan refused (schema): re-prompting once with the error injected"
+  },
+  {
+   "journal_id": "usdc-2023-03_live_20261017T012413Z-orchestrator-0003",
+   "refs": [],
+   "text": "VOI_NOT_ESTIMABLE: no NetVoI estimator injected — fixed bounded order kept (documented fallback)"
+  },
+  {
+   "journal_id": "usdc-2023-03_live_20261017T012413Z-orchestrator-0012",
+   "refs": [],
+   "text": "plan refused (schema): re-prompting once with the error injected"
+  },
+  {
+   "journal_id": "usdc-2023-03_live_20261017T012413Z-orchestrator-0017",
+   "refs": [],
+   "text": "evaluation refused (schema): re-prompting once with the error injected"
+  }
+ ],
+ "packet_id": "usdc-2023-03_live_20261017T012413Z-packet",
+ "refs": [
+  "graph_snapshot:usdc-2023-03@2023-03-11T12:00:00Z"
+ ],
+ "snapshot_ref": "graph_snapshot:usdc-2023-03@2023-03-11T12:00:00Z",
+ "summary": "paquet de preuves du tour borné (4 réflexions)"
+}

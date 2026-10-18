@@ -1,0 +1,58 @@
+{
+ "case_id": "usdc-2023-03",
+ "critique": {
+  "$schema": "orvyren/crit/v1",
+  "findings": [
+   {
+    "enonce": "les agrégateurs peuvent partager la même venue sous-jacente — l'indépendance des sources n'est pas démontrée",
+    "gravite": "MAJEUR",
+    "refs": [
+     "observation:defillama/usdc-usd/2023-03-11T12:00Z"
+    ],
+    "test_discriminant": "vérifier la méthodologie d'agrégation de chaque source",
+    "type": "DEPENDANCE"
+   }
+  ],
+  "note": "",
+  "preuves_manquantes": [
+   "indépendance des méthodes d'agrégation"
+  ],
+  "verdict_lecture": "FRAGILE"
+ },
+ "escalation": "REQUIRE_APPROVAL",
+ "journals": {
+  "critic": {
+   "agent_ids": [
+    "critic"
+   ],
+   "chain_head": "0c69bc8788ee9140ef6575ed6023cdafe5fce70cbb6cb8718f6bb2923161d01b",
+   "lines": 1
+  },
+  "orchestrator": {
+   "agent_ids": [
+    "orchestrator"
+   ],
+   "chain_head": "ae93e0c6faa2bb4f85d14bdad676c67759b35910fede1375d95b940a4e689bc6",
+   "lines": 11
+  }
+ },
+ "mode": "journal",
+ "outcome": {
+  "budget_used": {
+   "cost_usd": 0.0018269999999999998,
+   "llm_calls": 5.0,
+   "tool_calls": 2.0,
+   "wall_seconds": 0.14
+  },
+  "critique_verdict": "",
+  "inconclusive": false,
+  "motif": "plus aucune tâche à valeur positive dans le plan",
+  "non_recherche": [
+   "profondeur d'exécution réalisable non mesurée"
+  ],
+  "state": "DONE",
+  "stop_condition": "ARRET-1"
+ },
+ "run_dir": "D:\\orvyren_core\\demo_runs\\agents\\usdc-2023-03\\usdc-2023-03_journal_20261016T213516Z",
+ "schema": "orvyren/agent-run-outcome/v1"
+}

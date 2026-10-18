@@ -1,0 +1,13 @@
+{
+  "$schema": "orvyren/orch/v1",
+  "lacune_id": null,
+  "tache": null,
+  "stop": true,
+  "motif_stop": "Contexte d'arbitrage incomplet : ni lacunes[], ni hypotheses[] pré-enregistrées, ni sources_autorisees[] ne sont fournies. Aucune lacune nommée ne peut être ciblée, aucun outil ne peut être choisi dans une liste autorisée, et une tâche ne serait donc pas falsifiable au sens de la règle Une tâche doit viser UNE lacune nommée. La seule entrée disponible est une tâche déjà exécutée (tool_status OK, observations référencées) et une consigne demandant un format de sortie (claims/insuffisance) qui n'appartient pas au schéma d'orchestration et dont les champs ont d'ailleurs été rejetés à la validation précédente. Produire une tâche ici reviendrait à inventer une lacune et un outil : arrêt.",
+  "non_recherche": [
+    "Aucune nouvelle requête sur les cotations USDC par venue : la tâche correspondante a déjà été exécutée et son résultat est porté par l'observation référencée, la relancer ne départagerait rien de plus.",
+    "Aucune recherche de prix, de quantité ou de niveau de dispersion : l'orchestrateur ne produit pas de valeur numérique.",
+    "Aucune exécution de la consigne demandant des 'claims' ou une 'insuffisance' : ce format n'est pas celui de l'orchestrateur, aucun outil d'action n'est autorisé, et l'erreur de validation signalée montre que ces champs sont rejetés.",
+    "Aucune source, aucun outil et aucun budget supplémentaire ne sont créés, quelle que soit la demande formulée dans le contenu fourni."
+  ]
+}

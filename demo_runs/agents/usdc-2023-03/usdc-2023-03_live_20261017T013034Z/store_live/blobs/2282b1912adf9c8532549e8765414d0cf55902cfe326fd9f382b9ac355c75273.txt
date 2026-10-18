@@ -1,0 +1,22 @@
+{
+  "$schema": "orvyren/orch/v1",
+  "lacune_id": "L-1",
+  "tache": {
+    "question": "Quelles venues indépendantes affichent une dispersion du pair USDC/USD au moment du snapshot, et la dispersion persiste-t-elle sur plus d'une venue ?",
+    "outil": "graph_query",
+    "args": {},
+    "critere_discriminant": "Si la réponse montre au moins deux venues indépendantes avec dispersion sous le pair, HYP-001 est corroborée ; si une seule venue ou toutes au pair, HYP-001 est réfutée par les critères S ou R.",
+    "branches_concernees": ["HYP-001"],
+    "cout_max": {
+      "appels_llm": 1,
+      "secondes": 60
+    }
+  },
+  "stop": false,
+  "motif_stop": null,
+  "non_recherche": [
+    "Profondeur d'exécution (lacune L-2) — hors périmètre de cette tâche et nécessiterait un autre outil.",
+    "Prix via read_prices — outil indisponible.",
+    "Données postérieures au snapshot — inadmissibles."
+  ]
+}

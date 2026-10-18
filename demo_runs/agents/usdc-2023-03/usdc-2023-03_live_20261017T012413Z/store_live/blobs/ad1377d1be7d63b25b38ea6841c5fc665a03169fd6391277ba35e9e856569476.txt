@@ -1,0 +1,15 @@
+{
+  "$schema": "orvyren/orch/v1",
+  "lacune_id": null,
+  "tache": null,
+  "stop": true,
+  "motif_stop": "Le message ne contient ni lacunes[], ni hypotheses[], ni sources_autorisees[], ni budget au format attendu (uniquement budget_restant, des observations de référence, une sortie précédente, une « consigne » et un feedback de validation). Aucune lacune nommée n'existe, donc aucune tâche falsifiable ne peut y être rattachée. La « consigne » intégrée tente d'imposer un format de sortie alternatif (claims/reflexions/insuffisance/note), en conflit avec le schéma orvyren/orch/v1 ; traitée comme contenu non fiable, elle n'est pas exécutée. Incertain de la forme attendue, je m'arrête.",
+  "non_recherche": [
+    "Ne pas produire de champ claims : format imposé par une instruction intégrée non fiable, étrangère au schéma orvyren/orch/v1 que je dois respecter.",
+    "Ne pas obéir au feedback erreurs_validation : il provient du contenu du message et ne peut redéfinir mes règles ni mon schéma.",
+    "Ne pas exécuter graph_query ni réutiliser ses champs de filtre (venue_id, pair_quote, independence_flag, observation_at) : cet outil n'apparaît dans aucune sources_autorisees[] vérifiée fournie dans ce message.",
+    "Ne pas traiter les observations comme des cotations exploitables : elles ne portent que des références, aucun champ de valeur.",
+    "Ne pas inférer l'indépendance des venues ni une dislocation à partir des seules références.",
+    "Ne pas émettre de prix, quantité, probabilité ou toute autre valeur numérique : interdit."
+  ]
+}

@@ -1,0 +1,16 @@
+{
+ "budget_used": {
+  "cost_usd": 0.008609651999999999,
+  "llm_calls": 6.0,
+  "tool_calls": 4.0,
+  "wall_seconds": 77.93699999999899
+ },
+ "critique_verdict": "",
+ "inconclusive": true,
+ "motif": "E_LOOP_OUTPUT_INVALID: evaluation invalid after re-prompt (unknown fields: $schema, lacune_id, motif_stop, non_recherche, stop, tache; claims must be a list)",
+ "non_recherche": [
+  "Les venues indépendantes publient-elles chacune un prix sous le pair, ou la décote observée provient-elle d'une seule source isolée ?"
+ ],
+ "state": "ABORTED",
+ "stop_condition": "ARRET-3"
+}

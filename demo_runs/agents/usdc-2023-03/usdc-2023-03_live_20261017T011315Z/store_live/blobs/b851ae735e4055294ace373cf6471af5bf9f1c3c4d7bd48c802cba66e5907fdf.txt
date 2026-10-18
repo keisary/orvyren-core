@@ -1,0 +1,34 @@
+{
+  "$schema": "orvyren/eval/v1",
+  "objet_evalue": "graph_snapshot:usdc-2023-03@2023-03-11T12:00:00Z",
+  "statut": "partiel",
+  "claims": [
+    {
+      "texte": "L'instantané USDC/USD restitue des chaînes de provenance séparées et nommées distinctement (une source de type oracle, une source d'agrégation de marché, une source d'exchange), plutôt qu'un flux unique dupliqué sous plusieurs étiquettes.",
+      "refs": [
+        "graph_snapshot:usdc-2023-03@2023-03-11T12:00:00Z",
+        "observation:chainlink/usdc-usd/2023-03-11T12:00Z",
+        "observation:defillama/usdc-usd/2023-03-11T12:00Z",
+        "observation:bitstamp/usdc-usd/2023-03-11T12:00Z"
+      ]
+    },
+    {
+      "texte": "Les observations disponibles sont toutes horodatées au même instant de référence et rattachées au même instantané, ce qui est compatible avec une lecture simultanée de venues distinctes comme avec une simple réplication d'une même valeur de référence par chaque fournisseur.",
+      "refs": [
+        "graph_snapshot:usdc-2023-03@2023-03-11T12:00:00Z",
+        "observation:chainlink/usdc-usd/2023-03-11T12:00Z",
+        "observation:defillama/usdc-usd/2023-03-11T12:00Z",
+        "observation:bitstamp/usdc-usd/2023-03-11T12:00Z"
+      ]
+    }
+  ],
+  "insuffisance": {
+    "motif": "Le critère discriminant de la tâche exige, pour être tranché, que la restitution contienne aussi les niveaux de cotation par venue (position relative au pair). Les observations fournies n'exposent que des identifiants de provenance et un horodatage commun : aucune cotation par venue n'y figure.",
+    "consequence": "La branche « dispersion réalisable » et la branche « artefact d'une source unique répliquée » restent toutes deux compatibles avec les données présentes. Aucune cotation, écart ou niveau n'est affirmé ici, faute de référence porteuse.",
+    "ce_qui_manque": "Une observation, référencée, rattachée à cet instantané, portant les cotations par venue (ou l'absence explicite de cotation pour une venue), afin de distinguer une dispersion de prix réelle d'une duplication de valeur de référence."
+  },
+  "non_recherche": [
+    "Aucune valeur numérique, cotation, écart ou probabilité n'est produite : la ref correspondante fait défaut dans les observations fournies.",
+    "Aucune action, aucun ordre, aucun outil non listé n'est proposé : seules les observations rattachées à l'instantané sont exploitées."
+  ]
+}

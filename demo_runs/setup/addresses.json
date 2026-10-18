@@ -1,0 +1,54 @@
+{
+  "schema": "orvyren-setup-addresses/v1",
+  "chain_id": 84532,
+  "captured_at": "2026-10-16T10:55:57Z",
+  "safe": {
+    "address": "0x000e11a54daadf202542a0136f974f24d7c38be0",
+    "deployed": true,
+    "owners": [
+      "0xd438ee8b50d02a43c7d54372362ca238c352df91",
+      "0xb70341b0209cb4217d619a31fe62961fa14100bb",
+      "0x157f74e1f59c091041b2d2ca4aa3aab04c1cb3a7"
+    ],
+    "threshold": 2,
+    "version": "1.4.1",
+    "code_size": 171,
+    "nonce": 6
+  },
+  "module": {
+    "address": "0x7e2b7798ab4b4db837b30107f0d2a3ffb24e95e8",
+    "deployed": true,
+    "owner": "0x000e11a54daadf202542a0136f974f24d7c38be0",
+    "avatar": "0x000e11a54daadf202542a0136f974f24d7c38be0",
+    "target": "0x000e11a54daadf202542a0136f974f24d7c38be0",
+    "code_sha256": "09bfac6bbbcc2243f8768c9967697a3599bb1274d71154cca75b4cd910cf2c14",
+    "code_size": 45,
+    "mastercopy": "0xF2964CE6161ce0e75964Fe7927cE114cb0B283D5"
+  },
+  "agent": {
+    "address": "0xe1039e345Fa2AD9EcCeab7bb160FD5e53f58F01c",
+    "is_module_of_roles": true
+  },
+  "role_key": "0x4147454e54000000000000000000000000000000000000000000000000000000",
+  "allowance_keys": {
+    "usdc_daily": "0x757364635f6461696c7900000000000000000000000000000000000000000000",
+    "calls_daily": "0x63616c6c735f6461696c79000000000000000000000000000000000000000000"
+  },
+  "allowances_onchain": {
+    "usdc_daily": {
+      "refill": 300000000,
+      "maxRefill": 300000000,
+      "period": 86400,
+      "balance": 300000000,
+      "timestamp": 1792147546
+    },
+    "calls_daily": {
+      "refill": 10,
+      "maxRefill": 10,
+      "period": 86400,
+      "balance": 10,
+      "timestamp": 1792147552
+    }
+  },
+  "usdc": "0x036CbD53842c5426634e7929541eC2318f3dCF7e"
+}

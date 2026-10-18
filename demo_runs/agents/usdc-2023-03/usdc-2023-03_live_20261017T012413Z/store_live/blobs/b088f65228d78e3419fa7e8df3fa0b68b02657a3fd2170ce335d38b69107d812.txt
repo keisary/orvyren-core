@@ -1,0 +1,34 @@
+{
+  "$schema": "orvyren/orch/v1",
+  "lacune_id": "L-1",
+  "tache": {
+    "question": "Les venues indépendantes publient-elles chacune un prix sous le pair, ou la décote observée provient-elle d'une seule source isolée ?",
+    "outil": "read_prices",
+    "args": {
+      "cible": "venues_independantes_du_snapshot",
+      "champs": [
+        "prix_par_venue",
+        "horodatage_par_source",
+        "independance_de_la_source"
+      ],
+      "periode": "instant_du_snapshot_uniquement"
+    },
+    "critere_discriminant": "Si plusieurs venues indépendantes affichent chacune un prix inférieur au pair, la dislocation est corroborée et la lecture 'artefact d'une source' est réfutée ; si une seule source porte la décote tandis que les autres restent au pair, la lecture 'artefact d'une source' est confirmée et la dislocation inter-venues réfutée ; si la couverture par venue est incomplète ou ambiguë, aucune hypothèse n'est départagée et l'état reste ouvert.",
+    "branches_concernees": [
+      "HYP-001"
+    ],
+    "cout_max": {
+      "appels_llm": 1,
+      "secondes": 60
+    }
+  },
+  "stop": false,
+  "motif_stop": null,
+  "non_recherche": [
+    "Aucune donnée postérieure à l'instant du snapshot n'est interrogée (contrainte point-in-time).",
+    "L'orchestrateur ne produit ni prix, ni quantité, ni probabilité, ni valorisation.",
+    "La profondeur d'exécution et la réalisabilité aux tailles de trésorerie ne sont pas retraitées ici : elles relèvent de l'autre lacune déclarée et ne départagent pas la question d'artefact.",
+    "L'identité et la solvabilité des contreparties ne sont pas recherchées : hors périmètre des lacunes déclarées.",
+    "Aucun outil d'action, aucune source nouvelle et aucune extension de budget ne sont demandés."
+  ]
+}
