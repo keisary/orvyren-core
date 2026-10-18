@@ -73,6 +73,13 @@ def _write_json(path: str, payload) -> None:
         json.dump(payload, handle, ensure_ascii=False, indent=1, sort_keys=True)
 
 
+def _safe_case(case_id: str) -> str:
+    """Filesystem-safe case token (never a path separator)."""
+    token = str(case_id).replace("\\", "/").split("/")[-1]
+    token = "".join(ch if (ch.isalnum() or ch in "._-") else "-" for ch in token)
+    return token.strip("-.") or "case"
+
+
 def load_case_inputs(case_id: str) -> dict:
     """Load the pinned run inputs of a case (fixtures/agents/<case>/run_inputs.json)."""
     path = os.path.join(REPO_ROOT, "fixtures", "agents", case_id, "run_inputs.json")
@@ -96,7 +103,7 @@ def prepare_run(*, case_id: str, mode: str, session_dir: str, inputs: dict,
     run_id = ("demo-%s" % case_id) if mode == "journal" \
         else "%s_%s_%s" % (case_id.replace("/", "-"), mode, stamp)
     run_dir = os.path.join(session_dir,
-                           "%s_%s_%s" % (case_id.replace("/", "-"), mode, stamp))
+                           "%s_%s_%s" % (_safe_case(case_id), mode, stamp))
     os.makedirs(os.path.join(run_dir, "exchanges"), exist_ok=True)
     created_at = inputs.get("pinned_created_at") if mode == "journal" else None
     if not created_at:

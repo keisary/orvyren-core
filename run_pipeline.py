@@ -66,7 +66,7 @@ def read_json(path):
     try:
         with open(path, encoding="utf-8") as fh:
             return json.load(fh)
-    except json.JSONDecodeError as exc:
+    except (json.JSONDecodeError, OSError) as exc:
         return {"_unreadable": str(exc)}
 
 
@@ -78,7 +78,8 @@ def run_stage(name, script, args):
     try:
         proc = subprocess.run(
             [sys.executable, path, *args],
-            cwd=HERE, capture_output=True, text=True, timeout=900,
+            cwd=HERE, capture_output=True, text=True,
+            encoding="utf-8", errors="replace", timeout=900,
         )
     except subprocess.TimeoutExpired as exc:
         # A hung stage is a failed stage: report it like one instead of
@@ -113,7 +114,7 @@ def summarise():
 
     dec = decision.get("decision", {}) if isinstance(decision, dict) else {}
     verdicts = decision.get("hypothesis_verdicts", {}) if isinstance(decision, dict) else {}
-    cases = policy.get("cases", []) if isinstance(policy, dict) else []
+    cases = (policy.get("cases") if isinstance(policy, dict) else None) or []
     norm = quality.get("normalization") or {}
     corpus = quality.get("corpus") or {}
     coverage = quality.get("coverage") or {}

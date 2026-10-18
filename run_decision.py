@@ -61,6 +61,13 @@ def _display_path(absolute):
     return absolute.replace(os.sep, "/") if relative.startswith("..") else relative
 
 
+def _safe_case_token(case):
+    """Filesystem-safe token for an evidence filename (never a path)."""
+    token = str(case).replace("\\", "/").split("/")[-1]
+    token = "".join(ch if (ch.isalnum() or ch in "._-") else "-" for ch in token)
+    return token.strip("-.") or "case"
+
+
 def main(argv=None):
     parser = argparse.ArgumentParser(
         description="Run the ORVYREN-Core USDC 2023-03 decision case (offline, replayable)."
@@ -99,7 +106,7 @@ def main(argv=None):
         case.update(dossier)
     baseline = run_baseline(corpus_abs, MAIN_WINDOW, CONTROL_WINDOW)
 
-    decision_path = os.path.join(out_dir, f"decision_{args.case}.json")
+    decision_path = os.path.join(out_dir, f"decision_{_safe_case_token(args.case)}.json")
     baseline_path = os.path.join(out_dir, "baseline_report.json")
     write_json(decision_path, case)
     write_json(baseline_path, baseline)

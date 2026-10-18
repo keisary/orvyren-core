@@ -94,8 +94,8 @@ def provenance_timestamp(fallback: str) -> str:
     It is the collection time of the corpus (``corpus/manifest.json``), not the
     run time, so that re-running the script on the same corpus yields the same
     claims — and therefore the same graph hash. The run time is recorded
-    separately in the report (``generated_at``). Falls back to ``fallback``
-    when the manifest is not readable.
+    separately in the report (``generated_at``). A missing manifest is a
+    reproducibility failure: never fall back to the wall clock.
     """
     manifest_path = os.path.join(ROOT, "corpus", "manifest.json")
     try:
@@ -103,9 +103,11 @@ def provenance_timestamp(fallback: str) -> str:
             collected_at = json.load(handle).get("collected_at")
         if isinstance(collected_at, str) and collected_at:
             return collected_at
-    except (OSError, ValueError):
-        pass
-    return fallback
+    except (OSError, ValueError) as exc:
+        raise SystemExit("corpus/manifest.json unreadable: %s; refusing a "
+                         "wall-clock provenance timestamp" % exc)
+    raise SystemExit("corpus/manifest.json has no collected_at; refusing a "
+                     "wall-clock provenance timestamp")
 
 
 def build_sources(observations, now_iso: str) -> List[Source]:
