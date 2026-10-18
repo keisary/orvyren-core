@@ -78,7 +78,9 @@ def main(argv=None) -> int:
         state = {True: "git-ignored ✓", False: "!! TRACKED BY GIT — DANGER", None: "git ?"}[ignored]
         print("[file]    %s  (%s)" % (rel, state))
         for key, length in _read_keys(path):
-            seen.setdefault(key, length)
+            # A key repeated across files must not be reported as empty merely
+            # because the first file defined it with an empty value.
+            seen[key] = max(seen.get(key, 0), length)
             secret = any(hint in key.upper() for hint in SECRET_HINTS)
             shown = "present (len %d)" % length if length else "empty"
             if secret and length:

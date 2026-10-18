@@ -398,6 +398,8 @@ def collect_from_cache(log) -> Dict[str, Any]:
             utc = row["utc"] + "Z" if not str(row["utc"]).endswith("Z") else row["utc"]
             entry = place(utc, row.get("block"), "cache:aave_rseth_reserveconfig.json")
             config = row.get("config") or {}
+            if not isinstance(config, dict):
+                continue
             entry.setdefault("rsETH", {}).update(
                 {
                     "is_frozen": config.get("isFrozen"),
@@ -413,6 +415,8 @@ def collect_from_cache(log) -> Dict[str, Any]:
         key_rows = load_raw("aave_v3_rseth_2026.json")
         provenance["aave_v3_rseth_2026.json"] = f"{len(key_rows)} key blocks"
         for label, block_payload in key_rows.items():
+            if not isinstance(block_payload, dict):
+                continue
             block = block_payload.get("block")
             entry = None
             for existing in series.values():
@@ -424,10 +428,12 @@ def collect_from_cache(log) -> Dict[str, Any]:
             entry["source"] = "cache:aave_v3_rseth_2026.json"
             for asset in ("rsETH", "WETH", "USDC"):
                 raw_state = block_payload.get(asset)
-                if not raw_state:
+                if not isinstance(raw_state, dict):
                     continue
                 state = entry.setdefault(asset, {})
                 config = raw_state.get("config") or {}
+                if not isinstance(config, dict):
+                    config = {}
                 state.update(
                     {
                         "a_token_supply": raw_state.get("aToken_supply"),

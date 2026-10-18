@@ -31,6 +31,7 @@ import json
 import os
 import sys
 import time
+import urllib.parse
 import urllib.request
 
 REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -54,6 +55,8 @@ def _parse(iso: str) -> dt.datetime:
 
 def _fetch_json(url: str, retries: int = 3, pause: float = 1.5):
     """Light urllib fetch (collect_corpus.fetch_json contract: (data, retrieved))."""
+    if urllib.parse.urlsplit(str(url)).scheme not in ("http", "https"):
+        raise ValueError("unsupported HTTP(S) URL: %r" % (url,))
     last = None
     for _ in range(retries):
         try:

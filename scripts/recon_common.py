@@ -104,7 +104,11 @@ def load_partial(path: str, *, mode: str, grid_key: str) -> Dict[str, Any]:
             payload = json.load(handle)
     except (OSError, ValueError):
         return {}
+    if not isinstance(payload, dict):
+        return {}
     meta = payload.get("meta") or {}
+    if not isinstance(meta, dict):
+        return {}
     if meta.get("mode") != mode or meta.get("grid_key") != grid_key:
         return {}
     if meta.get("complete"):

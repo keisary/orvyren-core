@@ -159,12 +159,17 @@ def offline_checks(bundle, fixture: Dict[str, Any]) -> Dict[str, Dict[str, Any]]
 
     # D8 — call quota
     quota = role.get("call_quota") or {}
-    quota_ok = isinstance(quota.get("max_per_period"), int) \
-        and quota["max_per_period"] == int(data.get("max_calls_24h"))
+    policy_quota = data.get("max_calls_24h")
+    try:
+        quota_ok = (isinstance(quota.get("max_per_period"), int)
+                    and policy_quota is not None
+                    and quota["max_per_period"] == int(policy_quota))
+    except (TypeError, ValueError):
+        quota_ok = False
     checks["D8"] = _check("D8", "quota d'appels / jour",
                           STATUS_PASS if quota_ok else STATUS_DRIFT,
                           {"fixture": quota.get("max_per_period"),
-                           "policy": data.get("max_calls_24h")})
+                           "policy": policy_quota})
 
     # D9 — deadlines: policy <= recorded scheduled revocation
     policy_revocation = data.get("revocation_scheduled_at")
@@ -255,7 +260,7 @@ def live_checks(bundle, fixture: Dict[str, Any], rpc_url: str, timeout: int,
         checks["D2"] = _check("D2", "module (code + empreinte épinglée)",
                               STATUS_DRIFT if mismatches else STATUS_PASS,
                               {"observed": observed, "mismatches": mismatches})
-    except (ChainError, ValueError) as exc:
+    except (ChainError, ValueError, KeyError, TypeError) as exc:
         checks["D2"] = _check("D2", "module (code + empreinte épinglée)", STATUS_UNVERIFIED,
                               {"error": str(exc)[:200]})
 

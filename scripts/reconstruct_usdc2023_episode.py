@@ -51,6 +51,7 @@ import os
 import sys
 import time
 import urllib.error
+import urllib.parse
 import urllib.request
 from datetime import datetime, timezone
 from statistics import median
@@ -511,6 +512,8 @@ def _r1(x, nd=1):
 # --------------------------------------------------------------------------
 
 def http_get_json(url, timeout=45, tries=4):
+    if urllib.parse.urlsplit(str(url)).scheme not in ("http", "https"):
+        raise ValueError("unsupported HTTP(S) URL: %r" % (url,))
     last = None
     for attempt in range(tries):
         try:
@@ -524,6 +527,8 @@ def http_get_json(url, timeout=45, tries=4):
 
 
 def http_post_json(url, payload, timeout=90):
+    if urllib.parse.urlsplit(str(url)).scheme not in ("http", "https"):
+        raise ValueError("unsupported HTTP(S) URL: %r" % (url,))
     body = json.dumps(payload).encode("utf-8")
     req = urllib.request.Request(url, data=body, headers={
         "Content-Type": "application/json", "User-Agent": USER_AGENT})
@@ -618,7 +623,10 @@ class BlockIndex:
             return self.cache[block]
         res = self._call("eth_getBlockByNumber", [hex(block), False])
         self.probes_single += 1
-        ts = int(res["timestamp"], 16) if res else None
+        try:
+            ts = int(res["timestamp"], 16) if res and "timestamp" in res else None
+        except (TypeError, ValueError, KeyError):
+            ts = None
         self.cache[block] = ts
         return ts
 
@@ -638,7 +646,10 @@ class BlockIndex:
             res = self._batch([("eth_getBlockByNumber", [hex(b), False]) for b in part])
             self.probes_batch += len(part)
             for b, r in zip(part, res):
-                self.cache[b] = int(r["timestamp"], 16) if r else None
+                try:
+                    self.cache[b] = int(r["timestamp"], 16) if r and "timestamp" in r else None
+                except (TypeError, ValueError, KeyError):
+                    self.cache[b] = None
 
     # -- model --------------------------------------------------------------
     def rate(self):
