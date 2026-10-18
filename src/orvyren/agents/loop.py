@@ -61,6 +61,14 @@ the deterministic gate is :func:`_validate_evaluation` (closed keys, every
 claim needs non-empty ``refs``) and a failure follows the same path as the
 planning one.
 
+ACH reflexive layer (``agents.reflexion``, code-side only): the run hypotheses
+compete in one evidence matrix scored from the accepted claims
+(``branches_concernees`` x ``sens``). At close, the matrix is journaled as ONE
+deterministic ``REFLECTION`` line (plus one ``BRANCH_UPDATE`` per revision) and
+exposed on the outcome (``LoopOutcome.reflexion``) — never touching an LLM
+payload, a prompt or an output schema, so the recorded responses replay byte
+for byte.
+
 Hooks (all optional, ``None`` = not triggered — guard-rails, never main
 criteria): ``sufficient_evidence(claims) -> bool`` (ARRET-4 and the
 conclusiveness of the outcome), ``net_voi(tasks) -> float`` (ARRET-5, checked
@@ -84,6 +92,7 @@ from datetime import datetime, timezone
 from typing import Any, Callable, Dict, List, Mapping, Optional, Tuple, Union
 
 from orvyren.agents import contracts
+from orvyren.agents import reflexion
 from orvyren.agents.journal import AgentJournal
 
 __all__ = [
@@ -119,6 +128,14 @@ _LLM_COUNTERS: Tuple[str, ...] = ("llm_calls", "wall_seconds", "cost_usd")
 #: Marker field that makes the frozen journal quarantine a line (unknown
 #: fields quarantine: the line stays visible, status ``QUARANTINED``).
 _QUARANTINE_MARKER = "quarantine_reason"
+
+#: Why the derived ACH reflection is appended as a non-usable line: the frozen
+#: ``worker.build_evidence_packet`` turns every usable REFLECTION line into a
+#: claim of the **critic payload** (replayed by prompt hash). The ACH summary
+#: is code-built, not a claim: it stays visible in the journal but must never
+#: enter that payload — the recorded responses keep replaying byte for byte.
+_ACH_DERIVED_REASON = ("E_ACH_DERIVED: deterministic ACH reflection (code-built, "
+                       "not a claim) — visible, never usable as evidence")
 
 #: Closed keys of the free-schema evaluation output.
 _EVAL_KEYS: Tuple[str, ...] = ("claims", "reflexions", "insuffisance", "note")
@@ -328,6 +345,26 @@ class BoundedLoop:
         self._observed_refs.add_many(authorized_refs)
         self._lacunes = tuple(lacunes or ())
         self._hypotheses = tuple(hypotheses or ())
+        # ACH reflexive layer (code-side, deterministic — no LLM call): the run
+        # hypotheses compete in one evidence matrix and every accepted claim
+        # scores its cells (``branches_concernees`` x ``sens``). Nothing here
+        # touches a payload, a prompt or an output schema: the recorded
+        # responses keep replaying byte for byte (replay preserved).
+        self._ach = reflexion.EvidenceMatrix()
+        for spec in self._hypotheses:
+            if not isinstance(spec, Mapping):
+                continue
+            hyp_id = str(spec.get("id", "") or "").strip()
+            if not hyp_id:
+                continue
+            try:
+                self._ach.add_hypothesis(
+                    hyp_id, str(spec.get("enonce", "") or hyp_id),
+                    counter_intuitive=bool(spec.get("counter_intuitive", False)))
+            except ValueError:
+                continue  # duplicate id in the run spec — never crash the run
+        self._ach_claims = 0
+        self._ach_revisions: List[Dict[str, Any]] = []
         self._on_promotion = on_promotion
         self._sufficient_evidence = sufficient_evidence
         self._net_voi = net_voi
@@ -579,6 +616,13 @@ class BoundedLoop:
             entries.append(entry)
             if not unknown:
                 self._claims.append(claim)
+                # ACH: score the claim in the evidence matrix (in-memory, no
+                # journal line here — the claim lines' ids never move) and keep
+                # every structured reaction that signals a revision.
+                self._ach_claims += 1
+                for reaction in self._ach.add_claim(claim, "EV-%03d" % self._ach_claims):
+                    if reaction.get("action") in ("reviser", "escalade"):
+                        self._ach_revisions.append(reaction)
         if not entries:  # a valid evaluation may conclude "nothing usable"
             note = str(data.get("reflexions") or data.get("insuffisance")
                        or "evaluation returned no claim").strip()
@@ -664,7 +708,8 @@ class BoundedLoop:
             state=self._state, stop_condition=stop_condition, motif=str(motif),
             non_recherche=tuple(self._non_recherche),
             budget_used=self._usage.to_dict(), critique_verdict="",
-            inconclusive=inconclusive)
+            inconclusive=inconclusive, reflexion=self._ach.to_dict())
+        self._journal_ach()
         self._journal.append_dict(self._line(
             kind="STOP", refs=(),
             content="%s — %s | non_recherche=%s" % (
@@ -686,6 +731,41 @@ class BoundedLoop:
         if stop_condition in ("ARRET-2", "ARRET-3"):
             return True
         return not self._claims
+
+    # -- ACH reflection (deterministic, code-side) -------------------------
+    def _journal_ach(self) -> None:
+        """One ACH REFLECTION line + one BRANCH_UPDATE per recorded revision.
+
+        Appended here — after every claim line of the run — and never carrying
+        a new reference, so the frozen evidence packet built from this journal
+        (``worker.build_evidence_packet``) stays **byte-identical** to the one
+        the recorded responses were captured against: the critic payload and
+        the replayed prompt hashes are untouched.
+
+        The ACH summary is a derived reflection (code-built, not a claim): it
+        is appended with an explicit ``reject_reason`` so it stays visible but
+        is never consumed as a claim nor promoted. ``BRANCH_UPDATE`` is a
+        proposal line: its text carries no figure (B3 R1), only the structured
+        reaction of ``reflexion.reaction_to_change``.
+        """
+        if not self._ach.scored_cells():
+            return  # no scored cell: "aucune preuve" — nothing to reflect on
+        ranking = self._ach.rank_hypotheses()
+        dominant = ranking[0]
+        gap = self._ach.most_discriminating_gap()
+        discriminating = self._ach.most_discriminating_evidence()
+        refs = tuple(discriminating.get("refs") or ()) if discriminating else ()
+        self._journal.append_dict(
+            self._line(kind="REFLECTION", refs=refs,
+                       content="ACH matrix: %s reste %s, prochain test discriminant: %s"
+                               % (dominant["hyp_id"], dominant["etat"],
+                                  gap["justification"])),
+            reject_reason=_ACH_DERIVED_REASON)
+        for reaction in self._ach_revisions:
+            self._journal.append_dict(self._line(
+                kind="BRANCH_UPDATE", refs=tuple(reaction.get("refs") or ()),
+                content="revision ACH: %s — action %s" % (reaction.get("motif", ""),
+                                                          reaction.get("action", ""))))
 
     # -- LLM call + journal lines -----------------------------------------
     def _complete(self, *, schema_id: str, payload: Mapping[str, Any]

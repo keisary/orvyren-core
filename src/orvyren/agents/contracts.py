@@ -541,7 +541,10 @@ class LoopOutcome:
     ``state`` ∈ DONE/ABORTED; ``stop_condition`` ∈ STOP_CONDITIONS or empty;
     ``non_recherche`` lists what was NOT searched for lack of budget — the
     decision dossier is obliged to carry it (§5.4). ``critique_verdict`` is
-    the last critic verdict when a critique round ran.
+    the last critic verdict when a critique round ran. ``reflexion`` carries
+    the deterministic ACH evidence matrix built by ``agents.reflexion`` from
+    the run hypotheses and the accepted claims (optional — default empty, so
+    no existing key or caller ever breaks).
     """
 
     state: str = "DONE"
@@ -551,6 +554,7 @@ class LoopOutcome:
     budget_used: Dict[str, float] = field(default_factory=dict)
     critique_verdict: str = ""
     inconclusive: bool = False
+    reflexion: Mapping[str, Any] = field(default_factory=dict)
 
     def to_dict(self) -> Dict[str, Any]:
         return dict(asdict(self))
