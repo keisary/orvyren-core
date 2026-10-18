@@ -20,6 +20,7 @@ ROOT = os.path.dirname(HERE)
 sys.path.insert(0, os.path.join(ROOT, "src"))
 
 from orvyren.replay import journal as journal_mod  # noqa: E402
+from orvyren.replay import corpus as corpus_mod  # noqa: E402
 
 CASE = "usdc-2023-03"
 INPUTS_PRESENT = os.path.isfile(os.path.join(ROOT, "fixtures", "agents", CASE,
@@ -43,6 +44,17 @@ class ReplayDeterminismTest(unittest.TestCase):
     def test_replay_k_rejects_invalid_k(self):
         with self.assertRaises(journal_mod.ReplayJournalError):
             journal_mod.replay_k(CASE, tempfile.mkdtemp(prefix="orvyren_replay_bad_"), k=0)
+
+    def test_episode_payload_must_be_an_object(self):
+        handle, path = tempfile.mkstemp(prefix="orvyren_episode_", suffix=".json")
+        os.close(handle)
+        try:
+            with open(path, "w", encoding="utf-8", newline="\n") as output:
+                output.write("[1, 2, 3]")
+            with self.assertRaises(corpus_mod.CorpusError):
+                corpus_mod.series_from_episode(path)
+        finally:
+            os.remove(path)
 
 
 if __name__ == "__main__":

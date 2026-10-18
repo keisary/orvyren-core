@@ -132,6 +132,8 @@ def series_from_episode(path: str) -> List[Tuple[str, float]]:
     """
     with open(path, "r", encoding="utf-8") as handle:
         payload = json.load(handle)
+    if not isinstance(payload, dict):
+        raise CorpusError("episode payload is not an object: %s" % path)
     series = payload.get("series")
     if not series:
         raise CorpusError("no usable series in %s" % path)

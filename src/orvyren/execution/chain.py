@@ -14,6 +14,7 @@ so messages only ever show the masked form of the URL.
 import json
 import os
 import urllib.error
+import urllib.parse
 import urllib.request
 
 from orvyren.execution.guard import DEFAULT_RPC_URL, DEFAULT_TIMEOUT_SECONDS, mask_rpc_url
@@ -48,6 +49,9 @@ def rpc(url, method, params=None, timeout=DEFAULT_TIMEOUT_SECONDS):
     """Single JSON-RPC 2.0 call. Returns the `result` field, or raises ChainError."""
     if not url:
         raise ChainError("no RPC URL configured")
+    parts = urllib.parse.urlsplit(str(url))
+    if parts.scheme not in ("http", "https"):
+        raise ChainError("unsupported RPC URL scheme: {!r}".format(parts.scheme or "<empty>"))
     payload = json.dumps({
         "jsonrpc": "2.0",
         "id": 1,
