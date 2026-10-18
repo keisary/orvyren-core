@@ -5,8 +5,9 @@ The loop is a **fixed bounded graph**, never a free ReAct loop (DOC2 §5.2.4)::
 
     IDLE -> PLANNING -> EXECUTING -> (RECOVERING) -> DONE / ABORTED
 
-one task in flight, at most one tool per task, one planning call and one
-evaluation call per cycle. The five stop conditions are the frozen ones
+one task in flight, at most one tool per task, one planning step and one
+evaluation step per cycle (each bounded to :data:`MAX_OUTPUT_ATTEMPTS`
+outputs). The five stop conditions are the frozen ones
 (:data:`contracts.STOP_CONDITIONS`):
 
 ========== ====================================================================
@@ -54,8 +55,12 @@ journal quarantines unknown fields, so the loop stamps the explicit
 ``quarantine_reason`` marker: the refusal stays visible ("the refusal is
 demonstrable") and can never be promoted.
 
-Schemas: PLANNING uses ``orvyren/orch/v1`` (+1 re-prompt with the error
-injected, then quarantine + ARRET-3). EVALUATION uses a **free schema**
+Schemas: PLANNING uses ``orvyren/orch/v1`` (at most two re-prompts, each
+carrying the field-level validation errors injected, then quarantine +
+ARRET-3). A re-prompt is **bounded by the budget**: when a ceiling forbids the
+next call the run stops in ARRET-2 instead of spending past it, so a
+form-only defect gets the extra attempt it needs without ever widening the
+frozen ceilings (gap G-18). EVALUATION uses a **free schema**
 (``schema_id=""``): it produces claims/reflections, not a frozen document, so
 the deterministic gate is :func:`_validate_evaluation` (closed keys, every
 claim needs non-empty ``refs``) and a failure follows the same path as the
@@ -115,8 +120,11 @@ EVAL_SCHEMA_ID = ""
 #: 1 call + at most 2 retries on an LLM transport failure (B1 §4.4).
 MAX_LLM_ATTEMPTS = 3
 
-#: 1 output + at most 1 re-prompt with the error injected (B1 §4.4).
-MAX_OUTPUT_ATTEMPTS = 2
+#: 1 output + at most 2 re-prompts carrying the validation errors (G-18: a
+#: form-only defect — a digit in a criterion, a forgotten ``$schema`` — is
+#: fixed by an actionable re-ask, not by aborting the run). Every extra
+#: attempt is still gated by the frozen budgets: no call past a ceiling.
+MAX_OUTPUT_ATTEMPTS = 3
 
 #: 1 tool call + at most 2 retries on the same tool (B1 §4.4).
 MAX_TOOL_ATTEMPTS = 3
@@ -267,32 +275,36 @@ def _validate_evaluation(data: Optional[Mapping[str, Any]]) -> Tuple[bool, List[
     Closed keys; ``claims`` is a list (possibly empty) of objects carrying a
     non-empty ``enonce`` and **at least one non-empty ``refs``** — a claim
     without reference cannot be used (B1 §3.4), so it is refused here and the
-    caller follows the quarantine path.
+    caller follows the quarantine path. Errors name the field and the rule, so
+    the re-prompt carries a fix the model can apply (G-18).
     """
     if not isinstance(data, Mapping):
-        return False, ["E_LOOP_OUTPUT: response is not a JSON object"]
+        return False, ["payload: response is not a JSON object"]
     errors: List[str] = []
     unknown = sorted(set(data) - set(_EVAL_KEYS))
     if unknown:
-        errors.append("unknown fields: %s" % ", ".join(unknown))
+        errors.append("payload: unknown fields %s — allowed: %s"
+                      % (", ".join(unknown), ", ".join(_EVAL_KEYS)))
     claims = data.get("claims")
     if not isinstance(claims, (list, tuple)):
-        errors.append("claims must be a list")
+        errors.append("claims: expected a list (possibly empty)")
         return False, errors
     for index, claim in enumerate(claims):
         if not isinstance(claim, Mapping):
-            errors.append("claim %d is not an object" % index)
+            errors.append("claims[%d]: expected a JSON object" % index)
             continue
         extra = sorted(set(claim) - set(_CLAIM_KEYS))
         if extra:
-            errors.append("claim %d: unknown fields %s" % (index, ", ".join(extra)))
+            errors.append("claims[%d]: unknown fields %s — allowed: %s"
+                          % (index, ", ".join(extra), ", ".join(_CLAIM_KEYS)))
         if not str(claim.get("enonce", "")).strip():
-            errors.append("claim %d: enonce missing" % index)
+            errors.append("claims[%d].enonce: missing — state the verifiable fact" % index)
         refs = claim.get("refs")
         if not isinstance(refs, (list, tuple)) or not refs:
-            errors.append("claim %d: refs missing (a claim without refs is unusable)" % index)
+            errors.append("claims[%d].refs: missing — a claim without refs is unusable"
+                          % index)
         elif not all(str(ref).strip() for ref in refs):
-            errors.append("claim %d: empty ref" % index)
+            errors.append("claims[%d].refs: empty reference in the list" % index)
     return (not errors), errors
 
 
@@ -448,15 +460,33 @@ class BoundedLoop:
                     return stop
 
     # -- (a) PLANNING ------------------------------------------------------
+    def _llm_budget_exhausted(self) -> List[str]:
+        """Counters that forbid one more LLM call (the tool counter excluded).
+
+        A reasoning call consumes ``llm_calls`` / ``wall_seconds`` /
+        ``cost_usd`` only: a run whose tool counter is at its ceiling may
+        still reason (see :data:`_LLM_COUNTERS`).
+        """
+        return [name for name in self._usage.exhausted(self._budget)
+                if name in _LLM_COUNTERS]
+
     def _plan(self) -> Union[contracts.ResearchPlan, contracts.LoopOutcome]:
-        """One validated ``orvyren/orch/v1`` plan, or a stop outcome."""
+        """One validated ``orvyren/orch/v1`` plan, or a stop outcome.
+
+        A non-conforming plan is quarantined and re-asked with the
+        field-level errors injected (``erreurs_validation``), at most
+        :data:`MAX_OUTPUT_ATTEMPTS` outputs in total. Every extra attempt is
+        checked against the budget first: a ceiling that forbids the next call
+        ends the run in ARRET-2 (never a call past the frozen budget), and a
+        last invalid output still ends it fail-closed in ARRET-3.
+        """
         payload = self._planning_payload()
         errors: List[str] = []
         raw = ""
         for attempt in range(1, MAX_OUTPUT_ATTEMPTS + 1):
             self._state = "PLANNING" if attempt == 1 else "RECOVERING"
             call_payload: Dict[str, Any] = dict(payload)
-            if errors:  # 1 re-prompt with the validation error injected
+            if errors:  # re-prompt with the field-level errors injected
                 call_payload["erreurs_validation"] = list(errors)
                 call_payload["sortie_precedente"] = raw
             result = self._complete(schema_id=PLAN_SCHEMA_ID, payload=call_payload)
@@ -470,11 +500,20 @@ class BoundedLoop:
             raw = _llm_text(result)
             self._quarantine(kind="PLAN", content=raw, errors=errors, result=result)
             if attempt < MAX_OUTPUT_ATTEMPTS:
+                blocked = self._llm_budget_exhausted()
+                if blocked:  # G-18: the extra attempt is bounded by the budget
+                    return self._finish(
+                        "ARRET-2", "budget exhausted: %s | plan invalid after %d "
+                                   "attempt(s) (%s)" % (", ".join(blocked), attempt,
+                                                        "; ".join(errors)))
                 self._journal.append_dict(self._line(
                     kind="REFLECTION", refs=(),
-                    content="plan refused (schema): re-prompting once with the error injected"))
+                    content="plan refused (schema): re-prompting with the field-level "
+                            "errors injected (attempt %d/%d)"
+                            % (attempt + 1, MAX_OUTPUT_ATTEMPTS)))
         return self._finish("ARRET-3", "E_LOOP_OUTPUT_INVALID: orchestrator plan invalid "
-                                       "after re-prompt (%s)" % "; ".join(errors))
+                                       "after %d attempt(s) (%s)"
+                                       % (MAX_OUTPUT_ATTEMPTS, "; ".join(errors)))
 
     def _validate_plan(self, data: Optional[Mapping[str, Any]]) -> Tuple[bool, List[str]]:
         """``orvyren/orch/v1`` schema **and** tool allow-list membership."""
@@ -574,14 +613,21 @@ class BoundedLoop:
     # -- (c) EVALUATION ----------------------------------------------------
     def _evaluate(self, task: contracts.ResearchTask,
                   tool_result: contracts.ToolResult) -> Optional[contracts.LoopOutcome]:
-        """Evaluate one observation: claims, journal, promotion, ARRET-4."""
+        """Evaluate one observation: claims, journal, promotion, ARRET-4.
+
+        Same recovery policy as the plan (G-18): at most
+        :data:`MAX_OUTPUT_ATTEMPTS` outputs, each re-prompt carrying the
+        validation errors, and every extra attempt gated by the budget — a
+        forbidden call stops the run in ARRET-2, a last invalid output in
+        ARRET-3.
+        """
         self._state = "EXECUTING"
         payload = self._evaluation_payload(task, tool_result)
         errors: List[str] = []
         raw = ""
         for attempt in range(1, MAX_OUTPUT_ATTEMPTS + 1):
             call_payload: Dict[str, Any] = dict(payload)
-            if errors:  # 1 re-prompt with the validation error + previous output
+            if errors:  # re-prompt with the field-level errors + previous output
                 call_payload["erreurs_validation"] = list(errors)
                 call_payload["sortie_precedente"] = raw
             result = self._complete(schema_id=EVAL_SCHEMA_ID, payload=call_payload)
@@ -595,12 +641,21 @@ class BoundedLoop:
             self._quarantine(kind="REFLECTION", content=_llm_text(result),
                              errors=errors, result=result)
             if attempt < MAX_OUTPUT_ATTEMPTS:
+                blocked = self._llm_budget_exhausted()
+                if blocked:  # G-18: the extra attempt is bounded by the budget
+                    return self._finish(
+                        "ARRET-2", "budget exhausted: %s | evaluation invalid after "
+                                   "%d attempt(s) (%s)" % (", ".join(blocked), attempt,
+                                                           "; ".join(errors)))
                 self._state = "RECOVERING"
                 self._journal.append_dict(self._line(
                     kind="REFLECTION", refs=(),
-                    content="evaluation refused (schema): re-prompting once with the error injected"))
+                    content="evaluation refused (schema): re-prompting with the "
+                            "field-level errors injected (attempt %d/%d)"
+                            % (attempt + 1, MAX_OUTPUT_ATTEMPTS)))
         return self._finish("ARRET-3", "E_LOOP_OUTPUT_INVALID: evaluation invalid "
-                                       "after re-prompt (%s)" % "; ".join(errors))
+                                       "after %d attempt(s) (%s)"
+                                       % (MAX_OUTPUT_ATTEMPTS, "; ".join(errors)))
 
     def _record_evaluation(self, data: Mapping[str, Any],
                            result: contracts.LLMResult) -> Optional[contracts.LoopOutcome]:

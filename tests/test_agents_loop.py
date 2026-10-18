@@ -11,8 +11,8 @@ Covers DOC2 §5.2.4-5.2.5 and B1_AGENTS_ETUDE.md §4:
   LLM-origin weight 0;
 - the four budget counters (``llm_calls``, ``tool_calls``, ``wall_seconds`` via
   an injected clock, ``cost_usd`` via scripted costs) -> ``ARRET-2``;
-- ``ARRET-3`` on twice-invalid output (quarantine then fail-closed) and on a
-  repeated LLM failure;
+- ``ARRET-3`` on a thrice-invalid output (quarantine then fail-closed, the two
+  re-prompts carrying the field-level errors) and on a repeated LLM failure;
 - a broken source: retry <= 2 then unavailable, the run continues and the
   forced-abstention rule marks the outcome ``inconclusive`` with the unsearched
   questions in ``non_recherche``;
@@ -517,22 +517,24 @@ class StopConditionsTest(unittest.TestCase):
 class FailurePathTest(unittest.TestCase):
     """Recovery by class (B1 §4.4) and the fail-closed policy."""
 
-    def test_arret_3_after_two_invalid_plans(self):
+    def test_arret_3_after_three_invalid_plans(self):
         bad = plan_task_data(question="le prix est-il sous le pair a 0,80 ?")
-        loop, journal, backend, _ = make_scenario([llm_ok(bad, n=1), llm_ok(bad, n=2)])
+        loop, journal, backend, _ = make_scenario([llm_ok(bad, n=1), llm_ok(bad, n=2),
+                                                   llm_ok(bad, n=3)])
         outcome = loop.run()
         self.assertEqual((outcome.state, outcome.stop_condition), ("ABORTED", "ARRET-3"))
         self.assertTrue(outcome.inconclusive)
-        self.assertEqual(outcome.budget_used["llm_calls"], 2.0)
+        self.assertEqual(outcome.budget_used["llm_calls"], 3.0)
+        self.assertIn("tache.question", outcome.motif)
         quarantined = [entry for entry in journal.entries()
                        if entry.status == "QUARANTINED"]
-        self.assertEqual(len(quarantined), 2)
+        self.assertEqual(len(quarantined), 3)
         self.assertTrue(all(entry.kind == "PLAN" for entry in quarantined))
-        self.assertTrue(all("contains a digit" in entry.content for entry in quarantined))
+        self.assertTrue(all("tache.question" in entry.content for entry in quarantined))
         self.assertTrue(all("quarantine_reason" in entry.validation.get("motif", "")
                             for entry in quarantined))
         self.assertIn("erreurs_validation", backend.calls[1]["payload"])
-        self.assertIn("contains a digit",
+        self.assertIn("tache.question",
                       " ".join(backend.calls[1]["payload"]["erreurs_validation"]))
         with self.assertRaises(ValueError) as caught:
             journal.promote(quarantined[0])  # a quarantined line is never usable
@@ -547,7 +549,7 @@ class FailurePathTest(unittest.TestCase):
         self.assertEqual(outcome.budget_used["llm_calls"], 2.0)
         self.assertEqual(len([entry for entry in journal.entries()
                               if entry.status == "QUARANTINED"]), 1)
-        self.assertTrue(any(entry.kind == "REFLECTION" and "re-prompting once" in entry.content
+        self.assertTrue(any(entry.kind == "REFLECTION" and "re-prompting" in entry.content
                             for entry in journal.entries()))
 
     def test_a_forbidden_tool_is_treated_as_an_invalid_output(self):
@@ -563,19 +565,20 @@ class FailurePathTest(unittest.TestCase):
         self.assertIn(tools_module.FORBIDDEN_TOOL, quarantined[0].content)
         self.assertEqual(outcome.budget_used["tool_calls"], 0.0)
 
-    def test_arret_3_after_two_invalid_evaluations(self):
+    def test_arret_3_after_three_invalid_evaluations(self):
         bad = {"claims": [{"enonce": "claim sans aucune reference"}]}
         loop, journal, backend, _ = make_scenario(
-            [llm_ok(plan_task_data(), n=1), llm_ok(bad, n=2), llm_ok(bad, n=3)])
+            [llm_ok(plan_task_data(), n=1), llm_ok(bad, n=2), llm_ok(bad, n=3),
+             llm_ok(bad, n=4)])
         outcome = loop.run()
         self.assertEqual((outcome.state, outcome.stop_condition), ("ABORTED", "ARRET-3"))
-        self.assertEqual(outcome.budget_used["llm_calls"], 3.0)
+        self.assertEqual(outcome.budget_used["llm_calls"], 4.0)
         self.assertEqual(outcome.budget_used["tool_calls"], 1.0)
         quarantined = [entry for entry in journal.entries()
                        if entry.status == "QUARANTINED"]
-        self.assertEqual(len(quarantined), 2)
+        self.assertEqual(len(quarantined), 3)
         self.assertTrue(all(entry.kind == "REFLECTION" for entry in quarantined))
-        self.assertTrue(all("refs missing" in entry.content for entry in quarantined))
+        self.assertTrue(all("claims[0].refs" in entry.content for entry in quarantined))
 
     def test_llm_transport_failure_is_retried_then_the_run_goes_on(self):
         loop, journal, backend, _ = make_scenario([llm_error(n=1),

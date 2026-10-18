@@ -59,6 +59,8 @@ __all__ = [
     "UNTRUSTED_CLOSE",
     "validate_orchestrator_output",
     "validate_critique_output",
+    "ORCH_SCHEMA_ID",
+    "CRIT_SCHEMA_ID",
     "validate_canon_output",
 ]
 
@@ -628,81 +630,120 @@ def _check_closed(data: Mapping[str, Any], allowed: Tuple[str, ...]) -> List[str
     return errors
 
 
+def _check_closed_in(data: Mapping[str, Any], allowed: Tuple[str, ...],
+                     prefix: str = "") -> List[str]:
+    """Closed-field check whose errors name the offending field (G-18).
+
+    ``_check_closed`` is kept for the other validators; the orchestrator
+    re-prompt needs messages a model can act on, so every message here names
+    the field (``tache.question``) and states the rule.
+    """
+    return ["%s%s: field not allowed by the schema (closed fields: %s)"
+            % (prefix, name, ", ".join(allowed))
+            for name in sorted(set(data) - set(allowed))]
+
+
+ORCH_SCHEMA_ID = "orvyren/orch/v1"
+CRIT_SCHEMA_ID = "orvyren/crit/v1"
+
+#: Closed fields of an ``orvyren/orch/v1`` payload / of one task.
+_ORCH_KEYS: Tuple[str, ...] = ("$schema", "lacune_id", "tache", "stop",
+                               "motif_stop", "non_recherche")
+_TASK_KEYS: Tuple[str, ...] = ("question", "outil", "args",
+                               "critere_discriminant", "branches_concernees",
+                               "cout_max")
+
+
 def validate_orchestrator_output(data: Mapping[str, Any]) -> Tuple[bool, List[str]]:
     """Validate an ``orvyren/orch/v1`` payload (B1 §5.2 controls).
 
     Closed fields; a task needs a question ≤ 240 chars **without any digit**,
     a tool name, dict args and a discriminant criterion; a stop needs a
     motif. The tool allow-list membership is checked by the caller (the
-    registry, not the schema)."""
-    errors = _check_closed(data, ("$schema", "lacune_id", "tache", "stop",
-                                  "motif_stop", "non_recherche"))
-    if data.get("$schema") != "orvyren/orch/v1":
-        errors.append("bad $schema")
+    registry, not the schema).
+
+    Every error is **actionable**: it names the offending field and states the
+    rule, in English, so the single re-prompt carries a fix the model can
+    apply (``tache.critere_discriminant: no digit allowed — …``). The texts
+    feed the ``erreurs_validation`` payload of that re-prompt and the
+    ``quarantine_reason`` of the journal line, never a frozen document.
+    """
+    errors: List[str] = _check_closed_in(data, _ORCH_KEYS)
+    if data.get("$schema") != ORCH_SCHEMA_ID:
+        errors.append('$schema: expected exactly "%s"' % ORCH_SCHEMA_ID)
     if not isinstance(data.get("stop"), bool):
-        errors.append("stop must be a boolean")
+        errors.append("stop: expected a boolean (true or false)")
     if not isinstance(data.get("non_recherche", []), (list, tuple)):
-        errors.append("non_recherche must be a list")
+        errors.append("non_recherche: expected a list of questions (strings)")
     if data.get("stop") is True:
         if not str(data.get("motif_stop") or "").strip():
-            errors.append("stop requires motif_stop")
+            errors.append("motif_stop: required when stop=true — state why no task is left")
     elif data.get("stop") is False:
         task = data.get("tache")
         if not isinstance(task, Mapping):
-            errors.append("task required when stop=false")
+            errors.append("tache: required when stop=false — an object with %s"
+                          % ", ".join(_TASK_KEYS))
         else:
-            errors += _check_closed(task, ("question", "outil", "args",
-                                           "critere_discriminant",
-                                           "branches_concernees", "cout_max"))
+            errors += _check_closed_in(task, _TASK_KEYS, prefix="tache.")
             question = str(task.get("question", ""))
             if not question.strip() or len(question) > 240:
-                errors.append("question missing or > 240 chars")
+                errors.append("tache.question: non-empty text of ≤ 240 characters")
             if contains_digit(question):
-                errors.append("question contains a digit (figures come from refs)")
+                errors.append("tache.question: ≤ 240 characters, no digit — "
+                              "figures come from refs, ask the question qualitatively")
             if contains_digit(str(task.get("critere_discriminant", ""))):
-                errors.append("critere_discriminant contains a digit")
+                errors.append("tache.critere_discriminant: no digit allowed — "
+                              "state the criterion qualitatively, figures come from refs")
             if not str(task.get("outil", "")).strip():
-                errors.append("outil missing")
+                errors.append("tache.outil: missing or not in the allow-list")
             if not isinstance(task.get("args"), Mapping):
-                errors.append("args must be a mapping")
+                errors.append("tache.args: expected a JSON object of tool arguments")
             if not isinstance(task.get("branches_concernees", []), (list, tuple)):
-                errors.append("branches_concernees must be a list")
+                errors.append("tache.branches_concernees: expected a list of hypothesis ids")
     else:
-        errors.append("stop missing")
+        errors.append("stop: missing — expected a boolean (true or false)")
     return (not errors), errors
 
 
 def validate_critique_output(data: Mapping[str, Any]) -> Tuple[bool, List[str]]:
     """Validate an ``orvyren/crit/v1`` payload (B1 §5.3).
 
-    An objection **without refs is invalid** (no causal justification)."""
-    errors = _check_closed(data, ("$schema", "verdict_lecture", "findings",
-                                  "preuves_manquantes", "note"))
-    if data.get("$schema") != "orvyren/crit/v1":
-        errors.append("bad $schema")
+    An objection **without refs is invalid** (no causal justification).
+
+    Messages name the field and the rule (G-18): the critique re-prompt gets a
+    fix it can apply, not a bare rejection.
+    """
+    errors: List[str] = _check_closed_in(data, ("$schema", "verdict_lecture", "findings",
+                                                "preuves_manquantes", "note"))
+    if data.get("$schema") != CRIT_SCHEMA_ID:
+        errors.append('$schema: expected exactly "%s"' % CRIT_SCHEMA_ID)
     if data.get("verdict_lecture") not in CRITIQUE_VERDICTS:
-        errors.append("verdict_lecture not in %s" % (CRITIQUE_VERDICTS,))
+        errors.append("verdict_lecture: must be one of %s" % (CRITIQUE_VERDICTS,))
     findings = data.get("findings")
     if not isinstance(findings, (list, tuple)):
-        errors.append("findings must be a list")
+        errors.append("findings: expected a list")
     else:
         for index, finding in enumerate(findings):
             if not isinstance(finding, Mapping):
-                errors.append("finding %d is not an object" % index)
+                errors.append("findings[%d]: expected a JSON object" % index)
                 continue
-            errors += ["finding %d: %s" % (index, e) for e in _check_closed(
-                finding, ("type", "gravite", "enonce", "refs", "test_discriminant"))]
+            errors += _check_closed_in(
+                finding, ("type", "gravite", "enonce", "refs", "test_discriminant"),
+                prefix="findings[%d]." % index)
             if finding.get("type") not in CRITIQUE_FINDING_TYPES:
-                errors.append("finding %d: bad type" % index)
+                errors.append("findings[%d].type: must be one of %s"
+                              % (index, CRITIQUE_FINDING_TYPES))
             if finding.get("gravite") not in CRITIQUE_GRAVITES:
-                errors.append("finding %d: bad gravite" % index)
+                errors.append("findings[%d].gravite: must be one of %s"
+                              % (index, CRITIQUE_GRAVITES))
             if not str(finding.get("enonce", "")).strip() or len(str(finding.get("enonce"))) > 240:
-                errors.append("finding %d: enonce missing or > 240 chars" % index)
+                errors.append("findings[%d].enonce: non-empty text of ≤ 240 characters" % index)
             refs = finding.get("refs")
             if not isinstance(refs, (list, tuple)) or not refs:
-                errors.append("finding %d: objection without refs is invalid" % index)
+                errors.append("findings[%d].refs: objection without refs is invalid — "
+                              "cite at least one reference" % index)
     if not isinstance(data.get("preuves_manquantes", []), (list, tuple)):
-        errors.append("preuves_manquantes must be a list")
+        errors.append("preuves_manquantes: expected a list")
     return (not errors), errors
 
 
