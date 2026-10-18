@@ -42,10 +42,17 @@ Après fusion : **1 061 passed, 3 skipped**.
 | Encodage des sous-processus du pipeline dépendant de la console Windows | capture UTF-8 avec `errors="replace"` | `d80911c` |
 | `--case` pouvait sortir du répertoire de preuve/fixtures | token de cas fichiers-safe dans `run_decision` et `run_agents` | `d80911c`, `3128f9c` |
 | Cas `null`/non-liste dans `run_pipeline` | normalisation `cases or []` | `d80911c` |
+| Évidence partielle non-objet dans `load_partial` | rejet explicite, pas de `.get` sur une liste | `c2d1f83` |
+| `run_drift_check` D8 plantait si `max_calls_24h` manquait | garde de type → `DRIFT`, plus de crash | `c2d1f83` |
+| `run_drift_check` D2 plantait sur un fixture incomplet | `KeyError`/`TypeError` → `UNVERIFIED` | `c2d1f83` |
+| Clé répétée vide dans `inspect_env_masked` masquait une clé présente | conserve la longueur maximale | `c2d1f83` |
+| BlockIndex `usdc` supposait `timestamp` toujours présent | timestamp invalide → `None` explicite | `c2d1f83` |
+| Cache rsETH avec entrée non-dict | entrée ignorée, pas de crash | `c2d1f83` |
+| `urlopen` sur URL non HTTP(S) dans les reconstructeurs | schéma validé avant appel | `c2d1f83` |
 
 ## 4. Limites de la revue
 
-- Les passes indépendantes sur `agents`, `graph`, `decision/policy`, `execution`, `scripts` et `runners/UI` ont échoué côté fournisseur LLM ; `execution/verify/audit/replay` et `runners/UI` ont été relus et corrigés manuellement, les autres restent couverts par les contrôles statiques et les tests, pas par une lecture ligne-à-ligne revendiquée.
+- Les passes indépendantes sur `agents`, `graph`, `decision/policy`, `execution` et la première moitié de `scripts` ont échoué côté fournisseur LLM ; `execution/verify/audit/replay`, `runners/UI` et la seconde moitié de `scripts` ont été relus et corrigés manuellement, les autres restent couverts par les contrôles statiques et les tests, pas par une lecture ligne-à-ligne revendiquée.
 - Les 69 erreurs mypy restantes sont majoritairement des annotations, pas des crashes observés ; elles sont listées comme dette de typage.
 - `ruff format --check` signale 171 fichiers : le `pyproject.toml` interdit le reformatage massif de la baseline gelée ; aucun reformatage global n’a été appliqué.
 - Les findings Bandit restants sont des faux positifs à faible risque ou des SQL construits uniquement à partir de constantes et de placeholders.
