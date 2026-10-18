@@ -68,7 +68,7 @@ Deux exemples réels, mesurés :
 | Preuve | Résultat mesuré |
 |---|---|
 | Données | 100 % **gratuites** : état on-chain historique (2021→2026) + prix minute multi-places — le projet ne dépend d'aucun budget données |
-| Épisode rsETH 2026 | Plafond saturé à **99,9989 %**, gel daté à la seconde (bloc 24 908 723), oracle vs marché : **−31 %** |
+| Épisode rsETH 2026 | Plafond saturé à **99,9989 %**, gel daté à la seconde (bloc 24 908 723), oracle vs marché : **−31 %** (−32,9 % au gel, −30,3 % au 20/04) |
 | Épisode stETH 2022 | Décote réalisable **6,2 %**, signal **~4 semaines** avant le gel Celsius |
 | Épisode USDC 2023 | Dispersion inter-places **870 bps** ; l'oracle sous-estime la décote |
 | Enveloppe d'exécution | Déjà le standard chez la cible (précédent ENS), **déployée et vérifiée sur Base Sepolia** |
