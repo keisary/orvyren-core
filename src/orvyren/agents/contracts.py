@@ -50,6 +50,7 @@ __all__ = [
     "LoopOutcome",
     "canonical_json",
     "content_hash",
+    "ObservedRefs",
     "contains_digit",
     "wrap_untrusted",
     "scan_untrusted_flags",
@@ -101,6 +102,63 @@ def canonical_json(obj: Any) -> str:
 def content_hash(obj: Any) -> str:
     """SHA-256 of the canonical serialisation (content-addressed store keys)."""
     return hashlib.sha256(canonical_json(obj).encode("utf-8")).hexdigest()
+
+
+# ---------------------------------------------------------------------------
+# Observed references (P0-6): a claim may only cite what was really observed.
+# ---------------------------------------------------------------------------
+class ObservedRefs:
+    """Run-scoped ledger of the references actually observed by the tools.
+
+    A claim is only usable when every reference it cites belongs to this set —
+    the references really returned by tool observations (``source_ref`` /
+    ``ref`` / ``url`` rows), plus the snapshot ref and the explicitly
+    authorised sources of the run. An unknown reference is **refused** (the
+    claim is rejected and stays visible in the journal); it is never silently
+    replaced by a look-alike source.
+
+    A perfectly hash-chained journal does not make a claim true: this ledger is
+    the missing comparison between what a claim cites and what the run
+    actually saw.
+    """
+
+    def __init__(self, authorized: Any = ()) -> None:
+        self._refs: set = set()
+        self.add_many(authorized)
+
+    def add(self, ref: Any) -> None:
+        """Register one observed reference (blank strings are ignored)."""
+        text = str(ref or "").strip()
+        if text:
+            self._refs.add(text)
+
+    def add_many(self, refs: Any) -> None:
+        """Register a batch of observed references."""
+        for ref in refs or ():
+            self.add(ref)
+
+    def __contains__(self, ref: Any) -> bool:
+        return str(ref or "").strip() in self._refs
+
+    def __len__(self) -> int:
+        return len(self._refs)
+
+    def all(self) -> Tuple[str, ...]:
+        """Every observed reference, sorted (immutable view)."""
+        return tuple(sorted(self._refs))
+
+    def unknown(self, refs: Any) -> Tuple[str, ...]:
+        """The cited references never observed (order preserved, de-duplicated).
+
+        The single comparison point of the provenance contract: the caller
+        rejects (or quarantines) a claim as soon as this tuple is non-empty.
+        """
+        missing: List[str] = []
+        for ref in refs or ():
+            text = str(ref or "").strip()
+            if text and text not in self._refs and text not in missing:
+                missing.append(text)
+        return tuple(missing)
 
 
 # ---------------------------------------------------------------------------

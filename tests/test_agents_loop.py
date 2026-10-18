@@ -219,13 +219,14 @@ class InterfaceTest(unittest.TestCase):
         self.assertEqual(list(parameters), [
             "self", "case_id", "run_id", "agent_id", "backend", "tools", "journal",
             "budget", "clock", "prompt_version", "system_prompt", "snapshot", "lacunes",
-            "hypotheses", "on_promotion", "sufficient_evidence", "net_voi"])
+            "hypotheses", "on_promotion", "sufficient_evidence", "net_voi",
+            "authorized_refs", "observed_refs"])
         for name in list(parameters)[1:]:
             self.assertEqual(parameters[name].kind, inspect.Parameter.KEYWORD_ONLY, name)
         self.assertEqual(parameters["agent_id"].default, "orchestrator")
         self.assertEqual(parameters["prompt_version"].default, "orch-p1.1.0")
         for name in ("budget", "clock", "system_prompt", "on_promotion",
-                     "sufficient_evidence", "net_voi"):
+                     "sufficient_evidence", "net_voi", "observed_refs"):
             self.assertIsNone(parameters[name].default, name)
         for name in ("case_id", "run_id", "backend", "tools", "journal", "snapshot",
                      "lacunes", "hypotheses"):
@@ -638,7 +639,12 @@ class FailurePathTest(unittest.TestCase):
         broken = FailingTool("read_prices", fail_times=1)
         registry = ToolRegistry()
         registry.register("read_prices", broken)
-        script = [llm_ok(plan_task_data(), n=1), llm_ok(eval_data(), n=2),
+        # P0-6: the claim cites the reference the recovered tool really
+        # returned ("observation:read_prices") — a claim citing a source this
+        # run never observed is rejected by contract (see the provenance
+        # regression tests).
+        script = [llm_ok(plan_task_data(), n=1),
+                  llm_ok(eval_data(refs=("observation:read_prices",)), n=2),
                   llm_ok(plan_stop_data(), n=3)]
         loop, journal, backend, _ = make_scenario(script, tools=registry)
         outcome = loop.run()

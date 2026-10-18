@@ -212,9 +212,48 @@ def build_backend(spec: Dict[str, Any], run_dir: str, role: str = ""):
 # ---------------------------------------------------------------------------
 # The two roles.
 # ---------------------------------------------------------------------------
-def _build_tools(spec: Dict[str, Any], journal: AgentJournal):
+def _build_tools(spec: Dict[str, Any], journal: AgentJournal,
+                 observed: Any = None):
     from orvyren.agents.tools import ToolRegistry, build_v1_registry
-    return build_v1_registry(fixtures=spec["tool_fixtures"], journal=journal)
+    return build_v1_registry(fixtures=spec["tool_fixtures"], journal=journal,
+                             observed=observed)
+
+
+def build_evidence_packet(journal: AgentJournal, ledger: Any, *,
+                          run_id: str, case_id: str, snapshot_ref: str
+                          ) -> contracts.EvidencePacket:
+    """Build the critic packet — refs and claims gathered from the journal.
+
+    P0-6, second gate: the packet never carries a claim citing a reference the
+    run did not observe (defence in depth — the loop already rejects at intake;
+    this catches claims arriving from an exported journal). Excluded claims
+    are counted in the summary: an exclusion is visible, never silent.
+    """
+    refs: List[str] = []
+    claims: List[Dict[str, Any]] = []
+    entries = journal.entries()
+    for entry in entries:
+        if entry.kind in ("TOOL_RESULT", "OBSERVATION_REF"):
+            ledger.add_many(entry.refs)
+    excluded = 0
+    for entry in entries:
+        for ref in entry.refs:
+            if ref not in refs:
+                refs.append(ref)
+        if entry.kind == "REFLECTION" and entry.status in ("PROPOSED", "ACCEPTED"):
+            if ledger.unknown(entry.refs):
+                excluded += 1
+                continue
+            claims.append({"text": entry.content, "journal_id": entry.journal_id,
+                           "refs": list(entry.refs)})
+    summary = "evidence packet of the bounded run (%d reflections)" % len(claims)
+    if excluded:
+        summary += "; %d claim(s) excluded: ref not observed (P0-6)" % excluded
+    return contracts.EvidencePacket(
+        packet_id="%s-packet" % run_id,
+        snapshot_ref=snapshot_ref,
+        refs=tuple(refs), claims=tuple(claims),
+        summary=summary)
 
 
 def run_orchestrator(run_dir: str) -> int:
@@ -225,7 +264,13 @@ def run_orchestrator(run_dir: str) -> int:
     spec = load_run_spec(run_dir)
     journal = AgentJournal()
     backend = build_backend(spec, run_dir, "orchestrator")
-    tools = _build_tools(spec, journal)
+    # P0-6: one shared provenance ledger — the tools register what they really
+    # observed, the loop refuses a claim citing anything else.
+    ledger = contracts.ObservedRefs()
+    if isinstance(spec.get("snapshot"), dict):
+        ledger.add(spec["snapshot"].get("ref"))
+    ledger.add_many(spec.get("authorized_refs") or ())
+    tools = _build_tools(spec, journal, observed=ledger)
     clock = VirtualClock(spec.get("created_at", "")) if spec["mode"] == "journal" \
         else SystemClock()
 
@@ -237,26 +282,15 @@ def run_orchestrator(run_dir: str) -> int:
         prompt_version=prompt_version("orchestrator"),
         system_prompt=system_prompt("orchestrator"),
         snapshot=spec["snapshot"], lacunes=spec["lacunes"],
-        hypotheses=spec["hypotheses"])
+        hypotheses=spec["hypotheses"], observed_refs=ledger)
     outcome = loop.run()
 
     _write_json(os.path.join(run_dir, "outcome_orchestrator.json"), outcome.to_dict())
 
     # Evidence packet for the critic: refs + claims gathered from the journal.
-    refs: List[str] = []
-    claims: List[Dict[str, Any]] = []
-    for entry in journal.entries():
-        for ref in entry.refs:
-            if ref not in refs:
-                refs.append(ref)
-        if entry.kind == "REFLECTION" and entry.status in ("PROPOSED", "ACCEPTED"):
-            claims.append({"text": entry.content, "journal_id": entry.journal_id,
-                           "refs": list(entry.refs)})
-    packet = contracts.EvidencePacket(
-        packet_id="%s-packet" % spec["run_id"],
-        snapshot_ref=str(spec["snapshot"].get("ref", "")),
-        refs=tuple(refs), claims=tuple(claims),
-        summary="evidence packet of the bounded run (%d reflections)" % len(claims))
+    packet = build_evidence_packet(
+        journal, ledger, run_id=str(spec["run_id"]), case_id=str(spec["case_id"]),
+        snapshot_ref=str(spec["snapshot"].get("ref", "")))
     exchanges = os.path.join(run_dir, "exchanges")
     os.makedirs(exchanges, exist_ok=True)
     _write_json(os.path.join(exchanges, "001_evidence_packet.json"), packet.to_dict())

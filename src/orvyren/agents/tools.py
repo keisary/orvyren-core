@@ -115,6 +115,44 @@ def _text(args: Mapping[str, Any], key: str) -> str:
     return "" if value is None else str(value)
 
 
+def _fixture_refs(fixtures: Any) -> Tuple[str, ...]:
+    """Every source reference archived in a fixture payload (P0-6 seed).
+
+    The archived rows are the observed sources of a fixture run: seeding the
+    reference ledger from them keeps claim validation strict with no
+    hand-maintained allow-list — anything the fixtures really archive is
+    citable, anything else is not.
+    """
+    refs: List[str] = []
+
+    def _collect(value: Any) -> None:
+        if isinstance(value, Mapping):
+            for key in ("source_ref", "ref", "url", "method_ref"):
+                ref = value.get(key)
+                if ref and str(ref) not in refs:
+                    refs.append(str(ref))
+            declared = value.get("refs")  # a snapshot declares its own refs
+            if isinstance(declared, (list, tuple)):
+                for ref in declared:
+                    if ref and str(ref) not in refs:
+                        refs.append(str(ref))
+            for item in value.values():
+                _collect(item)
+        elif isinstance(value, (list, tuple)):
+            for item in value:
+                _collect(item)
+
+    for key in ("prices", "supply", "chain", "documents", "signals", "snapshot"):
+        bucket = (fixtures or {}).get(key) if isinstance(fixtures, Mapping) else None
+        if key == "documents" and isinstance(bucket, Mapping):
+            for url in bucket:  # a document is cited by its URL
+                if str(url) not in refs:
+                    refs.append(str(url))
+        else:
+            _collect(bucket)
+    return tuple(refs)
+
+
 # ---------------------------------------------------------------------------
 # The registry (allow-list).
 # ---------------------------------------------------------------------------
@@ -343,11 +381,13 @@ class JournalWriteTool:
     name = "journal_write"
 
     def __init__(self, journal: AgentJournal, *, clock: Any = None,
-                 prefix: str = "jw") -> None:
+                 prefix: str = "jw",
+                 observed: Optional[contracts.ObservedRefs] = None) -> None:
         self._journal = journal
         self._clock = clock or _ToolClock()
         self._prefix = str(prefix or "jw")
         self._counter = 0
+        self._observed = observed
 
     def run(self, args: Mapping[str, Any], *,
             deadline_s: float = 2.0) -> contracts.ToolResult:
@@ -382,7 +422,16 @@ class JournalWriteTool:
             data.setdefault(key, value)
         data.update({"kind": kind, "content": content,
                      "refs": tuple(str(ref) for ref in (refs or ()))})
-        entry = self._journal.append_dict(data)
+        # P0-6 provenance contract: a claim may only cite references really
+        # observed by this run. An unknown reference is refused — the line is
+        # still appended (status REJECTED, motif kept), the refusal stays
+        # visible, and the reference is never replaced by a look-alike source.
+        reject_reason = ""
+        if self._observed is not None:
+            unknown = self._observed.unknown(refs or ())
+            if unknown:
+                reject_reason = "E_REF_NOT_OBSERVED: %s" % ", ".join(unknown)
+        entry = self._journal.append_dict(data, reject_reason=reject_reason)
         return contracts.ToolResult(ok=True, status="OK", observations=(
             {"journal_id": entry.journal_id, "status": entry.status,
              "step_index": entry.step_index, "kind": entry.kind},))
@@ -427,16 +476,26 @@ class FailingTool:
 
 
 def build_v1_registry(*, fixtures: Mapping[str, Any],
-                      journal: AgentJournal) -> ToolRegistry:
+                      journal: AgentJournal,
+                      observed: Optional[contracts.ObservedRefs] = None
+                      ) -> ToolRegistry:
     """Build the v1 allow-list on the frozen fixtures (worker entry point).
 
     Registers exactly the seven v1 tools (``TOOL_NAMES``) — ``execute_intent``
     is not registerable. ``fixtures`` follows the frozen schema documented in
     this module's docstring; ``journal`` is the journal ``journal_write``
     appends to (one journal per agent process, B1 §3.4).
+
+    ``observed`` is the run-scoped ledger of observed references (P0-6):
+    ``journal_write`` refuses a claim citing a reference outside it. When it
+    is omitted, the ledger is derived from the fixtures themselves (the
+    archived rows ARE the observed sources of a fixture run) — validation is
+    never silently switched off.
     """
+    ledger = observed if observed is not None \
+        else contracts.ObservedRefs(_fixture_refs(fixtures))
     registry = ToolRegistry()
     for name, tool_class in _TOOL_CLASSES:
         registry.register(name, tool_class(fixtures))
-    registry.register("journal_write", JournalWriteTool(journal))
+    registry.register("journal_write", JournalWriteTool(journal, observed=ledger))
     return registry

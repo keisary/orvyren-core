@@ -234,7 +234,8 @@ def _observation_refs(tool_name: str, result: contracts.ToolResult) -> Tuple[str
     for observation in result.observations or ():
         if not isinstance(observation, Mapping):
             continue
-        ref = observation.get("source_ref") or observation.get("ref") or observation.get("url")
+        ref = (observation.get("source_ref") or observation.get("ref")
+               or observation.get("url") or observation.get("method_ref"))
         if ref:
             refs.append(str(ref))
     if not refs and result.ok:
@@ -298,7 +299,9 @@ class BoundedLoop:
                  snapshot: Any, lacunes: Any, hypotheses: Any,
                  on_promotion: Optional[Callable[..., Any]] = None,
                  sufficient_evidence: Optional[Callable[..., bool]] = None,
-                 net_voi: Optional[Callable[..., float]] = None) -> None:
+                 net_voi: Optional[Callable[..., float]] = None,
+                 authorized_refs: Any = (),
+                 observed_refs: Optional[contracts.ObservedRefs] = None) -> None:
         self._case_id = str(case_id or "")
         self._run_id = str(run_id or "")
         self._agent_id = str(agent_id or "orchestrator")
@@ -311,6 +314,17 @@ class BoundedLoop:
         self._prompt_version = str(prompt_version or "orch-p1.1.0")
         self._system = _resolve_system_prompt(system_prompt, self._prompt_version)
         self._snapshot = snapshot
+        # P0-6 provenance ledger: what the run really observed (tool refs +
+        # snapshot ref + explicitly authorised sources). A claim citing
+        # anything else is rejected at intake (visible journal line). The
+        # worker may inject its own ledger so the tools and the loop share one
+        # instance.
+        self._observed_refs = observed_refs if observed_refs is not None \
+            else contracts.ObservedRefs()
+        if isinstance(snapshot, Mapping):
+            self._observed_refs.add(snapshot.get("ref"))
+            self._observed_refs.add_many(snapshot.get("refs"))
+        self._observed_refs.add_many(authorized_refs)
         self._lacunes = tuple(lacunes or ())
         self._hypotheses = tuple(hypotheses or ())
         self._on_promotion = on_promotion
@@ -335,6 +349,11 @@ class BoundedLoop:
     def usage(self) -> contracts.BudgetUsage:
         """Live usage of the four counters (same object the outcome reports)."""
         return self._usage
+
+    @property
+    def observed_refs(self) -> contracts.ObservedRefs:
+        """The run's provenance ledger (P0-6) — shared with the tool registry."""
+        return self._observed_refs
 
     # -- the loop ----------------------------------------------------------
     def run(self) -> contracts.LoopOutcome:
@@ -494,6 +513,7 @@ class BoundedLoop:
                 kind="TOOL_RESULT", refs=_observation_refs(task.outil, result),
                 content="%s status=%s error=%s" % (task.outil, result.status,
                                                    result.error or "-")))
+            self._observed_refs.add_many(_observation_refs(task.outil, result))
             if result.ok:
                 return result
             if attempt < MAX_TOOL_ATTEMPTS:
@@ -542,13 +562,22 @@ class BoundedLoop:
                            result: contracts.LLMResult) -> Optional[contracts.LoopOutcome]:
         """Journal the claims (one REFLECTION line each), then promote them."""
         claims = tuple(dict(claim) for claim in (data.get("claims") or ()))
-        self._claims.extend(claims)
         entries = []
         for index, claim in enumerate(claims):
             refs = tuple(str(ref) for ref in (claim.get("refs") or ()))
-            entries.append(self._journal.append_dict(self._line(
-                kind="REFLECTION", content=str(claim.get("enonce", "")), refs=refs,
-                **self._llm_fields(result, accounting=(index == 0)))))
+            # P0-6: a claim may only cite references really observed by this
+            # run — an unknown reference rejects the claim (the visible line
+            # stays in the journal with the refusal motif).
+            unknown = self._observed_refs.unknown(refs)
+            entry = self._journal.append_dict(
+                self._line(
+                    kind="REFLECTION", content=str(claim.get("enonce", "")), refs=refs,
+                    **self._llm_fields(result, accounting=(index == 0))),
+                reject_reason=("E_REF_NOT_OBSERVED: %s" % ", ".join(unknown))
+                if unknown else "")
+            entries.append(entry)
+            if not unknown:
+                self._claims.append(claim)
         if not entries:  # a valid evaluation may conclude "nothing usable"
             note = str(data.get("reflexions") or data.get("insuffisance")
                        or "evaluation returned no claim").strip()
@@ -556,7 +585,7 @@ class BoundedLoop:
                 kind="REFLECTION", content=note, refs=(),
                 **self._llm_fields(result))))
         for entry in entries:
-            if entry.refs:
+            if entry.refs and entry.status in ("PROPOSED", "ACCEPTED"):
                 self._promote(entry)
         if self._sufficient_evidence is not None:
             if self._hook_bool(self._sufficient_evidence, "sufficient_evidence"):

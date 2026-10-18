@@ -220,11 +220,16 @@ class AgentJournal:
         return True, ""
 
     # -- append ------------------------------------------------------------
-    def append_dict(self, data: Mapping[str, Any]) -> JournalEntry:
+    def append_dict(self, data: Mapping[str, Any], *,
+                    reject_reason: str = "") -> JournalEntry:
         """Append one line from a mapping.
 
         Unknown keys quarantine the line (status ``QUARANTINED``, keys listed
-        in the motif) — the line stays visible but can never be used.
+        in the motif) — the line stays visible but can never be used. A
+        non-empty ``reject_reason`` (e.g. a claim citing a reference that was
+        never observed — P0-6) rejects the line the same way: appended and
+        visible, status ``REJECTED``, motif = the reason. The journal never
+        edits a line into validity and never drops a refusal silently.
         """
         known = {f.name for f in fields(JournalEntry)}
         extra = sorted(set(data) - known)
@@ -236,6 +241,10 @@ class AgentJournal:
                             validation=dict(
                                 verdict.to_dict(),
                                 motif="quarantine: unknown fields %s" % ", ".join(extra)))
+        elif reject_reason:
+            entry = replace(entry, status="REJECTED",
+                            validation=dict(verdict.to_dict(),
+                                            motif=str(reject_reason)))
         else:
             entry = replace(entry,
                             status="PROPOSED" if verdict.ok else "REJECTED",
