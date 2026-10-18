@@ -1,0 +1,70 @@
+{
+ "budget_used": {
+  "cost_usd": 0.0018269999999999998,
+  "llm_calls": 5.0,
+  "tool_calls": 2.0,
+  "wall_seconds": 0.14
+ },
+ "critique_verdict": "",
+ "inconclusive": true,
+ "motif": "plus aucune tâche à valeur positive dans le plan",
+ "non_recherche": [
+  "profondeur d'exécution réalisable non mesurée"
+ ],
+ "reflexion": {
+  "cells": [],
+  "diagnosticity": {},
+  "evidence": [],
+  "gap": {
+   "diagnosticity": 0.0,
+   "evidence_id": "",
+   "found": false,
+   "hyp_id": "",
+   "justification": "aucune preuve — aucun test discriminant a acquerir",
+   "kind": "",
+   "refs": []
+  },
+  "hypotheses": [
+   {
+    "counter_intuitive": false,
+    "hyp_id": "HYP-001",
+    "label": "Une dislocation inter-venues du pair existe dans la fenetre principale."
+   },
+   {
+    "counter_intuitive": false,
+    "hyp_id": "HYP-002",
+    "label": "Le calme de la serie est un artefact de construction (placebo fabrique), pas une observation du monde."
+   }
+  ],
+  "note": "aucune preuve",
+  "ranking": [
+   {
+    "counter_intuitive": false,
+    "etat": "SOLIDE",
+    "hyp_id": "HYP-001",
+    "label": "Une dislocation inter-venues du pair existe dans la fenetre principale.",
+    "meilleur_rival": "HYP-002",
+    "nb_coherent": 0,
+    "nb_incoherent": 0,
+    "nb_neutre": 0,
+    "nb_preuves": 0,
+    "score_refutation": 0.0
+   },
+   {
+    "counter_intuitive": false,
+    "etat": "SOLIDE",
+    "hyp_id": "HYP-002",
+    "label": "Le calme de la serie est un artefact de construction (placebo fabrique), pas une observation du monde.",
+    "meilleur_rival": "HYP-001",
+    "nb_coherent": 0,
+    "nb_incoherent": 0,
+    "nb_neutre": 0,
+    "nb_preuves": 0,
+    "score_refutation": 0.0
+   }
+  ],
+  "schema_version": "orvyren/ach-matrix/v1"
+ },
+ "state": "DONE",
+ "stop_condition": "ARRET-1"
+}

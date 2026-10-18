@@ -1,0 +1,1 @@
+{"claims": [{"branches_concernees": ["HYP-001"], "enonce": "l'exchange indépendant confirme une décote plus profonde", "refs": ["observation:bitstamp/usdc-usd/2023-03-11T12:00Z"], "sens": "POUR"}], "insuffisance": ["profondeur d'exécution réalisable non mesurée"], "note": "", "reflexions": ["deux sources indépendantes concordent"]}

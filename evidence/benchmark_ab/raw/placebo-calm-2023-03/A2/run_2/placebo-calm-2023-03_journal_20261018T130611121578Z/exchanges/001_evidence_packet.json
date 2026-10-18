@@ -1,0 +1,16 @@
+{
+ "claims": [
+  {
+   "journal_id": "demo-placebo-calm-2023-03-orchestrator-0001",
+   "refs": [],
+   "text": "VOI_NOT_ESTIMABLE: no NetVoI estimator injected — fixed bounded order kept (documented fallback)"
+  }
+ ],
+ "packet_id": "demo-placebo-calm-2023-03-packet",
+ "refs": [
+  "observation:synthetic/placebo-calm-2023-03/chainlink/usdc-usd/2023-03-11T12:00Z",
+  "observation:synthetic/placebo-calm-2023-03/bitstamp/usdc-usd/2023-03-11T12:00Z"
+ ],
+ "snapshot_ref": "graph_snapshot:synthetic/placebo-calm-2023-03@2023-03-11T12:00:00Z",
+ "summary": "evidence packet of the bounded run (1 reflections)"
+}
