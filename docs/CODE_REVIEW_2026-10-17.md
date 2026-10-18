@@ -59,6 +59,7 @@ Après fusion : **1 061 passed, 3 skipped**.
 | Q7 graphe : un `supply_cap` négatif produisait un ratio négatif | cap non positif → ratio `None` | `dea7f44` |
 | Axe épistémique : toutes hypothèses `REFUTED` donnait `INCONCLUSIVE` | décidable si chaque hypothèse est `SUPPORTED` ou `REFUTED` | `d761f4c` |
 | `load_policy` : champs numériques/listes mal typés provoquaient un traceback | validation explicite → `MiniYamlError` | `d761f4c` |
+| Corpus : une venue inconnue sans mapping source était conservée puis cassait la provenance | refus explicite `unknown_venue` | `af459ce` |
 
 ## 4. Limites de la revue
 
