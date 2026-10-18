@@ -19,7 +19,9 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(HERE)
 sys.path.insert(0, os.path.join(ROOT, "src"))
 
-from orvyren.policy import Intent, evaluate, load_policy  # noqa: E402
+from orvyren.policy import (  # noqa: E402
+    EVAL_MODE_SIMULATION, Intent, evaluate, load_policy,
+)
 from orvyren.policy.miniyaml import MiniYamlError  # noqa: E402
 from orvyren.policy.miniyaml import load as yaml_load  # noqa: E402
 from orvyren.policy.miniyaml import load_file as yaml_load_file  # noqa: E402
@@ -130,7 +132,7 @@ class TestPolicyV1Bundle(unittest.TestCase):
         intent = Intent(intent_id="i-1", action="transfer", chain_id=84532,
                         asset="0x036CbD53842c5426634e7929541eC2318f3dCF7e",
                         amount=50.0, recipient=RECIPIENTS["B"], created_at=NOW)
-        decision = evaluate(intent, cfg, now=NOW)
+        decision = evaluate(intent, cfg, now=NOW, mode=EVAL_MODE_SIMULATION)
         self.assertEqual(decision.verdict, "ALLOW")
         self.assertEqual(decision.policy_version, "v1.0")
         self.assertEqual(decision.policy_hash, bundle.policy_hash)

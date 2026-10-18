@@ -39,8 +39,17 @@ from orvyren.decision.predicates import evaluate_predicate  # noqa: E402
 from orvyren.decision.scenarios import (SUPPLY_METRIC, SUPPLY_VENUE,  # noqa: E402
                                         Observation, classify_hypotheses)
 from orvyren.policy import (ALLOWED_ASSET, ALLOWED_CHAIN_ID,  # noqa: E402
-                            Intent, PolicyConfig, PolicyState,
-                            default_config, evaluate, intent_fingerprint)
+                            EVAL_MODE_SIMULATION, Intent, PolicyConfig,
+                            PolicyState, default_config, intent_fingerprint,
+                            evaluate as _policy_evaluate)
+
+
+def evaluate(*args, **kwargs):
+    """Test bench = declared simulation (P1-3): production is the strict
+    default of ``orvyren.policy.evaluate``; these benches exercise rule logic
+    without a state snapshot, which is the declared simulation mode."""
+    kwargs.setdefault("mode", EVAL_MODE_SIMULATION)
+    return _policy_evaluate(*args, **kwargs)
 from orvyren.policy.miniyaml import MiniYamlError  # noqa: E402
 from orvyren.policy.miniyaml import load as yaml_load  # noqa: E402
 from orvyren.policy.miniyaml import load_file as yaml_load_file  # noqa: E402

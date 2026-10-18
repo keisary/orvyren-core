@@ -16,7 +16,17 @@ from datetime import datetime, timezone
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "src"))
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."))
 
-from orvyren.policy import ALLOWED_ASSET, ALLOWED_CHAIN_ID, default_config, evaluate  # noqa: E402
+from orvyren.policy import (ALLOWED_ASSET, ALLOWED_CHAIN_ID,  # noqa: E402
+                            EVAL_MODE_SIMULATION, default_config,
+                            evaluate as _policy_evaluate)
+
+
+def evaluate(*args, **kwargs):
+    """Test bench = declared simulation (P1-3): production is the strict
+    default of ``orvyren.policy.evaluate``; these benches exercise rule logic
+    without a state snapshot, which is the declared simulation mode."""
+    kwargs.setdefault("mode", EVAL_MODE_SIMULATION)
+    return _policy_evaluate(*args, **kwargs)
 
 from orvyren.execution.chain import (  # noqa: E402
     ChainError,

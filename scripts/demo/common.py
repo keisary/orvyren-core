@@ -46,6 +46,7 @@ from orvyren.execution import chain as chain_client  # noqa: E402
 from orvyren.execution.guard import mask_rpc_url, present_secret_env_names  # noqa: E402
 from orvyren.policy import (  # noqa: E402
     ALLOWED_ASSET,
+    EVAL_MODE_SIMULATION,
     Intent,
     PolicyConfig,
     evaluate,
@@ -635,8 +636,15 @@ def timedelta_hours(hours: int):
 
 def evaluate_policy(intent: Dict[str, Any], policy: PolicyReference, *,
                     now: Optional[datetime] = None, seen_intent_ids: Iterable[str] = (),
-                    cumulative_spent: float = 0.0):
-    """Deterministic verdict from the existing code (``orvyren.policy.evaluate``) on a v1 intent."""
+                    cumulative_spent: float = 0.0,
+                    mode: str = EVAL_MODE_SIMULATION):
+    """Deterministic verdict from the existing code (``orvyren.policy.evaluate``) on a v1 intent.
+
+    The demo kit replays and verifies **recorded** decisions (dry runs, offline
+    controls, preflight mismatch checks) — a declared ``EVAL_MODE_SIMULATION``
+    (P1-3). The production gates are ``run_executor`` (strict mode, state
+    required) and the on-chain Roles module; this helper never replaces them.
+    """
     moment = now or utc_now_dt()
     decision = evaluate(
         policy.to_policy_intent(intent),
@@ -644,6 +652,7 @@ def evaluate_policy(intent: Dict[str, Any], policy: PolicyReference, *,
         now=moment,
         seen_intent_ids=seen_intent_ids,
         cumulative_spent=cumulative_spent,
+        mode=mode,
     )
     return decision
 

@@ -139,7 +139,9 @@ def authorization_via_policy(amount_usdc, reserve_recipient, created_at=None,
         return {"verdict": None, "reasons": ["no reserve recipient configured — "
                                              "authorization not evaluated"],
                 "intent_id": None, "evaluated": False}
-    from orvyren.policy import ALLOWED_ASSET, ALLOWED_CHAIN_ID, Intent, default_config, evaluate
+    from orvyren.policy import (ALLOWED_ASSET, ALLOWED_CHAIN_ID,
+                                EVAL_MODE_SIMULATION, Intent, default_config,
+                                evaluate)
     moment = created_at or dt.datetime.now(dt.timezone.utc)
     if isinstance(moment, str):
         try:
@@ -164,7 +166,10 @@ def authorization_via_policy(amount_usdc, reserve_recipient, created_at=None,
         justification="ORVYREN decision dossier — bounded A-D1 demonstration transfer",
     )
     config = default_config(reserve_recipient)
-    decision = evaluate(intent, config, now=moment)
+    # The authorisation axis SIMULATES the candidate action against the policy
+    # (decision support): the execution gate itself is the production path
+    # (state required, fail-closed — P1-3).
+    decision = evaluate(intent, config, now=moment, mode=EVAL_MODE_SIMULATION)
     return {"verdict": decision.verdict, "reasons": list(decision.reasons),
             "intent_id": intent.intent_id, "evaluated": True}
 

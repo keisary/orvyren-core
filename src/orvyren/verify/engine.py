@@ -664,9 +664,14 @@ def check_a5_policy(root: str, manifest: Dict[str, Any]) -> List[Dict[str, Any]]
                 allowed_recipients=frozenset(allowed_recipients),
                 max_per_tx=max_per_tx, max_cumulative=max_cumulative,
                 permission_expires_at=(moment + dt.timedelta(hours=ttl_hours)) if moment else None)
-            decision = _policy_mod.evaluate(intent_obj, config, now=moment,
-                                            seen_intent_ids=tuple(seen),
-                                            cumulative_spent=cumulative)
+            # Verification recomputes RECORDED history — a declared simulation
+            # (P1-3): the recorded verdicts were produced in sessions holding
+            # their state, this recomputation has none and must not silently
+            # turn into a production refusal.
+            decision = _policy_mod.evaluate(
+                intent_obj, config, now=moment,
+                seen_intent_ids=tuple(seen), cumulative_spent=cumulative,
+                mode=_policy_mod.EVAL_MODE_SIMULATION)
         except Exception as exc:  # noqa: BLE001 - never abort the report
             results.append({"intent_id": intent_id, "ok": False,
                             "reason": "evaluate() raised %s" % exc})

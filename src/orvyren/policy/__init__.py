@@ -22,12 +22,23 @@ that is not evaluated appears as `SKIPPED` with its reason — never silent.
 Principles (DOC2 §5.5.1): fail-closed, deny-by-default, stable codes,
 full evaluation of the applicable rules, verdict DENY > REQUIRE_APPROVAL > ALLOW.
 
-The "state" rules (P7, P11, P12, P14) activate only when the caller
-supplies a `PolicyState` — then **fail-closed**: an unreadable required
-field (None/invalid) is a denial, never a "we assume". The v1 parameters
-(intent TTL, function registry, decimals) come from
-`policy_v1.yaml` via `load_policy()` (source of truth for the parameters,
-DOC2 §5.5.3); without them, the rules concerned are `SKIPPED` (legacy mode).
+Evaluation modes are **explicit** (never implicit):
+  * `EVAL_MODE_PRODUCTION` (default): a `PolicyState` snapshot is REQUIRED.
+    If the caller supplies none, the evaluation **refuses** with the stable
+    code `STATE_REQUIRED` — the state rules are recorded as failures, never
+    `SKIPPED` (fail-closed: forgetting the state must not silently produce a
+    laxer verdict).
+  * `EVAL_MODE_SIMULATION`: declared explicitly (tests, offline replays).
+    Without a state, P7/P11/P12/P14 stay `SKIPPED` with a note naming the
+    simulation mode — a declared, documented simulation, never a silent
+    legacy path.
+
+When a `PolicyState` is supplied, "required" fields are **fail-closed**: an
+unreadable required field (None/invalid) is a denial, never a "we assume",
+in both modes. The v1 parameters (intent TTL, function registry, decimals)
+come from `policy_v1.yaml` via `load_policy()` (source of truth for the
+parameters, DOC2 §5.5.3); without them, the rules concerned are `SKIPPED`
+(legacy mode).
 
 Running the tests: python -m unittest discover -s tests -v
 """
@@ -64,6 +75,19 @@ ENVELOPE_UNVERIFIED = "UNVERIFIED"
 #: Denial codes (P12) that trigger SAFE MODE — distinct from envelope statuses.
 SAFE_MODE_CODES = ("ENVELOPE_DRIFT", "ENVELOPE_UNVERIFIED")
 
+#: Evaluation modes (`evaluate(mode=...)`). Production is the fail-closed
+#: default; a simulation run must declare `EVAL_MODE_SIMULATION` explicitly —
+#: simulation is never implicit (a caller that forgets the state is refused,
+#: not silently simulated).
+EVAL_MODE_PRODUCTION = "production"
+EVAL_MODE_SIMULATION = "simulation"
+EVAL_MODES = frozenset({EVAL_MODE_PRODUCTION, EVAL_MODE_SIMULATION})
+
+#: Denial code: production evaluation without a `PolicyState` snapshot — the
+#: state rules cannot be verified, so the intent is refused (fail-closed).
+#: A state rule is never `SKIPPED` in production.
+STATE_REQUIRED = "STATE_REQUIRED"
+
 #: The 14 labels of the v1 set — used by the test bench as a registry.
 RULES_V1 = (
     "P1-chain", "P2-asset", "P3-recipient", "P4-function", "P5-amount",
@@ -81,7 +105,7 @@ DENY_CODES_V1 = frozenset({
     "PERMISSION_MISSING", "PERMISSION_EXPIRED",
     "INTENT_STALE", "INTENT_NOT_YET_VALID",
     "INTENT_ALREADY_PROCESSED",
-    "PAUSED", "AGENT_NOT_MEMBER",
+    "PAUSED", "AGENT_NOT_MEMBER", "STATE_REQUIRED",
     "ENVELOPE_DRIFT", "ENVELOPE_UNVERIFIED",
     "ACTION_UNKNOWN",
     "BUDGET_EXCEEDED", "BUDGET_UNREADABLE",
@@ -387,13 +411,24 @@ def load_policy(path, recipients: Optional[dict] = None) -> PolicyBundle:
 def evaluate(intent: Intent, config: PolicyConfig, now: datetime | None = None,
              seen_intent_ids: Iterable[str] = (), cumulative_spent: float = 0.0,
              state: Optional[PolicyState] = None,
-             seen_intent_hashes: Iterable[str] = ()) -> PolicyDecision:
+             seen_intent_hashes: Iterable[str] = (),
+             mode: str = EVAL_MODE_PRODUCTION) -> PolicyDecision:
     """Return the deterministic verdict for a given intent (14 applicable rules).
 
-    `state`: external-state snapshot (P7/P11/P12/P14). If supplied, the
-    required fields must be readable — otherwise denial (fail-closed).
+    `mode`: `EVAL_MODE_PRODUCTION` (default, fail-closed) or a simulation
+    declared with `EVAL_MODE_SIMULATION` — never implicit; an unknown mode is
+    a hard error. `state`: external-state snapshot (P7/P11/P12/P14). In
+    production it is REQUIRED: without it the evaluation refuses with
+    `STATE_REQUIRED` and the state rules are recorded as failures, never
+    `SKIPPED`. A declared simulation without a state keeps documented
+    `SKIPPED` entries (tests, offline replays). With a supplied state, the
+    required fields must be readable — otherwise denial (fail-closed) in
+    both modes.
     `seen_intent_hashes`: already-processed fingerprints (P10, dedup by content).
     """
+    if not isinstance(mode, str) or mode not in EVAL_MODES:
+        raise ValueError("unknown evaluation mode: %r (expected one of: %s)"
+                         % (mode, ", ".join(sorted(EVAL_MODES))))
     now = _aware(now or datetime.now(timezone.utc))
     reasons, evaluated = [], []
 
@@ -409,6 +444,18 @@ def evaluate(intent: Intent, config: PolicyConfig, now: datetime | None = None,
 
     def skip(rule, note):
         evaluated.append({"rule": rule, "result": "SKIPPED", "note": note})
+
+    def unverified(rule):
+        """State rule with no snapshot: refused in production, skipped only in
+        a declared simulation — never a silent legacy skip (fail-closed)."""
+        if mode == EVAL_MODE_SIMULATION:
+            skip(rule, "state not supplied — simulation mode (declared)")
+        else:
+            evaluated.append({"rule": rule, "result": "FAIL", "code": STATE_REQUIRED,
+                              "note": "state not supplied — production evaluation "
+                                      "cannot verify this rule (fail-closed refusal)"})
+            if STATE_REQUIRED not in reasons:
+                reasons.append(STATE_REQUIRED)
 
     def decision():
         return PolicyDecision("DENY" if reasons else "ALLOW", list(reasons), evaluated,
@@ -503,9 +550,9 @@ def evaluate(intent: Intent, config: PolicyConfig, now: datetime | None = None,
     else:
         ok("P6-cumulative", f"{cumulative_spent + max(intent.amount, 0)} <= {config.max_cumulative}")
 
-    # P7 — exposure / balance (state required if `state` is supplied)
+    # P7 — exposure / balance (production requires a state snapshot)
     if state is None:
-        skip("P7-exposure", "state not supplied (legacy call)")
+        unverified("P7-exposure")
     else:
         balance = state.available_balance
         if balance is None or not _finite_number(balance):
@@ -565,9 +612,9 @@ def evaluate(intent: Intent, config: PolicyConfig, now: datetime | None = None,
     else:
         ok("P10-idempotency")
 
-    # P11 — pause / kill switch (state required if `state` is supplied)
+    # P11 — pause / kill switch (production requires a state snapshot)
     if state is None:
-        skip("P11-pause", "state not supplied (legacy call)")
+        unverified("P11-pause")
     else:
         if not isinstance(state.paused, bool):
             fail("P11-pause", "PAUSED", "pause state unreadable — fail closed")
@@ -582,7 +629,7 @@ def evaluate(intent: Intent, config: PolicyConfig, now: datetime | None = None,
 
     # P12 — envelope alignment (SAFE MODE)
     if state is None:
-        skip("P12-envelope", "state not supplied (legacy call)")
+        unverified("P12-envelope")
     else:
         status = str(state.envelope_status or "").strip().upper()
         if status == ENVELOPE_DRIFT:
@@ -593,9 +640,10 @@ def evaluate(intent: Intent, config: PolicyConfig, now: datetime | None = None,
         else:
             ok("P12-envelope")
 
-    # P14 — decision budget (optional: None/None = not configured)
+    # P14 — decision budget (optional: None/None with a supplied state = declared
+    # "not configured"; without any state it is unverifiable — refused in production)
     if state is None:
-        skip("P14-budget", "state not supplied (legacy call)")
+        unverified("P14-budget")
     elif state.budget_spent is None and state.budget_cap is None:
         skip("P14-budget", "decision budget not configured")
     else:
