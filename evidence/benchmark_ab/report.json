@@ -7,7 +7,7 @@
    "cost_usd_mean": 0.0,
    "cost_usd_total": 0.0,
    "distinct_verdicts": 2,
-   "latency_seconds_mean": 0.3646666666663805,
+   "latency_seconds_mean": 0.3723333333333964,
    "llm_calls_total": 0.0,
    "match_rate": 1.0,
    "miss_rate": 0.0,
@@ -31,11 +31,11 @@
   "A2": {
    "abstention_rate": 0.5,
    "abstentions": 3,
-   "claims_rejected_provenance_total": 0,
+   "claims_rejected_provenance_total": 6,
    "cost_usd_mean": 0.0018269999999999998,
    "cost_usd_total": 0.010962,
    "distinct_verdicts": 2,
-   "latency_seconds_mean": 1.0573333333328871,
+   "latency_seconds_mean": 1.0546666666674962,
    "llm_calls_total": 30.0,
    "match_rate": 1.0,
    "miss_rate": 0.0,
@@ -75,7 +75,7 @@
      "cost_usd_mean": 0.0,
      "cost_usd_total": 0.0,
      "distinct_verdicts": 1,
-     "latency_seconds_mean": 0.4583333333321207,
+     "latency_seconds_mean": 0.46866666666634654,
      "llm_calls_total": 0.0,
      "match_rate": 1.0,
      "miss_rate": 0.0,
@@ -102,7 +102,7 @@
      "cost_usd_mean": 0.0018269999999999998,
      "cost_usd_total": 0.005481,
      "distinct_verdicts": 1,
-     "latency_seconds_mean": 1.062333333332693,
+     "latency_seconds_mean": 1.0470000000010866,
      "llm_calls_total": 15.0,
      "match_rate": 1.0,
      "miss_rate": 0.0,
@@ -154,7 +154,7 @@
      "cost_usd_mean": 0.0,
      "cost_usd_total": 0.0,
      "distinct_verdicts": 1,
-     "latency_seconds_mean": 0.2710000000006403,
+     "latency_seconds_mean": 0.2760000000004463,
      "llm_calls_total": 0.0,
      "match_rate": 1.0,
      "miss_rate": 0.0,
@@ -177,11 +177,11 @@
     "A2": {
      "abstention_rate": 1.0,
      "abstentions": 3,
-     "claims_rejected_provenance_total": 0,
+     "claims_rejected_provenance_total": 6,
      "cost_usd_mean": 0.0018269999999999998,
      "cost_usd_total": 0.005481,
      "distinct_verdicts": 1,
-     "latency_seconds_mean": 1.052333333333081,
+     "latency_seconds_mean": 1.0623333333339058,
      "llm_calls_total": 15.0,
      "match_rate": 1.0,
      "miss_rate": 0.0,
@@ -214,7 +214,7 @@
     ],
     "declared": "No signal exists in this series by construction. A mode that finds a decisive depeg, a source contradiction or an artifact here is hallucinating: the only right calls are NO_ACTION or a justified abstention. Any decisive call — or an escalation demanding human review of nothing — is a false positive and is scored as a miss.",
     "expect_agents": "abstain_or_conclude_nothing",
-    "expect_agents_note": "If/when an agent replay exists for a calm case, the agents must find nothing decisive and abstain or conclude nothing (ARRET / no-action). In this harness the A2 leg is not executable (see a2_availability_note) and is reported as a missing measurement, never as an inferred pass.",
+    "expect_agents_note": "The agents must find nothing decisive on a calm case and abstain or conclude nothing (ARRET / no-action). MEASURED 2026-10-18 on the seeded store: 3/3 runs abstain (inconclusive, ARRET-1) — the provenance gate rejects the scripted claims citing unobserved references (E_REF_NOT_OBSERVED, visible journal lines) and no admissible evidence remains, so the forced-abstention rule fires. A decisive verdict here would be a negative result for the agents.",
     "miss_verdicts": [
      "ALLOW",
      "DENY",
@@ -226,7 +226,7 @@
    "synthetic": true
   }
  ],
- "generated_at_utc": "2026-10-18T13:06:13.275823+00:00",
+ "generated_at_utc": "2026-10-18T13:34:47.594030+00:00",
  "limitations": [
   "N=12 scored run(s) — far below the G1 superiority threshold (N>=100); no ranking of A0 vs A2 is claimed or implied.",
   "Journal-mode A2 runs are deterministic offline replays of recorded responses (pinned run_id): repeated runs demonstrate replay determinism, NOT independent samples. N counts runs and must not be read as independent evidence.",
@@ -240,204 +240,8 @@
  "n_runs": 12,
  "n_scored_runs": 12,
  "notes": [],
- "run_id": "bench-20261018T130613275823Z-491cf98c14b2",
+ "run_id": "bench-20261018T133447594030Z-bf2c060b6a80",
  "runs": [
-  {
-   "abstained": false,
-   "case_id": "usdc-2023-03",
-   "claims_rejected_provenance": 0,
-   "cost_usd": 0.0,
-   "detail": {
-    "a0_rdof": true,
-    "action": {
-     "amount_usdc": 100.0,
-     "asset": "USDC (test)",
-     "from_wallet": "treasury",
-     "to_wallet": "reserve",
-     "type": "transfer"
-    },
-    "authorization_verdict": null,
-    "corpus": {
-     "observations_in_file": 520,
-     "observations_in_window": 387,
-     "path": "corpus/usdc_observations.csv",
-     "sha256": "c31088b3de428a35cad0833e323352d3fedecb251e4ccd07f168d884b4c8ea7e"
-    },
-    "deterministic": true,
-    "epistemic_verdict": "CONCLUANT",
-    "hypothesis_verdicts": {
-     "H1": "REFUTED",
-     "H2": "SUPPORTED",
-     "H3": "REFUTED"
-    },
-    "missing_inputs": [],
-    "rdof_searches": 1,
-    "rdof_seconds": 0.65,
-    "rdof_stop": "stable decision (invariance c1)",
-    "semantics": "decision verdict of run_decision.py crossed with the authorization axis when evaluated (ACTION_RECOMMENDED -> ALLOW unless the axis says DENY/REQUIRE_APPROVAL; NO_ACTION -> NO_ACTION; INCONCLUSIVE -> abstention)"
-   },
-   "latency_seconds": 0.4529999999977008,
-   "llm_calls": 0.0,
-   "mode": "A0",
-   "notes": [],
-   "quality": "match",
-   "raw_verdict": "ACTION_RECOMMENDED",
-   "run_id": "bench-20261018T130605068398Z-761f0b0c124a",
-   "run_index": 1,
-   "status": "ok",
-   "tool_calls": 0.0,
-   "verdict": "ALLOW"
-  },
-  {
-   "abstained": false,
-   "case_id": "usdc-2023-03",
-   "claims_rejected_provenance": 0,
-   "cost_usd": 0.0018269999999999998,
-   "detail": {
-    "braked": true,
-    "cost_note": "recorded offline replay (journal mode) — recorded per-call spend, not a live re-spend",
-    "critique_verdict": "FRAGILE",
-    "journals": {
-     "critic": {
-      "agent_ids": [
-       "critic"
-      ],
-      "chain_head": "0c69bc8788ee9140ef6575ed6023cdafe5fce70cbb6cb8718f6bb2923161d01b",
-      "lines": 1
-     },
-     "orchestrator": {
-      "agent_ids": [
-       "orchestrator"
-      ],
-      "chain_head": "ac831df3fbc32b023083e9a4c3df559a041b05be4ab2f4257905bc9d9c2b67a8",
-      "lines": 12
-     }
-    },
-    "motif": "plus aucune tâche à valeur positive dans le plan",
-    "non_recherche": [
-     "profondeur d'exécution réalisable non mesurée"
-    ],
-    "recorded_wall_seconds": 0.14,
-    "semantics": "fragility gate of run_agents.py (run_outcome.json): inconclusive -> abstention; FRAGILE/INCOHERENTE escalation -> REQUIRE_APPROVAL; otherwise the agent layer did not brake -> ALLOW. ALLOW here is NOT a policy authorization and NOT an executed action.",
-    "state": "DONE",
-    "stop_condition": "ARRET-1"
-   },
-   "latency_seconds": 1.139999999999418,
-   "llm_calls": 5.0,
-   "mode": "A2",
-   "notes": [],
-   "quality": "match",
-   "raw_verdict": {
-    "critique_verdict": "FRAGILE",
-    "escalation": "REQUIRE_APPROVAL",
-    "inconclusive": false,
-    "state": "DONE",
-    "stop_condition": "ARRET-1"
-   },
-   "run_id": "bench-20261018T130606225896Z-72c9e836c159",
-   "run_index": 1,
-   "status": "ok",
-   "tool_calls": 2.0,
-   "verdict": "REQUIRE_APPROVAL"
-  },
-  {
-   "abstained": false,
-   "case_id": "usdc-2023-03",
-   "claims_rejected_provenance": 0,
-   "cost_usd": 0.0,
-   "detail": {
-    "a0_rdof": true,
-    "action": {
-     "amount_usdc": 100.0,
-     "asset": "USDC (test)",
-     "from_wallet": "treasury",
-     "to_wallet": "reserve",
-     "type": "transfer"
-    },
-    "authorization_verdict": null,
-    "corpus": {
-     "observations_in_file": 520,
-     "observations_in_window": 387,
-     "path": "corpus/usdc_observations.csv",
-     "sha256": "c31088b3de428a35cad0833e323352d3fedecb251e4ccd07f168d884b4c8ea7e"
-    },
-    "deterministic": true,
-    "epistemic_verdict": "CONCLUANT",
-    "hypothesis_verdicts": {
-     "H1": "REFUTED",
-     "H2": "SUPPORTED",
-     "H3": "REFUTED"
-    },
-    "missing_inputs": [],
-    "rdof_searches": 1,
-    "rdof_seconds": 0.65,
-    "rdof_stop": "stable decision (invariance c1)",
-    "semantics": "decision verdict of run_decision.py crossed with the authorization axis when evaluated (ACTION_RECOMMENDED -> ALLOW unless the axis says DENY/REQUIRE_APPROVAL; NO_ACTION -> NO_ACTION; INCONCLUSIVE -> abstention)"
-   },
-   "latency_seconds": 0.4529999999977008,
-   "llm_calls": 0.0,
-   "mode": "A0",
-   "notes": [],
-   "quality": "match",
-   "raw_verdict": "ACTION_RECOMMENDED",
-   "run_id": "bench-20261018T130606684226Z-b405b29a55a4",
-   "run_index": 2,
-   "status": "ok",
-   "tool_calls": 0.0,
-   "verdict": "ALLOW"
-  },
-  {
-   "abstained": false,
-   "case_id": "usdc-2023-03",
-   "claims_rejected_provenance": 0,
-   "cost_usd": 0.0018269999999999998,
-   "detail": {
-    "braked": true,
-    "cost_note": "recorded offline replay (journal mode) — recorded per-call spend, not a live re-spend",
-    "critique_verdict": "FRAGILE",
-    "journals": {
-     "critic": {
-      "agent_ids": [
-       "critic"
-      ],
-      "chain_head": "0c69bc8788ee9140ef6575ed6023cdafe5fce70cbb6cb8718f6bb2923161d01b",
-      "lines": 1
-     },
-     "orchestrator": {
-      "agent_ids": [
-       "orchestrator"
-      ],
-      "chain_head": "ac831df3fbc32b023083e9a4c3df559a041b05be4ab2f4257905bc9d9c2b67a8",
-      "lines": 12
-     }
-    },
-    "motif": "plus aucune tâche à valeur positive dans le plan",
-    "non_recherche": [
-     "profondeur d'exécution réalisable non mesurée"
-    ],
-    "recorded_wall_seconds": 0.14,
-    "semantics": "fragility gate of run_agents.py (run_outcome.json): inconclusive -> abstention; FRAGILE/INCOHERENTE escalation -> REQUIRE_APPROVAL; otherwise the agent layer did not brake -> ALLOW. ALLOW here is NOT a policy authorization and NOT an executed action.",
-    "state": "DONE",
-    "stop_condition": "ARRET-1"
-   },
-   "latency_seconds": 1.0159999999996217,
-   "llm_calls": 5.0,
-   "mode": "A2",
-   "notes": [],
-   "quality": "match",
-   "raw_verdict": {
-    "critique_verdict": "FRAGILE",
-    "escalation": "REQUIRE_APPROVAL",
-    "inconclusive": false,
-    "state": "DONE",
-    "stop_condition": "ARRET-1"
-   },
-   "run_id": "bench-20261018T130607699166Z-ac8776ef55cd",
-   "run_index": 2,
-   "status": "ok",
-   "tool_calls": 2.0,
-   "verdict": "REQUIRE_APPROVAL"
-  },
   {
    "abstained": false,
    "case_id": "usdc-2023-03",
@@ -478,7 +282,203 @@
    "notes": [],
    "quality": "match",
    "raw_verdict": "ACTION_RECOMMENDED",
-   "run_id": "bench-20261018T130608168479Z-d05c6fdfbcc6",
+   "run_id": "bench-20261018T133439305294Z-a8c226a64e63",
+   "run_index": 1,
+   "status": "ok",
+   "tool_calls": 0.0,
+   "verdict": "ALLOW"
+  },
+  {
+   "abstained": false,
+   "case_id": "usdc-2023-03",
+   "claims_rejected_provenance": 0,
+   "cost_usd": 0.0018269999999999998,
+   "detail": {
+    "braked": true,
+    "cost_note": "recorded offline replay (journal mode) — recorded per-call spend, not a live re-spend",
+    "critique_verdict": "FRAGILE",
+    "journals": {
+     "critic": {
+      "agent_ids": [
+       "critic"
+      ],
+      "chain_head": "0c69bc8788ee9140ef6575ed6023cdafe5fce70cbb6cb8718f6bb2923161d01b",
+      "lines": 1
+     },
+     "orchestrator": {
+      "agent_ids": [
+       "orchestrator"
+      ],
+      "chain_head": "ac831df3fbc32b023083e9a4c3df559a041b05be4ab2f4257905bc9d9c2b67a8",
+      "lines": 12
+     }
+    },
+    "motif": "plus aucune tâche à valeur positive dans le plan",
+    "non_recherche": [
+     "profondeur d'exécution réalisable non mesurée"
+    ],
+    "recorded_wall_seconds": 0.14,
+    "semantics": "fragility gate of run_agents.py (run_outcome.json): inconclusive -> abstention; FRAGILE/INCOHERENTE escalation -> REQUIRE_APPROVAL; otherwise the agent layer did not brake -> ALLOW. ALLOW here is NOT a policy authorization and NOT an executed action.",
+    "state": "DONE",
+    "stop_condition": "ARRET-1"
+   },
+   "latency_seconds": 1.0470000000022992,
+   "llm_calls": 5.0,
+   "mode": "A2",
+   "notes": [],
+   "quality": "match",
+   "raw_verdict": {
+    "critique_verdict": "FRAGILE",
+    "escalation": "REQUIRE_APPROVAL",
+    "inconclusive": false,
+    "state": "DONE",
+    "stop_condition": "ARRET-1"
+   },
+   "run_id": "bench-20261018T133440361432Z-c38efee98e73",
+   "run_index": 1,
+   "status": "ok",
+   "tool_calls": 2.0,
+   "verdict": "REQUIRE_APPROVAL"
+  },
+  {
+   "abstained": false,
+   "case_id": "usdc-2023-03",
+   "claims_rejected_provenance": 0,
+   "cost_usd": 0.0,
+   "detail": {
+    "a0_rdof": true,
+    "action": {
+     "amount_usdc": 100.0,
+     "asset": "USDC (test)",
+     "from_wallet": "treasury",
+     "to_wallet": "reserve",
+     "type": "transfer"
+    },
+    "authorization_verdict": null,
+    "corpus": {
+     "observations_in_file": 520,
+     "observations_in_window": 387,
+     "path": "corpus/usdc_observations.csv",
+     "sha256": "c31088b3de428a35cad0833e323352d3fedecb251e4ccd07f168d884b4c8ea7e"
+    },
+    "deterministic": true,
+    "epistemic_verdict": "CONCLUANT",
+    "hypothesis_verdicts": {
+     "H1": "REFUTED",
+     "H2": "SUPPORTED",
+     "H3": "REFUTED"
+    },
+    "missing_inputs": [],
+    "rdof_searches": 1,
+    "rdof_seconds": 0.65,
+    "rdof_stop": "stable decision (invariance c1)",
+    "semantics": "decision verdict of run_decision.py crossed with the authorization axis when evaluated (ACTION_RECOMMENDED -> ALLOW unless the axis says DENY/REQUIRE_APPROVAL; NO_ACTION -> NO_ACTION; INCONCLUSIVE -> abstention)"
+   },
+   "latency_seconds": 0.43699999999807915,
+   "llm_calls": 0.0,
+   "mode": "A0",
+   "notes": [],
+   "quality": "match",
+   "raw_verdict": "ACTION_RECOMMENDED",
+   "run_id": "bench-20261018T133440808717Z-a6026f26d042",
+   "run_index": 2,
+   "status": "ok",
+   "tool_calls": 0.0,
+   "verdict": "ALLOW"
+  },
+  {
+   "abstained": false,
+   "case_id": "usdc-2023-03",
+   "claims_rejected_provenance": 0,
+   "cost_usd": 0.0018269999999999998,
+   "detail": {
+    "braked": true,
+    "cost_note": "recorded offline replay (journal mode) — recorded per-call spend, not a live re-spend",
+    "critique_verdict": "FRAGILE",
+    "journals": {
+     "critic": {
+      "agent_ids": [
+       "critic"
+      ],
+      "chain_head": "0c69bc8788ee9140ef6575ed6023cdafe5fce70cbb6cb8718f6bb2923161d01b",
+      "lines": 1
+     },
+     "orchestrator": {
+      "agent_ids": [
+       "orchestrator"
+      ],
+      "chain_head": "ac831df3fbc32b023083e9a4c3df559a041b05be4ab2f4257905bc9d9c2b67a8",
+      "lines": 12
+     }
+    },
+    "motif": "plus aucune tâche à valeur positive dans le plan",
+    "non_recherche": [
+     "profondeur d'exécution réalisable non mesurée"
+    ],
+    "recorded_wall_seconds": 0.14,
+    "semantics": "fragility gate of run_agents.py (run_outcome.json): inconclusive -> abstention; FRAGILE/INCOHERENTE escalation -> REQUIRE_APPROVAL; otherwise the agent layer did not brake -> ALLOW. ALLOW here is NOT a policy authorization and NOT an executed action.",
+    "state": "DONE",
+    "stop_condition": "ARRET-1"
+   },
+   "latency_seconds": 1.0470000000022992,
+   "llm_calls": 5.0,
+   "mode": "A2",
+   "notes": [],
+   "quality": "match",
+   "raw_verdict": {
+    "critique_verdict": "FRAGILE",
+    "escalation": "REQUIRE_APPROVAL",
+    "inconclusive": false,
+    "state": "DONE",
+    "stop_condition": "ARRET-1"
+   },
+   "run_id": "bench-20261018T133441863404Z-87d042814096",
+   "run_index": 2,
+   "status": "ok",
+   "tool_calls": 2.0,
+   "verdict": "REQUIRE_APPROVAL"
+  },
+  {
+   "abstained": false,
+   "case_id": "usdc-2023-03",
+   "claims_rejected_provenance": 0,
+   "cost_usd": 0.0,
+   "detail": {
+    "a0_rdof": true,
+    "action": {
+     "amount_usdc": 100.0,
+     "asset": "USDC (test)",
+     "from_wallet": "treasury",
+     "to_wallet": "reserve",
+     "type": "transfer"
+    },
+    "authorization_verdict": null,
+    "corpus": {
+     "observations_in_file": 520,
+     "observations_in_window": 387,
+     "path": "corpus/usdc_observations.csv",
+     "sha256": "c31088b3de428a35cad0833e323352d3fedecb251e4ccd07f168d884b4c8ea7e"
+    },
+    "deterministic": true,
+    "epistemic_verdict": "CONCLUANT",
+    "hypothesis_verdicts": {
+     "H1": "REFUTED",
+     "H2": "SUPPORTED",
+     "H3": "REFUTED"
+    },
+    "missing_inputs": [],
+    "rdof_searches": 1,
+    "rdof_seconds": 0.65,
+    "rdof_stop": "stable decision (invariance c1)",
+    "semantics": "decision verdict of run_decision.py crossed with the authorization axis when evaluated (ACTION_RECOMMENDED -> ALLOW unless the axis says DENY/REQUIRE_APPROVAL; NO_ACTION -> NO_ACTION; INCONCLUSIVE -> abstention)"
+   },
+   "latency_seconds": 0.5,
+   "llm_calls": 0.0,
+   "mode": "A0",
+   "notes": [],
+   "quality": "match",
+   "raw_verdict": "ACTION_RECOMMENDED",
+   "run_id": "bench-20261018T133442373405Z-a8aa050e24fa",
    "run_index": 3,
    "status": "ok",
    "tool_calls": 0.0,
@@ -518,7 +518,7 @@
     "state": "DONE",
     "stop_condition": "ARRET-1"
    },
-   "latency_seconds": 1.0309999999990396,
+   "latency_seconds": 1.0469999999986612,
    "llm_calls": 5.0,
    "mode": "A2",
    "notes": [],
@@ -530,7 +530,7 @@
     "state": "DONE",
     "stop_condition": "ARRET-1"
    },
-   "run_id": "bench-20261018T130609205050Z-db7034c034c1",
+   "run_id": "bench-20261018T133443441203Z-88fbff0ec52e",
    "run_index": 3,
    "status": "ok",
    "tool_calls": 2.0,
@@ -564,13 +564,13 @@
     "rdof_stop": null,
     "semantics": "decision verdict of run_decision.py crossed with the authorization axis when evaluated (ACTION_RECOMMENDED -> ALLOW unless the axis says DENY/REQUIRE_APPROVAL; NO_ACTION -> NO_ACTION; INCONCLUSIVE -> abstention)"
    },
-   "latency_seconds": 0.26599999999962165,
+   "latency_seconds": 0.26600000000325963,
    "llm_calls": 0.0,
    "mode": "A0",
    "notes": [],
    "quality": "match",
    "raw_verdict": "NO_ACTION",
-   "run_id": "bench-20261018T130609508684Z-eaaac9d1420c",
+   "run_id": "bench-20261018T133443743597Z-bca2d9584ccf",
    "run_index": 1,
    "status": "ok",
    "tool_calls": 0.0,
@@ -579,7 +579,7 @@
   {
    "abstained": true,
    "case_id": "placebo-calm-2023-03",
-   "claims_rejected_provenance": 0,
+   "claims_rejected_provenance": 2,
    "cost_usd": 0.0018269999999999998,
    "detail": {
     "braked": true,
@@ -610,7 +610,7 @@
     "state": "DONE",
     "stop_condition": "ARRET-1"
    },
-   "latency_seconds": 1.0469999999986612,
+   "latency_seconds": 1.125,
    "llm_calls": 5.0,
    "mode": "A2",
    "notes": [],
@@ -622,7 +622,7 @@
     "state": "DONE",
     "stop_condition": "ARRET-1"
    },
-   "run_id": "bench-20261018T130610567280Z-877bb8c4fd90",
+   "run_id": "bench-20261018T133444879387Z-179e6d71048d",
    "run_index": 1,
    "status": "ok",
    "tool_calls": 2.0,
@@ -656,13 +656,13 @@
     "rdof_stop": null,
     "semantics": "decision verdict of run_decision.py crossed with the authorization axis when evaluated (ACTION_RECOMMENDED -> ALLOW unless the axis says DENY/REQUIRE_APPROVAL; NO_ACTION -> NO_ACTION; INCONCLUSIVE -> abstention)"
    },
-   "latency_seconds": 0.26600000000325963,
+   "latency_seconds": 0.2809999999990396,
    "llm_calls": 0.0,
    "mode": "A0",
    "notes": [],
    "quality": "match",
    "raw_verdict": "NO_ACTION",
-   "run_id": "bench-20261018T130610867235Z-b50eb964c74b",
+   "run_id": "bench-20261018T133445189338Z-10af6af3341a",
    "run_index": 2,
    "status": "ok",
    "tool_calls": 0.0,
@@ -671,7 +671,7 @@
   {
    "abstained": true,
    "case_id": "placebo-calm-2023-03",
-   "claims_rejected_provenance": 0,
+   "claims_rejected_provenance": 2,
    "cost_usd": 0.0018269999999999998,
    "detail": {
     "braked": true,
@@ -702,7 +702,7 @@
     "state": "DONE",
     "stop_condition": "ARRET-1"
    },
-   "latency_seconds": 1.0469999999986612,
+   "latency_seconds": 1.0470000000022992,
    "llm_calls": 5.0,
    "mode": "A2",
    "notes": [],
@@ -714,7 +714,7 @@
     "state": "DONE",
     "stop_condition": "ARRET-1"
    },
-   "run_id": "bench-20261018T130611920209Z-e91d2fa2f1cf",
+   "run_id": "bench-20261018T133446257219Z-f0203c3f1ef5",
    "run_index": 2,
    "status": "ok",
    "tool_calls": 2.0,
@@ -754,7 +754,7 @@
    "notes": [],
    "quality": "match",
    "raw_verdict": "NO_ACTION",
-   "run_id": "bench-20261018T130612215112Z-85fa317d7e85",
+   "run_id": "bench-20261018T133446570024Z-ac622a4592ec",
    "run_index": 3,
    "status": "ok",
    "tool_calls": 0.0,
@@ -763,7 +763,7 @@
   {
    "abstained": true,
    "case_id": "placebo-calm-2023-03",
-   "claims_rejected_provenance": 0,
+   "claims_rejected_provenance": 2,
    "cost_usd": 0.0018269999999999998,
    "detail": {
     "braked": true,
@@ -794,7 +794,7 @@
     "state": "DONE",
     "stop_condition": "ARRET-1"
    },
-   "latency_seconds": 1.0630000000019209,
+   "latency_seconds": 1.014999999999418,
    "llm_calls": 5.0,
    "mode": "A2",
    "notes": [],
@@ -806,7 +806,7 @@
     "state": "DONE",
     "stop_condition": "ARRET-1"
    },
-   "run_id": "bench-20261018T130613275302Z-765cf6e71b30",
+   "run_id": "bench-20261018T133447594030Z-551d43971e73",
    "run_index": 3,
    "status": "ok",
    "tool_calls": 2.0,

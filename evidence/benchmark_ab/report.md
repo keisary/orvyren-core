@@ -2,7 +2,7 @@
 
 > **small-N diagnostic run — no superiority claim (G1 threshold N>=100 not reached)**
 
-- run_id: `bench-20261018T130613275823Z-491cf98c14b2`
+- run_id: `bench-20261018T133447594030Z-bf2c060b6a80`
 - N scored runs: **12** (total runs: 12)
 - modes: A0, A2 — same episodes, same declared budgets
 - declared budget (identical for both modes): {"cost_usd": 0.1, "llm_calls": 30, "note": "Identical declared caps for both modes and every run. These are the caps the recorded A2 replay store was recorded under (fixtures/agents/usdc-2023-03 run budget, run_agents.py A5 frozen ceilings) \u2014 a replay under different caps fails cleanly (E_LLM_NOT_RECORDED -> ARRET-3 abstention) instead of improvising. A0 is deterministic and consumes none of them (0 by construction).", "tool_calls": 12, "wall_seconds": 600}
@@ -16,10 +16,10 @@
 
 | case | synthetic | mode | N runs | verdicts (counts) | match | miss | other | abstentions | cost USD (total) | latency s (mean) | LLM calls | tool calls | claims rejected (provenance) |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-| usdc-2023-03 | no | A0 | 3 | ALLOW:3 | 3 | 0 | 0 | 0 | 0.0000 | 0.4583 | 0.0000 | 0.0000 | 0 |
-| usdc-2023-03 | no | A2 | 3 | REQUIRE_APPROVAL:3 | 3 | 0 | 0 | 0 | 0.0055 | 1.0623 | 15.0000 | 6.0000 | 0 |
-| placebo-calm-2023-03 | yes | A0 | 3 | NO_ACTION:3 | 3 | 0 | 0 | 0 | 0.0000 | 0.2710 | 0.0000 | 0.0000 | 0 |
-| placebo-calm-2023-03 | yes | A2 | 3 | abstention:3 | 3 | 0 | 0 | 3 | 0.0055 | 1.0523 | 15.0000 | 6.0000 | 0 |
+| usdc-2023-03 | no | A0 | 3 | ALLOW:3 | 3 | 0 | 0 | 0 | 0.0000 | 0.4687 | 0.0000 | 0.0000 | 0 |
+| usdc-2023-03 | no | A2 | 3 | REQUIRE_APPROVAL:3 | 3 | 0 | 0 | 0 | 0.0055 | 1.0470 | 15.0000 | 6.0000 | 0 |
+| placebo-calm-2023-03 | yes | A0 | 3 | NO_ACTION:3 | 3 | 0 | 0 | 0 | 0.0000 | 0.2760 | 0.0000 | 0.0000 | 0 |
+| placebo-calm-2023-03 | yes | A2 | 3 | abstention:3 | 3 | 0 | 0 | 3 | 0.0055 | 1.0623 | 15.0000 | 6.0000 | 6 |
 
 N per mode — A0: 6 scored / 6 runs · A2: 6 scored / 6 runs.
 
@@ -36,7 +36,7 @@ N per mode — A0: 6 scored / 6 runs · A2: 6 scored / 6 runs.
 
 - declared: No signal exists in this series by construction. A mode that finds a decisive depeg, a source contradiction or an artifact here is hallucinating: the only right calls are NO_ACTION or a justified abstention. Any decisive call — or an escalation demanding human review of nothing — is a false positive and is scored as a miss.
 - acceptable calls: NO_ACTION, abstention · wrong calls: ALLOW, DENY, REQUIRE_APPROVAL
-- declared agent expectation: If/when an agent replay exists for a calm case, the agents must find nothing decisive and abstain or conclude nothing (ARRET / no-action). In this harness the A2 leg is not executable (see a2_availability_note) and is reported as a missing measurement, never as an inferred pass.
+- declared agent expectation: The agents must find nothing decisive on a calm case and abstain or conclude nothing (ARRET / no-action). MEASURED 2026-10-18 on the seeded store: 3/3 runs abstain (inconclusive, ARRET-1) — the provenance gate rejects the scripted claims citing unobserved references (E_REF_NOT_OBSERVED, visible journal lines) and no admissible evidence remains, so the forced-abstention rule fires. A decisive verdict here would be a negative result for the agents.
 - measured delta: `different_calls` — the two modes disagree on this case — the declaration ranks neither (N too small)
 
 ## When the agents help / add nothing / must abstain
@@ -61,18 +61,18 @@ N per mode — A0: 6 scored / 6 runs · A2: 6 scored / 6 runs.
 
 | run_id | case | mode | run | status | verdict | quality | abstained | cost USD | latency s | LLM | tools | claims rejected |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|
-| `bench-20261018T130605068398Z-761f0b0c124a` | usdc-2023-03 | A0 | 1 | ok | ALLOW | match | False | 0.0000 | 0.4530 | 0.0000 | 0.0000 | 0 |
-| `bench-20261018T130606225896Z-72c9e836c159` | usdc-2023-03 | A2 | 1 | ok | REQUIRE_APPROVAL | match | False | 0.0018 | 1.1400 | 5.0000 | 2.0000 | 0 |
-| `bench-20261018T130606684226Z-b405b29a55a4` | usdc-2023-03 | A0 | 2 | ok | ALLOW | match | False | 0.0000 | 0.4530 | 0.0000 | 0.0000 | 0 |
-| `bench-20261018T130607699166Z-ac8776ef55cd` | usdc-2023-03 | A2 | 2 | ok | REQUIRE_APPROVAL | match | False | 0.0018 | 1.0160 | 5.0000 | 2.0000 | 0 |
-| `bench-20261018T130608168479Z-d05c6fdfbcc6` | usdc-2023-03 | A0 | 3 | ok | ALLOW | match | False | 0.0000 | 0.4690 | 0.0000 | 0.0000 | 0 |
-| `bench-20261018T130609205050Z-db7034c034c1` | usdc-2023-03 | A2 | 3 | ok | REQUIRE_APPROVAL | match | False | 0.0018 | 1.0310 | 5.0000 | 2.0000 | 0 |
-| `bench-20261018T130609508684Z-eaaac9d1420c` | placebo-calm-2023-03 | A0 | 1 | ok | NO_ACTION | match | False | 0.0000 | 0.2660 | 0.0000 | 0.0000 | 0 |
-| `bench-20261018T130610567280Z-877bb8c4fd90` | placebo-calm-2023-03 | A2 | 1 | ok | abstention | match | True | 0.0018 | 1.0470 | 5.0000 | 2.0000 | 0 |
-| `bench-20261018T130610867235Z-b50eb964c74b` | placebo-calm-2023-03 | A0 | 2 | ok | NO_ACTION | match | False | 0.0000 | 0.2660 | 0.0000 | 0.0000 | 0 |
-| `bench-20261018T130611920209Z-e91d2fa2f1cf` | placebo-calm-2023-03 | A2 | 2 | ok | abstention | match | True | 0.0018 | 1.0470 | 5.0000 | 2.0000 | 0 |
-| `bench-20261018T130612215112Z-85fa317d7e85` | placebo-calm-2023-03 | A0 | 3 | ok | NO_ACTION | match | False | 0.0000 | 0.2810 | 0.0000 | 0.0000 | 0 |
-| `bench-20261018T130613275302Z-765cf6e71b30` | placebo-calm-2023-03 | A2 | 3 | ok | abstention | match | True | 0.0018 | 1.0630 | 5.0000 | 2.0000 | 0 |
+| `bench-20261018T133439305294Z-a8c226a64e63` | usdc-2023-03 | A0 | 1 | ok | ALLOW | match | False | 0.0000 | 0.4690 | 0.0000 | 0.0000 | 0 |
+| `bench-20261018T133440361432Z-c38efee98e73` | usdc-2023-03 | A2 | 1 | ok | REQUIRE_APPROVAL | match | False | 0.0018 | 1.0470 | 5.0000 | 2.0000 | 0 |
+| `bench-20261018T133440808717Z-a6026f26d042` | usdc-2023-03 | A0 | 2 | ok | ALLOW | match | False | 0.0000 | 0.4370 | 0.0000 | 0.0000 | 0 |
+| `bench-20261018T133441863404Z-87d042814096` | usdc-2023-03 | A2 | 2 | ok | REQUIRE_APPROVAL | match | False | 0.0018 | 1.0470 | 5.0000 | 2.0000 | 0 |
+| `bench-20261018T133442373405Z-a8aa050e24fa` | usdc-2023-03 | A0 | 3 | ok | ALLOW | match | False | 0.0000 | 0.5000 | 0.0000 | 0.0000 | 0 |
+| `bench-20261018T133443441203Z-88fbff0ec52e` | usdc-2023-03 | A2 | 3 | ok | REQUIRE_APPROVAL | match | False | 0.0018 | 1.0470 | 5.0000 | 2.0000 | 0 |
+| `bench-20261018T133443743597Z-bca2d9584ccf` | placebo-calm-2023-03 | A0 | 1 | ok | NO_ACTION | match | False | 0.0000 | 0.2660 | 0.0000 | 0.0000 | 0 |
+| `bench-20261018T133444879387Z-179e6d71048d` | placebo-calm-2023-03 | A2 | 1 | ok | abstention | match | True | 0.0018 | 1.1250 | 5.0000 | 2.0000 | 2 |
+| `bench-20261018T133445189338Z-10af6af3341a` | placebo-calm-2023-03 | A0 | 2 | ok | NO_ACTION | match | False | 0.0000 | 0.2810 | 0.0000 | 0.0000 | 0 |
+| `bench-20261018T133446257219Z-f0203c3f1ef5` | placebo-calm-2023-03 | A2 | 2 | ok | abstention | match | True | 0.0018 | 1.0470 | 5.0000 | 2.0000 | 2 |
+| `bench-20261018T133446570024Z-ac622a4592ec` | placebo-calm-2023-03 | A0 | 3 | ok | NO_ACTION | match | False | 0.0000 | 0.2810 | 0.0000 | 0.0000 | 0 |
+| `bench-20261018T133447594030Z-551d43971e73` | placebo-calm-2023-03 | A2 | 3 | ok | abstention | match | True | 0.0018 | 1.0150 | 5.0000 | 2.0000 | 2 |
 
 ## Superiority
 

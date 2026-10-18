@@ -1,0 +1,143 @@
+{
+ "case_id": "usdc-2023-03",
+ "critique": {
+  "$schema": "orvyren/crit/v1",
+  "findings": [
+   {
+    "enonce": "les agrégateurs peuvent partager la même venue sous-jacente — l'indépendance des sources n'est pas démontrée",
+    "gravite": "MAJEUR",
+    "refs": [
+     "observation:defillama/usdc-usd/2023-03-11T12:00Z"
+    ],
+    "test_discriminant": "vérifier la méthodologie d'agrégation de chaque source",
+    "type": "DEPENDANCE"
+   }
+  ],
+  "note": "",
+  "preuves_manquantes": [
+   "indépendance des méthodes d'agrégation"
+  ],
+  "verdict_lecture": "FRAGILE"
+ },
+ "escalation": "REQUIRE_APPROVAL",
+ "journals": {
+  "critic": {
+   "agent_ids": [
+    "critic"
+   ],
+   "chain_head": "0c69bc8788ee9140ef6575ed6023cdafe5fce70cbb6cb8718f6bb2923161d01b",
+   "lines": 1
+  },
+  "orchestrator": {
+   "agent_ids": [
+    "orchestrator"
+   ],
+   "chain_head": "ac831df3fbc32b023083e9a4c3df559a041b05be4ab2f4257905bc9d9c2b67a8",
+   "lines": 12
+  }
+ },
+ "mode": "journal",
+ "outcome": {
+  "budget_used": {
+   "cost_usd": 0.0018269999999999998,
+   "llm_calls": 5.0,
+   "tool_calls": 2.0,
+   "wall_seconds": 0.14
+  },
+  "critique_verdict": "",
+  "inconclusive": false,
+  "motif": "plus aucune tâche à valeur positive dans le plan",
+  "non_recherche": [
+   "profondeur d'exécution réalisable non mesurée"
+  ],
+  "reflexion": {
+   "cells": [
+    [
+     "HYP-001",
+     "EV-001",
+     "COHERENT"
+    ],
+    [
+     "HYP-001",
+     "EV-002",
+     "COHERENT"
+    ]
+   ],
+   "diagnosticity": {
+    "EV-001": 0.25,
+    "EV-002": 0.25
+   },
+   "evidence": [
+    {
+     "evidence_id": "EV-001",
+     "refs": [
+      "observation:chainlink/usdc-usd/2023-03-11T12:00Z"
+     ],
+     "weight": 1.0
+    },
+    {
+     "evidence_id": "EV-002",
+     "refs": [
+      "observation:bitstamp/usdc-usd/2023-03-11T12:00Z"
+     ],
+     "weight": 1.0
+    }
+   ],
+   "gap": {
+    "diagnosticity": 0.25,
+    "evidence_id": "EV-001",
+    "found": true,
+    "hyp_id": "HYP-002",
+    "justification": "cellule HYP-002 x EV-001 sans verdict — prochain test discriminant a acquerir (diagnosticite 0.25, refs: observation:chainlink/usdc-usd/2023-03-11T12:00Z)",
+    "kind": "sans_verdict",
+    "refs": [
+     "observation:chainlink/usdc-usd/2023-03-11T12:00Z"
+    ]
+   },
+   "hypotheses": [
+    {
+     "counter_intuitive": false,
+     "hyp_id": "HYP-001",
+     "label": "La dispersion inter-venues du pair USDC/USD traduit une dislocation réalisable, pas un artefact d'une seule source."
+    },
+    {
+     "counter_intuitive": false,
+     "hyp_id": "HYP-002",
+     "label": "La décote observée n'est pas réalisable aux tailles pertinentes pour une trésorerie."
+    }
+   ],
+   "note": "",
+   "ranking": [
+    {
+     "counter_intuitive": false,
+     "etat": "SOLIDE",
+     "hyp_id": "HYP-001",
+     "label": "La dispersion inter-venues du pair USDC/USD traduit une dislocation réalisable, pas un artefact d'une seule source.",
+     "meilleur_rival": "HYP-002",
+     "nb_coherent": 2,
+     "nb_incoherent": 0,
+     "nb_neutre": 0,
+     "nb_preuves": 2,
+     "score_refutation": 0.0
+    },
+    {
+     "counter_intuitive": false,
+     "etat": "SOLIDE",
+     "hyp_id": "HYP-002",
+     "label": "La décote observée n'est pas réalisable aux tailles pertinentes pour une trésorerie.",
+     "meilleur_rival": "HYP-001",
+     "nb_coherent": 0,
+     "nb_incoherent": 0,
+     "nb_neutre": 0,
+     "nb_preuves": 0,
+     "score_refutation": 0.0
+    }
+   ],
+   "schema_version": "orvyren/ach-matrix/v1"
+  },
+  "state": "DONE",
+  "stop_condition": "ARRET-1"
+ },
+ "run_dir": "D:\\orvyren_core\\evidence/benchmark_ab\\raw\\usdc-2023-03\\A2\\run_1\\usdc-2023-03_journal_20261018T133439544256Z",
+ "schema": "orvyren/agent-run-outcome/v1"
+}

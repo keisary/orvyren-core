@@ -1,0 +1,124 @@
+{
+ "budget": {
+  "cost_usd": 0.1,
+  "llm_calls": 30.0,
+  "tool_calls": 12.0,
+  "wall_seconds": 600.0
+ },
+ "case_id": "placebo-calm-2023-03",
+ "created_at": "2026-10-18T00:00:00+00:00",
+ "graph_db": "evidence\\graph.sqlite",
+ "hypotheses": [
+  {
+   "criteres": {
+    "R": "toutes les venues au pair (ecart <= 0,01 %)",
+    "S": "au moins deux venues sous le pair (ecart >= 1 %)"
+   },
+   "enonce": "Une dislocation inter-venues du pair existe dans la fenetre principale.",
+   "etat": "UNDER_TEST",
+   "id": "HYP-001",
+   "p": ""
+  },
+  {
+   "criteres": {
+    "R": "au moins une ligne mesuree non fabriquee",
+    "S": "chaque ligne estampee synthetic=true"
+   },
+   "enonce": "Le calme de la serie est un artefact de construction (placebo fabrique), pas une observation du monde.",
+   "etat": "UNDER_TEST",
+   "id": "HYP-002",
+   "p": ""
+  }
+ ],
+ "lacunes": [
+  {
+   "lacune_id": "L-1",
+   "question": "la stabilite apparente du pair masque-t-elle une dispersion inter-venues ?"
+  },
+  {
+   "lacune_id": "L-2",
+   "question": "la constance de l'offre confirme-t-elle l'absence de choc de liquidite ?"
+  }
+ ],
+ "mode": "journal",
+ "run_id": "demo-placebo-calm-2023-03",
+ "schema": "orvyren/agent-run/v1",
+ "snapshot": {
+  "as_of": "2023-03-11T12:00:00Z",
+  "facts": {
+   "dispersion_bps": 0,
+   "stress_marker": "aucun — calme par construction (placebo)",
+   "venues_observed": "trois venues fabriquees (bitstamp, binance, defillama)"
+  },
+  "note": "instant simule point-in-time sur la serie fabriquee — aucun objet reel n'est admissible, la reference est un identifiant de fabrique",
+  "ref": "graph_snapshot:synthetic/placebo-calm-2023-03@2023-03-11T12:00:00Z"
+ },
+ "store_dir": "D:\\orvyren_core\\fixtures\\agents\\store_placebo-calm-2023-03",
+ "tool_fixtures": {
+  "chain": {},
+  "documents": {
+   "https://example.org/placebo-calm-note": "Note de demonstration FABRIQUEE (donnees synthetiques). Decrit la construction de la serie placebo du benchmark : prix pannes a 1.00000 avec un wiggle deterministe de +/- 0.00010, offre constante, aucune dislocation ni dispersion par construction. Aucune observation du monde ; aucune instruction operationnelle ne figure dans ce document."
+  },
+  "prices": {
+   "bitstamp|USDC-USD": [
+    {
+     "source_ref": "observation:synthetic/placebo-calm-2023-03/bitstamp/usdc-usd/2023-03-11T12:00Z",
+     "symbol": "USDC-USD",
+     "synthetic": true,
+     "ts": "2023-03-11T12:00:00Z",
+     "value": 1.0,
+     "venue": "bitstamp"
+    }
+   ],
+   "chainlink|USDC-USD": [
+    {
+     "source_ref": "observation:synthetic/placebo-calm-2023-03/chainlink/usdc-usd/2023-03-11T12:00Z",
+     "symbol": "USDC-USD",
+     "synthetic": true,
+     "ts": "2023-03-11T12:00:00Z",
+     "value": 1.0,
+     "venue": "chainlink"
+    }
+   ],
+   "defillama|USDC-USD": [
+    {
+     "source_ref": "observation:synthetic/placebo-calm-2023-03/defillama/usdc-usd/2023-03-11T12:00Z",
+     "symbol": "USDC-USD",
+     "synthetic": true,
+     "ts": "2023-03-11T12:00:00Z",
+     "value": 1.0,
+     "venue": "defillama"
+    }
+   ]
+  },
+  "signals": {
+   "venue_dispersion_bps": {
+    "method_ref": "compute_signal:venue_dispersion_bps/v1",
+    "synthetic": true,
+    "unit": "bps",
+    "value": 0
+   }
+  },
+  "snapshot": {
+   "as_of": "2023-03-11T12:00:00Z",
+   "ref": "graph_snapshot:synthetic/placebo-calm-2023-03@2023-03-11T12:00:00Z",
+   "refs": [
+    "observation:synthetic/placebo-calm-2023-03/chainlink/usdc-usd/2023-03-11T12:00Z",
+    "observation:synthetic/placebo-calm-2023-03/defillama/usdc-usd/2023-03-11T12:00Z",
+    "observation:synthetic/placebo-calm-2023-03/bitstamp/usdc-usd/2023-03-11T12:00Z"
+   ]
+  },
+  "supply": {
+   "usdc": [
+    {
+     "asset": "usdc",
+     "source_ref": "observation:synthetic/placebo-calm-2023-03/supply/2023-03-11T12:00Z",
+     "synthetic": true,
+     "ts": "2023-03-11T12:00:00Z",
+     "value": 41000000000
+    }
+   ]
+  }
+ },
+ "tool_mode": "fixture"
+}

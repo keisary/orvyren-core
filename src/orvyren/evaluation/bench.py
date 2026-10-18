@@ -543,14 +543,26 @@ def normalize_a2(run_outcome: Mapping[str, Any]) -> Dict[str, Any]:
 def count_provenance_rejections(journal_entries: Iterable[Mapping[str, Any]]) -> int:
     """Claims rejected by the provenance validation, from journal lines.
 
-    The journal keeps every refused claim visible (``validation.provenance_ok``
-    is ``False`` and the motif names the refusal) — counting those lines is the
-    only claim-rejection figure this benchmark reports; it is never estimated.
+    Two visible refusal shapes are counted, never estimated:
+
+    - lines whose validation reports ``provenance_ok`` is ``False`` (the
+      validator refused the claim's provenance);
+    - lines rejected at intake with an ``E_REF_NOT_OBSERVED`` motif (P0-6: the
+      claim cited a reference the run never observed — status ``REJECTED``,
+      the motif names the refusal).
+
+    Any other ``REJECTED`` line (schema failure, reserved fields) is not a
+    provenance rejection and is not counted here.
     """
     rejected = 0
     for entry in journal_entries or ():
         validation = entry.get("validation") if isinstance(entry, Mapping) else None
-        if isinstance(validation, Mapping) and validation.get("provenance_ok") is False:
+        if not isinstance(validation, Mapping):
+            continue
+        if validation.get("provenance_ok") is False:
+            rejected += 1
+            continue
+        if "E_REF_NOT_OBSERVED" in str(validation.get("motif", "") or ""):
             rejected += 1
     return rejected
 

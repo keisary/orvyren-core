@@ -189,10 +189,10 @@
    "fabrication_note": "SYNTHETIC DATA, fabricated for this benchmark. This is NOT real market data and must never be presented as an observation of the world. Prices are pinned to 1.00000 with a deterministic +/- 0.00010 wiggle (no randomness, no clock); circulating supply is constant. No depeg, no dispersion and no supply shock exists in this series by construction.",
    "corpus": null,
    "a2_case_id": "placebo-calm-2023-03",
-   "a2_store": null,
+   "a2_store": "fixtures/agents/store_placebo-calm-2023-03",
    "a0_rdof": false,
    "a0_rdof_reason": "The RDOF predicate registry (src/orvyren/decision/rdof.py, predicate.case_scope) is scoped to case 'usdc-2023-03'; any other case id makes the dossier stage raise E_WHAT_WOULD_CHANGE_REQUIRED. Declared substitution: this case runs the v0 deterministic engine (--no-rdof); the fact is recorded per run and in the report limitations.",
-   "a2_availability_note": "No recorded agent inputs/response store exist for a synthetic case (run_agents.py requires fixtures/agents/<case>/run_inputs.json and a sealed response store; a replay may only consume recorded responses — B1 §6.3 forbids improvising LLM answers). The A2 leg is therefore EXPECTED to fail with E_CASE_UNKNOWN and is reported as not_executed with the exact motif. Declaring this openly is part of the honesty contract; fabricating agent responses for the placebo is not allowed.",
+   "a2_availability_note": "A recorded response store now exists for this synthetic case: fixtures/agents/store_placebo-calm-2023-03, produced by scripts/agents_seed_demo.py --case placebo-calm-2023-03 on 2026-10-18 (SEED.json declares the scripted-demo origin). The A2 leg is therefore executable offline. Honest label: the responses are a SCRIPTED scenario replayed deterministically, not a live LLM measurement (see evidence/benchmark_ab/PLACEBO_A2_SEED.md).",
    "synthetic_corpus": {
     "main_window": ["2023-03-09T00:00:00+00:00", "2023-03-15T00:00:00+00:00"],
     "control_window": ["2023-02-15T00:00:00+00:00", "2023-02-18T00:00:00+00:00"],
@@ -240,7 +240,7 @@
     "miss_verdicts": ["ALLOW", "DENY", "REQUIRE_APPROVAL"],
     "quality_note": "On a constructed no-signal series there is no judgement call to rank: the declaration is one-sided on purpose (placebo logic).",
     "expect_agents": "abstain_or_conclude_nothing",
-    "expect_agents_note": "If/when an agent replay exists for a calm case, the agents must find nothing decisive and abstain or conclude nothing (ARRET / no-action). In this harness the A2 leg is not executable (see a2_availability_note) and is reported as a missing measurement, never as an inferred pass."
+    "expect_agents_note": "The agents must find nothing decisive on a calm case and abstain or conclude nothing (ARRET / no-action). MEASURED 2026-10-18 on the seeded store: 3/3 runs abstain (inconclusive, ARRET-1) — the provenance gate rejects the scripted claims citing unobserved references (E_REF_NOT_OBSERVED, visible journal lines) and no admissible evidence remains, so the forced-abstention rule fires. A decisive verdict here would be a negative result for the agents."
    }
   }
  ]
