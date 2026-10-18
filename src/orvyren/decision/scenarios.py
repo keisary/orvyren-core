@@ -395,16 +395,24 @@ def _classify_h1(venue_series, aggregator_series):
     if aggregator_min is not None and aggregator_min.ref() not in evidence:
         evidence.append(aggregator_min.ref())
 
-    single_venue_alert = any(p["first_alert"] is not None for p in venue_profile.values())
+    alert_profiles = [p for p in venue_profile.values() if p["first_alert"] is not None]
+    single_venue_alert = len(alert_profiles) == 1
+    alert_ts = alert_profiles[0]["first_alert"].ts if alert_profiles else None
+    aggregator_near = None
+    if alert_ts is not None and aggregator_series:
+        near = [o for o in aggregator_series
+                if abs((o.ts - alert_ts).total_seconds()) <= _HOUR]
+        if near:
+            aggregator_near = min(near, key=lambda o: abs((o.ts - alert_ts).total_seconds()))
     aggregator_within_tolerance = (
-        not deviation_exceeds(aggregator_min.value, AGGREGATE_TOLERANCE_PCT) if aggregator_min else None
-    )
-    recovered_fast = any(
-        p["recovery_hours"] is not None and p["recovery_hours"] < RECOVERY_HOURS_LIMIT
-        for p in venue_profile.values()
-    )
-    support_evaluable = bool(present_venues) and aggregator_min is not None
-    support_met = bool(support_evaluable and single_venue_alert and aggregator_within_tolerance and recovered_fast)
+        within_tolerance(aggregator_near.value, AGGREGATE_TOLERANCE_PCT)
+        if aggregator_near else None)
+    recovered_fast = bool(
+        len(alert_profiles) == 1 and alert_profiles[0]["recovery_hours"] is not None
+        and alert_profiles[0]["recovery_hours"] < RECOVERY_HOURS_LIMIT)
+    support_evaluable = bool(present_venues) and aggregator_near is not None
+    support_met = bool(support_evaluable and single_venue_alert
+                       and aggregator_within_tolerance and recovered_fast)
     support_computed = {
         "venue_deviations_above_threshold": [
             {
@@ -536,7 +544,8 @@ def _simultaneous_alert_hours(venue_series, min_venues=2):
     two independent venues". With exactly two venues both behaviours agree.
     """
     alert_sets = {
-        venue: {o.ts for o in _alert_observations(series)}
+        venue: {o.ts.replace(minute=0, second=0, microsecond=0)
+                for o in _alert_observations(series)}
         for venue, series in venue_series.items()
         if series
     }
@@ -572,7 +581,7 @@ def _classify_h2(venue_series, supply_series, supply_cross_series):
     for hour in simultaneous_hours:
         for venue in present_venues:
             for observation in venue_series[venue]:
-                if observation.ts == hour:
+                if observation.ts.replace(minute=0, second=0, microsecond=0) == hour:
                     evidence.append(observation.ref())
                     break
 
@@ -583,7 +592,17 @@ def _classify_h2(venue_series, supply_series, supply_cross_series):
             "daily observations inside the window)"
         )
     biggest_drop = min(changes, key=lambda c: c["change_pct"]) if changes else None
-    drop_above_threshold = biggest_drop is not None and biggest_drop["change_pct"] < -SUPPLY_DROP_PCT
+    # H2 requires the supply move to belong to the price stress, not merely to
+    # occur somewhere else in the same window.
+    relevant_drops = []
+    for change in changes:
+        if any(abs((change["from"].ts - hour).total_seconds()) <= SUPPLY_WINDOW_HOURS * _HOUR
+               or abs((change["to"].ts - hour).total_seconds()) <= SUPPLY_WINDOW_HOURS * _HOUR
+               for hour in simultaneous_hours):
+            relevant_drops.append(change)
+    support_drop = min(relevant_drops, key=lambda c: c["change_pct"]) if relevant_drops else None
+    drop_above_threshold = (support_drop is not None
+                            and support_drop["change_pct"] < -SUPPLY_DROP_PCT)
     if biggest_drop is not None:
         for observation in (biggest_drop["from"], biggest_drop["to"]):
             evidence.append(observation.ref())
@@ -593,7 +612,7 @@ def _classify_h2(venue_series, supply_series, supply_cross_series):
     cross_biggest_drop = min(cross_changes, key=lambda c: c["change_pct"]) if cross_changes else None
 
     concurrent_alerts = len([v for v in present_venues if alert_sets.get(v)]) >= 2
-    support_evaluable = len(present_venues) >= 2 and bool(changes)
+    support_evaluable = len(present_venues) >= 2 and bool(relevant_drops)
     support_met = bool(support_evaluable and len(simultaneous_hours) >= 1 and drop_above_threshold)
     support_computed = {
         "simultaneous_alert_hours": len(simultaneous_hours),

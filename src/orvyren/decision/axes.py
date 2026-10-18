@@ -19,7 +19,7 @@ decides.
 from __future__ import annotations
 
 import datetime as dt
-from typing import Any, Dict, List, Optional, Sequence
+from typing import Any, Dict, List, Mapping, Optional, Sequence
 
 from orvyren.decision.abstention import (build_inconclusive,
                                          detect_conditions,
@@ -141,6 +141,13 @@ def authorization_via_policy(amount_usdc, reserve_recipient, created_at=None,
                 "intent_id": None, "evaluated": False}
     from orvyren.policy import ALLOWED_ASSET, ALLOWED_CHAIN_ID, Intent, default_config, evaluate
     moment = created_at or dt.datetime.now(dt.timezone.utc)
+    if isinstance(moment, str):
+        try:
+            moment = dt.datetime.fromisoformat(moment.replace("Z", "+00:00"))
+        except ValueError:
+            return {"verdict": None, "reasons": ["invalid policy timestamp — "
+                                                 "authorization not evaluated"],
+                    "intent_id": None, "evaluated": False}
     if moment.tzinfo is None:
         moment = moment.replace(tzinfo=dt.timezone.utc)   # naive = UTC (policy rule)
     moment = moment.astimezone(dt.timezone.utc)
@@ -157,7 +164,7 @@ def authorization_via_policy(amount_usdc, reserve_recipient, created_at=None,
         justification="ORVYREN decision dossier — bounded A-D1 demonstration transfer",
     )
     config = default_config(reserve_recipient)
-    decision = evaluate(intent, config, now=now or moment)
+    decision = evaluate(intent, config, now=moment)
     return {"verdict": decision.verdict, "reasons": list(decision.reasons),
             "intent_id": intent.intent_id, "evaluated": True}
 
@@ -183,23 +190,41 @@ def build_dossier(case_id, observations, window_start, window_end,
         rdof = rdof_run(observations, window_start, window_end, case_id=case_id,
                         exposure=envelope)
     verdicts = classify_hypotheses(observations, window_start, window_end)
+    # RDOF may have revised the evidence state (budget, counterfactuals). The
+    # dossier must expose that state, never reclassify the raw corpus as if
+    # the search had not happened.
+    if isinstance(rdof.get("final_verdicts"), Mapping):
+        for hypothesis, state in rdof["final_verdicts"].items():
+            if hypothesis in verdicts and state in (SUPPORTED, REFUTED, "INCONCLUSIVE"):
+                verdicts[hypothesis] = dict(verdicts[hypothesis], verdict=state)
     flags = list(integrity) if integrity is not None else integrity_flags(observations)
 
     supported = [h for h in FROZEN_HYPOTHESIS_ORDER
                  if verdicts[h]["verdict"] == SUPPORTED]
+    before_conditions = detect_conditions(
+        verdicts, integrity_flags=flags, rdof_result=rdof,
+        policy_verdict=None,
+        convention_ambiguous=False)
     epistemic_verdict = _epistemic_verdict(verdicts)
+    if set(before_conditions["conditions"]) & {"A1", "A2", "A3", "A5"}:
+        epistemic_verdict = "INCONCLUSIVE"
 
     kind = rdof["final_action_candidate"]["kind"]
     economic_action = _AXES_KIND_TO_ECONOMIC[kind]
-    x_star = bounded_size(envelope.action_usdc, available, envelope.action_usdc)
+    if epistemic_verdict == "INCONCLUSIVE" and set(before_conditions["conditions"]) & {
+            "A1", "A2", "A3", "A5"}:
+        economic_action = None
+    x_star = (bounded_size(envelope.action_usdc, available, envelope.action_usdc)
+              if economic_action in ("CONVERTIR/TRANSFÉRER",) else None)
 
     # Axis 3 — authorization (independent from the other two axes)
+    policy_moment = policy_now or window_end
     authorization = {"verdict": None, "evaluated": False,
                      "note": "no executable economic action" if economic_action
                      not in ("CONVERTIR/TRANSFÉRER",) else "not evaluated"}
     if economic_action in ("CONVERTIR/TRANSFÉRER",):
         authorization = authorization_via_policy(
-            x_star, reserve_recipient, created_at=policy_now, now=policy_now)
+            x_star, reserve_recipient, created_at=policy_moment, now=policy_moment)
 
     conventions = verdicts_under_conventions(observations, window_start, window_end)
     conditions = detect_conditions(

@@ -38,6 +38,7 @@ import hashlib
 import json
 import math
 import os
+import re
 
 from dataclasses import dataclass, field
 from decimal import Decimal
@@ -171,8 +172,29 @@ class PolicyBundle:
     policy_hash: str
 
 
-def _norm(addr: str) -> str:
+def _norm(addr) -> str:
     return (addr or "").strip().lower()
+
+
+_ADDRESS_RE = re.compile(r"\A0x[0-9a-fA-F]{40}\Z")
+
+
+def _strict_int(value, field: str) -> int:
+    """Parse an integer policy field without bool/float coercion."""
+    if isinstance(value, bool):
+        raise MiniYamlError("policy_v1.yaml: '%s' must be an integer" % field)
+    if isinstance(value, float):
+        if not math.isfinite(value) or not value.is_integer():
+            raise MiniYamlError("policy_v1.yaml: '%s' must be an integer" % field)
+        return int(value)
+    if isinstance(value, str):
+        text = value.strip()
+        if not re.fullmatch(r"-?\d+", text):
+            raise MiniYamlError("policy_v1.yaml: '%s' must be an integer" % field)
+        return int(text)
+    if isinstance(value, int):
+        return value
+    raise MiniYamlError("policy_v1.yaml: '%s' must be an integer" % field)
 
 
 def _finite_number(value) -> bool:
@@ -309,22 +331,34 @@ def load_policy(path, recipients: Optional[dict] = None) -> PolicyBundle:
     if not _finite_number(max_cumulative) or max_cumulative <= 0:
         raise MiniYamlError("policy_v1.yaml: 'max_cumulative_24h' must be finite and > 0")
     try:
-        allowed_chain_ids = frozenset(int(c) for c in chains)
-        asset_decimals = (int(data["asset_decimals"])
+        allowed_chain_ids = frozenset(_strict_int(c, "chain_ids")
+                                      for c in chains)
+        asset_decimals = (_strict_int(data["asset_decimals"], "asset_decimals")
                           if data.get("asset_decimals") is not None else None)
-        intent_ttl = (timedelta(minutes=int(data["ttl_intent_minutes"]))
-                      if data.get("ttl_intent_minutes") is not None else None)
-        clock_skew = timedelta(seconds=int(data.get(
-            "clock_skew_seconds", int(CLOCK_SKEW_TOLERANCE.total_seconds()))))
-    except (TypeError, ValueError) as exc:
+        intent_ttl = (timedelta(minutes=_strict_int(
+            data["ttl_intent_minutes"], "ttl_intent_minutes"))
+            if data.get("ttl_intent_minutes") is not None else None)
+        clock_skew = timedelta(seconds=_strict_int(
+            data.get("clock_skew_seconds", int(CLOCK_SKEW_TOLERANCE.total_seconds())),
+            "clock_skew_seconds"))
+    except (TypeError, ValueError, OverflowError) as exc:
         raise MiniYamlError(
             "policy_v1.yaml: invalid chain/decimals/TTL/clock-skew value: %s" % exc) from exc
-    if asset_decimals is not None and asset_decimals < 0:
-        raise MiniYamlError("policy_v1.yaml: 'asset_decimals' must be an integer >= 0")
+    if asset_decimals is not None and not 0 <= asset_decimals <= 36:
+        raise MiniYamlError("policy_v1.yaml: 'asset_decimals' must be between 0 and 36")
+
+    normalized_assets = []
+    for asset in assets:
+        if not isinstance(asset, str) or not _ADDRESS_RE.match(asset.strip()):
+            raise MiniYamlError("policy_v1.yaml: 'assets' must contain 0x addresses")
+        normalized_assets.append(_norm(asset))
+    for entry in resolved:
+        if not _ADDRESS_RE.match(entry):
+            raise MiniYamlError("policy_v1.yaml: unresolved recipient is not an address")
 
     config = PolicyConfig(
         allowed_chain_ids=allowed_chain_ids,
-        allowed_assets=frozenset(_norm(a) for a in assets),
+        allowed_assets=frozenset(normalized_assets),
         allowed_recipients=frozenset(resolved),
         max_per_tx=max_per_tx,
         max_cumulative=max_cumulative,
@@ -425,8 +459,13 @@ def evaluate(intent: Intent, config: PolicyConfig, now: datetime | None = None,
         else:
             target, selector = mapping
             operation_ok = (not config.allowed_operations) or (intent.action in config.allowed_operations)
+            target_matches_intent = (intent.action != "transfer"
+                                     or _norm(intent.asset) == target)
             if not operation_ok:
                 fail("P4-function", "OPERATION_NOT_ALLOWED")
+            elif not target_matches_intent:
+                fail("P4-function", "TARGET_NOT_ALLOWED",
+                     f"transfer asset {intent.asset} != registered target {target}")
             elif target not in {_norm(t) for t in config.allowed_targets}:
                 fail("P4-function", "TARGET_NOT_ALLOWED")
             elif (target, selector) not in {(t, s) for (t, s) in config.allowed_functions}:
@@ -530,11 +569,11 @@ def evaluate(intent: Intent, config: PolicyConfig, now: datetime | None = None,
     if state is None:
         skip("P11-pause", "state not supplied (legacy call)")
     else:
-        if state.paused is None:
+        if not isinstance(state.paused, bool):
             fail("P11-pause", "PAUSED", "pause state unreadable — fail closed")
         elif state.paused:
             fail("P11-pause", "PAUSED")
-        elif state.agent_member is None:
+        elif not isinstance(state.agent_member, bool):
             fail("P11-pause", "AGENT_NOT_MEMBER", "role membership unreadable — fail closed")
         elif not state.agent_member:
             fail("P11-pause", "AGENT_NOT_MEMBER")

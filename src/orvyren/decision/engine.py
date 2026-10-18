@@ -31,6 +31,8 @@ supply figure or duration quoted in ``rationale`` comes from a verdict's
 outcomes have been settled yet).
 """
 
+import json
+
 from orvyren.decision.exposure import Exposure, available_to_move
 from orvyren.decision.scenarios import (
     AGGREGATE_TOLERANCE_PCT,
@@ -76,7 +78,7 @@ def _dedupe_refs(refs):
     """Stable de-duplication of provenance references (timestamp, venue, value)."""
     seen, unique = set(), []
     for ref in refs:
-        key = (ref.get("timestamp_utc"), ref.get("venue"), ref.get("value"))
+        key = json.dumps(ref, sort_keys=True, default=str)
         if key not in seen:
             seen.add(key)
             unique.append(ref)

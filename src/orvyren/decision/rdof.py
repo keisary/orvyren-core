@@ -132,6 +132,9 @@ def action_candidate(verdicts, available):
     if verdicts["H2"]["verdict"] == REFUTED:
         return {"kind": "NO_ACTION", "catalog": "A-D7",
                 "note": "H2 REFUTED — no registered criterion justifies reducing exposure"}
+    if verdicts["H2"]["verdict"] == SUPPORTED and available <= 0:
+        return {"kind": "NO_ACTION", "catalog": "A-D7",
+                "note": "H2 SUPPORTED but available_to_move == 0 (engine rule 1 cannot fire)"}
     return {"kind": "INCONCLUSIVE", "catalog": None,
             "note": "H2 unresolved — no action produced"}
 
@@ -154,6 +157,12 @@ def _compute_effects(state: EvidenceState, predicate: Predicate, available):
             assumed = EvidenceState(injected, state.window_start, state.window_end,
                                     state.horizon, assumed_collected)
             verdicts = assumed.classify()
+            fact = evaluate_predicate(predicate.predicate_id, injected,
+                                      state.window_start, state.window_end,
+                                      state.horizon)
+            if fact.get("class") != class_label:
+                effects[class_label] = {"available": False}
+                continue
         except (ValueError, KeyError):
             effects[class_label] = {"available": False}
             continue
@@ -203,10 +212,10 @@ def _order_key(predicate: Predicate, effects: Dict[str, Any], dominant: Optional
 
 
 def _invariant(effects: Dict[str, Any], current_action: str) -> bool:
-    """c1: every outcome class of the predicate leads to the same action."""
-    classes = [effects[label] for label in effects if effects[label].get("available")]
-    if not classes:
-        return False  # unknowable outcomes are never treated as a stable decision
+    """c1: every registered outcome class leads to the same action."""
+    classes = [effects[label] for label in effects]
+    if not classes or any(not entry.get("available") for entry in classes):
+        return False  # unknowable outcomes are never a stable decision
     return all(entry["action"] == current_action for entry in classes)
 
 
