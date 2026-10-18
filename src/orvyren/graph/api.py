@@ -256,8 +256,12 @@ def dependency_paths(db: Optional[str] = None, src: str = "", dst: str = "",
         rows = []
         for row in con.execute(sql, params).fetchall():
             item = dict(row)
-            item["sign"] = "ambigu" if item.pop("ambiguous") else (
-                "-" if item.pop("negative") else "+")
+            # Pop both SQL flags before deriving the sign: an ambiguous path
+            # must not leak the raw ``negative`` column into the row (every
+            # row carries the same schema: node, depth, path, sign).
+            ambiguous = item.pop("ambiguous")
+            negative = item.pop("negative")
+            item["sign"] = "ambigu" if ambiguous else ("-" if negative else "+")
             rows.append(item)
     finally:
         con.close()

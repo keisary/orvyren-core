@@ -503,13 +503,27 @@ def run_set(set_label: str, *, frozen_dir: str = DEFAULT_FROZEN_DIR,
                   if isinstance(detail["configs"].get(label, {}).get("loss"), (int, float))]
         regrets = [detail["configs"][label]["regret"]["R"] for detail in ran
                    if isinstance(detail["configs"].get(label, {}).get("regret"), dict)]
+        # R⁻/R⁺ follow the G1 definition (loss.py): both are measured against
+        # A0, the no-action loss of the same window — R⁺ = max(0, L(A0) − L(a))
+        # is the cost of not acting, R⁻ = max(0, L(a) − L(A0)) the cost of
+        # acting. They are never max/min of the oracle regret R (R ≥ 0 by
+        # construction, which pins R⁻ to a structural zero instead of
+        # measuring it).
+        r_plus: List[float] = []
+        r_minus: List[float] = []
+        for detail in ran:
+            value = detail["configs"].get(label, {}).get("loss")
+            base = detail["configs"].get("A0", {}).get("loss")
+            if isinstance(value, (int, float)) and isinstance(base, (int, float)):
+                r_plus.append(max(0.0, base - value))
+                r_minus.append(max(0.0, value - base))
         if losses:
             aggregates[label] = {
                 "n": len(losses), "losses": losses,
                 "mean_loss": sum(losses) / len(losses),
                 "regrets": regrets,
-                "mean_R_plus": sum(max(r, 0.0) for r in regrets) / len(regrets),
-                "mean_R_minus": sum(min(r, 0.0) for r in regrets) / len(regrets),
+                "mean_R_plus": sum(r_plus) / len(r_plus),
+                "mean_R_minus": sum(r_minus) / len(r_minus),
             }
 
     n_display = len(ran)

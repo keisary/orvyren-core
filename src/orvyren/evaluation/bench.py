@@ -622,6 +622,7 @@ def measure_a0(case_id: str, run_index: int, payload: Mapping[str, Any],
             "rdof_seconds": consumed.get("secondes"),
             "rdof_stop": rdof.get("stop"),
             "corpus": (record.get("inputs_summary") or {}).get("corpus"),
+            "a0_rdof": payload.get("a0_rdof"),
             "deterministic": True,
         },
     })
@@ -754,6 +755,7 @@ def delta_tag(a0_rows: Sequence[Mapping[str, Any]],
     Tags (mutually exclusive, first match wins):
 
     * ``a2_not_executed``  — the A2 leg produced no measurement;
+    * ``a0_not_executed``  — the A0 leg produced no measurement;
     * ``agents_miss_a0_match`` — the agents are wrong where the engine is not;
     * ``agents_match_a0_miss`` — the agents are right where the engine is not;
     * ``agents_abstain_where_engine_acts`` — the agent layer brakes/abstains

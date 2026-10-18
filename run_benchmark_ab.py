@@ -136,6 +136,7 @@ def runner_a0(case: Mapping[str, Any], run_dir: str, run_index: int,
     proc = _run_subprocess(cmd, timeout_s)
     payload: Dict[str, Any] = {"exit_code": proc["exit_code"],
                                "wall_seconds": proc["wall_seconds"],
+                               "a0_rdof": bool(case.get("a0_rdof", True)),
                                "output_tail": proc["stdout_tail"] or proc["stderr_tail"]}
     if proc["exit_code"] != 0:
         payload["status"] = "error"
