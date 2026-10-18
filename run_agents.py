@@ -82,7 +82,7 @@ def _safe_case(case_id: str) -> str:
 
 def load_case_inputs(case_id: str) -> dict:
     """Load the pinned run inputs of a case (fixtures/agents/<case>/run_inputs.json)."""
-    path = os.path.join(REPO_ROOT, "fixtures", "agents", case_id, "run_inputs.json")
+    path = os.path.join(REPO_ROOT, "fixtures", "agents", _safe_case(case_id), "run_inputs.json")
     if not os.path.exists(path):
         raise SystemExit(
             "E_CASE_UNKNOWN: %s missing — record the case first "
