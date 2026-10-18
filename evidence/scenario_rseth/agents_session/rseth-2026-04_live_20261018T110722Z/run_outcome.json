@@ -1,0 +1,261 @@
+{
+ "case_id": "rseth-2026-04",
+ "critique": {
+  "$schema": "orvyren/crit/v1",
+  "findings": [
+   {
+    "enonce": "Le basculement isFrozen 0->1 ne démontre pas que les retraits sont bloqués : l'effet opérationnel du drapeau est supposé par HYP-001, jamais mesuré ni attesté par une transaction de retrait.",
+    "gravite": "BLOQUANT",
+    "refs": [
+     "hypothesis:HYP-001"
+    ],
+    "test_discriminant": "Localiser la sémantique du drapeau pour la réserve visée et vérifier si une opération de retrait échoue après le bloc daté ; si un retrait passe, l'énoncé est faux.",
+    "type": "CONTRADICTION"
+   },
+   {
+    "enonce": "Identité d'actif incohérente : les hypothèses portent sur le rsETH alors que le corpus cité est presque exclusivement USDC/usd0pp, et le claim -0006 admet lui-même un actif autre que le collatéral de la tâche.",
+    "gravite": "BLOQUANT",
+    "refs": [
+     "claim:rseth-2026-04_live_20261018T110722Z-orchestrator-0006",
+     "hypothesis:HYP-001",
+     "observation:corpus:raw/binance/usdcusdt_klines.json:893ec00410d4cb32"
+    ],
+    "test_discriminant": "Identifier dans refs la série fournissant isFrozen, cap_ratio et utilisation de la réserve rsETH ; si elle est absente, les mesures ne portent pas sur le sujet.",
+    "type": "CONTRADICTION"
+   },
+   {
+    "enonce": "Aucune série d'utilisation de la réserve rsETH n'est identifiable dans refs, alors que HYP-004 invoque une mesure archivée d'environ 0,008 % pour réfuter le concurrent.",
+    "gravite": "MAJEUR",
+    "refs": [
+     "hypothesis:HYP-004"
+    ],
+    "test_discriminant": "Retrouver la série d'utilisation et son intervalle couvrant l'instant du gel ; son absence invalide le critère R de HYP-004.",
+    "type": "MANQUE"
+   },
+   {
+    "enonce": "L'écart d'environ -31 % annoncé n'est pas reproductible depuis les valeurs citées (1 686 contre 2 513-2 526) : aucun dénominateur usuel de ces lectures ne redonne ce pourcentage.",
+    "gravite": "MAJEUR",
+    "refs": [
+     "hypothesis:HYP-002"
+    ],
+    "test_discriminant": "Recalculer l'écart avec le dénominateur explicité (prix marché ou lecture oracle) ; si le résultat diffère, l'unité de la mesure est mal définie.",
+    "type": "UNITE"
+   },
+   {
+    "enonce": "L'écart marché/oracle peut être une conséquence du gel lui-même (escompte d'un collatéral bloqué) ou une cote illiquide, et non la preuve que l'oracle surévalue le réalisable.",
+    "gravite": "MAJEUR",
+    "refs": [
+     "hypothesis:HYP-002",
+     "hypothesis:HYP-001"
+    ],
+    "test_discriminant": "Dater le prix de marché et le comparer avant et après l'instant du gel ; un écart apparaissant seulement après le gel invalide la lecture causale.",
+    "type": "ALTERNATIVE"
+   },
+   {
+    "enonce": "cap_ratio_max est horodaté 18:00:00Z alors que le gel est à 19:03:59Z : un extremum de fenêtre étiqueté à un instant ne prouve pas la persistance de la saturation jusqu'au gel.",
+    "gravite": "MAJEUR",
+    "refs": [
+     "hypothesis:HYP-003",
+     "observation:graph_snapshot:rseth-2026-04@2026-04-18T19:03:59Z"
+    ],
+    "test_discriminant": "Disposer de relevés cap_ratio entre l'instant mesuré et l'instant du gel ; une remontée du ratio avant le gel retire la prétendue contrainte.",
+    "type": "PIT"
+   },
+   {
+    "enonce": "Le corpus contient la série usd0pp_2025-01, dont l'étendue temporelle est antérieure de plus d'un an à l'événement du 2026-04-18 : ces points sont temporellement inadmissibles pour dater ou corréler le gel.",
+    "gravite": "MAJEUR",
+    "refs": [
+     "observation:corpus:series/usd0pp_2025-01.json:06df48a720c0ada1",
+     "hypothesis:HYP-001"
+    ],
+    "test_discriminant": "Vérifier l'étendue temporelle de chaque série retenue par rapport à la fenêtre du gel ; toute série hors fenêtre doit être écartée.",
+    "type": "OBSOLESCENCE"
+   },
+   {
+    "enonce": "Le qualificatif « administratively » (acteur de la décision) n'est étayé par aucune mesure : un basculement de drapeau ne distingue ni gouvernance, ni rôle technique, ni défaillance.",
+    "gravite": "MAJEUR",
+    "refs": [
+     "hypothesis:HYP-001"
+    ],
+    "test_discriminant": "Retrouver l'appel effectif et l'émetteur de la transaction au bloc daté ; sans cela, la nature administrative est gratuite.",
+    "type": "MANQUE"
+   },
+   {
+    "enonce": "Le snapshot est horodaté exactement à l'instant du gel : mesures et événement proviennent d'une source unique, sans recoupement indépendant du mappage bloc/date.",
+    "gravite": "MAJEUR",
+    "refs": [
+     "observation:graph_snapshot:rseth-2026-04@2026-04-18T19:03:59Z",
+     "hypothesis:HYP-001"
+    ],
+    "test_discriminant": "Recouper l'horodatage du bloc et la transition isFrozen via une source indépendante ; tout écart disqualifie la datation.",
+    "type": "DEPENDANCE"
+   },
+   {
+    "enonce": "Aucun claim n'a de refs (listes vides) : VOI_NOT_ESTIMABLE et le « documented fallback » sont donc non étayés, et l'ordre de test des hypothèses n'est pas justifié.",
+    "gravite": "MAJEUR",
+    "refs": [
+     "claim:rseth-2026-04_live_20261018T110722Z-orchestrator-0003",
+     "claim:rseth-2026-04_live_20261018T110722Z-orchestrator-0001"
+    ],
+    "test_discriminant": "Retrouver le document de fallback invoqué et l'estimateur NetVoI absent ; leur absence confirme l'absence de critère de départage.",
+    "type": "MANQUE"
+   },
+   {
+    "enonce": "Quatre rejets de plan pour motif de schéma sur la même exécution montrent une chaîne de production instable ; la mention « once » est répétée à chaque rejet, sans trace du plan finalement retenu.",
+    "gravite": "MINEUR",
+    "refs": [
+     "claim:rseth-2026-04_live_20261018T110722Z-orchestrator-0008",
+     "claim:rseth-2026-04_live_20261018T110722Z-orchestrator-0018",
+     "claim:rseth-2026-04_live_20261018T110722Z-orchestrator-0028"
+    ],
+    "test_discriminant": "Retrouver le plan validé après le dernier rejet ; sans lui, aucune mesure ne peut être rattachée à un plan conforme.",
+    "type": "CONTRADICTION"
+   },
+   {
+    "enonce": "Les bornes de la recherche binaire (14 étapes) ne sont pas documentées : le critère de réfutation « isFrozen never flips in the window » est donc non testable faute de bornes de fenêtre.",
+    "gravite": "MINEUR",
+    "refs": [
+     "hypothesis:HYP-001"
+    ],
+    "test_discriminant": "Fournir les blocs de début et de fin du dichotomie ; sans bornes, l'absence de basculement dans la fenêtre ne peut être constatée.",
+    "type": "MANQUE"
+   }
+  ],
+  "note": "La lecture dominante (gel administratif bloquant les retraits, surévaluation oracle, saturation préalable) repose sur un corpus majoritairement USDC/usd0pp alors que le sujet est le rsETH, sur des claims sans refs et sur une mesure de cap prise près d'une heure avant l'événement. L'assertion centrale « withdrawals are blocked » n'est pas dérivée des mesures décrites.",
+  "preuves_manquantes": [
+   "Série on-chain ou archive identifiant la réserve rsETH (isFrozen, cap_ratio, utilisation) dans les refs",
+   "Référence documentaire de l'effet opérationnel du drapeau isFrozen sur les retraits pour la réserve visée",
+   "Origine, horodatage et source du prix de marché documenté utilisé pour l'écart de HYP-002",
+   "Bornes temporelles de la fenêtre de mesure et intervalle exact des lectures oracle retenues",
+   "Identité de l'éméteur et de l'appel à l'origine du basculement (nature administrative)",
+   "Document de fallback invoqué par le claim VOI_NOT_ESTIMABLE et trace du plan finalement validé",
+   "Recoupement indépendant du mappage bloc 24 908 723 vers l'horodatage UTC affiché"
+  ],
+  "verdict_lecture": "INCOHERENTE"
+ },
+ "escalation": "REQUIRE_APPROVAL",
+ "journals": {
+  "critic": {
+   "agent_ids": [
+    "critic"
+   ],
+   "chain_head": "dbc8116d37a2b394c2424109c3de886129070df2f0cb3fd04b2376e3ce5b17db",
+   "lines": 1
+  },
+  "orchestrator": {
+   "agent_ids": [
+    "orchestrator"
+   ],
+   "chain_head": "277ebf542d3e81181d42fcc28246b798c6668ed2f419a7b7cf364cf5a45813b8",
+   "lines": 31
+  }
+ },
+ "mode": "live",
+ "outcome": {
+  "budget_used": {
+   "cost_usd": 0.03968193,
+   "llm_calls": 9.0,
+   "tool_calls": 7.0,
+   "wall_seconds": 59.78100000000086
+  },
+  "critique_verdict": "",
+  "inconclusive": true,
+  "motif": "E_LOOP_OUTPUT_INVALID: orchestrator plan invalid after re-prompt (critere_discriminant contains a digit)",
+  "non_recherche": [
+   "Une série de marché archivée pour le rsETH, sur une place liquide, confirme-t-elle un cours de sortie nettement inférieur aux lectures du feed oracle retenues sur la même fenêtre ?",
+   "Does an archived secondary-market price series for the collateral asset print a last trade before the freeze instant matching the documented market price rather than the retained oracle reading over the same window?"
+  ],
+  "reflexion": {
+   "cells": [],
+   "diagnosticity": {},
+   "evidence": [],
+   "gap": {
+    "diagnosticity": 0.0,
+    "evidence_id": "",
+    "found": false,
+    "hyp_id": "",
+    "justification": "aucune preuve — aucun test discriminant a acquerir",
+    "kind": "",
+    "refs": []
+   },
+   "hypotheses": [
+    {
+     "counter_intuitive": false,
+     "hyp_id": "HYP-001",
+     "label": "The rsETH reserve of the Aave v3 core market was administratively frozen (isFrozen 0 -> 1 at block 24 908 723, 2026-04-18 19:03:59 UTC): withdrawals are blocked from that instant."
+    },
+    {
+     "counter_intuitive": false,
+     "hyp_id": "HYP-002",
+     "label": "The value retained by the oracle diverges from the market price (about -31 %): valuing the position on the oracle overstates the realisable value of the collateral."
+    },
+    {
+     "counter_intuitive": false,
+     "hyp_id": "HYP-003",
+     "label": "The supply cap saturation (99.999 % at 2026-04-18 18:00 UTC) preceded the freeze and constrained the market: no new supply could enter before the administrative freeze."
+    },
+    {
+     "counter_intuitive": true,
+     "hyp_id": "HYP-004",
+     "label": "Counter-intuitive competitor: the reserve is blocked by a full utilisation of the market (a 100 % utilisation leaves no cash to withdraw) - the freeze is only a symptom of a liquidity squeeze."
+    }
+   ],
+   "note": "aucune preuve",
+   "ranking": [
+    {
+     "counter_intuitive": false,
+     "etat": "SOLIDE",
+     "hyp_id": "HYP-001",
+     "label": "The rsETH reserve of the Aave v3 core market was administratively frozen (isFrozen 0 -> 1 at block 24 908 723, 2026-04-18 19:03:59 UTC): withdrawals are blocked from that instant.",
+     "meilleur_rival": "HYP-002",
+     "nb_coherent": 0,
+     "nb_incoherent": 0,
+     "nb_neutre": 0,
+     "nb_preuves": 0,
+     "score_refutation": 0.0
+    },
+    {
+     "counter_intuitive": false,
+     "etat": "SOLIDE",
+     "hyp_id": "HYP-002",
+     "label": "The value retained by the oracle diverges from the market price (about -31 %): valuing the position on the oracle overstates the realisable value of the collateral.",
+     "meilleur_rival": "HYP-001",
+     "nb_coherent": 0,
+     "nb_incoherent": 0,
+     "nb_neutre": 0,
+     "nb_preuves": 0,
+     "score_refutation": 0.0
+    },
+    {
+     "counter_intuitive": false,
+     "etat": "SOLIDE",
+     "hyp_id": "HYP-003",
+     "label": "The supply cap saturation (99.999 % at 2026-04-18 18:00 UTC) preceded the freeze and constrained the market: no new supply could enter before the administrative freeze.",
+     "meilleur_rival": "HYP-001",
+     "nb_coherent": 0,
+     "nb_incoherent": 0,
+     "nb_neutre": 0,
+     "nb_preuves": 0,
+     "score_refutation": 0.0
+    },
+    {
+     "counter_intuitive": true,
+     "etat": "SOLIDE",
+     "hyp_id": "HYP-004",
+     "label": "Counter-intuitive competitor: the reserve is blocked by a full utilisation of the market (a 100 % utilisation leaves no cash to withdraw) - the freeze is only a symptom of a liquidity squeeze.",
+     "meilleur_rival": "HYP-001",
+     "nb_coherent": 0,
+     "nb_incoherent": 0,
+     "nb_neutre": 0,
+     "nb_preuves": 0,
+     "score_refutation": 0.0
+    }
+   ],
+   "schema_version": "orvyren/ach-matrix/v1"
+  },
+  "state": "ABORTED",
+  "stop_condition": "ARRET-3"
+ },
+ "run_dir": "evidence\\scenario_rseth\\agents_session\\rseth-2026-04_live_20261018T110722Z",
+ "schema": "orvyren/agent-run-outcome/v1"
+}

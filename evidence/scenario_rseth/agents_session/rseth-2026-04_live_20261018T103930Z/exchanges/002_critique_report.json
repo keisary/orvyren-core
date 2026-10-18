@@ -1,0 +1,94 @@
+{
+ "$schema": "orvyren/crit/v1",
+ "findings": [
+  {
+   "enonce": "Toutes les observations du paquet portent sur USDC (usdcusdt_klines, usdcusd_ohlc, usdc_prices, usd0pp) alors que les hypothèses concernent rsETH. Aucune observation rsETH n'apparaît dans les refs.",
+   "gravite": "BLOQUANT",
+   "refs": [
+    "observation:corpus:raw/binance/usdcusdt_klines.json:893ec00410d4cb32",
+    "observation:corpus:raw/defillama/usdc_prices_main.json:a45e7cf3a407b650",
+    "hypothesis:HYP-001",
+    "hypothesis:HYP-002"
+   ],
+   "test_discriminant": "Chercher dans le corpus une observation nommée rsETH ou liée à l'adresse Aave v3 rsETH ; si aucune n'existe, le lien preuve-hypothèse est rompu.",
+   "type": "DEPENDANCE"
+  },
+  {
+   "enonce": "HYP-002 annonce environ -31 % mais les valeurs citées (1 686 vs 2 513–2 526) donnent un écart d'environ -33 %. L'écart calculé ne correspond pas au chiffre affirmé.",
+   "gravite": "MAJEUR",
+   "refs": [
+    "hypothesis:HYP-002"
+   ],
+   "test_discriminant": "Recalculer (1686/2513)-1 et (1686/2526)-1 ; si le résultat ne tombe pas dans une tolérance autour de -31 %, l'énoncé est erroné.",
+   "type": "UNITE"
+  },
+  {
+   "enonce": "HYP-003 mesure cap_ratio à 18:00 UTC mais conclut que la saturation a persisté jusqu'au freeze de 19:03:59 UTC. Un point unique 63 min avant l'événement ne prouve pas la continuité.",
+   "gravite": "MAJEUR",
+   "refs": [
+    "hypothesis:HYP-003",
+    "observation:corpus:series/calm_windows.json:c9775393ae83d2d5"
+   ],
+   "test_discriminant": "Exiger une série de cap_ratio entre 18:00 et 19:04 UTC ; si le ratio chute avant 19:03:59, l'affirmation de contrainte continue est infirmée.",
+   "type": "PIT"
+  },
+  {
+   "enonce": "Le journal orchestrator est daté 2026-10-18, soit six mois après l'événement (2026-04-18). Les états de réserve, oracle et cap_ratio ont pu changer ; les lectures rétrospectives peuvent être périmées.",
+   "gravite": "MAJEUR",
+   "refs": [
+    "claim:rseth-2026-04_live_20261018T103930Z-orchestrator-0003",
+    "snapshot_ref:graph_snapshot:rseth-2026-04@2026-04-18T19:03:59Z"
+   ],
+   "test_discriminant": "Vérifier si les données sont figées (snapshot immuable) ou rafraîchies ; si rafraîchies, comparer les valeurs actuelles aux valeurs d'avril.",
+   "type": "OBSOLESCENCE"
+  },
+  {
+   "enonce": "Aucune référence on-chain directe (hash de transaction, log d'événement, appel eth_getLogs) ne prouve le passage isFrozen 0→1 au bloc 24 908 723.",
+   "gravite": "MAJEUR",
+   "refs": [
+    "hypothesis:HYP-001"
+   ],
+   "test_discriminant": "Fournir le hash de transaction ou l'event log du changement de paramètre ; son absence rend le bloc et l'horodatage non vérifiables.",
+   "type": "MANQUE"
+  },
+  {
+   "enonce": "D'autres causes que le freeze administratif peuvent bloquer les retraits : pause de la réserve (statut distinct), restrictions de transfert ERC-20 sur rsETH, ou verrouillage par oracle. HYP-001 ne les écarte pas.",
+   "gravite": "MAJEUR",
+   "refs": [
+    "hypothesis:HYP-001"
+   ],
+   "test_discriminant": "Lire le statut unbacked/paused de la réserve rsETH au même bloc ; si paused ou unbacked est vrai, l'explication par isFrozen seul est insuffisante.",
+   "type": "ALTERNATIVE"
+  },
+  {
+   "enonce": "HYP-004 affirme une utilisation à 100 % mais son critère R retient environ 0,008 %. Ces deux lectures de la même fenêtre ne peuvent pas être simultanément vraies sans source tierce arbitrale.",
+   "gravite": "MINEUR",
+   "refs": [
+    "hypothesis:HYP-004"
+   ],
+   "test_discriminant": "Vérifier si le critère R et le critère S proviennent de la même source ; si oui, la contradiction est interne au test.",
+   "type": "CONTRADICTION"
+  },
+  {
+   "enonce": "Formats de ref incohérents : 'corpus:series/...' vs 'corpus/series/...' (deux-points vs slash). Cela suggère deux chemins d'ingestion distincts non harmonisés.",
+   "gravite": "MINEUR",
+   "refs": [
+    "observation:corpus:series/calm_windows.json:c9775393ae83d2d5",
+    "observation:corpus/series/calm_windows.json:fd90568a92e508bc"
+   ],
+   "test_discriminant": "Vérifier si les deux formes résolvent vers le même identifiant de contenu ; si non, certaines refs pointent vers des sources non contrôlées.",
+   "type": "DEPENDANCE"
+  }
+ ],
+ "note": "Le paquet est structurellement incohérent : toutes les observations pointent vers des données USDC alors que les hypothèses portent sur rsETH. Les chiffres de HYP-002 ne se recalculent pas. La temporalité (mesure unique 63 min avant l'événement) et l'absence de preuve on-chain directe fragilisent les affirmations causales.",
+ "preuves_manquantes": [
+  "Observation on-chain du changement isFrozen (event log ou tx hash) au bloc 24 908 723",
+  "Série temporelle du cap_ratio rsETH entre 18:00 et 19:04 UTC le 2026-04-18",
+  "Lecture oracle Chainlink rsETH/USD horodatée dans la fenêtre 2026-04-18",
+  "Prix de marché rsETH (DEX ou CEX) horodaté dans la même fenêtre que l'oracle",
+  "Taux d'utilisation (borrowed/supplied) de la réserve rsETH au moment du freeze",
+  "Preuve que les observations USDC du corpus sont pertinentes pour les hypothèses rsETH",
+  "Statut paused/unbacked de la réserve rsETH au bloc du freeze"
+ ],
+ "verdict_lecture": "INCOHERENTE"
+}

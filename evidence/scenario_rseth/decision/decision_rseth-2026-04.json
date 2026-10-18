@@ -1,0 +1,230 @@
+{
+  "case": "rseth-2026-04",
+  "window": {
+    "label": "main",
+    "start": "2023-03-09T00:00:00+00:00",
+    "end": "2023-03-15T00:00:00+00:00",
+    "inclusive_bounds": true,
+    "duration_hours": 144.0,
+    "timezone": "UTC"
+  },
+  "inputs_summary": {
+    "corpus": {
+      "path": "fixtures/agents/rseth-2026-04/corpus_rseth.csv",
+      "sha256": "7e313c7bb24e0eaa037796c88187c9e33cd126f3662ac76a65c1df52d7cd86f1",
+      "observations_in_file": 100,
+      "observations_in_window": 0
+    },
+    "sources": [],
+    "peg_reference_usd": 1.0,
+    "exposure_parameters": {
+      "exposure_usdc": 500.0,
+      "floor_usdc": 350.0,
+      "action_usdc": 100.0,
+      "available_to_move_usdc": 100.0,
+      "note": "demonstration parameters only: no real wallet, no real balance, no market impact modelled"
+    },
+    "pre_registered_thresholds": {
+      "deviation_alert_pct": 1.0,
+      "aggregate_tolerance_pct": 0.5,
+      "recovery_tolerance_pct": 0.1,
+      "recovery_hours_limit": 12.0,
+      "persistence_hours_limit": 12.0,
+      "supply_drop_pct": 1.0,
+      "supply_window_hours": 24.0
+    }
+  },
+  "hypothesis_verdicts": {
+    "H1": {
+      "hypothesis_id": "H1",
+      "label": "local liquidity perturbation",
+      "statement": "The dislocation is a local liquidity perturbation: one venue moves while the aggregate stays pegged, and it recovers quickly.",
+      "verdict": "INCONCLUSIVE",
+      "support_criterion": "deviation > 1% on ONE venue, aggregate within 0.5% of peg, recovery to +/-0.1% in less than 12 h",
+      "refutation_criterion": "deviation > 1% persisting more than 12 h on >= 2 independent venues",
+      "criteria_evaluated": [
+        {
+          "criterion": "support",
+          "met": false,
+          "evaluable": false,
+          "spec": "deviation > 1.0% on a single independent venue while the aggregator stays within 0.5% of peg, and recovery to within 0.1% of peg in less than 12 h",
+          "computed": {
+            "venue_deviations_above_threshold": [],
+            "alert_threshold_pct": 1.0,
+            "aggregator_min_value": null,
+            "aggregator_min_deviation_pct": null,
+            "aggregator_tolerance_pct": 0.5,
+            "aggregator_within_tolerance": null,
+            "recovery_limit_hours": 12.0,
+            "recovered_within_limit": false
+          },
+          "evidence_refs": []
+        },
+        {
+          "criterion": "refutation",
+          "met": false,
+          "evaluable": false,
+          "spec": "deviation > 1.0% persisting more than 12 h on at least two independent venues",
+          "computed": {
+            "persistence_limit_hours": 12.0,
+            "persistent_episodes": [],
+            "persistent_venue_count": 0
+          },
+          "evidence_refs": []
+        }
+      ],
+      "evidence_refs": [],
+      "missing_inputs": [
+        "bitstamp hourly price series (independent venue)",
+        "binance hourly price series (independent venue)",
+        "defillama hourly price series (aggregator) required for the H1 aggregate-tolerance criterion"
+      ],
+      "details": {
+        "independent_venues_present": [],
+        "aggregator_present": false
+      }
+    },
+    "H2": {
+      "hypothesis_id": "H2",
+      "label": "broad stress on asset or issuer",
+      "statement": "The dislocation reflects broad stress on the asset or its issuer, not a local venue effect.",
+      "verdict": "INCONCLUSIVE",
+      "support_criterion": "deviation > 1% simultaneously on >= 2 independent venues AND circulating supply drop > 1% in 24 h",
+      "refutation_criterion": "signals isolated to one venue AND no supply evolution",
+      "criteria_evaluated": [
+        {
+          "criterion": "support",
+          "met": false,
+          "evaluable": false,
+          "spec": "deviation > 1% simultaneously on >= 2 independent venues AND circulating supply drop > 1% within 24 h",
+          "computed": {
+            "simultaneous_alert_hours": 0,
+            "simultaneous_first_utc": null,
+            "simultaneous_last_utc": null,
+            "venues_with_alerts": [],
+            "alert_threshold_pct": 1.0,
+            "venue_minima": {},
+            "supply_window_hours": 24.0,
+            "supply_drop_threshold_pct": 1.0,
+            "max_24h_supply_drop_pct": null,
+            "max_24h_supply_drop_from_utc": null,
+            "max_24h_supply_drop_to_utc": null,
+            "supply_drop_above_threshold": false,
+            "supply_cross_check": {
+              "venue": "defillama_supply_ethereum",
+              "max_24h_drop_pct": null,
+              "from_utc": null,
+              "to_utc": null
+            }
+          },
+          "evidence_refs": []
+        },
+        {
+          "criterion": "refutation",
+          "met": false,
+          "evaluable": false,
+          "spec": "signals isolated to at most one venue AND no 24 h supply change",
+          "computed": {
+            "venues_with_alerts": [],
+            "max_24h_supply_drop_pct": null,
+            "supply_drop_above_threshold": false
+          },
+          "evidence_refs": []
+        }
+      ],
+      "evidence_refs": [],
+      "missing_inputs": [
+        "bitstamp hourly price series (independent venue)",
+        "binance hourly price series (independent venue)",
+        "defillama_supply_aggregate daily circulating supply series (metric=circulating_usd) required for the 24 h supply-change criterion"
+      ],
+      "details": {
+        "independent_venues_present": [],
+        "supply_series_present": false,
+        "supply_observations": 0,
+        "concurrent_alerts": false
+      }
+    },
+    "H3": {
+      "hypothesis_id": "H3",
+      "label": "data or market artifact",
+      "statement": "The observed movement is a data or market artifact rather than a genuine dislocation.",
+      "verdict": "INCONCLUSIVE",
+      "support_criterion": "unit/contract/timestamp inconsistency or unexplained divergence between two sources of distinct nature",
+      "refutation_criterion": "at least two independent concordant sources",
+      "criteria_evaluated": [
+        {
+          "criterion": "support",
+          "met": false,
+          "evaluable": true,
+          "spec": "unit/contract/timestamp inconsistency, or an unexplained divergence between two sources of distinct nature",
+          "computed": {
+            "structural_flags": [],
+            "unexplained_divergences": [],
+            "checks_not_possible": [
+              "contract-level verification: this corpus carries no contract/address field"
+            ]
+          },
+          "evidence_refs": []
+        },
+        {
+          "criterion": "refutation",
+          "met": false,
+          "evaluable": false,
+          "spec": "at least 2 independent concordant sources confirm the movement",
+          "computed": {
+            "concordant_venues": [],
+            "simultaneous_alert_hours": 0
+          },
+          "evidence_refs": []
+        }
+      ],
+      "evidence_refs": [],
+      "missing_inputs": [
+        "bitstamp hourly price series (independent venue)",
+        "binance hourly price series (independent venue)",
+        "defillama hourly price series (aggregator) required for the H3 divergence check"
+      ],
+      "details": {
+        "independent_venues_present": [],
+        "structural_flag_count": 0,
+        "unexplained_divergence_count": 0,
+        "concordant_venue_count": 0
+      }
+    }
+  },
+  "decision": {
+    "verdict": "INCONCLUSIVE",
+    "action": null,
+    "rationale": [
+      "Pre-registered decision rule (frozen before evaluation): H2 SUPPORTED and available_to_move > 0 -> ACTION_RECOMMENDED (bounded 100 USDC test transfer, D8); H1 SUPPORTED and H2 REFUTED -> NO_ACTION (local perturbation, no exposure reduction); missing required series -> INCONCLUSIVE with missing_inputs.",
+      "Rule 4 fires: at least one required series is missing, so the engine returns INCONCLUSIVE rather than guessing. No action is produced. Missing: bitstamp hourly price series (independent venue); binance hourly price series (independent venue); defillama hourly price series (aggregator) required for the H1 aggregate-tolerance criterion; defillama_supply_aggregate daily circulating supply series (metric=circulating_usd) required for the 24 h supply-change criterion; defillama hourly price series (aggregator) required for the H3 divergence check.",
+      "H1 local liquidity perturbation: INCONCLUSIVE. The registered criteria are not decisive on this window.",
+      "H2 broad stress on asset or issuer: INCONCLUSIVE. 0 simultaneous hourly observation(s) more than 1.0% below peg on 0 independent venues (); missing inputs: bitstamp hourly price series (independent venue), binance hourly price series (independent venue), defillama_supply_aggregate daily circulating supply series (metric=circulating_usd) required for the 24 h supply-change criterion.",
+      "H3 data or market artifact: INCONCLUSIVE. The registered criteria are not decisive on this window.",
+      "Coverage note: this case window has no observations for at least one independent venue, which is why some criteria are not evaluable."
+    ],
+    "conditions": [
+      "Any execution must first be authorized by the deterministic policy service (src/orvyren/policy, FREEZE_V1 D9): Base Sepolia chain 84532, allowlisted test-USDC asset, allowlisted reserve recipient, <= 100 USDC per transaction, <= 300 USDC cumulative, 24 h permission, idempotent intent_id.",
+      "Test assets only; no mainnet funds (FREEZE_V1 D5/D8).",
+      "The decision is scoped to the frozen corpus revision (sha256 recorded in inputs_summary) and to the recorded window; new observations outside it invalidate the case.",
+      "Contract-level verification of the asset was not possible from this corpus (no contract field); it remains an open check before any mainnet-grade claim."
+    ],
+    "limits": [
+      "Exposure parameters are demonstration values, not a real portfolio: 500.0 USDC exposure, 350.0 USDC floor, 100.0 USDC action.",
+      "Corpus coverage is uneven: ; the control window has no exchange observations.",
+      "The aggregator is a multi-venue median with possible lag; the supply series is daily and covers observable on-chain supply only.",
+      "H2 identifies stress consistent with an asset/issuer event; price and supply data alone do not attribute it between the asset and its issuer.",
+      "This engine produces a decision candidate only and never executes; the baseline A0 comparison lives in evidence/baseline_report.json."
+    ],
+    "provenance": [],
+    "missing_inputs": [
+      "bitstamp hourly price series (independent venue)",
+      "binance hourly price series (independent venue)",
+      "defillama hourly price series (aggregator) required for the H1 aggregate-tolerance criterion",
+      "defillama_supply_aggregate daily circulating supply series (metric=circulating_usd) required for the 24 h supply-change criterion",
+      "defillama hourly price series (aggregator) required for the H3 divergence check"
+    ]
+  },
+  "calibration": null
+}

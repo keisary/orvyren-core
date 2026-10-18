@@ -1,0 +1,100 @@
+{
+ "case_id": "rseth-2026-04",
+ "journal_records_total": 3,
+ "parent_run_id": "rseth-2026-04_live_20261018T110722Z",
+ "run_id": "scenario-rseth-2026-04-20261018T110722Z",
+ "schema": "orvyren/scenario-policy-verdicts/v1",
+ "ticks": [
+  {
+   "case": "usdc-2023-03",
+   "chain": {
+    "events_head": "ffb4a2c8fbe239092be53122a60792857d3a08a5793af9bd2d52d6cffb48cbda",
+    "parent_run_id": "rseth-2026-04_live_20261018T110722Z",
+    "root_dir": "D:\\orvyren_core\\evidence\\scenario_rseth\\execution\\chain\\scenario-rseth-2026-04-20261018T110722Z",
+    "run_id": "scenario-rseth-2026-04-20261018T110722Z",
+    "verify_error": "",
+    "verify_ok": true
+   },
+   "outcome": "DENIED_POLICY",
+   "policy_hash": "651535872228470403f5603982eaadd9c4143c700f0ce159813f9edc7164ad5d",
+   "policy_verdict": "DENY",
+   "policy_version": "v1.0",
+   "reasons": [
+    "BALANCE_UNREADABLE",
+    "AGENT_NOT_MEMBER"
+   ],
+   "rules_evaluated": [
+    {
+     "note": "84532",
+     "result": "OK",
+     "rule": "P1-chain"
+    },
+    {
+     "note": "",
+     "result": "OK",
+     "rule": "P2-asset"
+    },
+    {
+     "note": "",
+     "result": "OK",
+     "rule": "P3-recipient"
+    },
+    {
+     "note": "transfer -> (0x036cbd53842c5426634e7929541ec2318f3dcf7e, 0xa9059cbb)",
+     "result": "OK",
+     "rule": "P4-function"
+    },
+    {
+     "note": "100.0 <= 100.0",
+     "result": "OK",
+     "rule": "P5-amount"
+    },
+    {
+     "note": "100.0 <= 300.0",
+     "result": "OK",
+     "rule": "P6-cumulative"
+    },
+    {
+     "code": "BALANCE_UNREADABLE",
+     "result": "FAIL",
+     "rule": "P7-exposure"
+    },
+    {
+     "note": "2026-10-19T11:11:31.367974+00:00",
+     "result": "OK",
+     "rule": "P8-permission"
+    },
+    {
+     "note": "age 0:00:00",
+     "result": "OK",
+     "rule": "P9-freshness"
+    },
+    {
+     "note": "",
+     "result": "OK",
+     "rule": "P10-idempotency"
+    },
+    {
+     "code": "AGENT_NOT_MEMBER",
+     "note": "role membership unreadable — fail closed",
+     "result": "FAIL",
+     "rule": "P11-pause"
+    },
+    {
+     "note": "",
+     "result": "OK",
+     "rule": "P12-envelope"
+    },
+    {
+     "note": "0.0 < 0.1",
+     "result": "OK",
+     "rule": "P14-budget"
+    }
+   ],
+   "run_id": "scenario-rseth-2026-04-20261018T110722Z",
+   "skipped_rules": [],
+   "tick": 1,
+   "verdict": "DENY"
+  }
+ ]
+}

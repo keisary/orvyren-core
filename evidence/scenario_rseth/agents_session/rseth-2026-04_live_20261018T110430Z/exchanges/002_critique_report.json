@@ -1,0 +1,140 @@
+{
+ "$schema": "orvyren/crit/v1",
+ "findings": [
+  {
+   "enonce": "Aucune observation rsETH n'existe dans le corpus : uniquement USDC/USDT et USDC/USD sur fenêtres calm/control/main. Les quatre hypothèses portant sur rsETH sont donc non étayées, ni confirmables ni réfutables.",
+   "gravite": "BLOQUANT",
+   "refs": [
+    "claim:rseth-2026-04_live_20261018T110430Z-orchestrator-0004",
+    "claim:rseth-2026-04_live_20261018T110430Z-orchestrator-0010",
+    "hypothesis:HYP-001",
+    "hypothesis:HYP-002"
+   ],
+   "test_discriminant": "Produire au moins une observation nommant rsETH (prix, isFrozen, cap_ratio, utilisation) sur la fenêtre gelée ; son absence confirme le manque.",
+   "type": "MANQUE"
+  },
+  {
+   "enonce": "L'événement est daté 2026-04-18 alors que toutes les séries référencées s'arrêtent entre 2023 et 2025 : aucune donnée n'est admissible au point-in-time de l'instant de gel cité.",
+   "gravite": "BLOQUANT",
+   "refs": [
+    "hypothesis:HYP-001",
+    "observation:corpus:raw/defillama/usdc_prices_main.json:718f5a745d72686f",
+    "observation:corpus:raw/binance/usdcusdt_klines.json:893ec00410d4cb32"
+   ],
+   "test_discriminant": "Vérifier si une observation porte un timestamp ≥ 2026-04-18T19:03:59Z ; si oui, l'objection tombe.",
+   "type": "PIT"
+  },
+  {
+   "enonce": "HYP-002 affirme des valeurs chiffrées (1 686 vs 2 513-2 526) tandis que les claims affirment l'absence totale de série de prix rsETH : les chiffres cités n'ont aucune source dans les preuves fournies.",
+   "gravite": "MAJEUR",
+   "refs": [
+    "hypothesis:HYP-002",
+    "claim:rseth-2026-04_live_20261018T110430Z-orchestrator-0010"
+   ],
+   "test_discriminant": "Identifier l'observation d'où sortent 1 686 et 2 513-2 526 ; si aucune ref ne les porte, la contradiction est confirmée.",
+   "type": "CONTRADICTION"
+  },
+  {
+   "enonce": "HYP-004 invoque « l'archived series » montrant une utilisation de 0,008 %, alors que les claims déclarent qu'aucune série rsETH n'existe : ni le critère S ni le critère R ne disposent de support observable.",
+   "gravite": "MAJEUR",
+   "refs": [
+    "hypothesis:HYP-004",
+    "claim:rseth-2026-04_live_20261018T110430Z-orchestrator-0004"
+   ],
+   "test_discriminant": "Retrouver la série d'archivage citée et son ref ; si elle n'existe pas, les deux critères de HYP-004 sont vides.",
+   "type": "CONTRADICTION"
+  },
+  {
+   "enonce": "Le passage isFrozen 0->1 au bloc 24 908 723 et la recherche binaire « 14 steps » ne sont adossés à aucune observation ; le mapping bloc -> 2026-04-18 19:03:59 UTC n'est pas prouvé.",
+   "gravite": "MAJEUR",
+   "refs": [
+    "hypothesis:HYP-001",
+    "claim:rseth-2026-04_live_20261018T110430Z-orchestrator-0004"
+   ],
+   "test_discriminant": "Fournir une observation de lecture on-chain du flag et l'horodatage du bloc ; sans elle, la date de gel est une affirmation gratuite.",
+   "type": "MANQUE"
+  },
+  {
+   "enonce": "HYP-003 mesure cap_ratio_max à 18:00, strictement avant le gel à 19:03 : la fenêtre intermédiaire n'est pas couverte, la persistance de la saturation jusqu'au gel n'est pas établie.",
+   "gravite": "MAJEUR",
+   "refs": [
+    "hypothesis:HYP-003",
+    "hypothesis:HYP-001"
+   ],
+   "test_discriminant": "Disposer de mesures de cap_ratio entre 18:00 et 19:03 ; une désaturation dans cet intervalle invalide l'ordre temporel affirmé.",
+   "type": "PIT"
+  },
+  {
+   "enonce": "HYP-002 compare 1 686 à 2 513-2 526 sans préciser les dénominateurs : une confusion rsETH/ETH vs rsETH/USD ou ETH/USD vs rsETH/USD n'est pas exclue et produirait artificiellement l'écart de -31 %.",
+   "gravite": "MAJEUR",
+   "refs": [
+    "hypothesis:HYP-002",
+    "observation:corpus:raw/bitstamp/usdcusd_ohlc.json:11d5d491b4ec28ad"
+   ],
+   "test_discriminant": "Documenter les unités de chaque lecture (devise et actif de référence) ; si les dénominateurs diffèrent, l'écart est un artefact.",
+   "type": "UNITE"
+  },
+  {
+   "enonce": "Toutes les refs corpus proviennent des mêmes flux USDC (Binance, Bitstamp, DefiLlama) agrégés via calm_windows.json : sources non indépendantes et hors sujet, incapables de corroborer quoi que ce soit sur rsETH.",
+   "gravite": "MAJEUR",
+   "refs": [
+    "observation:corpus:series/calm_windows.json:9fe3f6aecb654bb6",
+    "observation:corpus:raw/binance/usdcusdt_klines.json:4d6aa2751728f857",
+    "observation:corpus:raw/bitstamp/usdcusd_ohlc.json:48fa96714846523c"
+   ],
+   "test_discriminant": "Vérifier si calm_windows.json dérive des feeds cités ; une dérivation commune confirme la dépendance et l'absence de source tierce.",
+   "type": "DEPENDANCE"
+  },
+  {
+   "enonce": "Les claims 0004 et 0010 répètent le même constat négatif après deux refus de plan (schéma) : deux occurrences d'une même conclusion ne valent pas double vérification indépendante.",
+   "gravite": "MINEUR",
+   "refs": [
+    "claim:rseth-2026-04_live_20261018T110430Z-orchestrator-0004",
+    "claim:rseth-2026-04_live_20261018T110430Z-orchestrator-0010",
+    "claim:rseth-2026-04_live_20261018T110430Z-orchestrator-0006",
+    "claim:rseth-2026-04_live_20261018T110430Z-orchestrator-0012"
+   ],
+   "test_discriminant": "Comparer les passages générés : si le second est une régénération du premier après erreur de schéma, la redondance est établie.",
+   "type": "DEPENDANCE"
+  },
+  {
+   "enonce": "L'écart oracle/marché allégué peut s'expliquer par un oracle obsolète, un print isolé ou une liquidation, plutôt que par une surestimation systématique de la valeur réalisable du collatéral.",
+   "gravite": "MAJEUR",
+   "refs": [
+    "hypothesis:HYP-002",
+    "claim:rseth-2026-04_live_20261018T110430Z-orchestrator-0010"
+   ],
+   "test_discriminant": "Comparer la fréquence de mise à jour de l'oracle et la profondeur du carnet au même instant ; un oracle rafraîchi et un carnet profond écarteraient l'explication.",
+   "type": "ALTERNATIVE"
+  },
+  {
+   "enonce": "Aucune preuve de liquidité disponible (cash, emprunts en cours) au moment du gel : l'explication concurrente de HYP-004 (squeeze de liquidité) ne peut être écartée ni retenue.",
+   "gravite": "MAJEUR",
+   "refs": [
+    "hypothesis:HYP-004",
+    "claim:rseth-2026-04_live_20261018T110430Z-orchestrator-0004"
+   ],
+   "test_discriminant": "Obtenir availableLiquidity et totalBorrows de la réserve à l'instant de gel ; des réserves de cash non nulles discréditent le scénario de squeeze.",
+   "type": "MANQUE"
+  },
+  {
+   "enonce": "NetVoI non estimable et ordre borné fixe retenu en fallback : la base de décision n'est pas documentée, la qualité du choix d'acquisition d'information reste inévaluable.",
+   "gravite": "MINEUR",
+   "refs": [
+    "claim:rseth-2026-04_live_20261018T110430Z-orchestrator-0001"
+   ],
+   "test_discriminant": "Fournir l'estimateur NetVoI ou la règle de fallback appliquée ; sans elle, aucun contrôle de la sélection des preuves n'est possible.",
+   "type": "MANQUE"
+  }
+ ],
+ "note": "Le corpus injecté ne contient aucune donnée rsETH : les claims le reconnaissent eux-mêmes, tandis que les hypothèses avancent des chiffres et un bloc précis sans aucune ref observable. La lecture courante repose donc sur des affirmations non adossées, hors PIT (données 2023-2025 pour un événement 2026) et sur des sources dépendantes hors sujet. Double refus de plan et duplication des constats réduisent encore la valeur probante.",
+ "preuves_manquantes": [
+  "Série de prix rsETH (marché et oracle) couvrant la fenêtre se terminant à l'instant de gel",
+  "Observation on-chain de isFrozen au bloc 24 908 723 et horodatage du bloc",
+  "Série de cap_ratio entre 2026-04-18T18:00:00Z et l'instant de gel",
+  "Série d'utilisation et de liquidité disponible de la réserve rsETH autour du gel",
+  "Documentation des unités (devise, actif de référence) pour chaque lecture de prix",
+  "Estimateur NetVoI ou justification de l'ordre borné fixe retenu"
+ ],
+ "verdict_lecture": "INCOHERENTE"
+}

@@ -1,0 +1,30 @@
+{
+  "lacune_id": "L-1",
+  "tache": {
+    "question": "Does an archived market price series record an rsETH exit price near the documented discounted level at the freeze instant, rather than near the oracle level?",
+    "outil": "read_prices",
+    "args": {
+      "asset": "rsETH",
+      "quote": "USD",
+      "at": "2026-04-18T19:03:59Z",
+      "series": "archived_market",
+      "source_ref": "graph_snapshot:rseth-2026-04@2026-04-18T19:03:59Z"
+    },
+    "critere_discriminant": "Si la série de marché archivée situe le prix de sortie rsETH au niveau décoté documenté à l'instant du gel, HYP-002 est confirmée (S) et la valorisation oracle surestime la valeur réalisable. Si la série archivée cote au niveau de l'oracle (écart dans la tolérance documentée), HYP-002 est réfutée (R) et la divergence invoquée n'est pas un fait de marché mais un artefact de la couche de données.",
+    "branches_concernees": [
+      "HYP-002"
+    ],
+    "cout_max": {
+      "appels_llm": 1,
+      "secondes": 60
+    }
+  },
+  "stop": false,
+  "motif_stop": null,
+  "non_recherche": [
+    "L-2 (fraîcheur oracle) : latestRoundData() revert sur le feed plafonné, aucun updatedAt lisible — aucune observation falsifiable ne peut départager les hypothèses avec les outils autorisés.",
+    "L-3 (dette irrécouvrable par compte) : le registre par compte est hors de cette couche de données ; une requête ne produirait qu'une absence, non un fait discriminant.",
+    "L-4 (valeur réalisable du collatéral gelé) : aucune venue liquide lisible pour un rsETH volé/non adossé ; pas de prix de sortie observable.",
+    "Aucune recherche sur HYP-001 et HYP-003 : leurs instants (bloc de gel, saturation du cap) sont déjà datés dans le snapshot et ne nécessitent pas de nouvel appel."
+  ]
+}

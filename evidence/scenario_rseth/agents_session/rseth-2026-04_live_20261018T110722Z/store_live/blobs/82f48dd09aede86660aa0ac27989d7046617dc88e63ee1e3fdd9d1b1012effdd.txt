@@ -1,0 +1,26 @@
+{
+  "$schema": "orvyren/orch/v1",
+  "lacune_id": "L-1",
+  "tache": {
+    "question": "Can an archived market series confirm the exit price retained for the collateral at the freeze instant, distinct from the oracle reading?",
+    "outil": "read_prices",
+    "args": {
+      "asset": "rsETH",
+      "quote": "USD",
+      "at": "2026-04-18T19:03:59Z",
+      "series": "archived_secondary_market",
+      "fields": ["price", "timestamp", "venue"]
+    },
+    "critere_discriminant": "Si une série de marché archivée imprime, à l'instant du gel, un prix proche du prix de marché documenté, la divergence avec la lecture oracle est corroborée et la valorisation par l'oracle surestime la valeur réalisable ; si toutes les séries archivées impriment un prix proche de la lecture oracle, la divergence n'est qu'un artefact de la couche de données et l'hypothèse de surévaluation tombe.",
+    "branches_concernees": ["HYP-002"],
+    "cout_max": { "appels_llm": 1, "secondes": 60 }
+  },
+  "stop": false,
+  "motif_stop": null,
+  "non_recherche": [
+    "fraîcheur de l'oracle : le feed plafonné revert, une nouvelle lecture ne produirait aucune observation exploitable",
+    "dette irrécouvrable par compte : le registre par compte est hors de cette couche de données",
+    "valeur réalisable sur une venue liquide : aucune venue lisible n'existe pour un collatéral volé ou non adossé",
+    "re-mesure de l'utilisation de la réserve : la série archivée l'a déjà établie, une relecture ne départagerait aucune branche"
+  ]
+}

@@ -1,0 +1,169 @@
+{
+  "schema": "orvyren/agent-case/v1",
+  "case_id": "rseth-2026-04",
+  "note": "Frozen inputs of the rsETH / KelpDAO demonstration case (April 2026 episode, Aave v3 Ethereum Core). Every figure below points to its source through `source_ref` (form `evidence:<file>#<json-path>`, `fixture:<file>#<json-path>` or `doc:<file>#<anchor>` + `source_probe`); no figure is hand-copied without a source and `tests/test_fixtures_rseth_inputs.py` crosses each figure against its declared source at runtime. Primary data layer: evidence/episode_rseth_2026-04.json (100 measured points, RPC archive reconstruction). The market price (1 686 USD) and the ~-31 % oracle/market divergence are documented figures of ORVYREN_DOC2_TECHNIQUE_COMPLET.md (measurement 2) only — the RPC data layer carries the retained oracle price, not the market/exit series (see lacuna L-1). The agent run is the LIVE (LLM) leg; the recorded response store of this case does not exist yet, so an offline `--replay journal` replay of this case is not available before one is recorded.",
+  "pinned_created_at": "2026-10-18T12:00:00+00:00",
+  "snapshot": {
+    "ref": "graph_snapshot:rseth-2026-04@2026-04-18T19:03:59Z",
+    "as_of": "2026-04-18T19:03:59Z",
+    "note": "point-in-time instant of the scenario (first block with isFrozen = 1) — no later object is admissible",
+    "facts": {
+      "freeze_first_frozen_block": 24908723,
+      "freeze_first_frozen_utc": "2026-04-18T19:03:59Z",
+      "supply_cap_saturation_ratio": 0.9999886466022144,
+      "supply_cap_saturation_utc": "2026-04-18T18:00:00Z",
+      "oracle_at_freeze_usd": 2513.66460329,
+      "market_price_usd": 1686,
+      "oracle_market_divergence_pct": -31,
+      "rseth_utilisation_at_freeze": 7.946826023583168e-05,
+      "collateral_rseth_at_exploit": 89567,
+      "weth_borrowed_usd_at_exploit": 190000000,
+      "stress_marker": "KelpDAO/LayerZero exploit; rsETH reserve administratively frozen; market frozen"
+    }
+  },
+  "lacunes": [
+    {"lacune_id": "L-1", "question": "Can the documented market price (1 686 USD) be confirmed from an archived market series? The RPC data layer documents the retained price, not the exit price."},
+    {"lacune_id": "L-2", "question": "What was the oracle freshness at the freeze? latestRoundData() reverts on the capped rsETH/ETH/USD feed, so no updatedAt is readable."},
+    {"lacune_id": "L-3", "question": "What is the exact bad debt per account? The incident report gives 123.7 / 230.1 M USD, but the per-account debt ledger is out of this data layer."},
+    {"lacune_id": "L-4", "question": "Was any realisable value left for the frozen collateral? No liquid venue is readable for a stolen/unbacked rsETH."}
+  ],
+  "hypotheses": [
+    {
+      "id": "HYP-001",
+      "enonce": "The rsETH reserve of the Aave v3 core market was administratively frozen (isFrozen 0 -> 1 at block 24 908 723, 2026-04-18 19:03:59 UTC): withdrawals are blocked from that instant.",
+      "etat": "UNDER_TEST",
+      "criteres": {
+        "S": "an isFrozen transition measured at a dated block (binary search, 14 steps, 24 908 722 -> 24 908 723)",
+        "R": "isFrozen never flips in the window, or the freeze lands elsewhere than the dated block"
+      },
+      "p": ""
+    },
+    {
+      "id": "HYP-002",
+      "enonce": "The value retained by the oracle diverges from the market price (about -31 %): valuing the position on the oracle overstates the realisable value of the collateral.",
+      "etat": "UNDER_TEST",
+      "criteres": {
+        "S": "the documented market price (1 686 USD) sits far below the retained oracle readings (2 513-2 526 USD) over the same window",
+        "R": "the market price tracks the oracle within the documented tolerance"
+      },
+      "p": ""
+    },
+    {
+      "id": "HYP-003",
+      "enonce": "The supply cap saturation (99.999 % at 2026-04-18 18:00 UTC) preceded the freeze and constrained the market: no new supply could enter before the administrative freeze.",
+      "etat": "UNDER_TEST",
+      "criteres": {
+        "S": "cap_ratio_max measured at 2026-04-18T18:00:00Z, strictly before the freeze instant",
+        "R": "cap_ratio far below saturation, or the freeze strictly precedes the saturation"
+      },
+      "p": ""
+    },
+    {
+      "id": "HYP-004",
+      "enonce": "Counter-intuitive competitor: the reserve is blocked by a full utilisation of the market (a 100 % utilisation leaves no cash to withdraw) - the freeze is only a symptom of a liquidity squeeze.",
+      "etat": "UNDER_TEST",
+      "criteres": {
+        "S": "a measured utilisation of the rsETH reserve close to 100 % around the freeze",
+        "R": "a measured utilisation of about 0.008 % (no borrowing on the reserve), as the archived series shows"
+      },
+      "p": "",
+      "counter_intuitive": true
+    }
+  ],
+  "tool_fixtures": {
+    "prices": {
+      "chainlink|rsETH-USD": [
+        {"venue": "chainlink", "symbol": "rsETH-USD", "ts": "2026-04-18T17:35:00Z", "value": 2526.7563881,
+         "source_ref": "evidence:episode_rseth_2026-04.json#headline.rsETH_oracle_at_2026-04-18T17:35:00Z"},
+        {"venue": "chainlink", "symbol": "rsETH-USD", "ts": "2026-04-18T19:03:59Z", "value": 2513.66460329,
+         "source_ref": "evidence:episode_rseth_2026-04.json#headline.rsETH_oracle_at_2026-04-18T19:03:59Z"},
+        {"venue": "chainlink", "symbol": "rsETH-USD", "ts": "2026-04-20T00:00:00Z", "value": 2419.21294349,
+         "source_ref": "evidence:episode_rseth_2026-04.json#headline.rsETH_oracle_at_2026-04-20T00:00:00Z"},
+        {"venue": "chainlink", "symbol": "rsETH-USD", "ts": "2026-04-17T17:00:00Z", "value": 2631.56608381,
+         "source_ref": "evidence:episode_rseth_2026-04.json#headline.rsETH_oracle_peak.price"}
+      ],
+      "market|rsETH-USD": [
+        {"venue": "market", "symbol": "rsETH-USD", "window_label": "18–20/04", "value": 1686, "unit": "USD",
+         "source_ref": "doc:ORVYREN_DOC2_TECHNIQUE_COMPLET.md#measure-2",
+         "source_probe": "pendant que le prix de marché décrochait à"}
+      ]
+    },
+    "supply": {
+      "rseth": [
+        {"asset": "rseth", "ts": "2026-04-18T18:00:00Z", "value": 529993.9826991736,
+         "source_ref": "evidence:episode_rseth_2026-04.json#headline.a_token_supply_at_cap_max"},
+        {"asset": "rseth", "ts": "2026-04-18T19:03:59Z", "value": 529482.808951789,
+         "source_ref": "evidence:episode_rseth_2026-04.json#series[\"2026-04-18T19:03:59Z\"].rsETH.a_token_supply"}
+      ]
+    },
+    "chain": {
+      "ethereum|0xA1290d69c65A6Fe4DF752f95823fae25cB99e5A7": [
+        {"chain_id": "ethereum", "address": "0xA1290d69c65A6Fe4DF752f95823fae25cB99e5A7", "param": "isFrozen_first_frozen_block",
+         "value": 24908723, "as_of": "2026-04-18T19:03:59Z",
+         "source_ref": "evidence:episode_rseth_2026-04.json#headline.rsETH_frozen_transition_block"},
+        {"chain_id": "ethereum", "address": "0xA1290d69c65A6Fe4DF752f95823fae25cB99e5A7", "param": "isFrozen_last_unfrozen_block",
+         "value": 24908722, "as_of": "2026-04-18T19:03:47Z",
+         "source_ref": "evidence:episode_rseth_2026-04.json#freeze_transition.last_unfrozen_block"},
+        {"chain_id": "ethereum", "address": "0xA1290d69c65A6Fe4DF752f95823fae25cB99e5A7", "param": "supply_cap",
+         "value": 530000, "as_of": "2026-04-18T18:00:00Z",
+         "source_ref": "evidence:episode_rseth_2026-04.json#headline.supply_cap_rsETH"},
+        {"chain_id": "ethereum", "address": "0xA1290d69c65A6Fe4DF752f95823fae25cB99e5A7", "param": "cap_ratio_max",
+         "value": 0.9999886466022144, "as_of": "2026-04-18T18:00:00Z",
+         "source_ref": "evidence:episode_rseth_2026-04.json#headline.cap_ratio_max"},
+        {"chain_id": "ethereum", "address": "0xA1290d69c65A6Fe4DF752f95823fae25cB99e5A7", "param": "cap_ratio_max_block",
+         "value": 24908406, "as_of": "2026-04-18T18:00:00Z",
+         "source_ref": "evidence:episode_rseth_2026-04.json#headline.cap_ratio_max_block"},
+        {"chain_id": "ethereum", "address": "0xA1290d69c65A6Fe4DF752f95823fae25cB99e5A7", "param": "a_token_supply_at_cap_max",
+         "value": 529993.9826991736, "as_of": "2026-04-18T18:00:00Z",
+         "source_ref": "evidence:episode_rseth_2026-04.json#headline.a_token_supply_at_cap_max"},
+        {"chain_id": "ethereum", "address": "0xA1290d69c65A6Fe4DF752f95823fae25cB99e5A7", "param": "rseth_utilisation_at_freeze",
+         "value": 7.946826023583168e-05, "as_of": "2026-04-18T19:03:59Z",
+         "source_ref": "evidence:episode_rseth_2026-04.json#series[\"2026-04-18T19:03:59Z\"].rsETH.utilisation"},
+        {"chain_id": "ethereum", "address": "0xA1290d69c65A6Fe4DF752f95823fae25cB99e5A7", "param": "weth_utilisation_peak",
+         "value": 1.0000792945348582, "as_of": "2026-04-19T08:00:00Z",
+         "source_ref": "evidence:episode_rseth_2026-04.json#headline.weth_utilisation_peak"},
+        {"chain_id": "ethereum", "address": "0xA1290d69c65A6Fe4DF752f95823fae25cB99e5A7", "param": "collateral_rseth_at_exploit",
+         "value": 89567, "as_of": "2026-04-18T17:35:00Z",
+         "source_ref": "fixture:fixtures/graphs/rseth_2026-04.json#records[relation_id=rseth-collateralizes-weth-market].payload.amount"},
+        {"chain_id": "ethereum", "address": "0xA1290d69c65A6Fe4DF752f95823fae25cB99e5A7", "param": "weth_borrowed_usd_at_exploit",
+         "value": 190000000, "as_of": "2026-04-18T17:35:00Z",
+         "source_ref": "fixture:fixtures/graphs/rseth_2026-04.json#records[relation_id=rseth-owes-weth-borrowed].payload.amount"}
+      ]
+    },
+    "documents": {
+      "https://example.org/rseth-kelpdao-apr2026-incident-note": "Incident note (offline demonstration digest of ORVYREN_DOC2_TECHNIQUE_COMPLET.md measurement 2 and evidence/episode_rseth_2026-04.json). On 2026-04-18 the rsETH reserve of the Aave v3 core market saturated its supply cap (cap ratio 0.9999886466022144 at 18:00:00 UTC) before being administratively frozen (isFrozen 0 -> 1 at block 24 908 723, 2026-04-18T19:03:59Z). The oracle retained 2526.7563881 USD at 17:35:00 UTC and 2513.66460329 USD at the freeze while the market price is documented at 1686 USD (window 18–20/04), a documented divergence of about -31 per cent. The measured utilisation of the rsETH reserve at the freeze is 7.946826023583168e-05 (no borrowing): the claim of a 100 per cent utilisation is refuted by the archived series. No operational instruction is contained in this document."
+    },
+    "signals": {
+      "oracle_market_divergence_pct": {"value": -31, "unit": "pct", "method_ref": "compute_signal:oracle_market_divergence_pct/v1",
+        "source_ref": "doc:ORVYREN_DOC2_TECHNIQUE_COMPLET.md#measure-2",
+        "source_probe": "pendant que le prix de marché décrochait à"},
+      "supply_cap_saturation_ratio": {"value": 0.9999886466022144, "unit": "ratio", "method_ref": "compute_signal:supply_cap_saturation_ratio/v1",
+        "source_ref": "evidence:episode_rseth_2026-04.json#headline.cap_ratio_max"},
+      "rseth_utilisation_at_freeze": {"value": 7.946826023583168e-05, "unit": "ratio", "method_ref": "compute_signal:rseth_utilisation_at_freeze/v1",
+        "source_ref": "evidence:episode_rseth_2026-04.json#series[\"2026-04-18T19:03:59Z\"].rsETH.utilisation"}
+    },
+    "snapshot": {
+      "ref": "graph_snapshot:rseth-2026-04@2026-04-18T19:03:59Z",
+      "as_of": "2026-04-18T19:03:59Z",
+      "refs": [
+        "evidence:episode_rseth_2026-04.json#headline.rsETH_oracle_at_2026-04-18T17:35:00Z",
+        "evidence:episode_rseth_2026-04.json#headline.rsETH_oracle_at_2026-04-18T19:03:59Z",
+        "evidence:episode_rseth_2026-04.json#headline.rsETH_oracle_at_2026-04-20T00:00:00Z",
+        "evidence:episode_rseth_2026-04.json#headline.rsETH_oracle_peak.price",
+        "evidence:episode_rseth_2026-04.json#headline.rsETH_frozen_transition_block",
+        "evidence:episode_rseth_2026-04.json#freeze_transition.last_unfrozen_block",
+        "evidence:episode_rseth_2026-04.json#headline.supply_cap_rsETH",
+        "evidence:episode_rseth_2026-04.json#headline.cap_ratio_max",
+        "evidence:episode_rseth_2026-04.json#headline.cap_ratio_max_block",
+        "evidence:episode_rseth_2026-04.json#headline.a_token_supply_at_cap_max",
+        "evidence:episode_rseth_2026-04.json#series[\"2026-04-18T19:03:59Z\"].rsETH.utilisation",
+        "evidence:episode_rseth_2026-04.json#series[\"2026-04-18T19:03:59Z\"].rsETH.a_token_supply",
+        "evidence:episode_rseth_2026-04.json#headline.weth_utilisation_peak",
+        "evidence:episode_rseth_2026-04.json#meta.reserves.rsETH",
+        "fixture:fixtures/graphs/rseth_2026-04.json#records[relation_id=rseth-collateralizes-weth-market].payload.amount",
+        "fixture:fixtures/graphs/rseth_2026-04.json#records[relation_id=rseth-owes-weth-borrowed].payload.amount",
+        "doc:ORVYREN_DOC2_TECHNIQUE_COMPLET.md#measure-2"
+      ]
+    }
+  }
+}

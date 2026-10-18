@@ -1,0 +1,34 @@
+{
+  "lacune_id": "L-1",
+  "tache": {
+    "question": "Quel prix de marché du rsETH une série archivée donne-t-elle à l'instant du gel, et s'écarte-t-il du prix retenu par l'oracle sur la même fenêtre ?",
+    "outil": "read_prices",
+    "args": {
+      "asset": "rsETH",
+      "quote": "USD",
+      "source_type": "serie_de_marche_archivee",
+      "fenetre": "autour_de_instant_de_gel",
+      "champs": [
+        "prix_marche",
+        "prix_oracle",
+        "horodatage"
+      ]
+    },
+    "critere_discriminant": "Si le prix de marché archivé reste nettement sous le prix oracle retenu sur la même fenêtre, l'hypothèse de divergence entre valeur oracle et valeur réalisable est soutenue et sa branche de réfutation échoue ; si le prix de marché suit l'oracle dans la tolérance documentée, cette hypothèse est réfutée et la divergence déjà consignée doit être imputée à une observation non représentative.",
+    "branches_concernees": [
+      "H2"
+    ],
+    "cout_max": {
+      "appels_llm": 1,
+      "secondes": 90
+    }
+  },
+  "stop": false,
+  "motif_stop": null,
+  "non_recherche": [
+    "Le ledger de dette par compte n'est pas recherché : il est hors de la couche de données lisible et aucun outil autorisé ne l'expose ; aucune réponse obtenue ne départagerait les hypothèses.",
+    "La valeur réalisable du collatéral gelé sur un venue liquide n'est pas recherchée : aucun venue lisible n'est disponible pour un rsETH volé ou non adossé, donc aucune réponse possible n'est discriminante.",
+    "La fraîcheur de l'oracle via latestRoundData n'est pas poursuivie dans cette tâche : l'appel est documenté comme réversible en erreur sur le feed plafonné et ne produirait pas de mesure exploitable dans le budget imparti ; la lacune reste ouverte et non planifiée.",
+    "Aucune revérification de l'état de gel de la réserve n'est relancée : la bascule est déjà datée dans le snapshot et un appel supplémentaire ne modifierait pas la lecture."
+  ]
+}

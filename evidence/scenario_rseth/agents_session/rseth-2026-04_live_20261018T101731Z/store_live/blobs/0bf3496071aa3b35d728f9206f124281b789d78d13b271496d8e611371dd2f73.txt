@@ -1,0 +1,30 @@
+{
+  "lacune_id": "L-1",
+  "tache": {
+    "question": "Existe-t-il une série de marché archivée et horodatée donnant le prix de marché du rsETH autour du gel de la réserve, distinct du prix retenu par l'oracle ?",
+    "outil": "read_prices",
+    "args": {
+      "asset": "rsETH",
+      "quote": "USD",
+      "fenetre": "autour du premier bloc gelé du snapshot de référence",
+      "type_serie": "archivee"
+    },
+    "critere_discriminant": "Si une série archivée confirme un prix de marché nettement inférieur à la lecture d'oracle conservée, HYP-002 est renforcée (la valorisation oracle surestime la valeur réalisable). Si la série archivée suit l'oracle dans la tolérance documentée, HYP-002 est réfutée et la divergence doit être imputée à une autre source. Si aucune série datée n'existe pour cet actif, la lacune reste ouverte et aucune branche n'est départagée.",
+    "branches_concernees": [
+      "HYP-002"
+    ],
+    "cout_max": {
+      "appels_llm": 1,
+      "secondes": 60
+    }
+  },
+  "stop": false,
+  "motif_stop": null,
+  "non_recherche": [
+    "L-2 (fraîcheur de l'oracle via latestRoundData) : non recherchée, le flux rsETH/ETH/USD plafonné est documenté comme réversant, donc l'appel ne peut produire d'updatedAt exploitable et ne départagerait aucune branche.",
+    "L-3 (dette irrécouvrable par compte) : non recherchée, le registre de dette par compte est hors de la couche de données accessible avec les sources autorisées ; aucune tâche falsifiable n'est constructible ici.",
+    "L-4 (valeur réalisable du collatéral gelé) : non recherchée, aucune place liquide n'est lisible pour un rsETH non adossé ; un prix de sortie ne serait pas mesurable, seulement supposé.",
+    "HYP-003 (antériorité de la saturation du plafond d'offre) : non recherchée à cette étape, la chronologie nécessaire est déjà portée par le snapshot ; aucune observation supplémentaire ne la départagerait sans dupliquer L-1.",
+    "HYP-004 (utilisation proche de la totalité) : non recherchée, le taux d'utilisation figure déjà dans les faits du snapshot et une nouvelle mesure ne ferait que répéter une valeur existante."
+  ]
+}

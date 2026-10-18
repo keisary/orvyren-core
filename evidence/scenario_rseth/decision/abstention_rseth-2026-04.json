@@ -1,0 +1,219 @@
+{
+ "abstention": {
+  "action": null,
+  "budget": {
+   "consomme": {
+    "appels": 9.0,
+    "cout_usd": 0.03968193,
+    "secondes": 59.78100000000086
+   },
+   "limites": {
+    "appels": 30,
+    "cout_usd": 0.1,
+    "secondes": 600
+   },
+   "raison_arret": "ARRET-3",
+   "reste": {
+    "recherches": 0
+   }
+  },
+  "conditions_declenchees": [
+   "A1"
+  ],
+  "conditions_labels": [
+   "A1 (required input missing)"
+  ],
+  "decision_delta": {
+   "si_H1_soutenue": "no autonomous transfer is even possible: the reserve is frozen — document and escalate",
+   "si_H2_soutenue": "reduce the rsETH exposure off the oracle valuation (bounded x*) once an archived market series confirms the decoupling",
+   "si_H3_soutenue": "the supply-cap constraint is the binding mechanism: no new rsETH deposits, monitor the cap and the freeze bit",
+   "si_H4_soutenue": "a liquidity squeeze would call for a cash buffer on the WETH side instead of an rsETH action (refuted by the measured utilisation)"
+  },
+  "epistemic_verdict": "INCONCLUSIVE",
+  "escalade": {
+   "motif": "surviving hypotheses prescribe opposite actions and the wrong one is costly — fragile posterior",
+   "row": "c.4/5",
+   "sortie": "ESCALATE"
+  },
+  "missing_inputs": [
+   "L-1: Can the documented market price (1 686 USD) be confirmed from an archived market series? The RPC data layer documents the retained price, not the exit price.",
+   "L-2: What was the oracle freshness at the freeze? latestRoundData() reverts on the capped rsETH/ETH/USD feed, so no updatedAt is readable.",
+   "a dense cap_ratio series between 2026-04-18T18:00:00Z and 2026-04-18T19:03:59Z (critic PIT finding)",
+   "the run's tool refs carry no rsETH observation (critic BLOQUANT finding) — a discriminating tool observation of the freeze is still missing"
+  ],
+  "what_would_change_the_verdict": [
+   {
+    "cible": "market archives (DeFiLlama/Binance) — absent from the measured corpus",
+    "cout_estime": "2 request(s), < 0.7 s",
+    "fait": "an archived rsETH market/exit series over 2026-04-18..20 (L-1)",
+    "hypotheses_affectees": [
+     "HYP-001",
+     "HYP-002",
+     "HYP-003"
+    ],
+    "predicat": "RSETH-P-MARKET-SERIES"
+   },
+   {
+    "cible": "eth_call on the capped rsETH/ETH/USD feed",
+    "cout_estime": "1 request(s), < 0.7 s",
+    "fait": "the oracle updatedAt at the freeze — latestRoundData() reverts on the capped feed (L-2)",
+    "hypotheses_affectees": [
+     "HYP-001",
+     "HYP-002",
+     "HYP-003"
+    ],
+    "predicat": "RSETH-P-ORACLE-FRESHNESS"
+   },
+   {
+    "cible": "evidence/episode_rseth_2026-04.json key points + RPC archive (critic PIT finding)",
+    "cout_estime": "1 request(s), < 0.7 s",
+    "fait": "a dense cap_ratio series between 2026-04-18T18:00:00Z and 2026-04-18T19:03:59Z",
+    "hypotheses_affectees": [
+     "HYP-001",
+     "HYP-002",
+     "HYP-003"
+    ],
+    "predicat": "RSETH-P-CAP-RATIO-WINDOW"
+   },
+   {
+    "cible": "Aave per-account data",
+    "cout_estime": "3 request(s), < 0.7 s",
+    "fait": "the per-account debt ledger behind the 123.7 / 230.1 M USD bad debt (L-3)",
+    "hypotheses_affectees": [
+     "HYP-001",
+     "HYP-002",
+     "HYP-003"
+    ],
+    "predicat": "RSETH-P-BAD-DEBT-LEDGER"
+   },
+   {
+    "cible": "an rsETH series in the measured corpus (corpus/ not populated for rsETH)",
+    "cout_estime": "1 request(s), < 0.7 s",
+    "fait": "a discriminating rsETH tool observation in the run refs (critic BLOQUANT: the packet carried USDC series)",
+    "hypotheses_affectees": [
+     "HYP-001",
+     "HYP-002",
+     "HYP-003"
+    ],
+    "predicat": "RSETH-P-RSETH-TOOL-OBS"
+   }
+  ]
+ },
+ "action": null,
+ "agent_critique_verdict": "INCOHERENTE",
+ "agent_escalation": "REQUIRE_APPROVAL",
+ "agent_run_id": "rseth-2026-04_live_20261018T110722Z",
+ "agent_stop_condition": "ARRET-3",
+ "case_id": "rseth-2026-04",
+ "engine_record": "decision/decision_rseth-2026-04.json",
+ "engine_record_note": "v0 deterministic engine record of the same run — the v1 engine is wired to the pilot case (frozen windows + peg hypotheses); this abstention is the case decision",
+ "epistemic_verdict": "INCONCLUSIVE",
+ "escalade": {
+  "motif": "surviving hypotheses prescribe opposite actions and the wrong one is costly — fragile posterior",
+  "row": "c.4/5",
+  "sortie": "ESCALATE"
+ },
+ "mode": "live",
+ "schema": "orvyren/scenario-decision/v1",
+ "sources": {
+  "abstention_module": "src/orvyren/decision/abstention.py",
+  "fixture": "fixtures\\agents\\rseth-2026-04\\run_inputs.json",
+  "hypotheses": [
+   "HYP-001",
+   "HYP-002",
+   "HYP-003",
+   "HYP-004"
+  ],
+  "refuting_measurement": "evidence:episode_rseth_2026-04.json#series[\"2026-04-18T19:03:59Z\"].rsETH.utilisation"
+ },
+ "verdicts": {
+  "HYP-001": {
+   "basis": "",
+   "enonce": "The rsETH reserve of the Aave v3 core market was administratively frozen (isFrozen 0 -> 1 at block 24 908 723, 2026-04-18 19:03:59 UTC): withdrawals are blocked from that instant.",
+   "missing_inputs": [
+    "the run's tool refs carry no rsETH observation (critic BLOQUANT finding) — a discriminating tool observation of the freeze is still missing"
+   ],
+   "verdict": "INCONCLUSIVE"
+  },
+  "HYP-002": {
+   "basis": "",
+   "enonce": "The value retained by the oracle diverges from the market price (about -31 %): valuing the position on the oracle overstates the realisable value of the collateral.",
+   "missing_inputs": [
+    "L-1: Can the documented market price (1 686 USD) be confirmed from an archived market series? The RPC data layer documents the retained price, not the exit price.",
+    "L-2: What was the oracle freshness at the freeze? latestRoundData() reverts on the capped rsETH/ETH/USD feed, so no updatedAt is readable."
+   ],
+   "verdict": "INCONCLUSIVE"
+  },
+  "HYP-003": {
+   "basis": "",
+   "enonce": "The supply cap saturation (99.999 % at 2026-04-18 18:00 UTC) preceded the freeze and constrained the market: no new supply could enter before the administrative freeze.",
+   "missing_inputs": [
+    "a dense cap_ratio series between 2026-04-18T18:00:00Z and 2026-04-18T19:03:59Z (critic PIT finding)"
+   ],
+   "verdict": "INCONCLUSIVE"
+  },
+  "HYP-004": {
+   "basis": "evidence:episode_rseth_2026-04.json#series[\"2026-04-18T19:03:59Z\"].rsETH.utilisation",
+   "enonce": "Counter-intuitive competitor: the reserve is blocked by a full utilisation of the market (a 100 % utilisation leaves no cash to withdraw) - the freeze is only a symptom of a liquidity squeeze.",
+   "missing_inputs": [],
+   "verdict": "REFUTED"
+  }
+ },
+ "what_would_change": [
+  {
+   "cible": "market archives (DeFiLlama/Binance) — absent from the measured corpus",
+   "cout_estime": "2 request(s), < 0.7 s",
+   "fait": "an archived rsETH market/exit series over 2026-04-18..20 (L-1)",
+   "hypotheses_affectees": [
+    "HYP-001",
+    "HYP-002",
+    "HYP-003"
+   ],
+   "predicat": "RSETH-P-MARKET-SERIES"
+  },
+  {
+   "cible": "eth_call on the capped rsETH/ETH/USD feed",
+   "cout_estime": "1 request(s), < 0.7 s",
+   "fait": "the oracle updatedAt at the freeze — latestRoundData() reverts on the capped feed (L-2)",
+   "hypotheses_affectees": [
+    "HYP-001",
+    "HYP-002",
+    "HYP-003"
+   ],
+   "predicat": "RSETH-P-ORACLE-FRESHNESS"
+  },
+  {
+   "cible": "evidence/episode_rseth_2026-04.json key points + RPC archive (critic PIT finding)",
+   "cout_estime": "1 request(s), < 0.7 s",
+   "fait": "a dense cap_ratio series between 2026-04-18T18:00:00Z and 2026-04-18T19:03:59Z",
+   "hypotheses_affectees": [
+    "HYP-001",
+    "HYP-002",
+    "HYP-003"
+   ],
+   "predicat": "RSETH-P-CAP-RATIO-WINDOW"
+  },
+  {
+   "cible": "Aave per-account data",
+   "cout_estime": "3 request(s), < 0.7 s",
+   "fait": "the per-account debt ledger behind the 123.7 / 230.1 M USD bad debt (L-3)",
+   "hypotheses_affectees": [
+    "HYP-001",
+    "HYP-002",
+    "HYP-003"
+   ],
+   "predicat": "RSETH-P-BAD-DEBT-LEDGER"
+  },
+  {
+   "cible": "an rsETH series in the measured corpus (corpus/ not populated for rsETH)",
+   "cout_estime": "1 request(s), < 0.7 s",
+   "fait": "a discriminating rsETH tool observation in the run refs (critic BLOQUANT: the packet carried USDC series)",
+   "hypotheses_affectees": [
+    "HYP-001",
+    "HYP-002",
+    "HYP-003"
+   ],
+   "predicat": "RSETH-P-RSETH-TOOL-OBS"
+  }
+ ]
+}

@@ -1,0 +1,39 @@
+{
+  "lacune_id": "L-1",
+  "tache": {
+    "question": "Does an archived market price series for rsETH over the window preceding the freeze print an exit price far below the retained oracle reading, or does it track the oracle within the documented tolerance?",
+    "outil": "graph_query",
+    "args": {
+      "series": "rseth_market_price_usd",
+      "window": {
+        "from": "2026-04-18T16:00:00Z",
+        "to": "2026-04-18T19:03:59Z"
+      },
+      "granularity": "block",
+      "fields": [
+        "timestamp",
+        "price_usd",
+        "venue",
+        "source_kind"
+      ]
+    },
+    "critere_discriminant": "Si la série archivée imprime un prix de marché proche du prix documenté nettement inférieur à la lecture oracle, HYP-002 est corroborée (l'oracle surestime la valeur réalisable du collatéral). Si la série suit l'oracle dans la tolérance documentée, HYP-002 est réfutée et l'écart retenu doit être imputé à une autre cause (source de prix, arrondi, fenêtre). Une série absente ou non datée laisse la lacune L-1 ouverte et ne départage rien.",
+    "branches_concernees": [
+      "HYP-002"
+    ],
+    "cout_max": {
+      "appels_llm": 1,
+      "secondes": 60
+    }
+  },
+  "stop": false,
+  "motif_stop": null,
+  "non_recherche": [
+    "L-2 (fraîcheur de l'oracle via updatedAt) : latestRoundData() revert sur le feed plafonné, aucun outil autorisé ne peut produire cette lecture — tâche non falsifiable en l'état.",
+    "L-3 (dette irrécouvrable par compte) : le registre par compte est hors de la couche de données accessible ; aucun outil autorisé ne l'expose, une requête ne produirait aucune observation discriminante.",
+    "L-4 (valeur réalisable du collatéral gelé) : aucune place liquide lisible pour un rsETH non adossé ; chercher une cotation reviendrait à fabriquer une observation.",
+    "HYP-004 (utilisation proche de la saturation) : déjà mesurée dans le snapshot comme quasi nulle ; aucune recherche supplémentaire n'est nécessaire pour la départager.",
+    "Aucune recherche sur des objets postérieurs à l'instant d'analyse, ni sur des prix courants non archivés : inadmissibles par construction."
+  ],
+  "$schema": "orvyren/orch/v1"
+}

@@ -1,0 +1,233 @@
+{
+ "agents_run_id": "rseth-2026-04_live_20261018T110722Z",
+ "artifacts": {
+  "critique_report.json": {
+   "bytes": 7571,
+   "sha256": "606d1acb4d7a8c1b50d3f3991b72d77e17c7be8b3941b64e41e68db910b73278"
+  },
+  "decision/abstention_rseth-2026-04.json": {
+   "bytes": 8225,
+   "sha256": "17ae33bb1a7acfe8fef2e9637beaae5731835101456000549316d9abaa57a0fd"
+  },
+  "decision/baseline_report.json": {
+   "bytes": 389,
+   "sha256": "a746279129e09b9dc0a1ae72716e14950497f72de7a75954967fbd96706cc321"
+  },
+  "decision/decision_rseth-2026-04.json": {
+   "bytes": 11036,
+   "sha256": "3d2d889e2aa1b5cf343bf1d6f659b51cb6c04f0ba758d32798b8ce22909bda1c"
+  },
+  "evidence_packet.json": {
+   "bytes": 110806,
+   "sha256": "8db6a2a1681d27de27567d0b6841bf06aadea27ba0d7fdea6f5462df681bc974"
+  },
+  "execution/case_attempt/chain/scenario-rseth-2026-04-20261018T103929Z-case-probe/events.jsonl": {
+   "bytes": 529,
+   "sha256": "8eb5b22693d6b93d06002ab01ab12cae8492ab77a7ae993390e1b58c26a08168"
+  },
+  "execution/case_attempt/chain/scenario-rseth-2026-04-20261018T103929Z-case-probe/manifest.json": {
+   "bytes": 280,
+   "sha256": "9743288d6023f8e779a83115f9918c081bb462aa455b27f71094e5f19a63382b"
+  },
+  "execution/case_attempt/chain/scenario-rseth-2026-04-20261018T110722Z-case-probe/events.jsonl": {
+   "bytes": 529,
+   "sha256": "edb1d817f0bfd5ed78773996fd1dbee6c2a0f19c4e4b9a9e6d17a1ef8b4e0990"
+  },
+  "execution/case_attempt/chain/scenario-rseth-2026-04-20261018T110722Z-case-probe/manifest.json": {
+   "bytes": 280,
+   "sha256": "5cf115cc2f041ef2c548b968f0ce68074ccd83a6c360aac76b4129ca8f55ae9b"
+  },
+  "execution/case_attempt/journal.jsonl": {
+   "bytes": 2804,
+   "sha256": "7275efbca364d10cd17686a51091f69f857a8552ac6e4f16c6642ac85b2a7eea"
+  },
+  "execution/chain/scenario-rseth-2026-04-20261018T101731Z/events.jsonl": {
+   "bytes": 518,
+   "sha256": "460967c967ce889d20c479f1d534cc5a906e3e21da3d4878c8c89e666135b1f4"
+  },
+  "execution/chain/scenario-rseth-2026-04-20261018T101731Z/manifest.json": {
+   "bytes": 269,
+   "sha256": "04c3dcdd74fdc63244199b9c76d486aabc07628b9cf71ef8ec887fb78f495054"
+  },
+  "execution/chain/scenario-rseth-2026-04-20261018T103929Z/decision/intent-t001.json": {
+   "bytes": 543,
+   "sha256": "2718efc05531c32077326daf6b6562a8b81a4833f52b4e57a7907ec78da09787"
+  },
+  "execution/chain/scenario-rseth-2026-04-20261018T103929Z/events.jsonl": {
+   "bytes": 1850,
+   "sha256": "0a0688c541fa3c9dbe9fdd7c61fe64ae9ea45a3534e4131c0fc5a6d20f6a043e"
+  },
+  "execution/chain/scenario-rseth-2026-04-20261018T103929Z/manifest.json": {
+   "bytes": 521,
+   "sha256": "983e9485662e910127bf29011f60129831e8f530fd3cc6b53d334c1c430b5647"
+  },
+  "execution/chain/scenario-rseth-2026-04-20261018T103929Z/policy/policy-t001.json": {
+   "bytes": 526,
+   "sha256": "9d720c7b98ad7775077cecbe38d04e24b1458c317d4315877f5cdbff407d4428"
+  },
+  "execution/chain/scenario-rseth-2026-04-20261018T110722Z/decision/intent-t001.json": {
+   "bytes": 543,
+   "sha256": "89092cbf7b6c4f833455ae1fd7bcd67f0a5b1e1c7065c3cb4f0d602401d41c0c"
+  },
+  "execution/chain/scenario-rseth-2026-04-20261018T110722Z/events.jsonl": {
+   "bytes": 1850,
+   "sha256": "fd27f06ecb93882f0c3197b46e4b6db1f9f544660dd2cad5e618e616e95c8ee5"
+  },
+  "execution/chain/scenario-rseth-2026-04-20261018T110722Z/manifest.json": {
+   "bytes": 521,
+   "sha256": "2a9488518a3f03ba0b8ef3f3dea19359f215ea1fd61c4918469f69d7c6a3469e"
+  },
+  "execution/chain/scenario-rseth-2026-04-20261018T110722Z/policy/policy-t001.json": {
+   "bytes": 526,
+   "sha256": "f246db7345684b48fabaf07f3b2e1d5373543e94fa0a9c0e7496a3c3a9f62ad8"
+  },
+  "execution/journal.jsonl": {
+   "bytes": 6421,
+   "sha256": "c71535a5f21e5a0bff4d5156a5a85c6cdea95f1503ffdf7590299f7b4e9a2666"
+  },
+  "journal_critic.jsonl": {
+   "bytes": 1799,
+   "sha256": "66b39c4577a43603aa3c3e25d9a2ae3fe073c3dd08c3d62f6b3a6f1021ef0bb8"
+  },
+  "journal_orchestrator.jsonl": {
+   "bytes": 147570,
+   "sha256": "135e75c71d9c37fa8a0cc1eb72ab80867322c7b0bbbff81a8b6743dd263cb859"
+  },
+  "outcome_orchestrator.json": {
+   "bytes": 3932,
+   "sha256": "b860ff713f2a2a3a2b783cc6fcb308adf84786438d3ce8c99760fef1dc927bf5"
+  },
+  "policy_verdicts.json": {
+   "bytes": 2318,
+   "sha256": "96cfcb07a65c1a03b7e03a0f8e476d58876732c4287fdc8cbe666c667dffabd2"
+  },
+  "run.json": {
+   "bytes": 12176,
+   "sha256": "d95f6cf05cde813f5422aa412cfc0be926c4d994878efda027abf7fa1bfff410"
+  },
+  "run_outcome.json": {
+   "bytes": 12328,
+   "sha256": "181bcd2eb5907688ba0ba7b433916480cfc159a4a76f605ec42ad1301a0588a6"
+  }
+ },
+ "case_id": "rseth-2026-04",
+ "executor_parent_run_id": "rseth-2026-04_live_20261018T110722Z",
+ "executor_run_id": "scenario-rseth-2026-04-20261018T110722Z",
+ "generated_utc": "2026-10-18T11:11:31Z",
+ "run_id": "scenario-rseth-2026-04-20261018T110722Z",
+ "schema": "orvyren/scenario-run/v1",
+ "status": "OK",
+ "steps": [
+  {
+   "argv": [
+    "C:\\Users\\User\\AppData\\Local\\hermes\\hermes-agent\\venv\\Scripts\\python.exe",
+    "scripts\\inspect_env_masked.py",
+    "--require-live-keys"
+   ],
+   "name": "keys",
+   "rc": 0,
+   "stderr_tail": "",
+   "stdout_tail": "[file]    scripts/demo/.env  (git-ignored ✓)\n    ORVYREN_RPC_URL_BASE_SEPOLIA       present (len 24)\n    ORVYREN_CHAIN_ID                   present (len 5)\n    ORVYREN_RPC_TIMEOUT_SECONDS        present (len 2)\n    ORVYREN_SAFE_ADDRESS               present (len 42)\n    ORVYREN_AGENT_ADDRESS              present (len 42)\n    ORVYREN_MODULE_ADDRESS             present (len 42)\n    ORVYREN_USDC_ADDRESS               present (len 42)\n    ORVYREN_RECIPIENT_B                present (len 42)\n    ORVYREN_RECIPIENT_C                present (len 42)\n    ORVYREN_RECIPIENT_UNLISTED         present (len 42)\n    ORVYREN_PRIVATE_KEY                present (len 66) — never displayed\n    ORVYREN_K0_PAUSED                  empty\n    ORVYREN_DEEPSEEK_API_KEY           present (len 35) — never displayed\n    ORVYREN_MIMO_API_KEY               present (len 51) — never displayed\n\n[file]    scripts/demo/owners.env  (git-ignored ✓)\n    ORVYREN_OWNER1_ADDRESS             present (len 42)\n    ORVYREN_OWNER1_PRIVATE_KEY         present (len 66) — never displayed\n    ORVYREN_OWNER2_ADDRESS             present (len 42)\n    ORVYREN_OWNER2_PRIVATE_KEY         present (len 66) — never displayed\n    ORVYREN_OWNER3_ADDRESS             present (len 42)\n    ORVYREN_OWNER3_PRIVATE_KEY         present (len 66) — never displayed\n\nlive-mode keys (agents):\n    ORVYREN_DEEPSEEK_API_KEY           present (len 35)\n    ORVYREN_MIMO_API_KEY               present (len 51)\n",
+   "verdict": null
+  },
+  {
+   "argv": [
+    "C:\\Users\\User\\AppData\\Local\\hermes\\hermes-agent\\venv\\Scripts\\python.exe",
+    "run_agents.py",
+    "--case",
+    "rseth-2026-04",
+    "--replay",
+    "live",
+    "--record-live",
+    "--session",
+    "evidence\\scenario_rseth\\agents_session",
+    "--timeout-s",
+    "900"
+   ],
+   "name": "agents",
+   "rc": 0,
+   "stderr_tail": "",
+   "stdout_tail": "ORVYREN — run_agents · rseth-2026-04 · mode live\n  run       : evidence\\scenario_rseth\\agents_session\\rseth-2026-04_live_20261018T110722Z\n  store live: evidence\\scenario_rseth\\agents_session\\rseth-2026-04_live_20261018T110722Z\\store_live\n  [orchestrator] process started…\n    [orchestrator] done — 31 journal lines, state ABORTED/ARRET-3\n  [critic] process started…\n    [critic] report written — verdict INCOHERENTE, 12 objection(s)\n\n  ==== run summary rseth-2026-04 (live) ====\n    orchestrator   31 lines — agent_id:orchestrator — chain OK\n    critic          1 lines — agent_id:critic — chain OK\n    stop           : ARRET-3 (abstention)\n    budget         : llm 9/30 · tools 7/12 · 60s/600s · $0.0397/$0.10\n    critique       : INCOHERENTE\n    escalation     : REQUIRE_APPROVAL (the critic never cancels — it brakes)\n    not searched   : Une série de marché archivée pour le rsETH, sur une place liquide, confirme-t-elle un cours de sortie nettement inférieur aux lectures du feed oracle retenues sur la même fenêtre ? · Does an archived secondary-market price series for the collateral asset print a last trade before the freeze instant matching the documented market price rather than the retained oracle reading over the same window?\n    cumulative LLM cost: $0.0397\n    artifacts      : evidence\\scenario_rseth\\agents_session\\rseth-2026-04_live_20261018T110722Z\n",
+   "verdict": null
+  },
+  {
+   "argv": [
+    "C:\\Users\\User\\AppData\\Local\\hermes\\hermes-agent\\venv\\Scripts\\python.exe",
+    "run_decision.py",
+    "--case",
+    "rseth-2026-04",
+    "--corpus",
+    "fixtures\\agents\\rseth-2026-04\\corpus_rseth.csv",
+    "--out-dir",
+    "evidence\\scenario_rseth\\decision",
+    "--no-rdof"
+   ],
+   "name": "decision",
+   "rc": 0,
+   "stderr_tail": "",
+   "stdout_tail": "ORVYREN-Core decision run - case rseth-2026-04\nWindow (main):    2023-03-09T00:00:00+00:00 -> 2023-03-15T00:00:00+00:00\nCorpus:           fixtures/agents/rseth-2026-04/corpus_rseth.csv (0 observations in window, sha256 7e313c7bb24e...)\nHypothesis verdicts:\n  H1 local liquidity perturbation: INCONCLUSIVE\n  H2 broad stress on asset or issuer: INCONCLUSIVE\n  H3 data or market artifact: INCONCLUSIVE\nDecision:         INCONCLUSIVE - action: null\nExposure envelope: exposure 500.0 USDC, floor 350.0 USDC, available_to_move 100.0 USDC\nMissing inputs:   bitstamp hourly price series (independent venue); binance hourly price series (independent venue); defillama hourly price series (aggregator) required for the H1 aggregate-tolerance criterion; defillama_supply_aggregate daily circulating supply series (metric=circulating_usd) required for the 24 h supply-change criterion; defillama hourly price series (aggregator) required for the H3 divergence check\nBaseline A0:      signals_main=0, signals_control=0, false_signals_control=0\nEvidence:         evidence/scenario_rseth/decision/decision_rseth-2026-04.json\nEvidence:         evidence/scenario_rseth/decision/baseline_report.json\n",
+   "verdict": null
+  },
+  {
+   "argv": [
+    "<in-process>",
+    "orvyren.decision.abstention A1-A5 (detect_conditions -> what_would_change_entries -> escalate_vs_no_action -> build_inconclusive)"
+   ],
+   "name": "decision_abstention",
+   "rc": 0,
+   "stderr_tail": "",
+   "stdout_tail": "abstention ESCALATE — action null; 5 what_would_change entr(ies); conditions A1",
+   "verdict": "ESCALATE"
+  },
+  {
+   "argv": [
+    "C:\\Users\\User\\AppData\\Local\\hermes\\hermes-agent\\venv\\Scripts\\python.exe",
+    "run_executor.py",
+    "--case",
+    "rseth-2026-04",
+    "--ticks",
+    "1",
+    "--dry-run",
+    "--run-id",
+    "scenario-rseth-2026-04-20261018T110722Z-case-probe",
+    "--parent-run-id",
+    "rseth-2026-04_live_20261018T110722Z",
+    "--json",
+    "--journal",
+    "evidence\\scenario_rseth\\execution\\case_attempt\\journal.jsonl",
+    "--ledger",
+    "evidence\\scenario_rseth\\execution\\case_attempt\\ledger.json"
+   ],
+   "name": "execution_case_probe",
+   "rc": 5,
+   "stderr_tail": "NOTE: ORVYREN_AGENT_MEMBER, ORVYREN_AVAILABLE_BALANCE unset — P11/P7 fail closed (DENY). Pass --demo-defaults for the offline demo.\n",
+   "stdout_tail": "{\n  \"schema\": \"orvyren-executor-run/v1\",\n  \"case\": \"rseth-2026-04\",\n  \"mode\": \"dry-run\",\n  \"ticks\": 1,\n  \"ticks_run\": 1,\n  \"recipient\": \"0x37877f6ffb6656e752bf4807b9c3c7b761a953a3\",\n  \"run_id\": \"scenario-rseth-2026-04-20261018T110722Z-case-probe\",\n  \"parent_run_id\": \"rseth-2026-04_live_20261018T110722Z\",\n  \"chain\": {\n    \"run_id\": \"scenario-rseth-2026-04-20261018T110722Z-case-probe\",\n    \"parent_run_id\": \"rseth-2026-04_live_20261018T110722Z\",\n    \"case_id\": \"rseth-2026-04\",\n    \"root_dir\": \"D:\\\\orvyren_core\\\\evidence\\\\scenario_rseth\\\\execution\\\\case_attempt\\\\chain\\\\scenario-rseth-2026-04-20261018T110722Z-case-probe\",\n    \"verify_ok\": true,\n    \"verify_error\": \"\",\n    \"events_head\": \"427451a2bd3711050ca64061fb482a717089a0608422e72f650783adea953b1c\",\n    \"artifacts\": 0\n  },\n  \"policy\": {\n    \"path\": \"D:\\\\orvyren_core\\\\policy_v1.yaml\",\n    \"version\": \"v1.0\",\n    \"policy_hash\": \"651535872228470403f5603982eaadd9c4143c700f0ce159813f9edc7164ad5d\",\n    \"yaml_sha256\": \"b99ad99bc2d32184fd4e1b45fb136f0424e972f40d71cafeab622ae11acc0c03\"\n  },\n  \"envelope\": {\n    \"status\": \"PASS\",\n    \"source\": \"fixture\",\n    \"fixture_path\": \"D:\\\\orvyren_core\\\\fixtures\\\\roles_agent_config.json\",\n    \"note\": \"\",\n    \"checks\": [\n      {\n        \"id\": \"D1\",\n        \"name\": \"chain\",\n        \"status\": \"PASS\",\n        \"detail\": {\n          \"chain_id\": 84532\n        }\n      },\n      {\n        \"id\": \"D3\",\n        \"name\": \"role key\",\n        \"status\": \"PASS\",\n        \"detail\": {}\n      },\n      {\n        \"id\": \"D4\",\n        \"name\": \"role targets\",\n        \"status\": \"PASS\",\n        \"detail\": {\n          \"targets\": [\n            \"0x036cbd53842c5426634e7929541ec2318f3dcf7e\"\n          ]\n        }\n      },\n      {\n        \"id\": \"D5\",\n        \"name\": \"role functions\",\n        \"status\": \"PASS\",\n        \"detail\": {\n          \"functions\": [\n            [\n              \"0x036cbd53842c5426634e7929541ec2318f3dcf7e\",\n              \"0xa9059cbb\"\n            ]\n          ]\n        }\n      },\n      {\n        \"id\": \"D7\",\n        \"name\": \"allowance\",\n        \"status\": \"PASS\",\n        \"detail\": {\n          \"mismatches\": [],\n          \"fixture\": 300000000,\n          \"policy\": 300000000\n        }\n      },\n      {\n        \"id\": \"D8\",\n        \"name\": \"call quota\",\n        \"status\": \"PASS\",\n        \"detail\": {\n          \"fixture\": 10,\n          \"policy\": 10\n        }\n      },\n      {\n        \"id\": \"D9\",\n        \"name\": \"scheduled revocation\",\n        \"status\": \"PASS\",\n        \"detail\": {}\n      },\n      {\n        \"id\": \"D10\",\n        \"name\": \"asset\",\n        \"status\": \"PASS\",\n        \"detail\": {}\n      }\n    ]\n  },\n  \"paused\": false,\n  \"stopped\": \"decision\",\n  \"journal\": {\n    \"path\": \"evidence\\\\scenario_rseth\\\\execution\\\\case_attempt\\\\journal.jsonl\",\n    \"records\": 2,\n    \"ok\": true,\n    \"error\": \"\"\n  },\n  \"ledger\": {\n    \"path\": \"evidence\\\\scenario_rseth\\\\execution\\\\case_attempt\\\\ledger.json\",\n    \"entries\": 0,\n    \"spent_24h_before\": 0.0,\n    \"spent_24h_after\": 0.0\n  },\n  \"counts\": {\n    \"allow\": 0,\n    \"deny\": 0,\n    \"require_approval\": 0,\n    \"dry_run\": 0,\n    \"signed\": 0,\n    \"no_action\": 0,\n    \"errors\": 1\n  },\n  \"records\": [\n    {\n      \"case\": \"rseth-2026-04\",\n      \"run_id\": \"scenario-rseth-2026-04-20261018T110722Z-case-probe\",\n      \"tick\": 1,\n      \"ts_utc\": \"2026-10-18T11:11:30.938975+00:00\",\n      \"mode\": \"dry-run\",\n      \"dry_run\": true,\n      \"verdict\": \"ERROR\",\n      \"policy_verdict\": null,\n      \"outcome\": \"ERROR\",\n      \"executed\": false,\n      \"intent\": null,\n      \"decision_summary\": {},\n      \"reasons\": [],\n      \"rules_evaluated\": [],\n      \"skipped_rules\": [],\n      \"policy_version\": \"v1.0\",\n      \"policy_hash\": \"651535872228470403f5603982eaadd9c4143c700f0ce159813f9edc7164ad5d\",\n      \"safe_mode\": false,\n      \"state\": {\n        \"paused\": false,\n        \"agent_member\": null,\n        \"envelope_status\": \"PASS\",\n        \"available_balance\": null,\n        \"cumulative_spent\": 0.0,\n        \"budget_spent\": 0.0,\n        \"budget_cap\": 0.1\n      },\n      \"tx_hash\": null,\n      \"receipt_verification\": null,\n      \"error\": \"decision unavailable: E_WHAT_WOULD_CHANGE_REQUIRED: INCONCLUSIVE must enumerate what would change the verdict (B3 §c.3)\",\n      \"ledger_spent_after\": null,\n      \"chain\": {\n        \"run_id\": \"scenario-rseth-2026-04-20261018T110722Z-case-probe\",\n        \"parent_run_id\": \"rseth-2026-04_live_20261018T110722Z\",\n        \"root_dir\": \"D:\\\\orvyren_core\\\\evidence\\\\scenario_rseth\\\\execution\\\\case_attempt\\\\chain\\\\scenario-rseth-2026-04-20261018T110722Z-case-probe\",\n        \"verify_ok\": true,\n        \"verify_error\": \"\",\n        \"events_head\": \"427451a2bd3711050ca64061fb482a717089a0608422e72f650783adea953b1c\"\n      }\n    }\n  ],\n  \"demo_defaults\": false\n}\n",
+   "verdict": "REFUSED_E_WHAT_WOULD_CHANGE_REQUIRED"
+  },
+  {
+   "argv": [
+    "C:\\Users\\User\\AppData\\Local\\hermes\\hermes-agent\\venv\\Scripts\\python.exe",
+    "run_executor.py",
+    "--case",
+    "usdc-2023-03",
+    "--ticks",
+    "1",
+    "--dry-run",
+    "--run-id",
+    "scenario-rseth-2026-04-20261018T110722Z",
+    "--parent-run-id",
+    "rseth-2026-04_live_20261018T110722Z",
+    "--json",
+    "--journal",
+    "evidence\\scenario_rseth\\execution\\journal.jsonl",
+    "--ledger",
+    "evidence\\scenario_rseth\\execution\\ledger.json"
+   ],
+   "name": "execution",
+   "rc": 0,
+   "stderr_tail": "NOTE: ORVYREN_AGENT_MEMBER, ORVYREN_AVAILABLE_BALANCE unset — P11/P7 fail closed (DENY). Pass --demo-defaults for the offline demo.\n",
+   "stdout_tail": "{\n  \"schema\": \"orvyren-executor-run/v1\",\n  \"case\": \"usdc-2023-03\",\n  \"mode\": \"dry-run\",\n  \"ticks\": 1,\n  \"ticks_run\": 1,\n  \"recipient\": \"0x37877f6ffb6656e752bf4807b9c3c7b761a953a3\",\n  \"run_id\": \"scenario-rseth-2026-04-20261018T110722Z\",\n  \"parent_run_id\": \"rseth-2026-04_live_20261018T110722Z\",\n  \"chain\": {\n    \"run_id\": \"scenario-rseth-2026-04-20261018T110722Z\",\n    \"parent_run_id\": \"rseth-2026-04_live_20261018T110722Z\",\n    \"case_id\": \"usdc-2023-03\",\n    \"root_dir\": \"D:\\\\orvyren_core\\\\evidence\\\\scenario_rseth\\\\execution\\\\chain\\\\scenario-rseth-2026-04-20261018T110722Z\",\n    \"verify_ok\": true,\n    \"verify_error\": \"\",\n    \"events_head\": \"ffb4a2c8fbe239092be53122a60792857d3a08a5793af9bd2d52d6cffb48cbda\",\n    \"artifacts\": 2\n  },\n  \"policy\": {\n    \"path\": \"D:\\\\orvyren_core\\\\policy_v1.yaml\",\n    \"version\": \"v1.0\",\n    \"policy_hash\": \"651535872228470403f5603982eaadd9c4143c700f0ce159813f9edc7164ad5d\",\n    \"yaml_sha256\": \"b99ad99bc2d32184fd4e1b45fb136f0424e972f40d71cafeab622ae11acc0c03\"\n  },\n  \"envelope\": {\n    \"status\": \"PASS\",\n    \"source\": \"fixture\",\n    \"fixture_path\": \"D:\\\\orvyren_core\\\\fixtures\\\\roles_agent_config.json\",\n    \"note\": \"\",\n    \"checks\": [\n      {\n        \"id\": \"D1\",\n        \"name\": \"chain\",\n        \"status\": \"PASS\",\n        \"detail\": {\n          \"chain_id\": 84532\n        }\n      },\n      {\n        \"id\": \"D3\",\n        \"name\": \"role key\",\n        \"status\": \"PASS\",\n        \"detail\": {}\n      },\n      {\n        \"id\": \"D4\",\n        \"name\": \"role targets\",\n        \"status\": \"PASS\",\n        \"detail\": {\n          \"targets\": [\n            \"0x036cbd53842c5426634e7929541ec2318f3dcf7e\"\n          ]\n        }\n      },\n      {\n        \"id\": \"D5\",\n        \"name\": \"role functions\",\n        \"status\": \"PASS\",\n        \"detail\": {\n          \"functions\": [\n            [\n              \"0x036cbd53842c5426634e7929541ec2318f3dcf7e\",\n              \"0xa9059cbb\"\n            ]\n          ]\n        }\n      },\n      {\n        \"id\": \"D7\",\n        \"name\": \"allowance\",\n        \"status\": \"PASS\",\n        \"detail\": {\n          \"mismatches\": [],\n          \"fixture\": 300000000,\n          \"policy\": 300000000\n        }\n      },\n      {\n        \"id\": \"D8\",\n        \"name\": \"call quota\",\n        \"status\": \"PASS\",\n        \"detail\": {\n          \"fixture\": 10,\n          \"policy\": 10\n        }\n      },\n      {\n        \"id\": \"D9\",\n        \"name\": \"scheduled revocation\",\n        \"status\": \"PASS\",\n        \"detail\": {}\n      },\n      {\n        \"id\": \"D10\",\n        \"name\": \"asset\",\n        \"status\": \"PASS\",\n        \"detail\": {}\n      }\n    ]\n  },\n  \"paused\": false,\n  \"stopped\": \"\",\n  \"journal\": {\n    \"path\": \"evidence\\\\scenario_rseth\\\\execution\\\\journal.jsonl\",\n    \"records\": 3,\n    \"ok\": true,\n    \"error\": \"\"\n  },\n  \"ledger\": {\n    \"path\": \"evidence\\\\scenario_rseth\\\\execution\\\\ledger.json\",\n    \"entries\": 0,\n    \"spent_24h_before\": 0.0,\n    \"spent_24h_after\": 0.0\n  },\n  \"counts\": {\n    \"allow\": 0,\n    \"deny\": 1,\n    \"require_approval\": 0,\n    \"dry_run\": 0,\n    \"signed\": 0,\n    \"no_action\": 0,\n    \"errors\": 0\n  },\n  \"records\": [\n    {\n      \"case\": \"usdc-2023-03\",\n      \"run_id\": \"scenario-rseth-2026-04-20261018T110722Z\",\n      \"tick\": 1,\n      \"ts_utc\": \"2026-10-18T11:11:31.368970+00:00\",\n      \"mode\": \"dry-run\",\n      \"dry_run\": true,\n      \"verdict\": \"DENY\",\n      \"policy_verdict\": \"DENY\",\n      \"outcome\": \"DENIED_POLICY\",\n      \"executed\": false,\n      \"intent\": {\n        \"intent_id\": \"intent-usdc-2023-03-a-d1-t001-scenario-rseth-2026-04-20261018T110722Z\",\n        \"action\": \"transfer\",\n        \"chain_id\": 84532,\n        \"asset\": \"0x036cbd53842c5426634e7929541eC2318f3dCF7e\",\n        \"amount\": 100.0,\n        \"recipient\": \"0x37877f6ffb6656e752bf4807b9c3c7b761a953a3\",\n        \"created_at\": \"2026-10-18T11:11:31.368970+00:00\"\n      },\n      \"decision_summary\": {\n        \"epistemic_verdict\": \"CONCLUANT\",\n        \"economic_action\": \"CONVERTIR/TRANSFÉRER\",\n        \"authorization_verdict\": \"ALLOW\"\n      },\n      \"reasons\": [\n        \"BALANCE_UNREADABLE\",\n        \"AGENT_NOT_MEMBER\"\n      ],\n      \"rules_evaluated\": [\n        {\n          \"rule\": \"P1-chain\",\n          \"result\": \"OK\",\n          \"note\": \"84532\"\n        },\n        {\n          \"rule\": \"P2-asset\",\n          \"result\": \"OK\",\n          \"note\": \"\"\n        },\n        {\n          \"rule\": \"P3-recipient\",\n          \"result\": \"OK\",\n          \"note\": \"\"\n        },\n        {\n          \"rule\": \"P4-function\",\n          \"result\": \"OK\",\n          \"note\": \"transfer -> (0x036cbd53842c5426634e7929541ec2318f3dcf7e, 0xa9059cbb)\"\n        },\n        {\n          \"rule\": \"P5-amount\",\n          \"result\": \"OK\",\n          \"note\": \"100.0 <= 100.0\"\n        },\n        {\n          \"rule\": \"P6-cumulative\",\n          \"result\": \"OK\",\n          \"note\": \"100.0 <= 300.0\"\n        },\n        {\n          \"rule\": \"P7-exposure\",\n          \"result\": \"FAIL\",\n          \"code\": \"BALANCE_UNREADABLE\"\n        },\n        {\n          \"rule\": \"P8-permission\",\n          \"result\": \"OK\",\n          \"note\": \"2026-10-19T11:11:31.367974+00:00\"\n        },\n        {\n          \"rule\": \"P9-freshness\",\n          \"result\": \"OK\",\n          \"note\": \"age 0:00:00\"\n        },\n        {\n          \"rule\": \"P10-idempotency\",\n          \"result\": \"OK\",\n          \"note\": \"\"\n        },\n        {\n          \"rule\": \"P11-pause\",\n          \"result\": \"FAIL\",\n          \"code\": \"AGENT_NOT_MEMBER\",\n          \"note\": \"role membership unreadable — fail closed\"\n        },\n        {\n          \"rule\": \"P12-envelope\",\n          \"result\": \"OK\",\n          \"note\": \"\"\n        },\n        {\n          \"rule\": \"P14-budget\",\n          \"result\": \"OK\",\n          \"note\": \"0.0 < 0.1\"\n        }\n      ],\n      \"skipped_rules\": [],\n      \"policy_version\": \"v1.0\",\n      \"policy_hash\": \"651535872228470403f5603982eaadd9c4143c700f0ce159813f9edc7164ad5d\",\n      \"safe_mode\": false,\n      \"state\": {\n        \"paused\": false,\n        \"agent_member\": null,\n        \"envelope_status\": \"PASS\",\n        \"available_balance\": null,\n        \"cumulative_spent\": 0.0,\n        \"budget_spent\": 0.0,\n        \"budget_cap\": 0.1\n      },\n      \"tx_hash\": null,\n      \"receipt_verification\": null,\n      \"error\": null,\n      \"ledger_spent_after\": null,\n      \"chain\": {\n        \"run_id\": \"scenario-rseth-2026-04-20261018T110722Z\",\n        \"parent_run_id\": \"rseth-2026-04_live_20261018T110722Z\",\n        \"root_dir\": \"D:\\\\orvyren_core\\\\evidence\\\\scenario_rseth\\\\execution\\\\chain\\\\scenario-rseth-2026-04-20261018T110722Z\",\n        \"verify_ok\": true,\n        \"verify_error\": \"\",\n        \"events_head\": \"ffb4a2c8fbe239092be53122a60792857d3a08a5793af9bd2d52d6cffb48cbda\"\n      }\n    }\n  ],\n  \"demo_defaults\": false\n}\n",
+   "verdict": null
+  }
+ ]
+}

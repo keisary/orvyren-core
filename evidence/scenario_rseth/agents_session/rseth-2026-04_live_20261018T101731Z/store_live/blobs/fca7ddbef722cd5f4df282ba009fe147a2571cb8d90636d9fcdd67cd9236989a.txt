@@ -1,0 +1,37 @@
+{
+  "lacune_id": "L-1",
+  "tache": {
+    "question": "Does an archived market price series for rsETH over the window preceding the freeze print an exit price far below the retained oracle reading, or does it track the oracle within the documented tolerance?",
+    "outil": "graph_query",
+    "args": {
+      "series": "rseth_market_price_usd",
+      "window": {
+        "from": "2026-04-18T16:00:00Z",
+        "to": "2026-04-18T19:03:59Z"
+      },
+      "granularity": "block",
+      "fields": [
+        "timestamp",
+        "price_usd",
+        "venue",
+        "source_kind"
+      ]
+    },
+    "critere_discriminant": "Si la série archivée imprime un prix de marché proche du prix documenté et nettement inférieur à la lecture oracle, l'hypothèse de divergence est corroborée : l'oracle surestime la valeur réalisable du collatéral. Si la série suit l'oracle dans la tolérance documentée, l'hypothèse de divergence est réfutée et l'écart retenu doit être imputé à une autre cause (source de prix, arrondi, fenêtre). Une série absente, non datée ou non horodatée laisse la lacune ouverte et ne départage rien.",
+    "branches_concernees": [
+      "HYP-002"
+    ],
+    "cout_max": {
+      "appels_llm": 1,
+      "secondes": 60
+    }
+  },
+  "stop": false,
+  "motif_stop": null,
+  "non_recherche": [
+    "Fraîcheur de l'oracle (updatedAt) : latestRoundData() revert sur le feed plafonné, aucun outil autorisé ne peut produire cette lecture — tâche non falsifiable en l'état.",
+    "Dette irrécouvrable par compte : le registre par compte est hors de la couche de données accessible ; aucun outil autorisé ne l'expose, une requête ne produirait aucune observation discriminante.",
+    "Valeur réalisable du collatéral gelé : aucune place liquide lisible pour un rsETH non adossé ; chercher une cotation reviendrait à fabriquer une observation.",
+    "Hypothèse de saturation par utilisation totale : déjà mesurée dans le snapshot comme quasi nulle ; aucune recherche supplémentaire n'est nécessaire pour la départager."
+  ]
+}
