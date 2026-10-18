@@ -13,7 +13,7 @@ Après fusion : **1 061 passed, 3 skipped**.
 
 - `ruff check .` avec le gate du dépôt (`E9,F63,F7,F82`) : **pass**.
 - `python -m compileall` : **pass**.
-- `pytest` : **1 069 passed, 3 skipped, 274 subtests**.
+- `pytest` : **1 073 passed, 3 skipped, 274 subtests**.
 - `mypy src/orvyren` : 69 signalements, principalement des annotations `Optional`/types ; les cas à impact runtime ont été corrigés.
 - `bandit -r src scripts` : 49 signalements low/medium, 0 high ; les traversées de chemins et les schémas d’URL ont été corrigés, le reste est trié (SQL construit sur des constantes, faux positifs de mots de passe, bind d’affichage).
 - `yamllint` : YAML syntaxiquement valide ; warnings de longueur/document-start uniquement.
@@ -63,7 +63,7 @@ Après fusion : **1 061 passed, 3 skipped**.
 
 ## 4. Limites de la revue
 
-- Les passes indépendantes sur `agents`, `graph`, `decision/policy`, `execution` et la première moitié de `scripts` ont échoué côté fournisseur LLM ; `execution/verify/audit/replay`, `runners/UI` et la seconde moitié de `scripts` ont été relus et corrigés manuellement, les autres restent couverts par les contrôles statiques et les tests, pas par une lecture ligne-à-ligne revendiquée.
+- Une seconde passe indépendante a couvert `agents`, `graph`, `decision`, `policy`, `data`/`quality` et `evaluation` : 52 fichiers, 16 224 lignes, 595 tests ciblés. Le détail des corrections et des findings **laissés ouverts** est dans [`CODE_REVIEW_SUBAGENTS_2026-10-18.md`](CODE_REVIEW_SUBAGENTS_2026-10-18.md).
 - Les 69 erreurs mypy restantes sont majoritairement des annotations, pas des crashes observés ; elles sont listées comme dette de typage.
 - `ruff format --check` signale 171 fichiers : le `pyproject.toml` interdit le reformatage massif de la baseline gelée ; aucun reformatage global n’a été appliqué.
 - Les findings Bandit restants sont des faux positifs à faible risque ou des SQL construits uniquement à partir de constantes et de placeholders.
@@ -73,4 +73,5 @@ Après fusion : **1 061 passed, 3 skipped**.
 
 - `master` local : voir `git log -1` ; `origin/master` est mis à jour après chaque lot.
 - `verify_frozen.py` : **COMPLIANT**.
-- Dernière suite complète : **1 069 passed, 3 skipped**.
+- Dernière suite complète : **1 073 passed, 3 skipped**.
+- Revue indépendante par dossier : [`CODE_REVIEW_SUBAGENTS_2026-10-18.md`](CODE_REVIEW_SUBAGENTS_2026-10-18.md).
