@@ -498,7 +498,13 @@ class BoundedLoop:
         if str(args.get("kind") or "REFLECTION") not in ("REFLECTION", "OBSERVATION_REF"):
             return None
         for key in ("run_id", "episode_id", "agent_id", "role_version",
-                    "step_index", "ts_utc", "journal_id"):
+                    "step_index", "ts_utc", "journal_id",
+                    # LLM provenance/accounting documents a REAL call: a
+                    # model-supplied prompt/response hash or cost figure would
+                    # forge the journal's LLM accounting and provenance.
+                    "llm", "prompt_hash", "response_hash",
+                    "tokens_in", "tokens_out", "cached_in",
+                    "cost_usd", "latency_ms"):
             args.pop(key, None)
         args.update({
             "run_id": self._run_id,

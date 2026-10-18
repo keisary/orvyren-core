@@ -146,6 +146,10 @@ class EvidenceMatrix:
             raise ValueError("E_ACH_WEIGHT: %r is not a number" % (weight,))
         if not math.isfinite(value) or value < 0.0:
             raise ValueError("E_ACH_WEIGHT: %r outside [0, +inf[" % (weight,))
+        if isinstance(refs, (str, bytes)):
+            # A bare string would be iterated character by character and
+            # corrupt the provenance refs into one-character "references".
+            raise ValueError("E_ACH_REFS_TYPE: %r is not a list of refs" % (refs,))
         clean_refs = tuple(str(ref).strip() for ref in (refs or ())
                            if str(ref).strip())
         self._evidence[key] = {"evidence_id": key, "refs": clean_refs,
@@ -170,9 +174,9 @@ class EvidenceMatrix:
         claim never invents a branch). Returns the structured reactions, one
         per scored branch (see :meth:`reaction_to_change`).
         """
-        refs = tuple(str(ref) for ref in (claim.get("refs") or ())
-                     if str(ref).strip())
-        self.add_evidence(evidence_id, refs)
+        # ``refs`` travels verbatim to :meth:`add_evidence`, which refuses a
+        # mistyped container (a bare string must never become char refs).
+        self.add_evidence(evidence_id, claim.get("refs") or ())
         verdict = sens_to_verdict(claim.get("sens"))
         branches = claim.get("branches_concernees")
         if not isinstance(branches, (list, tuple)):
@@ -446,7 +450,7 @@ class EvidenceMatrix:
             if not isinstance(evidence, Mapping):
                 raise ValueError("E_ACH_SCHEMA: evidence is not an object")
             matrix.add_evidence(str(evidence.get("evidence_id", "")),
-                                tuple(evidence.get("refs") or ()),
+                                evidence.get("refs") or (),
                                 evidence.get("weight", 1.0))
         for cell in data.get("cells") or ():
             if not isinstance(cell, (list, tuple)) or len(cell) != 3:

@@ -28,12 +28,17 @@ __all__ = [
     "MemoryEntry",
     "FTSMemory",
     "E_MEMORY_NO_REFS",
+    "E_MEMORY_K",
     "refs_from_observations",
     "OBSERVATION_REF_KEYS",
 ]
 
 #: An entry without refs is refused: it cannot be used (B1 §3.4 rule).
 E_MEMORY_NO_REFS = "E_MEMORY_NO_REFS"
+
+#: A recall bound that is not a non-negative integer (a negative ``k`` would
+#: become ``LIMIT -1``, i.e. unlimited — never silently unbounded, P1-1).
+E_MEMORY_K = "E_MEMORY_K"
 
 #: Observation keys whose values are evidence references worth remembering.
 OBSERVATION_REF_KEYS: Tuple[str, ...] = (
@@ -143,7 +148,14 @@ class FTSMemory:
                            for token in tokens)
 
     def recall(self, query: str, k: int = 5) -> Tuple[MemoryEntry, ...]:
-        """FTS search — deterministic order (rank, memory_id)."""
+        """FTS search — deterministic order (rank, memory_id).
+
+        ``k`` is a real bound: a negative ``k`` would become ``LIMIT -1``
+        (unlimited) in SQLite, so a bool / non-integer / negative ``k`` is
+        refused (``E_MEMORY_K``) instead of silently unbounding the search.
+        """
+        if isinstance(k, bool) or not isinstance(k, int) or k < 0:
+            raise ValueError("%s: %r is not a non-negative integer" % (E_MEMORY_K, k))
         match = self._match_expression(query)
         if not match:
             return ()
@@ -151,7 +163,7 @@ class FTSMemory:
             "SELECT m.memory_id, m.kind, m.body, m.refs, m.ts_utc, f.rank "
             "FROM memory_fts f JOIN memory m ON m.memory_id = f.memory_id "
             "WHERE memory_fts MATCH ? ORDER BY f.rank, m.memory_id LIMIT ?",
-            (match, int(k))).fetchall()
+            (match, k)).fetchall()
         return tuple(MemoryEntry(
             memory_id=row[0], kind=row[1], text=row[2],
             refs=tuple(json.loads(row[3])), ts_utc=row[4], rank=float(row[5]))

@@ -66,12 +66,18 @@ def _configure_stdio() -> None:
 
 
 def _utc_stamp() -> str:
-    return datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+    # Microsecond precision: two runs launched within the same second must
+    # never collide on the same run directory (each run owns its artifacts).
+    return datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%S%fZ")
 
 
 def _write_json(path: str, payload) -> None:
-    with open(path, "w", encoding="utf-8", newline="\n") as handle:
+    # Atomic write (same pattern as worker._write_json): a crash must never
+    # leave a truncated run_outcome.json behind.
+    tmp = path + ".tmp"
+    with open(tmp, "w", encoding="utf-8", newline="\n") as handle:
         json.dump(payload, handle, ensure_ascii=False, indent=1, sort_keys=True)
+    os.replace(tmp, path)
 
 
 def _safe_case(case_id: str) -> str:
@@ -289,8 +295,10 @@ def main(argv=None) -> int:
     parser.add_argument("--budget-tools", type=float, default=12)
     parser.add_argument("--budget-wall", type=float, default=600)
     parser.add_argument("--budget-usd", type=float, default=0.10)
-    parser.add_argument("--timeout-s", type=float, default=300.0,
-                        help="maximum wait per worker process")
+    parser.add_argument("--timeout-s", type=float, default=None,
+                        help="maximum wait per worker process (default: the "
+                             "wall budget + 120 s — a healthy worker is never "
+                             "killed by an incoherent cap)")
     args = parser.parse_args(argv)
 
     for name, value, ceiling in (("llm", args.budget_llm, 30), ("tools", args.budget_tools, 12),
@@ -298,6 +306,15 @@ def main(argv=None) -> int:
         if not math.isfinite(value) or value <= 0 or value > ceiling:
             raise SystemExit("E_BUDGET: --budget-%s must be within ]0, %s] (A5 frozen ceilings)"
                              % (name, ceiling))
+
+    # Worker timeout: it must outlive the worker's own wall budget, or a
+    # healthy run would be killed mid-flight (a spawn killed by its cap is a
+    # failed run, never a completed one — rc 124 below).
+    timeout_s = args.timeout_s
+    if timeout_s is None:
+        timeout_s = max(300.0, float(args.budget_wall) + 120.0)
+    elif not math.isfinite(timeout_s) or timeout_s <= 0:
+        raise SystemExit("E_TIMEOUT: --timeout-s must be within ]0, +inf[")
 
     if args.replay == "live":
         keys = [var for var in ("ORVYREN_DEEPSEEK_API_KEY", "ORVYREN_MIMO_API_KEY")
@@ -308,8 +325,12 @@ def main(argv=None) -> int:
                              "without a key, use --replay journal (deterministic, offline).")
 
     inputs = load_case_inputs(args.case)
-    session = args.session or os.path.join(REPO_ROOT, "demo_runs", "agents", args.case)
-    store = args.store or os.path.join(REPO_ROOT, "fixtures", "agents", "store_%s" % args.case)
+    # Default paths use the SAFE case token: a case id carrying path segments
+    # must never steer the session/store directories outside their roots.
+    session = args.session or os.path.join(REPO_ROOT, "demo_runs", "agents",
+                                          _safe_case(args.case))
+    store = args.store or os.path.join(REPO_ROOT, "fixtures", "agents",
+                                      "store_%s" % _safe_case(args.case))
     budget = {"llm_calls": args.budget_llm, "tool_calls": args.budget_tools,
               "wall_seconds": args.budget_wall, "cost_usd": args.budget_usd}
     tool_mode = args.tool_mode or default_tool_mode(args.replay)
@@ -328,7 +349,7 @@ def main(argv=None) -> int:
 
     for role in ("orchestrator", "critic"):
         print("  [%s] process started…" % role)
-        code = _spawn(role, run_dir, args.timeout_s)
+        code = _spawn(role, run_dir, timeout_s)
         if code != 0:
             raise SystemExit("E_WORKER_%s: code %d — see the output above" % (role.upper(), code))
 

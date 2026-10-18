@@ -155,7 +155,7 @@ def _check_identifier(value: Any, kind: str) -> str:
         raise ChainContractError("{} is required (never empty)".format(kind))
     cleaned = value.strip()
     if cleaned in _ID_SEPARATORS or any(
-            not (ch.isalnum() or ch in "._-") for ch in cleaned):
+            not (ch.isascii() and (ch.isalnum() or ch in "._-")) for ch in cleaned):
         raise ChainContractError(
             "{} must be a plain identifier ([A-Za-z0-9._-]): {!r}".format(kind, value))
     return cleaned
@@ -166,7 +166,9 @@ def _check_token(value: Any, kind: str) -> str:
     if not isinstance(value, str) or not value.strip():
         raise ChainContractError("{} is required (never empty)".format(kind))
     cleaned = value.strip()
-    if any(ch in cleaned for ch in ("/", "\\", "\0")) or cleaned in (".", ".."):
+    if any(ch in cleaned for ch in ("/", "\\", "\0", ":")) or cleaned in (".", ".."):
+        # ``:`` is refused too: on Windows ``os.path.join(root, "C:", name)``
+        # is a drive-relative path that escapes the root directory.
         raise ChainContractError(
             "{} must be a flat token without path separators: {!r}".format(kind, value))
     return cleaned
@@ -179,6 +181,21 @@ def _check_artifact_name(value: Any) -> str:
         raise ChainContractError(
             "artifact name must be a plain file name: {!r}".format(value))
     return cleaned
+
+def _inside_root(root: str, path: str) -> bool:
+    """True when ``path`` really resolves inside ``root`` (containment).
+
+    Windows pitfall: ``os.path.join(root, "C:", "x")`` resolves to ``C:x``
+    — a drive-relative path OUTSIDE the root — and ``os.path.basename``
+    accepts a drive-colon name. The joined path is therefore re-checked
+    against the root before any read or write.
+    """
+    try:
+        root_abs = os.path.abspath(root)
+        target = os.path.abspath(path)
+        return os.path.commonpath([root_abs, target]) == root_abs
+    except ValueError:  # different drives / uncomparable paths
+        return False
 
 
 def new_run_id(prefix: str = "run") -> str:
@@ -307,7 +324,11 @@ class RunChain:
                 raise ChainContractError("manifest: artifact {} invalid sha256".format(name))
             if not isinstance(entry.get("bytes"), int) or entry["bytes"] < 0:
                 raise ChainContractError("manifest: artifact {} invalid bytes".format(name))
-            if not isinstance(entry.get("stage"), str) or not entry["stage"]:
+            try:
+                # Flat token: a drive-colon or separator-bearing stage would
+                # read/write outside root_dir/<stage>/ on Windows.
+                _check_token(entry.get("stage"), "stage")
+            except ChainContractError:
                 raise ChainContractError("manifest: artifact {} invalid stage".format(name))
             self._artifacts[str(name)] = {
                 "stage": entry["stage"], "sha256": entry["sha256"],
@@ -400,8 +421,12 @@ class RunChain:
             raise ChainContractError(
                 "artifact {} already written with a different sha256 "
                 "(artifacts are immutable)".format(artifact_name))
+        target = os.path.join(self.root_dir, stage_name, artifact_name)
+        if not _inside_root(self.root_dir, target):
+            raise ChainContractError(
+                "artifact {} escapes root_dir (contract violation)".format(artifact_name))
         try:
-            _atomic_write(os.path.join(self.root_dir, stage_name, artifact_name), text)
+            _atomic_write(target, text)
         except OSError as exc:
             raise ChainContractError(
                 "artifact {}: cannot write ({})".format(artifact_name, exc)) from exc
@@ -411,6 +436,9 @@ class RunChain:
 
     def _artifact_bytes(self, name: str, entry: Mapping[str, Any]) -> bytes:
         path = os.path.join(self.root_dir, str(entry.get("stage") or ""), name)
+        if not _inside_root(self.root_dir, path):
+            raise ChainContractError(
+                "artifact {}: path escapes root_dir".format(name))
         try:
             with open(path, "rb") as handle:
                 return handle.read()
@@ -501,6 +529,8 @@ class RunChain:
                 return False, "artifact {}: sha256 mismatch".format(name)
             if len(data) != entry["bytes"]:
                 return False, "artifact {}: size mismatch".format(name)
-        if not os.path.exists(self.manifest_path) and self._artifacts:
-            return False, "manifest: missing while artifacts are declared"
+        if not os.path.exists(self.manifest_path) and (self._artifacts or self._seq):
+            # record() always writes the manifest: its disappearance after any
+            # event or artifact is an alteration, never a normal state.
+            return False, "manifest: missing while events or artifacts are declared"
         return True, ""

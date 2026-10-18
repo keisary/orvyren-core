@@ -234,18 +234,27 @@ def build_evidence_packet(journal: AgentJournal, ledger: Any, *,
     run did not observe (defence in depth — the loop already rejects at intake;
     this catches claims arriving from an exported journal). Excluded claims
     are counted in the summary: an exclusion is visible, never silent.
+
+    The provenance ledger is seeded only from **usable** (PROPOSED/ACCEPTED)
+    ``TOOL_RESULT`` / ``OBSERVATION_REF`` lines: a line the journal rejected
+    (e.g. an ``OBSERVATION_REF`` refused for an unobserved ref) must never
+    re-register its invented refs as "observed". For the same reason the
+    packet's ``refs`` list only carries references the ledger confirms —
+    a ref invented by a rejected claim never travels to the critic.
     """
     refs: List[str] = []
     claims: List[Dict[str, Any]] = []
     entries = journal.entries()
     for entry in entries:
-        if entry.kind in ("TOOL_RESULT", "OBSERVATION_REF"):
+        if entry.kind in ("TOOL_RESULT", "OBSERVATION_REF") \
+                and entry.status in ("PROPOSED", "ACCEPTED"):
             ledger.add_many(entry.refs)
     excluded = 0
     for entry in entries:
         for ref in entry.refs:
-            if ref not in refs:
-                refs.append(ref)
+            if ref in refs or ledger.unknown((ref,)):
+                continue
+            refs.append(ref)
         if entry.kind == "REFLECTION" and entry.status in ("PROPOSED", "ACCEPTED"):
             if ledger.unknown(entry.refs):
                 excluded += 1
