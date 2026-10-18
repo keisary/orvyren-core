@@ -25,6 +25,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import os
 import re
 from pathlib import Path
 from typing import Any, Dict, List, Mapping, Optional, Tuple
@@ -38,6 +39,7 @@ __all__ = [
     "E_STORE_IMMUTABLE",
     "E_STORE_CALL_INCOMPLETE",
     "E_STORE_MISSING_BLOB",
+    "E_STORE_HASH_MISMATCH",
 ]
 
 #: A different body was written under an existing content address.
@@ -46,6 +48,8 @@ E_STORE_IMMUTABLE = "E_STORE_IMMUTABLE"
 E_STORE_CALL_INCOMPLETE = "E_STORE_CALL_INCOMPLETE"
 #: A blob addressed by this hash does not exist.
 E_STORE_MISSING_BLOB = "E_STORE_MISSING_BLOB"
+#: A blob's content does not hash to the address used to read it.
+E_STORE_HASH_MISMATCH = "E_STORE_HASH_MISMATCH"
 
 #: Columns every call line MUST carry (the journal's llm accounting, B1 §3.4).
 REQUIRED_CALL_FIELDS: Tuple[str, ...] = (
@@ -108,6 +112,8 @@ class ResponseStore:
 
     def blob_path(self, blob_hash: str) -> Path:
         """Path of the blob addressed by ``blob_hash``."""
+        if not _HASH_RE.match(str(blob_hash or "")):
+            raise ValueError("%s: invalid blob hash" % E_STORE_HASH_MISMATCH)
         return self.blobs_dir / ("%s.txt" % blob_hash)
 
     # -- writes (create-only) ----------------------------------------------
@@ -131,7 +137,9 @@ class ResponseStore:
                     "%s: blobs/%s.txt already exists with different content"
                     % (E_STORE_IMMUTABLE, blob_hash))
             return path
-        path.write_bytes(data)
+        temporary = path.with_name(path.name + ".tmp-%d" % os.getpid())
+        temporary.write_bytes(data)
+        os.replace(temporary, path)
         return path
 
     def record_call(self, entry: Mapping[str, Any]) -> Dict[str, Any]:
@@ -171,11 +179,14 @@ class ResponseStore:
         return found
 
     def get_response(self, response_hash: str) -> str:
-        """The raw answer archived under ``response_hash``."""
+        """The raw answer archived under ``response_hash`` (content verified)."""
         path = self.blob_path(response_hash)
         if not path.exists():
             raise FileNotFoundError("%s: %s" % (E_STORE_MISSING_BLOB, response_hash))
-        return path.read_bytes().decode("utf-8")
+        data = path.read_bytes()
+        if hashlib.sha256(data).hexdigest() != response_hash:
+            raise ValueError("%s: %s" % (E_STORE_HASH_MISMATCH, response_hash))
+        return data.decode("utf-8")
 
     # -- audit --------------------------------------------------------------
     def verify(self) -> Tuple[bool, List[str]]:
@@ -194,6 +205,15 @@ class ResponseStore:
             key = str(entry.get("prompt_hash", ""))
             if key:
                 by_prompt[key] = entry  # last line wins, like find_call
+        for entry in self.calls():
+            for field in ("prompt_hash", "response_hash"):
+                key = str(entry.get(field, "") or "")
+                if not key:
+                    continue
+                if not _HASH_RE.match(key):
+                    problems.append("call %s: invalid %s" % (entry.get("record_id", "?"), field))
+                elif not self.blob_path(key).exists():
+                    problems.append("missing blob for %s: %s" % (field, key))
         for path in sorted(self.blobs_dir.glob("*.txt")):
             name = path.stem
             data = path.read_bytes()

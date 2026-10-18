@@ -78,6 +78,7 @@ only.
 
 from __future__ import annotations
 
+import math
 import time
 from datetime import datetime, timezone
 from typing import Any, Callable, Dict, List, Mapping, Optional, Tuple, Union
@@ -184,10 +185,17 @@ def _resolve_system_prompt(explicit: Optional[str], version: str) -> str:
 def _refuse_widened_budget(budget: contracts.Budget) -> None:
     """A run may tighten the frozen ceilings, never widen them (FREEZE A5)."""
     caps = contracts.DEFAULT_BUDGET_LIMITS
-    widened = sorted(name for name, cap in caps.items()
-                     if float(budget.to_dict().get(name, cap)) > float(cap))
-    if widened:
-        raise ValueError("E_BUDGET_WIDENED: %s above the frozen ceilings" % ", ".join(widened))
+    invalid = []
+    for name, cap in caps.items():
+        try:
+            value = float(budget.to_dict().get(name, cap))
+        except (TypeError, ValueError):
+            invalid.append(name)
+            continue
+        if not math.isfinite(value) or value < 0.0 or value > float(cap):
+            invalid.append(name)
+    if invalid:
+        raise ValueError("E_BUDGET_WIDENED: %s outside the frozen ceilings" % ", ".join(sorted(invalid)))
 
 
 def _merge(target: List[str], values: Any) -> List[str]:
@@ -425,6 +433,26 @@ class BoundedLoop:
                 return False, ["E_TOOL_UNKNOWN: %r is not in the research allow-list" % name]
         return True, []
 
+    def _bound_tool_args(self, task: contracts.ResearchTask) -> Optional[Dict[str, Any]]:
+        """Bind reserved journal fields to this loop, never to model-supplied data."""
+        args = dict(task.args or {})
+        if task.outil != "journal_write":
+            return args
+        if str(args.get("kind") or "REFLECTION") not in ("REFLECTION", "OBSERVATION_REF"):
+            return None
+        for key in ("run_id", "episode_id", "agent_id", "role_version",
+                    "step_index", "ts_utc", "journal_id"):
+            args.pop(key, None)
+        args.update({
+            "run_id": self._run_id,
+            "episode_id": self._case_id,
+            "agent_id": self._agent_id,
+            "role_version": self._prompt_version,
+            "step_index": self._step,
+            "ts_utc": self._clock.now_iso(),
+        })
+        return args
+
     # -- (b) EXECUTING -----------------------------------------------------
     def _execute(self, task: contracts.ResearchTask
                  ) -> Union[contracts.ToolResult, contracts.LoopOutcome, None]:
@@ -450,7 +478,13 @@ class BoundedLoop:
             self._usage.spend_tool()
             started = self._clock.monotonic()
             try:
-                result = tool.run(dict(task.args or {}), deadline_s=deadline)
+                call_args = self._bound_tool_args(task)
+                if call_args is None:
+                    result = contracts.ToolResult(
+                        ok=False, status="FAILED",
+                        error="E_TOOL_ARGS_RESERVED:journal_write")
+                else:
+                    result = tool.run(call_args, deadline_s=deadline)
             except Exception as exc:  # a tool failure is data, never a crash
                 result = contracts.ToolResult(
                     ok=False, status="FAILED",
@@ -665,14 +699,17 @@ class BoundedLoop:
         """
         fields: Dict[str, Any] = {"prompt_hash": result.prompt_hash,
                                   "response_hash": result.response_hash}
+        # Provenance is part of the identity of every LLM-origin line, not
+        # only the accounting line: B3 R1 gives ALL LLM-proposed branches zero
+        # weight. Tokens/cost stay on exactly one line.
+        if result.prompt_hash and result.response_hash:
+            fields["llm"] = {"provider": result.provider, "model": result.model,
+                             "model_version_pinned": result.model_version_pinned,
+                             "temperature": result.temperature}
         if accounting:
             fields.update({"tokens_in": result.tokens_in, "tokens_out": result.tokens_out,
                            "cached_in": result.cached_in, "cost_usd": result.cost_usd,
                            "latency_ms": result.latency_ms})
-            if result.prompt_hash and result.response_hash:
-                fields["llm"] = {"provider": result.provider, "model": result.model,
-                                 "model_version_pinned": result.model_version_pinned,
-                                 "temperature": result.temperature}
         return fields
 
     def _journal_llm_line(self, kind: str, content: str,

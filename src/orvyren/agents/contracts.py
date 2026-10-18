@@ -516,7 +516,7 @@ CANON_EXTRACTIONS: Tuple[str, ...] = ("OK", "ABSENT", "AMBIGU")
 #: Instruction-like patterns (FR/EN) flagged by :func:`scan_untrusted_flags`.
 #: Detection is a VISIBLE journal flag, never a filter that silently drops.
 _INJECTION_PATTERNS: Tuple[Tuple[str, str], ...] = (
-    ("override_instructions", r"(?i)(ignore\s+(all\s+)?(previous|prior)instructions"
+    ("override_instructions", r"(?i)(ignore\s+(all\s+)?(previous|prior)\s+instructions"
                                 r"|ignore[sz]?\s+les\s+instructions|oublie\s+les\s+instructions)"),
     ("action_tool_mention", r"(?i)(execute_intent|execute_tx|transfer|virement|"
                             r"0x[0-9a-fA-F]{40})"),
@@ -540,7 +540,9 @@ def wrap_untrusted(text: str, source_url: str = "") -> str:
     its origin, so the system prompts can state that the delimited content is
     UNTRUSTED DATA, never an instruction (B1 §5.6)."""
     source = " source=%r" % (source_url,) if source_url else ""
-    return "%s%s\n%s\n%s" % (UNTRUSTED_OPEN, source, str(text), UNTRUSTED_CLOSE)
+    body = str(text).replace(UNTRUSTED_OPEN, "[UNTRUSTED-CONTENT-OPEN]")
+    body = body.replace(UNTRUSTED_CLOSE, "[UNTRUSTED-CONTENT-CLOSE]")
+    return "%s%s\n%s\n%s" % (UNTRUSTED_OPEN, source, body, UNTRUSTED_CLOSE)
 
 
 def scan_untrusted_flags(text: str) -> List[str]:

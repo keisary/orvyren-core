@@ -165,9 +165,14 @@ def apply_fragility_rule(outcome: dict, critique: dict) -> dict:
     """
     verdict = str((critique or {}).get("verdict_lecture", ""))
     findings = (critique or {}).get("findings") or []
+    quarantined = str((critique or {}).get("$status", "")) == "QUARANTINED"
     bloquant = any(str(f.get("gravite", "")) == "BLOQUANT" for f in findings
                    if isinstance(f, dict))
     escalation = None
+    if quarantined:
+        outcome = dict(outcome, inconclusive=True)
+        return {"outcome": outcome, "escalation": "REQUIRE_APPROVAL",
+                "verdict": verdict or "ABSENTE"}
     if verdict in ("FRAGILE", "INCOHERENTE") or bloquant:
         escalation = "REQUIRE_APPROVAL"
     if verdict == "INCOHERENTE" or bloquant:

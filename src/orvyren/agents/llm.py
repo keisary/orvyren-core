@@ -514,10 +514,16 @@ class LiveBackend(contracts.LLMBackend):
                 usage = envelope["usage"]
         if not isinstance(message, Mapping):
             return self._record_failure(ctx, str(text), "E_LLM_BAD_RESPONSE", meta)
-        tokens_in = int(usage.get("prompt_tokens") or 0)
-        cached_in = int(usage.get("prompt_cache_hit_tokens") or 0)
-        tokens_out = int(usage.get("completion_tokens") or 0)
-        cost_usd = compute_cost(model_cfg, tokens_in, cached_in, tokens_out)
+        try:
+            tokens_in = int(usage.get("prompt_tokens") or 0)
+            cached_in = int(usage.get("prompt_cache_hit_tokens") or 0)
+            tokens_out = int(usage.get("completion_tokens") or 0)
+            if min(tokens_in, cached_in, tokens_out) < 0:
+                raise ValueError("negative token count")
+            cost_usd = compute_cost(model_cfg, tokens_in, cached_in, tokens_out)
+        except (TypeError, ValueError, OverflowError) as exc:
+            return self._record_failure(ctx, str(text),
+                                        "E_LLM_BAD_USAGE: %s" % type(exc).__name__, meta)
         latency_ms = int(round((self.clock() - ctx["t_start"]) * 1000.0))
         native_calls = parse_tool_calls(message.get("tool_calls"))
         if native_calls:
@@ -839,12 +845,20 @@ class ToolTurnRunner:
         refs = refs_from_observations(result.observations)
         if not refs:
             return
+        payload = contracts.canonical_json(
+            {"name": call.name, "args": call.args,
+             "observations": list(result.observations)})
+        digest = hashlib.sha256(payload.encode("utf-8")).hexdigest()[:16]
+        base_id = "mem-%s-%s" % (self.agent_id, call.call_id)
+        memory_id = base_id
+        try:
+            existing = self.memory.refs_of(base_id)
+        except Exception:
+            existing = ()
+        if existing:
+            memory_id = "%s-%s" % (base_id, digest)
         self.memory.remember(
-            "mem-%s-%s" % (self.agent_id, call.call_id),
-            contracts.canonical_json(
-                {"name": call.name, "args": call.args,
-                 "observations": list(result.observations)}),
-            refs, kind="TOOL_RESULT")
+            memory_id, payload, refs, kind="TOOL_RESULT")
 
     # -- one tooled turn ---------------------------------------------------
     def run_turn(self, *, role: str, role_version: str, schema_id: str,

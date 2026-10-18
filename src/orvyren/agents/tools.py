@@ -284,6 +284,10 @@ class ComputeSignalTool:
             return _no_data()
         if "value" not in row:
             return _no_data()
+        value = row.get("value")
+        if value is None or isinstance(value, bool) or (
+                isinstance(value, str) and not value.strip()):
+            return _no_data()
         return contracts.ToolResult(ok=True, status="OK", observations=(dict(row),))
 
 
