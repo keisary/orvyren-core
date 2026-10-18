@@ -30,6 +30,7 @@ ORVYREN est un système d'agents qui transforme des signaux financiers publics e
 | `AUDIT_PROMPT.md` | prompt d'audit externe (outil interne — pas une pièce de soumission) |
 | `docs/GRAPH_A_V3_RESULTS_2026-10-17.md` | mesures du slice graphe |
 | `docs/RAPPORT_10H_2026-10-17.md` | rapport d'exécution de la session 10 h |
+| `docs/CODE_REVIEW_2026-10-17.md` | revue de code et corrections de bugs |
 
 ## Démarrage rapide
 
