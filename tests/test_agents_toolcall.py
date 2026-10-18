@@ -23,6 +23,7 @@ Execution: ``python -m pytest tests/test_agents_toolcall.py -q``
 
 import json
 import os
+import shutil
 import sys
 import tempfile
 import unittest
@@ -218,6 +219,7 @@ class TestParseToolCalls(unittest.TestCase):
 class TestNativeTurn(unittest.TestCase):
     def setUp(self):
         self.store_dir = tempfile.mkdtemp(prefix="orvyren-toolcall-")
+        self.addCleanup(shutil.rmtree, self.store_dir, True)
         self.config = load_models_config()
         self.store = ResponseStore(self.store_dir)
 
@@ -282,6 +284,7 @@ class TestNativeTurn(unittest.TestCase):
 class TestStrictJsonFallback(unittest.TestCase):
     def setUp(self):
         self.store_dir = tempfile.mkdtemp(prefix="orvyren-toolcall-")
+        self.addCleanup(shutil.rmtree, self.store_dir, True)
         self.config = load_models_config()
         self.store = ResponseStore(self.store_dir)
 

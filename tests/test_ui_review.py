@@ -21,6 +21,7 @@ import hashlib
 import json
 import os
 import re
+import shutil
 import sys
 import tempfile
 import unittest
@@ -56,6 +57,7 @@ class TestReadersNeverRaise(unittest.TestCase):
 
     def test_screen_1_without_replay_journal_renders_honestly(self):
         tmp = tempfile.mkdtemp(prefix="orvyren-review-")
+        self.addCleanup(shutil.rmtree, tmp, True)
         ctx = screens.Ctx(_ROOT, tmp)
         body = screens.build_screen(1, ctx).decode("utf-8")
         self.assertNotIn("RENDER ERROR", body)
@@ -66,6 +68,7 @@ class TestReadersNeverRaise(unittest.TestCase):
 class TestNoNoneLeaks(unittest.TestCase):
     def setUp(self):
         self.tmp = tempfile.mkdtemp(prefix="orvyren-review-")
+        self.addCleanup(shutil.rmtree, self.tmp, True)
         self.ctx = screens.Ctx(_ROOT, self.tmp)
         _write_json(os.path.join(self.tmp, "decision_record_usdc-2023-03.json"), {
             "case": None,
@@ -92,6 +95,7 @@ class TestNoNoneLeaks(unittest.TestCase):
 class TestRdofTraceFields(unittest.TestCase):
     def test_trace_uses_the_record_keys(self):
         tmp = tempfile.mkdtemp(prefix="orvyren-review-")
+        self.addCleanup(shutil.rmtree, tmp, True)
         ctx = screens.Ctx(_ROOT, tmp)
         _write_json(os.path.join(tmp, "decision_record_usdc-2023-03.json"), {
             "case": "trace-case",
@@ -109,6 +113,7 @@ class TestRdofTraceFields(unittest.TestCase):
 
     def test_unknown_trace_shape_falls_back_to_raw_step(self):
         tmp = tempfile.mkdtemp(prefix="orvyren-review-")
+        self.addCleanup(shutil.rmtree, tmp, True)
         ctx = screens.Ctx(_ROOT, tmp)
         _write_json(os.path.join(tmp, "decision_record_usdc-2023-03.json"), {
             "case": "trace-case",
@@ -121,6 +126,7 @@ class TestRdofTraceFields(unittest.TestCase):
 class TestPanelsBannerStaysOnSource(unittest.TestCase):
     def test_replay_banner_never_borrows_fixture_values(self):
         tmp = tempfile.mkdtemp(prefix="orvyren-review-")
+        self.addCleanup(shutil.rmtree, tmp, True)
         evidence = os.path.join(tmp, "evidence")
         os.makedirs(evidence, exist_ok=True)
         _write_json(os.path.join(evidence, "ui_snapshot.json"),
@@ -145,6 +151,7 @@ class TestPanelsBannerStaysOnSource(unittest.TestCase):
 
     def test_data_mode_prefers_the_data_stamp(self):
         tmp = tempfile.mkdtemp(prefix="orvyren-review-")
+        self.addCleanup(shutil.rmtree, tmp, True)
         evidence = os.path.join(tmp, "evidence")
         os.makedirs(evidence, exist_ok=True)
         _write_json(os.path.join(evidence, "ui_snapshot.json"),
@@ -169,6 +176,7 @@ class TestCaseTokenSanitised(unittest.TestCase):
 class TestSelfHashField(unittest.TestCase):
     def test_zero_run_in_input_data_cannot_hijack_the_self_hash(self):
         tmp = tempfile.mkdtemp(prefix="orvyren-review-")
+        self.addCleanup(shutil.rmtree, tmp, True)
         zero_run = "0" * 64
         decision_path = os.path.join(tmp, "decision_hashcase.json")
         _write_json(decision_path, {

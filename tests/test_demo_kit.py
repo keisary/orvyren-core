@@ -324,7 +324,8 @@ class TestJournal(unittest.TestCase):
         journal = common.Journal(self.path, run_id="01RUN", episode="rseth")
         journal.append("INTENT", payload={"amount": "50.0"})
         journal.append("POLICY", payload={"verdict": "ALLOW"})
-        lines = open(self.path, "r", encoding="utf-8").read().splitlines()
+        with open(self.path, "r", encoding="utf-8") as handle:
+            lines = handle.read().splitlines()
         lines[0] = lines[0].replace('"50.0"', '"99.9"')
         with open(self.path, "w", encoding="utf-8") as handle:
             handle.write("\n".join(lines) + "\n")
@@ -338,7 +339,8 @@ class TestJournal(unittest.TestCase):
         journal = common.Journal(self.path, run_id="01RUN", episode="rseth")
         journal.append("INTENT", payload={"amount": "50.0"})
         journal.append("POLICY", payload={"verdict": "ALLOW"})
-        lines = open(self.path, "r", encoding="utf-8").read().splitlines()
+        with open(self.path, "r", encoding="utf-8") as handle:
+            lines = handle.read().splitlines()
         record = json.loads(lines[0].replace('"50.0"', '"99.9"'))
         record.pop("record_hash")
         record["record_hash"] = common.sha256_hex(common.canonical_json(record).encode("utf-8"))
@@ -524,7 +526,9 @@ class TestRunsDryRun(TempSessionMixin, unittest.TestCase):
         # journal: recomputed chain OK and no key
         report = ctx.journal.verify()
         self.assertTrue(report["ok"], report["errors"])
-        raw = open(os.path.join(ctx.session_dir, "audit.jsonl"), "r", encoding="utf-8").read()
+        with open(os.path.join(ctx.session_dir, "audit.jsonl"), "r",
+                  encoding="utf-8") as handle:
+            raw = handle.read()
         for forbidden in ("private_key", "PRIVATE_KEY=", "mnemonic", "0x" + "ab" * 32):
             self.assertNotIn(forbidden, raw)
 
@@ -1019,7 +1023,8 @@ class TestKitConstraints(unittest.TestCase):
         for name in sorted(os.listdir(DEMO_DIR)):
             if not name.endswith(".py") or name == "signer.py":
                 continue
-            source = open(os.path.join(DEMO_DIR, name), "r", encoding="utf-8").read()
+            with open(os.path.join(DEMO_DIR, name), "r", encoding="utf-8") as handle:
+                source = handle.read()
             for module in self.NON_STDLIB:
                 self.assertNotIn("import {}".format(module), source,
                                  "{} imports {}".format(name, module))
@@ -1041,7 +1046,9 @@ class TestKitConstraints(unittest.TestCase):
             self.assertIn("usage", run.stdout.lower())
 
     def test_config_example_has_empty_private_key(self):
-        text = open(os.path.join(DEMO_DIR, "config.example.env"), "r", encoding="utf-8").read()
+        with open(os.path.join(DEMO_DIR, "config.example.env"), "r",
+                  encoding="utf-8") as handle:
+            text = handle.read()
         self.assertIn("ORVYREN_PRIVATE_KEY=\n", text)
 
 

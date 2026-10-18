@@ -97,13 +97,16 @@ class TestWriteDir(unittest.TestCase):
                 digest, name = line.split()
                 with open(os.path.join(self.out, name), "rb") as artefact:
                     self.assertEqual(hashlib.sha256(artefact.read()).hexdigest(), digest)
-        snapshot = json.load(open(paths["snapshot"], encoding="utf-8"))
+        with open(paths["snapshot"], encoding="utf-8") as handle:
+            snapshot = json.load(handle)
         self.assertEqual(snapshot["snapshot_hash"], paths["snapshot_hash"])
         # byte-identical re-export (determinism)
-        first = open(paths["snapshot"], "rb").read()
+        with open(paths["snapshot"], "rb") as handle:
+            first = handle.read()
         write_snapshot_dir(load_case("steth_2022-06"), "steth-2022-06",
                            "2022-06-16T00:00:00Z", self.out)
-        self.assertEqual(open(paths["snapshot"], "rb").read(), first)
+        with open(paths["snapshot"], "rb") as handle:
+            self.assertEqual(handle.read(), first)
 
 
 if __name__ == "__main__":

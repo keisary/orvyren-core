@@ -145,7 +145,8 @@ class TestPolicyV1Bundle(unittest.TestCase):
 
     def test_yaml_modifie_change_empreinte(self):
         bundle = load_policy(POLICY_PATH, RECIPIENTS)
-        text = open(POLICY_PATH, encoding="utf-8").read()
+        with open(POLICY_PATH, encoding="utf-8") as handle:
+            text = handle.read()
         with tempfile.TemporaryDirectory() as tmp:
             tampered = os.path.join(tmp, "policy_v1.yaml")
             with open(tampered, "w", encoding="utf-8") as handle:

@@ -42,8 +42,10 @@ class ReplayDeterminismTest(unittest.TestCase):
         self.assertEqual(len(set(report["hashes"])), 1)
 
     def test_replay_k_rejects_invalid_k(self):
+        bad_root = tempfile.mkdtemp(prefix="orvyren_replay_bad_")
+        self.addCleanup(shutil.rmtree, bad_root, True)
         with self.assertRaises(journal_mod.ReplayJournalError):
-            journal_mod.replay_k(CASE, tempfile.mkdtemp(prefix="orvyren_replay_bad_"), k=0)
+            journal_mod.replay_k(CASE, bad_root, k=0)
 
     def test_episode_payload_must_be_an_object(self):
         handle, path = tempfile.mkstemp(prefix="orvyren_episode_", suffix=".json")

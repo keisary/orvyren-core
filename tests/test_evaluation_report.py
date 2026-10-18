@@ -99,10 +99,11 @@ class EvaluationReportTest(unittest.TestCase):
                      "DEV freeze absent")
 class MurphyWithinBinRegressionTest(unittest.TestCase):
     def test_real_dev_vector_exact_identity(self):
-        forecasts = [json.loads(line) for line in open(FORECASTS, encoding="utf-8")
-                     if line.strip()]
-        outcomes = {json.loads(line)["forecast_id"]: json.loads(line)
-                    for line in open(OUTCOMES, encoding="utf-8") if line.strip()}
+        with open(FORECASTS, encoding="utf-8") as handle:
+            forecasts = [json.loads(line) for line in handle if line.strip()]
+        with open(OUTCOMES, encoding="utf-8") as handle:
+            outcomes = {json.loads(line)["forecast_id"]: json.loads(line)
+                        for line in handle if line.strip()}
         p = [record["p"] for record in forecasts]
         y = [outcomes[record["forecast_id"]]["y"] for record in forecasts]
         decomposition = calibration_mod.murphy_decomposition(p, y)

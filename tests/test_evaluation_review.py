@@ -71,9 +71,14 @@ class TestHourFloorNaiveIsUtc(unittest.TestCase):
                          datetime(2023, 3, 9, 5, 0, tzinfo=timezone.utc))
 
     def test_hour_floor_offset_aware_still_converted(self):
-        offset = datetime(2023, 3, 9, 7, 30, tzinfo=timezone(timedelta(hours=2)))
-        self.assertEqual(checks.hour_floor(offset),
-                         datetime(2023, 3, 9, 5, 0, tzinfo=timezone.utc))
+        # Offset à demi-heure : l'assertion est discriminante. Arrondir dans le
+        # fuseau local donnerait 01:30 UTC, convertir d'abord donne 02:00 UTC —
+        # avec un offset entier les deux coïncidaient (identité tautologique).
+        offset = datetime(2023, 3, 9, 7, 45,
+                          tzinfo=timezone(timedelta(hours=5, minutes=30)))
+        floored = checks.hour_floor(offset)
+        self.assertEqual(floored, datetime(2023, 3, 9, 2, 0, tzinfo=timezone.utc))
+        self.assertEqual(floored.utcoffset(), timedelta(0))  # normalisé en UTC
 
 
 class TestB0QuantileConvention(unittest.TestCase):

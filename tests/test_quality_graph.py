@@ -9,7 +9,6 @@ failure message carries the measured value.
 Execution: ``python -m unittest discover -s tests -v``
 """
 
-import copy
 import csv
 import os
 import sqlite3
@@ -450,16 +449,36 @@ class TestSnapshotAndFingerprints(unittest.TestCase):
     def test_observation_fingerprint_is_stable(self):
         observations, _ = real_corpus()
         observation = observations[0]
-        same = copy.deepcopy(observation)
+
+        def build(**overrides):
+            fields = {"venue": observation.venue, "metric": observation.metric,
+                      "ts_event": observation.ts_event, "value": observation.value,
+                      "extra": observation.extra,
+                      "retrieved_at": observation.retrieved_at,
+                      "source_id": observation.source_id}
+            fields.update(overrides)
+            return normalize.Observation(**fields)
+
+        # A separately built observation with the same field values carries the
+        # same content id (a deepcopy of the same object compared the
+        # fingerprint with itself and proved nothing).
         self.assertEqual(models.observation_fingerprint(observation),
-                         models.observation_fingerprint(same))
-        different = normalize.Observation(
-            venue=observation.venue, metric=observation.metric,
-            ts_event=observation.ts_event + timedelta(hours=1),
-            value=observation.value, extra=observation.extra,
-            retrieved_at=observation.retrieved_at, source_id=observation.source_id)
-        self.assertNotEqual(models.observation_fingerprint(observation),
-                            models.observation_fingerprint(different))
+                         models.observation_fingerprint(build()))
+        # Every field is part of the content id: changing any single one
+        # changes the fingerprint.
+        for field, changed in (
+                ("venue", {"venue": observation.venue + "#2"}),
+                ("metric", {"metric": observation.metric + "#2"}),
+                ("ts_event", {"ts_event": observation.ts_event + timedelta(hours=1)}),
+                ("value", {"value": observation.value + 1.0}),
+                ("extra", {"extra": (observation.extra or "") + "#2"}),
+                ("retrieved_at", {"retrieved_at": observation.retrieved_at + "#2"}),
+                ("source_id", {"source_id": observation.source_id + "#2"}),
+        ):
+            self.assertNotEqual(
+                models.observation_fingerprint(observation),
+                models.observation_fingerprint(build(**changed)),
+                "field %s must be part of the observation fingerprint" % field)
 
     def test_snapshot_hash_is_stable_across_stores(self):
         with self._store_with_one_claim() as first, self._store_with_one_claim() as second:

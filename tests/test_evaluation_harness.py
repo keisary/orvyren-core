@@ -95,7 +95,9 @@ class HarnessDevTest(unittest.TestCase):
             harness.run_set("dev", frozen_dir=empty)
 
     def test_eval_lock_refuses_second_run(self):
-        lock = os.path.join(tempfile.mkdtemp(prefix="orvyren_lock_"), "eval_run.lock")
+        lock_dir = tempfile.mkdtemp(prefix="orvyren_lock_")
+        self.addCleanup(shutil.rmtree, lock_dir, True)
+        lock = os.path.join(lock_dir, "eval_run.lock")
         with open(lock, "w", encoding="utf-8") as handle:
             handle.write("# already executed\n")
         with self.assertRaises(windows_mod.FreezeGateError):
@@ -109,7 +111,9 @@ class HarnessDevTest(unittest.TestCase):
             set_label="eval", kind="calme",
             start_utc="2025-01-05T00:00:00Z", end_utc="2025-01-20T00:00:00Z",
             sources=("inexistant.json",), role="test window (never used in a real run)")
-        lock = os.path.join(tempfile.mkdtemp(prefix="orvyren_xcal_"), "absent.lock")
+        lock_dir = tempfile.mkdtemp(prefix="orvyren_xcal_")
+        self.addCleanup(shutil.rmtree, lock_dir, True)
+        lock = os.path.join(lock_dir, "absent.lock")
         with mock.patch.object(windows_mod, "EVAL_WINDOWS", (synthetic,)):
             with self.assertRaises(harness.HarnessError) as caught:
                 harness.run_set("eval", calibration_periods=["2025-01"], lock_path=lock)

@@ -17,15 +17,18 @@ Execution: ``python -m pytest tests/test_agents_e2e.py -q``
 
 import json
 import os
+import shutil
 import sqlite3
 import sys
 import tempfile
 import unittest
+from unittest import mock
 
 _ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, os.path.join(_ROOT, "src"))
 
 from orvyren.agents import contracts  # noqa: E402
+from orvyren.agents import llm as llm_mod  # noqa: E402
 from orvyren.agents.graph_tools import build_graph_registry, graph_tool_specs  # noqa: E402
 from orvyren.agents.journal import AgentJournal  # noqa: E402
 from orvyren.agents.llm import (  # noqa: E402
@@ -105,7 +108,9 @@ class FakeHTTP:
     def __init__(self, script):
         self.script = list(script)
 
-    def __call__(self, url, headers, body_bytes, timeout):
+    def __call__(self, url, headers=None, body_bytes=None, timeout=None):
+        # Defaults so the fake can also be wired over urllib.request.urlopen:
+        # with an empty script ANY call (whatever its shape) raises.
         if not self.script:
             raise AssertionError("E_FAKE_HTTP: no scripted response left")
         return self.script.pop(0)
@@ -119,6 +124,7 @@ FINAL = json.dumps({"$schema": "orvyren/decision-draft/v1",
 class TestEndToEndOffline(unittest.TestCase):
     def setUp(self):
         self.tmp = tempfile.mkdtemp(prefix="orvyren-e2e-")
+        self.addCleanup(shutil.rmtree, self.tmp, True)
         self.db = os.path.join(self.tmp, "graph_e2e.sqlite")
         build_db(self.db)
         self.config = load_models_config()
@@ -171,16 +177,21 @@ class TestEndToEndOffline(unittest.TestCase):
                          ("rel:e2e:1", "event:eip155:8453:0xeee:1"))
         self.assertEqual(memory.refs_of("mem-e2e-call-1"), ())
 
-        # 4 — replay: bit-identical turn through RecordedBackend.
+        # 4 — replay: bit-identical turn through RecordedBackend. The fake
+        # transport is now WIRED over the network doors (it used to be built
+        # and never used): with an empty script any call raises E_FAKE_HTTP,
+        # so a green replay proves the turn comes from the recorded store only.
         replay_http = FakeHTTP([])  # aucun réseau pendant le rejeu
-        replay_backend = RecordedBackend(self.store, config=self.config)
-        replay_registry = build_graph_registry(db=self.db)
-        replay_turn = ToolTurnRunner(replay_backend, replay_registry,
-                                     agent_id="e2e").run_turn(
-            role="orchestrator", role_version="e2e/v1",
-            schema_id="orvyren/decision-draft/v1",
-            system_prompt="E2E.", payload={"question": "exposition"},
-            tool_specs=graph_tool_specs())
+        with mock.patch.object(llm_mod, "_urllib_post", replay_http), \
+                mock.patch("urllib.request.urlopen", replay_http):
+            replay_backend = RecordedBackend(self.store, config=self.config)
+            replay_registry = build_graph_registry(db=self.db)
+            replay_turn = ToolTurnRunner(replay_backend, replay_registry,
+                                         agent_id="e2e").run_turn(
+                role="orchestrator", role_version="e2e/v1",
+                schema_id="orvyren/decision-draft/v1",
+                system_prompt="E2E.", payload={"question": "exposition"},
+                tool_specs=graph_tool_specs())
         self.assertEqual(replay_turn.to_dict(), turn.to_dict())
         self.assertEqual(replay_http.script, [])  # rien consommé, tout rejoué
 

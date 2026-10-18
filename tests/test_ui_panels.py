@@ -12,6 +12,7 @@ Execution: ``python -m pytest tests/test_ui_panels.py -q``
 
 import json
 import os
+import shutil
 import sys
 import tempfile
 import threading
@@ -82,6 +83,10 @@ class PanelsFixture(unittest.TestCase):
         cls.evidence = os.path.join(cls.tmp, "evidence")
         os.makedirs(cls.evidence, exist_ok=True)
         cls.ctx = FakeCtx(cls.evidence)
+
+    @classmethod
+    def tearDownClass(cls):
+        shutil.rmtree(cls.tmp, ignore_errors=True)
 
 
 class TestSourceResolution(PanelsFixture):
@@ -177,6 +182,7 @@ class TestServerRoutes(PanelsFixture):
         cls.httpd.shutdown()
         cls.httpd.server_close()
         cls.thread.join(timeout=10)
+        super().tearDownClass()
 
     def _get(self, path):
         with urllib.request.urlopen(

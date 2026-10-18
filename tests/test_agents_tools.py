@@ -252,8 +252,11 @@ class FixtureToolsTest(unittest.TestCase):
         self.assertEqual(self.journal.entries()[-1].status, "QUARANTINED")
 
     def test_the_committed_run_inputs_follow_this_exact_schema(self):
-        if not os.path.exists(COMMITTED_INPUTS):
-            self.skipTest("committed run inputs absent")
+        # Committed fixture (P2 harness review): run_inputs.json ships in the
+        # repo, so its absence is a broken checkout and FAILS here — it never
+        # silently skips the schema check.
+        self.assertTrue(os.path.exists(COMMITTED_INPUTS),
+                        "committed run inputs missing: %s" % COMMITTED_INPUTS)
         with open(COMMITTED_INPUTS, "r", encoding="utf-8") as handle:
             payload = json.load(handle)
         committed = payload["tool_fixtures"]

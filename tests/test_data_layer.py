@@ -76,13 +76,20 @@ WORST_DISCOUNT_BPS_1_STETH = 618.5454112860477
 
 
 def load_fixture(name, *directories):
-    """Read a JSON fixture: search the given dirs, then research/, then the repo root."""
+    """Read a JSON fixture: search the given dirs, then raw_w2a, raw_w2b, then the repo root.
+
+    Committed data (P2 harness review): a missing fixture is a broken checkout
+    and FAILS the test loudly — it never silently skips it.
+    """
     for directory in list(directories) + [RAW_W2A, RAW_W2B, ROOT]:
         candidate = os.path.join(directory, name)
         if os.path.isfile(candidate):
             with open(candidate, "r", encoding="utf-8") as handle:
                 return json.load(handle)
-    raise unittest.SkipTest(f"fixture {name} not found (looked in {directories}, raw_w2a, raw_w2b)")
+    raise AssertionError(
+        "committed fixture %s missing (looked in %s, %s, %s, %s) — checkout "
+        "broken or fixture not committed"
+        % (name, ", ".join(directories) or ".", RAW_W2A, RAW_W2B, ROOT))
 
 
 def abi_uint(value):

@@ -59,9 +59,13 @@ class TestMaBProcesses(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
+        # Committed fixture (P2 harness review): its absence is a broken
+        # checkout, never a silent skip — the store ships in the repo, so this
+        # class always runs and fails loudly if the data is missing.
         if not os.path.exists(os.path.join(STORE, "calls.jsonl")):
-            raise unittest.SkipTest("scripted store missing — run "
-                                    "scripts/agents_seed_demo.py --case %s" % CASE)
+            raise AssertionError(
+                "scripted store missing: %s — checkout broken, regenerate with "
+                "scripts/agents_seed_demo.py --case %s" % (STORE, CASE))
 
     def setUp(self):
         self.session = tempfile.mkdtemp(prefix="orvyren_mab_")
@@ -69,10 +73,12 @@ class TestMaBProcesses(unittest.TestCase):
 
     def test_two_processes_two_agent_ids(self):
         final, run_dir, _ = _run_once(self.session)
-        done_orch = json.load(open(os.path.join(run_dir, "worker_done_orchestrator.json"),
-                                   encoding="utf-8"))
-        done_crit = json.load(open(os.path.join(run_dir, "worker_done_critic.json"),
-                                   encoding="utf-8"))
+        with open(os.path.join(run_dir, "worker_done_orchestrator.json"),
+                  encoding="utf-8") as handle:
+            done_orch = json.load(handle)
+        with open(os.path.join(run_dir, "worker_done_critic.json"),
+                  encoding="utf-8") as handle:
+            done_crit = json.load(handle)
         self.assertNotEqual(done_orch["pid"], done_crit["pid"],
                             "the two roles must run in SEPARATE PROCESSES")
         orch_entries = worker_mod.load_journal(os.path.join(run_dir, "journal_orchestrator.jsonl"))

@@ -15,6 +15,7 @@ Execution: ``python -m pytest tests/test_agents_graph_tools.py -q``
 
 import json
 import os
+import shutil
 import sqlite3
 import sys
 import tempfile
@@ -102,6 +103,10 @@ class GraphToolsFixture(unittest.TestCase):
         cls.tmp = tempfile.mkdtemp(prefix="orvyren-graph-tools-")
         cls.db = os.path.join(cls.tmp, "graph_test.sqlite")
         build_db(cls.db)
+
+    @classmethod
+    def tearDownClass(cls):
+        shutil.rmtree(cls.tmp, ignore_errors=True)
 
     def tool(self, cls):
         return cls(db=self.db)

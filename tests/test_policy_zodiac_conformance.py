@@ -111,7 +111,8 @@ class TestDriftCli(unittest.TestCase):
                 cwd=ROOT, capture_output=True, text=True, timeout=120)
             self.assertEqual(run.returncode, 0, run.stderr)
             self.assertEqual(run.stdout.strip(), "PASS")
-            report = json.load(open(out, encoding="utf-8"))
+            with open(out, encoding="utf-8") as handle:
+                report = json.load(handle)
             self.assertEqual(report["schema"], "orvyren-envelope-drift-report/v1")
             self.assertEqual(report["mode"], "offline")
             self.assertFalse(report["safe_mode"])
@@ -131,14 +132,16 @@ class TestDriftCli(unittest.TestCase):
                 cwd=ROOT, capture_output=True, text=True, timeout=120)
             self.assertEqual(run.returncode, 2, run.stderr)
             self.assertEqual(run.stdout.strip(), "DRIFT")
-            report = json.load(open(out, encoding="utf-8"))
+            with open(out, encoding="utf-8") as handle:
+                report = json.load(handle)
             self.assertTrue(report["safe_mode"])
             self.assertIn("D7", report["safe_mode_reasons"])
 
     def test_cli_fixture_schema_invalide(self):
         with tempfile.TemporaryDirectory() as tmp:
             bad = os.path.join(tmp, "bad.json")
-            json.dump({"schema": "autre"}, open(bad, "w", encoding="utf-8"))
+            with open(bad, "w", encoding="utf-8") as handle:
+                json.dump({"schema": "autre"}, handle)
             run = subprocess.run(
                 [sys.executable, "scripts/run_drift_check.py", "--offline", "--fixture", bad],
                 cwd=ROOT, capture_output=True, text=True, timeout=120)
