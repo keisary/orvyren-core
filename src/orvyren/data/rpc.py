@@ -171,9 +171,14 @@ class HttpTransport:
         parts = urllib.parse.urlsplit(url)
         if parts.scheme not in ("http", "https"):
             raise ValueError(f"unsupported endpoint scheme in {url!r}")
+        if parts.username or parts.password:
+            raise ValueError("endpoint URL must not embed credentials")
         factory = http.client.HTTPSConnection if parts.scheme == "https" else http.client.HTTPConnection
         connection = factory(parts.netloc, timeout=timeout)
-        return connection, parts.path or "/"
+        path = parts.path or "/"
+        if parts.query:
+            path += "?" + parts.query
+        return connection, path
 
     def close(self) -> None:
         """Drop every cached connection."""
@@ -256,6 +261,8 @@ def encode_int(value: int) -> str:
         if number < -(1 << 255):
             raise ValueError("encode_int underflow: value does not fit in int256")
         number += 1 << 256
+    elif number >= 1 << 255:
+        raise ValueError("encode_int overflow: value does not fit in int256")
     if number >= 1 << 256:
         raise ValueError("encode_int overflow: value does not fit in int256")
     return f"{number:064x}"
@@ -346,7 +353,12 @@ class ArchiveRpc:
         transport: Optional[Transport] = None,
         user_agent: Optional[str] = None,
     ) -> None:
-        self.urls: Tuple[str, ...] = tuple(urls) if urls else DEFAULT_RPC_URLS
+        if urls is None:
+            self.urls = tuple(DEFAULT_RPC_URLS)
+        elif isinstance(urls, str):
+            self.urls = (urls,)
+        else:
+            self.urls = tuple(urls)
         if not self.urls:
             raise ValueError("ArchiveRpc needs at least one endpoint URL")
         self.timeout = float(timeout)
@@ -441,13 +453,21 @@ class ArchiveRpc:
             raise ValueError(f"invalid contract address: {to!r}")
         if not isinstance(data, str) or not data.startswith("0x"):
             raise ValueError(f"invalid calldata: {data!r}")
-        return str(self.call("eth_call", [{"to": to, "data": data}, self._block_tag(block)]))
+        result = self.call("eth_call", [{"to": to, "data": data}, self._block_tag(block)])
+        if not isinstance(result, str) or not result.startswith("0x"):
+            raise RpcError(f"eth_call({to}) returned {result!r}")
+        return result
 
     def get_code(self, address: str, block: Any = "latest") -> str:
         """Contract bytecode at ``block`` (``0x`` when no code is deployed there)."""
         if not is_address(address):
             raise ValueError(f"invalid contract address: {address!r}")
-        return str(self.call("eth_getCode", [address, self._block_tag(block)]))
+        result = self.call("eth_getCode", [address, self._block_tag(block)])
+        if result is None:
+            return "0x"
+        if not isinstance(result, str) or not result.startswith("0x"):
+            raise RpcError(f"eth_getCode({address}) returned {result!r}")
+        return result
 
     def block_timestamp(self, block: Any) -> int:
         """Unix timestamp of ``block`` (cached; ``block`` may be an int or hex tag)."""
@@ -560,10 +580,14 @@ class ArchiveRpc:
             try:
                 chunk = self.call("eth_getLogs", [params])
             except RpcError as exc:
-                raise RpcRangeError(
-                    f"eth_getLogs [{cursor}, {stop}] refused: {exc} | free public endpoints cap "
-                    f"a single request at {MAX_GET_LOGS_RANGE} blocks"
-                ) from exc
+                message = str(exc).lower()
+                if ("10000" in message or "range" in message
+                        or "too many blocks" in message or "block limit" in message):
+                    raise RpcRangeError(
+                        f"eth_getLogs [{cursor}, {stop}] refused: {exc} | free public endpoints cap "
+                        f"a single request at {MAX_GET_LOGS_RANGE} blocks"
+                    ) from exc
+                raise
             if not isinstance(chunk, list):
                 raise RpcError(
                     f"eth_getLogs [{cursor}, {stop}] returned {type(chunk).__name__}, "
@@ -603,4 +627,5 @@ class ArchiveRpc:
         return None
 
     def __repr__(self) -> str:  # pragma: no cover - debugging aid
-        return f"ArchiveRpc(urls={self.urls!r}, calls={self.calls})"
+        endpoints = tuple(_mask_endpoint(url) for url in self.urls)
+        return f"ArchiveRpc(urls={endpoints!r}, calls={self.calls})"

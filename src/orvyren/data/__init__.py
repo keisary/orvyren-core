@@ -88,6 +88,8 @@ def time_grid(start: str, end: str, step_seconds: int = HOUR_SECONDS) -> List[in
     ``time_grid("2026-04-17T00:00:00Z", "2026-04-18T00:00:00Z", 3600)`` gives 25
     points; a step that does not divide the span simply stops before ``end``.
     """
+    if isinstance(step_seconds, bool) or not isinstance(step_seconds, int):
+        raise TypeError("step_seconds must be an integer")
     if step_seconds <= 0:
         raise ValueError(f"step_seconds must be positive, got {step_seconds}")
     first, last = parse_utc(start), parse_utc(end)

@@ -171,8 +171,13 @@ def load_observations(csv_path: str) -> Tuple[List[Observation], Dict[str, objec
     count_venue: Dict[str, int] = {}
     count_metric: Dict[str, int] = {}
 
-    with open(csv_path, "r", encoding="utf-8", newline="") as handle:
+    with open(csv_path, "r", encoding="utf-8-sig", newline="") as handle:
         reader = csv.DictReader(handle)
+        required = {"value", "venue", "metric", "timestamp_utc"}
+        missing_columns = required - set(reader.fieldnames or ())
+        if missing_columns:
+            raise ValueError("E_CORPUS_SCHEMA: missing columns %s"
+                             % ", ".join(sorted(missing_columns)))
         for row_no, row in enumerate(reader, start=2):
             report["total"] += 1  # type: ignore[operator]
 

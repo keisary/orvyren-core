@@ -266,6 +266,10 @@ def find_freeze_block(
             high = middle
         else:
             low = middle
+    if high - low != 1:
+        raise ValueError(
+            "freeze search did not converge: low=%d high=%d (steps=%d)"
+            % (low, high, flips))
     if frozen(low) is not False or frozen(high) is not True:
         raise ValueError(
             f"freeze search failed: block {low} is not unfrozen / block {high} is not frozen"

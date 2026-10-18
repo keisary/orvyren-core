@@ -214,6 +214,7 @@ def steth_discount_ladder(
     sizes: Sequence[float] = (1.0, 100.0, 1_000.0, 10_000.0),
 ) -> Dict[float, Dict[str, Any]]:
     """Discount ladder for the standard sizes of the dossier."""
+    sizes = tuple(sizes)
     pool = steth_pool(rpc)
     out: Dict[float, Dict[str, Any]] = {}
     for size, quote in zip(sizes, pool.ladder(STETH_POOL_STETH_INDEX, STETH_POOL_ETH_INDEX, sizes, block)):
