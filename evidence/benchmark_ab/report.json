@@ -1,0 +1,740 @@
+{
+ "aggregates": {
+  "A0": {
+   "abstention_rate": 0.0,
+   "abstentions": 0,
+   "claims_rejected_provenance_total": 0,
+   "cost_usd_mean": 0.0,
+   "cost_usd_total": 0.0,
+   "distinct_verdicts": 2,
+   "latency_seconds_mean": 0.4010000000001431,
+   "llm_calls_total": 0.0,
+   "match_rate": 1.0,
+   "miss_rate": 0.0,
+   "n_error": 0,
+   "n_not_executed": 0,
+   "n_ok": 6,
+   "n_runs": 6,
+   "n_scored": 6,
+   "other_rate": 0.0,
+   "quality_counts": {
+    "match": 6,
+    "miss": 0,
+    "other": 0
+   },
+   "tool_calls_total": 0.0,
+   "verdict_counts": {
+    "ALLOW": 3,
+    "NO_ACTION": 3
+   }
+  },
+  "A2": {
+   "abstention_rate": 0.0,
+   "abstentions": 0,
+   "claims_rejected_provenance_total": 0,
+   "cost_usd_mean": 0.0018269999999999998,
+   "cost_usd_total": 0.005481,
+   "distinct_verdicts": 1,
+   "latency_seconds_mean": 0.7163333333335989,
+   "llm_calls_total": 15.0,
+   "match_rate": 1.0,
+   "miss_rate": 0.0,
+   "n_error": 0,
+   "n_not_executed": 3,
+   "n_ok": 3,
+   "n_runs": 6,
+   "n_scored": 3,
+   "other_rate": 0.0,
+   "quality_counts": {
+    "match": 3,
+    "miss": 0,
+    "other": 0
+   },
+   "tool_calls_total": 6.0,
+   "verdict_counts": {
+    "REQUIRE_APPROVAL": 3
+   }
+  }
+ },
+ "banner": "small-N diagnostic run — no superiority claim (G1 threshold N>=100 not reached)",
+ "budget": {
+  "cost_usd": 0.1,
+  "llm_calls": 30,
+  "note": "Identical declared caps for both modes and every run. These are the caps the recorded A2 replay store was recorded under (fixtures/agents/usdc-2023-03 run budget, run_agents.py A5 frozen ceilings) — a replay under different caps fails cleanly (E_LLM_NOT_RECORDED -> ARRET-3 abstention) instead of improvising. A0 is deterministic and consumes none of them (0 by construction).",
+  "tool_calls": 12,
+  "wall_seconds": 600
+ },
+ "cases": [
+  {
+   "aggregates": {
+    "A0": {
+     "abstention_rate": 0.0,
+     "abstentions": 0,
+     "claims_rejected_provenance_total": 0,
+     "cost_usd_mean": 0.0,
+     "cost_usd_total": 0.0,
+     "distinct_verdicts": 1,
+     "latency_seconds_mean": 0.495000000000194,
+     "llm_calls_total": 0.0,
+     "match_rate": 1.0,
+     "miss_rate": 0.0,
+     "n_error": 0,
+     "n_not_executed": 0,
+     "n_ok": 3,
+     "n_runs": 3,
+     "n_scored": 3,
+     "other_rate": 0.0,
+     "quality_counts": {
+      "match": 3,
+      "miss": 0,
+      "other": 0
+     },
+     "tool_calls_total": 0.0,
+     "verdict_counts": {
+      "ALLOW": 3
+     }
+    },
+    "A2": {
+     "abstention_rate": 0.0,
+     "abstentions": 0,
+     "claims_rejected_provenance_total": 0,
+     "cost_usd_mean": 0.0018269999999999998,
+     "cost_usd_total": 0.005481,
+     "distinct_verdicts": 1,
+     "latency_seconds_mean": 1.1356666666667177,
+     "llm_calls_total": 15.0,
+     "match_rate": 1.0,
+     "miss_rate": 0.0,
+     "n_error": 0,
+     "n_not_executed": 0,
+     "n_ok": 3,
+     "n_runs": 3,
+     "n_scored": 3,
+     "other_rate": 0.0,
+     "quality_counts": {
+      "match": 3,
+      "miss": 0,
+      "other": 0
+     },
+     "tool_calls_total": 6.0,
+     "verdict_counts": {
+      "REQUIRE_APPROVAL": 3
+     }
+    }
+   },
+   "case_id": "usdc-2023-03",
+   "delta": {
+    "note": "the agent layer brakes/abstains while the engine recommends acting",
+    "tag": "agents_abstain_where_engine_acts"
+   },
+   "expectation": {
+    "acceptable_verdicts": [
+     "ALLOW",
+     "REQUIRE_APPROVAL",
+     "abstention"
+    ],
+    "declared": "The 2023-03 USDC depeg is a documented, archived episode: venue minima 0.80526-0.882 USD on 2023-03-11 and an inter-venue dispersion of 870.07 bps (sources listed per row above). A mode that concludes a flat NO_ACTION (nothing happened) misses a documented event.",
+    "expect_agents": "brake_and_document",
+    "expect_agents_note": "The archived A2 replay critiques the evidence as FRAGILE (source-dependence of the aggregators) and escalates to REQUIRE_APPROVAL while listing what was NOT searched (executability depth). The expected agent-layer contribution is an auditable brake + provenance ledger, not a different decision. This expectation is declared from the archived recording (fixtures/agents/usdc-2023-03 + recorded store), not invented for the benchmark.",
+    "miss_verdicts": [
+     "NO_ACTION"
+    ],
+    "quality_note": "The declaration ranks only what the evidence supports ranking: a flat NO_ACTION is a missed event. A bounded action (the pre-registered 100 USDC test transfer), a brake to human approval (the recorded critic reading FRAGILE: aggregator source independence unproven), and a justified abstention are all defensible calls here and are NOT ranked against each other — the sample is far too small for that. DENY is left unranked (the authorization axis is not evaluated in the replayed configuration)."
+   },
+   "n_runs": 6,
+   "synthetic": false
+  },
+  {
+   "aggregates": {
+    "A0": {
+     "abstention_rate": 0.0,
+     "abstentions": 0,
+     "claims_rejected_provenance_total": 0,
+     "cost_usd_mean": 0.0,
+     "cost_usd_total": 0.0,
+     "distinct_verdicts": 1,
+     "latency_seconds_mean": 0.30700000000009214,
+     "llm_calls_total": 0.0,
+     "match_rate": 1.0,
+     "miss_rate": 0.0,
+     "n_error": 0,
+     "n_not_executed": 0,
+     "n_ok": 3,
+     "n_runs": 3,
+     "n_scored": 3,
+     "other_rate": 0.0,
+     "quality_counts": {
+      "match": 3,
+      "miss": 0,
+      "other": 0
+     },
+     "tool_calls_total": 0.0,
+     "verdict_counts": {
+      "NO_ACTION": 3
+     }
+    },
+    "A2": {
+     "abstention_rate": null,
+     "abstentions": 0,
+     "claims_rejected_provenance_total": 0,
+     "cost_usd_mean": null,
+     "cost_usd_total": null,
+     "distinct_verdicts": 0,
+     "latency_seconds_mean": 0.2970000000004802,
+     "llm_calls_total": 0,
+     "match_rate": null,
+     "miss_rate": null,
+     "n_error": 0,
+     "n_not_executed": 3,
+     "n_ok": 0,
+     "n_runs": 3,
+     "n_scored": 0,
+     "other_rate": null,
+     "quality_counts": {
+      "match": 0,
+      "miss": 0,
+      "other": 0
+     },
+     "tool_calls_total": 0,
+     "verdict_counts": {}
+    }
+   },
+   "case_id": "placebo-calm-2023-03",
+   "delta": {
+    "note": "no A2 measurement on this case — nothing is inferred",
+    "tag": "a2_not_executed"
+   },
+   "expectation": {
+    "acceptable_verdicts": [
+     "NO_ACTION",
+     "abstention"
+    ],
+    "declared": "No signal exists in this series by construction. A mode that finds a decisive depeg, a source contradiction or an artifact here is hallucinating: the only right calls are NO_ACTION or a justified abstention. Any decisive call — or an escalation demanding human review of nothing — is a false positive and is scored as a miss.",
+    "expect_agents": "abstain_or_conclude_nothing",
+    "expect_agents_note": "If/when an agent replay exists for a calm case, the agents must find nothing decisive and abstain or conclude nothing (ARRET / no-action). In this harness the A2 leg is not executable (see a2_availability_note) and is reported as a missing measurement, never as an inferred pass.",
+    "miss_verdicts": [
+     "ALLOW",
+     "DENY",
+     "REQUIRE_APPROVAL"
+    ],
+    "quality_note": "On a constructed no-signal series there is no judgement call to rank: the declaration is one-sided on purpose (placebo logic)."
+   },
+   "n_runs": 6,
+   "synthetic": true
+  }
+ ],
+ "generated_at_utc": "2026-10-18T09:17:29.245154+00:00",
+ "limitations": [
+  "N=9 scored run(s) — far below the G1 superiority threshold (N>=100); no ranking of A0 vs A2 is claimed or implied.",
+  "Journal-mode A2 runs are deterministic offline replays of recorded responses (pinned run_id): repeated runs demonstrate replay determinism, NOT independent samples. N counts runs and must not be read as independent evidence.",
+  "A2 cost/latency figures are the recorded per-call spend of the replay (real recorded cost) plus harness-measured wall time; A0 is deterministic and spends nothing (0 by construction).",
+  "The RDOF/axes enrichment of run_decision.py is scoped to case 'usdc-2023-03'; other case ids run the v0 deterministic engine (--no-rdof) — a declared substitution, recorded per run.",
+  "A2 was NOT executed for case 'placebo-calm-2023-03' (run 1): E_CASE_UNKNOWN: D:\\orvyren_core\\fixtures\\agents\\placebo-calm-2023-03\\run_inputs.json missing — record the case first (python scripts/agents_seed_demo.py --case placebo-calm-2023-03) — the missing leg is reported as missing, never inferred.",
+  "A2 was NOT executed for case 'placebo-calm-2023-03' (run 2): E_CASE_UNKNOWN: D:\\orvyren_core\\fixtures\\agents\\placebo-calm-2023-03\\run_inputs.json missing — record the case first (python scripts/agents_seed_demo.py --case placebo-calm-2023-03) — the missing leg is reported as missing, never inferred.",
+  "A2 was NOT executed for case 'placebo-calm-2023-03' (run 3): E_CASE_UNKNOWN: D:\\orvyren_core\\fixtures\\agents\\placebo-calm-2023-03\\run_inputs.json missing — record the case first (python scripts/agents_seed_demo.py --case placebo-calm-2023-03) — the missing leg is reported as missing, never inferred."
+ ],
+ "modes": [
+  "A0",
+  "A2"
+ ],
+ "n_runs": 12,
+ "n_scored_runs": 9,
+ "notes": [],
+ "run_id": "bench-20261018T091729244145Z-3e4ea113c888",
+ "runs": [
+  {
+   "abstained": false,
+   "case_id": "usdc-2023-03",
+   "claims_rejected_provenance": 0,
+   "cost_usd": 0.0,
+   "detail": {
+    "action": {
+     "amount_usdc": 100.0,
+     "asset": "USDC (test)",
+     "from_wallet": "treasury",
+     "to_wallet": "reserve",
+     "type": "transfer"
+    },
+    "authorization_verdict": null,
+    "corpus": {
+     "observations_in_file": 520,
+     "observations_in_window": 387,
+     "path": "corpus/usdc_observations.csv",
+     "sha256": "c31088b3de428a35cad0833e323352d3fedecb251e4ccd07f168d884b4c8ea7e"
+    },
+    "deterministic": true,
+    "epistemic_verdict": "CONCLUANT",
+    "hypothesis_verdicts": {
+     "H1": "REFUTED",
+     "H2": "SUPPORTED",
+     "H3": "REFUTED"
+    },
+    "missing_inputs": [],
+    "rdof_searches": 1,
+    "rdof_seconds": 0.65,
+    "rdof_stop": "stable decision (invariance c1)",
+    "semantics": "decision verdict of run_decision.py crossed with the authorization axis when evaluated (ACTION_RECOMMENDED -> ALLOW unless the axis says DENY/REQUIRE_APPROVAL; NO_ACTION -> NO_ACTION; INCONCLUSIVE -> abstention)"
+   },
+   "latency_seconds": 0.4850000000005821,
+   "llm_calls": 0.0,
+   "mode": "A0",
+   "notes": [],
+   "quality": "match",
+   "raw_verdict": "ACTION_RECOMMENDED",
+   "run_id": "bench-20261018T091722882858Z-52472c95fe98",
+   "run_index": 1,
+   "status": "ok",
+   "tool_calls": 0.0,
+   "verdict": "ALLOW"
+  },
+  {
+   "abstained": false,
+   "case_id": "usdc-2023-03",
+   "claims_rejected_provenance": 0,
+   "cost_usd": 0.0018269999999999998,
+   "detail": {
+    "braked": true,
+    "cost_note": "recorded offline replay (journal mode) — recorded per-call spend, not a live re-spend",
+    "critique_verdict": "FRAGILE",
+    "journals": {
+     "critic": {
+      "agent_ids": [
+       "critic"
+      ],
+      "chain_head": "0c69bc8788ee9140ef6575ed6023cdafe5fce70cbb6cb8718f6bb2923161d01b",
+      "lines": 1
+     },
+     "orchestrator": {
+      "agent_ids": [
+       "orchestrator"
+      ],
+      "chain_head": "1647b767b4c9ec25cf7fc042379166cd1248db5a084073a6d8f55d679e82f7d4",
+      "lines": 11
+     }
+    },
+    "motif": "plus aucune tâche à valeur positive dans le plan",
+    "non_recherche": [
+     "profondeur d'exécution réalisable non mesurée"
+    ],
+    "recorded_wall_seconds": 0.14,
+    "semantics": "fragility gate of run_agents.py (run_outcome.json): inconclusive -> abstention; FRAGILE/INCOHERENTE escalation -> REQUIRE_APPROVAL; otherwise the agent layer did not brake -> ALLOW. ALLOW here is NOT a policy authorization and NOT an executed action.",
+    "state": "DONE",
+    "stop_condition": "ARRET-1"
+   },
+   "latency_seconds": 1.1880000000001019,
+   "llm_calls": 5.0,
+   "mode": "A2",
+   "notes": [],
+   "quality": "match",
+   "raw_verdict": {
+    "critique_verdict": "FRAGILE",
+    "escalation": "REQUIRE_APPROVAL",
+    "inconclusive": false,
+    "state": "DONE",
+    "stop_condition": "ARRET-1"
+   },
+   "run_id": "bench-20261018T091724082459Z-10efc7bb00f2",
+   "run_index": 1,
+   "status": "ok",
+   "tool_calls": 2.0,
+   "verdict": "REQUIRE_APPROVAL"
+  },
+  {
+   "abstained": false,
+   "case_id": "usdc-2023-03",
+   "claims_rejected_provenance": 0,
+   "cost_usd": 0.0,
+   "detail": {
+    "action": {
+     "amount_usdc": 100.0,
+     "asset": "USDC (test)",
+     "from_wallet": "treasury",
+     "to_wallet": "reserve",
+     "type": "transfer"
+    },
+    "authorization_verdict": null,
+    "corpus": {
+     "observations_in_file": 520,
+     "observations_in_window": 387,
+     "path": "corpus/usdc_observations.csv",
+     "sha256": "c31088b3de428a35cad0833e323352d3fedecb251e4ccd07f168d884b4c8ea7e"
+    },
+    "deterministic": true,
+    "epistemic_verdict": "CONCLUANT",
+    "hypothesis_verdicts": {
+     "H1": "REFUTED",
+     "H2": "SUPPORTED",
+     "H3": "REFUTED"
+    },
+    "missing_inputs": [],
+    "rdof_searches": 1,
+    "rdof_seconds": 0.65,
+    "rdof_stop": "stable decision (invariance c1)",
+    "semantics": "decision verdict of run_decision.py crossed with the authorization axis when evaluated (ACTION_RECOMMENDED -> ALLOW unless the axis says DENY/REQUIRE_APPROVAL; NO_ACTION -> NO_ACTION; INCONCLUSIVE -> abstention)"
+   },
+   "latency_seconds": 0.4849999999996726,
+   "llm_calls": 0.0,
+   "mode": "A0",
+   "notes": [],
+   "quality": "match",
+   "raw_verdict": "ACTION_RECOMMENDED",
+   "run_id": "bench-20261018T091724582399Z-42311c83be5c",
+   "run_index": 2,
+   "status": "ok",
+   "tool_calls": 0.0,
+   "verdict": "ALLOW"
+  },
+  {
+   "abstained": false,
+   "case_id": "usdc-2023-03",
+   "claims_rejected_provenance": 0,
+   "cost_usd": 0.0018269999999999998,
+   "detail": {
+    "braked": true,
+    "cost_note": "recorded offline replay (journal mode) — recorded per-call spend, not a live re-spend",
+    "critique_verdict": "FRAGILE",
+    "journals": {
+     "critic": {
+      "agent_ids": [
+       "critic"
+      ],
+      "chain_head": "0c69bc8788ee9140ef6575ed6023cdafe5fce70cbb6cb8718f6bb2923161d01b",
+      "lines": 1
+     },
+     "orchestrator": {
+      "agent_ids": [
+       "orchestrator"
+      ],
+      "chain_head": "1647b767b4c9ec25cf7fc042379166cd1248db5a084073a6d8f55d679e82f7d4",
+      "lines": 11
+     }
+    },
+    "motif": "plus aucune tâche à valeur positive dans le plan",
+    "non_recherche": [
+     "profondeur d'exécution réalisable non mesurée"
+    ],
+    "recorded_wall_seconds": 0.14,
+    "semantics": "fragility gate of run_agents.py (run_outcome.json): inconclusive -> abstention; FRAGILE/INCOHERENTE escalation -> REQUIRE_APPROVAL; otherwise the agent layer did not brake -> ALLOW. ALLOW here is NOT a policy authorization and NOT an executed action.",
+    "state": "DONE",
+    "stop_condition": "ARRET-1"
+   },
+   "latency_seconds": 1.094000000000051,
+   "llm_calls": 5.0,
+   "mode": "A2",
+   "notes": [],
+   "quality": "match",
+   "raw_verdict": {
+    "critique_verdict": "FRAGILE",
+    "escalation": "REQUIRE_APPROVAL",
+    "inconclusive": false,
+    "state": "DONE",
+    "stop_condition": "ARRET-1"
+   },
+   "run_id": "bench-20261018T091725693734Z-97997a531c0d",
+   "run_index": 2,
+   "status": "ok",
+   "tool_calls": 2.0,
+   "verdict": "REQUIRE_APPROVAL"
+  },
+  {
+   "abstained": false,
+   "case_id": "usdc-2023-03",
+   "claims_rejected_provenance": 0,
+   "cost_usd": 0.0,
+   "detail": {
+    "action": {
+     "amount_usdc": 100.0,
+     "asset": "USDC (test)",
+     "from_wallet": "treasury",
+     "to_wallet": "reserve",
+     "type": "transfer"
+    },
+    "authorization_verdict": null,
+    "corpus": {
+     "observations_in_file": 520,
+     "observations_in_window": 387,
+     "path": "corpus/usdc_observations.csv",
+     "sha256": "c31088b3de428a35cad0833e323352d3fedecb251e4ccd07f168d884b4c8ea7e"
+    },
+    "deterministic": true,
+    "epistemic_verdict": "CONCLUANT",
+    "hypothesis_verdicts": {
+     "H1": "REFUTED",
+     "H2": "SUPPORTED",
+     "H3": "REFUTED"
+    },
+    "missing_inputs": [],
+    "rdof_searches": 1,
+    "rdof_seconds": 0.65,
+    "rdof_stop": "stable decision (invariance c1)",
+    "semantics": "decision verdict of run_decision.py crossed with the authorization axis when evaluated (ACTION_RECOMMENDED -> ALLOW unless the axis says DENY/REQUIRE_APPROVAL; NO_ACTION -> NO_ACTION; INCONCLUSIVE -> abstention)"
+   },
+   "latency_seconds": 0.5150000000003274,
+   "llm_calls": 0.0,
+   "mode": "A0",
+   "notes": [],
+   "quality": "match",
+   "raw_verdict": "ACTION_RECOMMENDED",
+   "run_id": "bench-20261018T091726217416Z-a91209b28255",
+   "run_index": 3,
+   "status": "ok",
+   "tool_calls": 0.0,
+   "verdict": "ALLOW"
+  },
+  {
+   "abstained": false,
+   "case_id": "usdc-2023-03",
+   "claims_rejected_provenance": 0,
+   "cost_usd": 0.0018269999999999998,
+   "detail": {
+    "braked": true,
+    "cost_note": "recorded offline replay (journal mode) — recorded per-call spend, not a live re-spend",
+    "critique_verdict": "FRAGILE",
+    "journals": {
+     "critic": {
+      "agent_ids": [
+       "critic"
+      ],
+      "chain_head": "0c69bc8788ee9140ef6575ed6023cdafe5fce70cbb6cb8718f6bb2923161d01b",
+      "lines": 1
+     },
+     "orchestrator": {
+      "agent_ids": [
+       "orchestrator"
+      ],
+      "chain_head": "1647b767b4c9ec25cf7fc042379166cd1248db5a084073a6d8f55d679e82f7d4",
+      "lines": 11
+     }
+    },
+    "motif": "plus aucune tâche à valeur positive dans le plan",
+    "non_recherche": [
+     "profondeur d'exécution réalisable non mesurée"
+    ],
+    "recorded_wall_seconds": 0.14,
+    "semantics": "fragility gate of run_agents.py (run_outcome.json): inconclusive -> abstention; FRAGILE/INCOHERENTE escalation -> REQUIRE_APPROVAL; otherwise the agent layer did not brake -> ALLOW. ALLOW here is NOT a policy authorization and NOT an executed action.",
+    "state": "DONE",
+    "stop_condition": "ARRET-1"
+   },
+   "latency_seconds": 1.125,
+   "llm_calls": 5.0,
+   "mode": "A2",
+   "notes": [],
+   "quality": "match",
+   "raw_verdict": {
+    "critique_verdict": "FRAGILE",
+    "escalation": "REQUIRE_APPROVAL",
+    "inconclusive": false,
+    "state": "DONE",
+    "stop_condition": "ARRET-1"
+   },
+   "run_id": "bench-20261018T091727355741Z-eaaf38e0cc89",
+   "run_index": 3,
+   "status": "ok",
+   "tool_calls": 2.0,
+   "verdict": "REQUIRE_APPROVAL"
+  },
+  {
+   "abstained": false,
+   "case_id": "placebo-calm-2023-03",
+   "claims_rejected_provenance": 0,
+   "cost_usd": 0.0,
+   "detail": {
+    "action": null,
+    "authorization_verdict": null,
+    "corpus": {
+     "observations_in_file": 670,
+     "observations_in_window": 446,
+     "path": "evidence/benchmark_ab/raw/placebo-calm-2023-03/A0/run_1/corpus.csv",
+     "sha256": "e308416d7c4ba35a76766198f994f7df01fe8632246a7f265be341b484f24c26"
+    },
+    "deterministic": true,
+    "epistemic_verdict": null,
+    "hypothesis_verdicts": {
+     "H1": "INCONCLUSIVE",
+     "H2": "REFUTED",
+     "H3": "INCONCLUSIVE"
+    },
+    "missing_inputs": [],
+    "rdof_searches": null,
+    "rdof_seconds": null,
+    "rdof_stop": null,
+    "semantics": "decision verdict of run_decision.py crossed with the authorization axis when evaluated (ACTION_RECOMMENDED -> ALLOW unless the axis says DENY/REQUIRE_APPROVAL; NO_ACTION -> NO_ACTION; INCONCLUSIVE -> abstention)"
+   },
+   "latency_seconds": 0.31199999999989814,
+   "llm_calls": 0.0,
+   "mode": "A0",
+   "notes": [],
+   "quality": "match",
+   "raw_verdict": "NO_ACTION",
+   "run_id": "bench-20261018T091727691032Z-3508440d31d0",
+   "run_index": 1,
+   "status": "ok",
+   "tool_calls": 0.0,
+   "verdict": "NO_ACTION"
+  },
+  {
+   "abstained": null,
+   "case_id": "placebo-calm-2023-03",
+   "claims_rejected_provenance": null,
+   "cost_usd": null,
+   "detail": {
+    "exit_code": 1
+   },
+   "latency_seconds": 0.2970000000004802,
+   "llm_calls": null,
+   "mode": "A2",
+   "notes": [
+    "E_CASE_UNKNOWN: D:\\orvyren_core\\fixtures\\agents\\placebo-calm-2023-03\\run_inputs.json missing — record the case first (python scripts/agents_seed_demo.py --case placebo-calm-2023-03)"
+   ],
+   "quality": "not_scored",
+   "raw_verdict": null,
+   "run_id": "bench-20261018T091727984420Z-86e97cacd980",
+   "run_index": 1,
+   "status": "not_executed",
+   "tool_calls": null,
+   "verdict": null
+  },
+  {
+   "abstained": false,
+   "case_id": "placebo-calm-2023-03",
+   "claims_rejected_provenance": 0,
+   "cost_usd": 0.0,
+   "detail": {
+    "action": null,
+    "authorization_verdict": null,
+    "corpus": {
+     "observations_in_file": 670,
+     "observations_in_window": 446,
+     "path": "evidence/benchmark_ab/raw/placebo-calm-2023-03/A0/run_2/corpus.csv",
+     "sha256": "e308416d7c4ba35a76766198f994f7df01fe8632246a7f265be341b484f24c26"
+    },
+    "deterministic": true,
+    "epistemic_verdict": null,
+    "hypothesis_verdicts": {
+     "H1": "INCONCLUSIVE",
+     "H2": "REFUTED",
+     "H3": "INCONCLUSIVE"
+    },
+    "missing_inputs": [],
+    "rdof_searches": null,
+    "rdof_seconds": null,
+    "rdof_stop": null,
+    "semantics": "decision verdict of run_decision.py crossed with the authorization axis when evaluated (ACTION_RECOMMENDED -> ALLOW unless the axis says DENY/REQUIRE_APPROVAL; NO_ACTION -> NO_ACTION; INCONCLUSIVE -> abstention)"
+   },
+   "latency_seconds": 0.2970000000004802,
+   "llm_calls": 0.0,
+   "mode": "A0",
+   "notes": [],
+   "quality": "match",
+   "raw_verdict": "NO_ACTION",
+   "run_id": "bench-20261018T091728312674Z-26e097f942d9",
+   "run_index": 2,
+   "status": "ok",
+   "tool_calls": 0.0,
+   "verdict": "NO_ACTION"
+  },
+  {
+   "abstained": null,
+   "case_id": "placebo-calm-2023-03",
+   "claims_rejected_provenance": null,
+   "cost_usd": null,
+   "detail": {
+    "exit_code": 1
+   },
+   "latency_seconds": 0.2970000000004802,
+   "llm_calls": null,
+   "mode": "A2",
+   "notes": [
+    "E_CASE_UNKNOWN: D:\\orvyren_core\\fixtures\\agents\\placebo-calm-2023-03\\run_inputs.json missing — record the case first (python scripts/agents_seed_demo.py --case placebo-calm-2023-03)"
+   ],
+   "quality": "not_scored",
+   "raw_verdict": null,
+   "run_id": "bench-20261018T091728608203Z-7df6e8f82686",
+   "run_index": 2,
+   "status": "not_executed",
+   "tool_calls": null,
+   "verdict": null
+  },
+  {
+   "abstained": false,
+   "case_id": "placebo-calm-2023-03",
+   "claims_rejected_provenance": 0,
+   "cost_usd": 0.0,
+   "detail": {
+    "action": null,
+    "authorization_verdict": null,
+    "corpus": {
+     "observations_in_file": 670,
+     "observations_in_window": 446,
+     "path": "evidence/benchmark_ab/raw/placebo-calm-2023-03/A0/run_3/corpus.csv",
+     "sha256": "e308416d7c4ba35a76766198f994f7df01fe8632246a7f265be341b484f24c26"
+    },
+    "deterministic": true,
+    "epistemic_verdict": null,
+    "hypothesis_verdicts": {
+     "H1": "INCONCLUSIVE",
+     "H2": "REFUTED",
+     "H3": "INCONCLUSIVE"
+    },
+    "missing_inputs": [],
+    "rdof_searches": null,
+    "rdof_seconds": null,
+    "rdof_stop": null,
+    "semantics": "decision verdict of run_decision.py crossed with the authorization axis when evaluated (ACTION_RECOMMENDED -> ALLOW unless the axis says DENY/REQUIRE_APPROVAL; NO_ACTION -> NO_ACTION; INCONCLUSIVE -> abstention)"
+   },
+   "latency_seconds": 0.31199999999989814,
+   "llm_calls": 0.0,
+   "mode": "A0",
+   "notes": [],
+   "quality": "match",
+   "raw_verdict": "NO_ACTION",
+   "run_id": "bench-20261018T091728946583Z-12b3cd9e0b7f",
+   "run_index": 3,
+   "status": "ok",
+   "tool_calls": 0.0,
+   "verdict": "NO_ACTION"
+  },
+  {
+   "abstained": null,
+   "case_id": "placebo-calm-2023-03",
+   "claims_rejected_provenance": null,
+   "cost_usd": null,
+   "detail": {
+    "exit_code": 1
+   },
+   "latency_seconds": 0.2970000000004802,
+   "llm_calls": null,
+   "mode": "A2",
+   "notes": [
+    "E_CASE_UNKNOWN: D:\\orvyren_core\\fixtures\\agents\\placebo-calm-2023-03\\run_inputs.json missing — record the case first (python scripts/agents_seed_demo.py --case placebo-calm-2023-03)"
+   ],
+   "quality": "not_scored",
+   "raw_verdict": null,
+   "run_id": "bench-20261018T091729244145Z-0d23690fb1f7",
+   "run_index": 3,
+   "status": "not_executed",
+   "tool_calls": null,
+   "verdict": null
+  }
+ ],
+ "schema_version": "orvyren/benchmark-report/v1",
+ "superiority": {
+  "banner": "small-N diagnostic run — no superiority claim (G1 threshold N>=100 not reached)",
+  "claimable": false,
+  "n": 9,
+  "statement": "refused: N=9 < 100 (G1 threshold) — no superiority claim is made or implied anywhere in this report",
+  "threshold": 100
+ },
+ "verdict_semantics": {
+  "A0": "decision verdict of run_decision.py crossed with the authorization axis when evaluated (ACTION_RECOMMENDED -> ALLOW unless the axis says DENY/REQUIRE_APPROVAL; NO_ACTION -> NO_ACTION; INCONCLUSIVE -> abstention)",
+  "A2": "fragility gate of run_agents.py (run_outcome.json): inconclusive -> abstention; FRAGILE/INCOHERENTE escalation -> REQUIRE_APPROVAL; otherwise the agent layer did not brake -> ALLOW. ALLOW here is NOT a policy authorization and NOT an executed action."
+ },
+ "verdict_space": [
+  "ALLOW",
+  "DENY",
+  "REQUIRE_APPROVAL",
+  "NO_ACTION",
+  "abstention",
+  "unknown"
+ ]
+}

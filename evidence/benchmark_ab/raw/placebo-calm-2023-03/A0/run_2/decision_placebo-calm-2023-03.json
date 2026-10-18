@@ -1,0 +1,392 @@
+{
+  "case": "placebo-calm-2023-03",
+  "window": {
+    "label": "main",
+    "start": "2023-03-09T00:00:00+00:00",
+    "end": "2023-03-15T00:00:00+00:00",
+    "inclusive_bounds": true,
+    "duration_hours": 144.0,
+    "timezone": "UTC"
+  },
+  "inputs_summary": {
+    "corpus": {
+      "path": "evidence/benchmark_ab/raw/placebo-calm-2023-03/A0/run_2/corpus.csv",
+      "sha256": "e308416d7c4ba35a76766198f994f7df01fe8632246a7f265be341b484f24c26",
+      "observations_in_file": 670,
+      "observations_in_window": 446
+    },
+    "sources": [
+      {
+        "venue": "binance",
+        "metric": "price_usd",
+        "observations": 144,
+        "first_timestamp_utc": "2023-03-09T00:00:00+00:00",
+        "last_timestamp_utc": "2023-03-14T23:00:00+00:00",
+        "min_value": 0.9999,
+        "max_value": 1.0001
+      },
+      {
+        "venue": "bitstamp",
+        "metric": "price_usd",
+        "observations": 144,
+        "first_timestamp_utc": "2023-03-09T00:00:00+00:00",
+        "last_timestamp_utc": "2023-03-14T23:00:00+00:00",
+        "min_value": 0.9999,
+        "max_value": 1.0001
+      },
+      {
+        "venue": "defillama",
+        "metric": "price_usd",
+        "observations": 144,
+        "first_timestamp_utc": "2023-03-09T00:00:00+00:00",
+        "last_timestamp_utc": "2023-03-14T23:00:00+00:00",
+        "min_value": 0.9999,
+        "max_value": 1.0001
+      },
+      {
+        "venue": "defillama_supply_aggregate",
+        "metric": "circulating_usd",
+        "observations": 7,
+        "first_timestamp_utc": "2023-03-09T00:00:00+00:00",
+        "last_timestamp_utc": "2023-03-15T00:00:00+00:00",
+        "min_value": 41000000000.0,
+        "max_value": 41000000000.0
+      },
+      {
+        "venue": "defillama_supply_ethereum",
+        "metric": "circulating_usd",
+        "observations": 7,
+        "first_timestamp_utc": "2023-03-09T00:00:00+00:00",
+        "last_timestamp_utc": "2023-03-15T00:00:00+00:00",
+        "min_value": 41000000000.0,
+        "max_value": 41000000000.0
+      }
+    ],
+    "peg_reference_usd": 1.0,
+    "exposure_parameters": {
+      "exposure_usdc": 500.0,
+      "floor_usdc": 350.0,
+      "action_usdc": 100.0,
+      "available_to_move_usdc": 100.0,
+      "note": "demonstration parameters only: no real wallet, no real balance, no market impact modelled"
+    },
+    "pre_registered_thresholds": {
+      "deviation_alert_pct": 1.0,
+      "aggregate_tolerance_pct": 0.5,
+      "recovery_tolerance_pct": 0.1,
+      "recovery_hours_limit": 12.0,
+      "persistence_hours_limit": 12.0,
+      "supply_drop_pct": 1.0,
+      "supply_window_hours": 24.0
+    }
+  },
+  "hypothesis_verdicts": {
+    "H1": {
+      "hypothesis_id": "H1",
+      "label": "local liquidity perturbation",
+      "statement": "The dislocation is a local liquidity perturbation: one venue moves while the aggregate stays pegged, and it recovers quickly.",
+      "verdict": "INCONCLUSIVE",
+      "support_criterion": "deviation > 1% on ONE venue, aggregate within 0.5% of peg, recovery to +/-0.1% in less than 12 h",
+      "refutation_criterion": "deviation > 1% persisting more than 12 h on >= 2 independent venues",
+      "criteria_evaluated": [
+        {
+          "criterion": "support",
+          "met": false,
+          "evaluable": false,
+          "spec": "deviation > 1.0% on a single independent venue while the aggregator stays within 0.5% of peg, and recovery to within 0.1% of peg in less than 12 h",
+          "computed": {
+            "venue_deviations_above_threshold": [
+              {
+                "venue": "bitstamp",
+                "first_alert_utc": null,
+                "max_deviation_pct": 0.01,
+                "recovery_utc": null,
+                "recovery_hours": null
+              },
+              {
+                "venue": "binance",
+                "first_alert_utc": null,
+                "max_deviation_pct": 0.01,
+                "recovery_utc": null,
+                "recovery_hours": null
+              }
+            ],
+            "alert_threshold_pct": 1.0,
+            "aggregator_min_value": 0.9999,
+            "aggregator_min_deviation_pct": 0.01,
+            "aggregator_tolerance_pct": 0.5,
+            "aggregator_within_tolerance": null,
+            "recovery_limit_hours": 12.0,
+            "recovered_within_limit": false
+          },
+          "evidence_refs": [
+            {
+              "timestamp_utc": "2023-03-09T00:00:00+00:00",
+              "venue": "bitstamp",
+              "value": 0.9999
+            },
+            {
+              "timestamp_utc": "2023-03-09T00:00:00+00:00",
+              "venue": "binance",
+              "value": 0.9999
+            },
+            {
+              "timestamp_utc": "2023-03-09T00:00:00+00:00",
+              "venue": "defillama",
+              "value": 0.9999
+            }
+          ]
+        },
+        {
+          "criterion": "refutation",
+          "met": false,
+          "evaluable": true,
+          "spec": "deviation > 1.0% persisting more than 12 h on at least two independent venues",
+          "computed": {
+            "persistence_limit_hours": 12.0,
+            "persistent_episodes": [],
+            "persistent_venue_count": 0
+          },
+          "evidence_refs": []
+        }
+      ],
+      "evidence_refs": [
+        {
+          "timestamp_utc": "2023-03-09T00:00:00+00:00",
+          "venue": "bitstamp",
+          "value": 0.9999
+        },
+        {
+          "timestamp_utc": "2023-03-09T00:00:00+00:00",
+          "venue": "binance",
+          "value": 0.9999
+        },
+        {
+          "timestamp_utc": "2023-03-09T00:00:00+00:00",
+          "venue": "defillama",
+          "value": 0.9999
+        }
+      ],
+      "missing_inputs": [],
+      "details": {
+        "independent_venues_present": [
+          "bitstamp",
+          "binance"
+        ],
+        "aggregator_present": true
+      }
+    },
+    "H2": {
+      "hypothesis_id": "H2",
+      "label": "broad stress on asset or issuer",
+      "statement": "The dislocation reflects broad stress on the asset or its issuer, not a local venue effect.",
+      "verdict": "REFUTED",
+      "support_criterion": "deviation > 1% simultaneously on >= 2 independent venues AND circulating supply drop > 1% in 24 h",
+      "refutation_criterion": "signals isolated to one venue AND no supply evolution",
+      "criteria_evaluated": [
+        {
+          "criterion": "support",
+          "met": false,
+          "evaluable": false,
+          "spec": "deviation > 1% simultaneously on >= 2 independent venues AND circulating supply drop > 1% within 24 h",
+          "computed": {
+            "simultaneous_alert_hours": 0,
+            "simultaneous_first_utc": null,
+            "simultaneous_last_utc": null,
+            "venues_with_alerts": [],
+            "alert_threshold_pct": 1.0,
+            "venue_minima": {
+              "bitstamp": {
+                "value": 0.9999,
+                "timestamp_utc": "2023-03-09T00:00:00+00:00",
+                "deviation_pct": 0.01
+              },
+              "binance": {
+                "value": 0.9999,
+                "timestamp_utc": "2023-03-09T00:00:00+00:00",
+                "deviation_pct": 0.01
+              }
+            },
+            "supply_window_hours": 24.0,
+            "supply_drop_threshold_pct": 1.0,
+            "max_24h_supply_drop_pct": 0.0,
+            "max_24h_supply_drop_from_utc": "2023-03-09T00:00:00+00:00",
+            "max_24h_supply_drop_to_utc": "2023-03-10T00:00:00+00:00",
+            "supply_drop_above_threshold": false,
+            "supply_cross_check": {
+              "venue": "defillama_supply_ethereum",
+              "max_24h_drop_pct": 0.0,
+              "from_utc": "2023-03-09T00:00:00+00:00",
+              "to_utc": "2023-03-10T00:00:00+00:00"
+            }
+          },
+          "evidence_refs": [
+            {
+              "timestamp_utc": "2023-03-09T00:00:00+00:00",
+              "venue": "bitstamp",
+              "value": 0.9999
+            },
+            {
+              "timestamp_utc": "2023-03-09T00:00:00+00:00",
+              "venue": "binance",
+              "value": 0.9999
+            },
+            {
+              "timestamp_utc": "2023-03-09T00:00:00+00:00",
+              "venue": "defillama_supply_aggregate",
+              "value": 41000000000.0
+            },
+            {
+              "timestamp_utc": "2023-03-10T00:00:00+00:00",
+              "venue": "defillama_supply_aggregate",
+              "value": 41000000000.0
+            }
+          ]
+        },
+        {
+          "criterion": "refutation",
+          "met": true,
+          "evaluable": true,
+          "spec": "signals isolated to at most one venue AND no 24 h supply change",
+          "computed": {
+            "venues_with_alerts": [],
+            "max_24h_supply_drop_pct": 0.0,
+            "supply_drop_above_threshold": false
+          },
+          "evidence_refs": []
+        }
+      ],
+      "evidence_refs": [
+        {
+          "timestamp_utc": "2023-03-09T00:00:00+00:00",
+          "venue": "bitstamp",
+          "value": 0.9999
+        },
+        {
+          "timestamp_utc": "2023-03-09T00:00:00+00:00",
+          "venue": "binance",
+          "value": 0.9999
+        },
+        {
+          "timestamp_utc": "2023-03-09T00:00:00+00:00",
+          "venue": "defillama_supply_aggregate",
+          "value": 41000000000.0
+        },
+        {
+          "timestamp_utc": "2023-03-10T00:00:00+00:00",
+          "venue": "defillama_supply_aggregate",
+          "value": 41000000000.0
+        }
+      ],
+      "missing_inputs": [],
+      "details": {
+        "independent_venues_present": [
+          "bitstamp",
+          "binance"
+        ],
+        "supply_series_present": true,
+        "supply_observations": 7,
+        "concurrent_alerts": false
+      }
+    },
+    "H3": {
+      "hypothesis_id": "H3",
+      "label": "data or market artifact",
+      "statement": "The observed movement is a data or market artifact rather than a genuine dislocation.",
+      "verdict": "INCONCLUSIVE",
+      "support_criterion": "unit/contract/timestamp inconsistency or unexplained divergence between two sources of distinct nature",
+      "refutation_criterion": "at least two independent concordant sources",
+      "criteria_evaluated": [
+        {
+          "criterion": "support",
+          "met": false,
+          "evaluable": true,
+          "spec": "unit/contract/timestamp inconsistency, or an unexplained divergence between two sources of distinct nature",
+          "computed": {
+            "structural_flags": [],
+            "unexplained_divergences": [],
+            "checks_not_possible": [
+              "contract-level verification: this corpus carries no contract/address field"
+            ]
+          },
+          "evidence_refs": []
+        },
+        {
+          "criterion": "refutation",
+          "met": false,
+          "evaluable": true,
+          "spec": "at least 2 independent concordant sources confirm the movement",
+          "computed": {
+            "concordant_venues": [],
+            "simultaneous_alert_hours": 0
+          },
+          "evidence_refs": []
+        }
+      ],
+      "evidence_refs": [],
+      "missing_inputs": [],
+      "details": {
+        "independent_venues_present": [
+          "bitstamp",
+          "binance"
+        ],
+        "structural_flag_count": 0,
+        "unexplained_divergence_count": 0,
+        "concordant_venue_count": 0
+      }
+    }
+  },
+  "decision": {
+    "verdict": "NO_ACTION",
+    "action": null,
+    "rationale": [
+      "Pre-registered decision rule (frozen before evaluation): H2 SUPPORTED and available_to_move > 0 -> ACTION_RECOMMENDED (bounded 100 USDC test transfer, D8); H1 SUPPORTED and H2 REFUTED -> NO_ACTION (local perturbation, no exposure reduction); missing required series -> INCONCLUSIVE with missing_inputs.",
+      "Rule 3 fires: H2 is REFUTED and no criterion supports a bounded exposure reduction (H1 INCONCLUSIVE, H3 INCONCLUSIVE). NO_ACTION.",
+      "H1 local liquidity perturbation: INCONCLUSIVE. The registered criteria are not decisive on this window.",
+      "H2 broad stress on asset or issuer: REFUTED. 0 simultaneous hourly observation(s) more than 1.0% below peg on 0 independent venues (); deepest: bitstamp 0.99990 at 2023-03-09T00:00:00+00:00 (0.0100%); binance 0.99990 at 2023-03-09T00:00:00+00:00 (0.0100%); circulating supply moved 0.0000% in 24 h (2023-03-09T00:00:00+00:00 -> 2023-03-10T00:00:00+00:00), threshold 1.0%.",
+      "H3 data or market artifact: INCONCLUSIVE. The registered criteria are not decisive on this window."
+    ],
+    "conditions": [
+      "Any execution must first be authorized by the deterministic policy service (src/orvyren/policy, FREEZE_V1 D9): Base Sepolia chain 84532, allowlisted test-USDC asset, allowlisted reserve recipient, <= 100 USDC per transaction, <= 300 USDC cumulative, 24 h permission, idempotent intent_id.",
+      "Test assets only; no mainnet funds (FREEZE_V1 D5/D8).",
+      "The decision is scoped to the frozen corpus revision (sha256 recorded in inputs_summary) and to the recorded window; new observations outside it invalidate the case.",
+      "Contract-level verification of the asset was not possible from this corpus (no contract field); it remains an open check before any mainnet-grade claim."
+    ],
+    "limits": [
+      "Exposure parameters are demonstration values, not a real portfolio: 500.0 USDC exposure, 350.0 USDC floor, 100.0 USDC action.",
+      "Corpus coverage is uneven: binance 144 observation(s); bitstamp 144 observation(s); defillama 144 observation(s); defillama_supply_aggregate 7 observation(s); defillama_supply_ethereum 7 observation(s); the control window has no exchange observations.",
+      "The aggregator is a multi-venue median with possible lag; the supply series is daily and covers observable on-chain supply only.",
+      "H2 identifies stress consistent with an asset/issuer event; price and supply data alone do not attribute it between the asset and its issuer.",
+      "This engine produces a decision candidate only and never executes; the baseline A0 comparison lives in evidence/baseline_report.json."
+    ],
+    "provenance": [
+      {
+        "timestamp_utc": "2023-03-09T00:00:00+00:00",
+        "venue": "bitstamp",
+        "value": 0.9999
+      },
+      {
+        "timestamp_utc": "2023-03-09T00:00:00+00:00",
+        "venue": "binance",
+        "value": 0.9999
+      },
+      {
+        "timestamp_utc": "2023-03-09T00:00:00+00:00",
+        "venue": "defillama",
+        "value": 0.9999
+      },
+      {
+        "timestamp_utc": "2023-03-09T00:00:00+00:00",
+        "venue": "defillama_supply_aggregate",
+        "value": 41000000000.0
+      },
+      {
+        "timestamp_utc": "2023-03-10T00:00:00+00:00",
+        "venue": "defillama_supply_aggregate",
+        "value": 41000000000.0
+      }
+    ],
+    "missing_inputs": []
+  },
+  "calibration": null
+}

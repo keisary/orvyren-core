@@ -1,0 +1,6 @@
+{
+  "rule": "If the aggregator price (venue=defillama) is below 0.99 for 2 consecutive hourly observations, reduce the exposure by 100 USDC; otherwise NO-ACTION (FREEZE_V1.md D6). One signal per episode of consecutive observations below 0.99, fired on the second observation; episodes are broken by 1 h gaps.",
+  "signals_main": [],
+  "signals_control": [],
+  "false_signals_control": 0
+}

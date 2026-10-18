@@ -1,0 +1,247 @@
+{
+ "schema_version": "orvyren/benchmark-cases/v1",
+ "title": "ORVYREN mini-benchmark A0 vs A2 — cases and declared expectations (P0-5)",
+ "note": "Ground-truth rows are machine-checked against their source file/path by orvyren.evaluation.bench.verify_ground_truth — a figure that does not resolve fails the benchmark instead of being published. Synthetic rows are tagged synthetic:true and are never presented as observations of the world.",
+ "modes": {
+  "A0": "deterministic decision engine alone — python run_decision.py (no agent search)",
+  "A2": "full system — python run_agents.py (agents + critic + fragility gate), offline journal replay"
+ },
+ "budget": {
+  "llm_calls": 30,
+  "tool_calls": 12,
+  "wall_seconds": 600,
+  "cost_usd": 0.1,
+  "note": "Identical declared caps for both modes and every run. These are the caps the recorded A2 replay store was recorded under (fixtures/agents/usdc-2023-03 run budget, run_agents.py A5 frozen ceilings) — a replay under different caps fails cleanly (E_LLM_NOT_RECORDED -> ARRET-3 abstention) instead of improvising. A0 is deterministic and consumes none of them (0 by construction)."
+ },
+ "cases": [
+  {
+   "case_id": "usdc-2023-03",
+   "synthetic": false,
+   "title": "USDC/USD depeg episode (SVB exposure), 2023-03-10 -> 2023-03-14",
+   "corpus": "corpus/usdc_observations.csv",
+   "a2_case_id": "usdc-2023-03",
+   "a2_store": "fixtures/agents/store_usdc-2023-03",
+   "a0_rdof": true,
+   "episode_ref": "evidence/episode_usdc_2023-03.json",
+   "graph_fixture": "fixtures/graphs/usdc_2023-03.json",
+   "ground_truth": [
+    {
+     "claim": "episode window start",
+     "value": "2023-03-10T00:00:00Z",
+     "unit": "UTC",
+     "source_file": "evidence/episode_usdc_2023-03.json",
+     "source_json_path": "window.start_utc"
+    },
+    {
+     "claim": "episode window end",
+     "value": "2023-03-14T00:00:00Z",
+     "unit": "UTC",
+     "source_file": "evidence/episode_usdc_2023-03.json",
+     "source_json_path": "window.end_utc"
+    },
+    {
+     "claim": "market minimum, Bitstamp (deepest venue print of the episode)",
+     "value": 0.80526,
+     "unit": "USD",
+     "source_file": "evidence/episode_usdc_2023-03.json",
+     "source_json_path": "facts.minima.bitstamp.low"
+    },
+    {
+     "claim": "market minimum timestamp, Bitstamp",
+     "value": "2023-03-11T07:00:00Z",
+     "unit": "UTC",
+     "source_file": "evidence/episode_usdc_2023-03.json",
+     "source_json_path": "facts.minima.bitstamp.utc"
+    },
+    {
+     "claim": "market minimum, Binance",
+     "value": 0.882,
+     "unit": "USD",
+     "source_file": "evidence/episode_usdc_2023-03.json",
+     "source_json_path": "facts.minima.binance.low"
+    },
+    {
+     "claim": "market minimum, OKX",
+     "value": 0.8698,
+     "unit": "USD",
+     "source_file": "evidence/episode_usdc_2023-03.json",
+     "source_json_path": "facts.minima.okx.low"
+    },
+    {
+     "claim": "market minimum, DeFiLlama aggregator",
+     "value": 0.876675,
+     "unit": "USD",
+     "source_file": "evidence/episode_usdc_2023-03.json",
+     "source_json_path": "facts.minima.defillama.low"
+    },
+    {
+     "claim": "Chainlink oracle answer at the dense minimum (hourly sampling, 97 points)",
+     "value": 0.8833,
+     "unit": "USD",
+     "source_file": "evidence/episode_usdc_2023-03.json",
+     "source_json_path": "facts.minima.oracle_chainlink.answer"
+    },
+    {
+     "claim": "Chainlink oracle minimum on the W2-B grid (coarser sampling)",
+     "value": 0.90687439,
+     "unit": "USD",
+     "source_file": "evidence/episode_usdc_2023-03.json",
+     "source_json_path": "w2b_comparison.oracle_min.w2b"
+    },
+    {
+     "claim": "inter-venue dispersion at the window minimum (max venue binance, min venue bitstamp)",
+     "value": 870.07,
+     "unit": "bps",
+     "source_file": "evidence/episode_usdc_2023-03.json",
+     "source_json_path": "facts.signals.dispersion_window_bps.value_bps"
+    },
+    {
+     "claim": "maximum hourly dispersion",
+     "value": 1047.7,
+     "unit": "bps",
+     "source_file": "evidence/episode_usdc_2023-03.json",
+     "source_json_path": "facts.signals.max_hourly_dispersion.value_bps"
+    },
+    {
+     "claim": "Aave USDC utilisation minimum (liquidity stress proxy)",
+     "value": 0.275359,
+     "unit": "ratio",
+     "source_file": "evidence/episode_usdc_2023-03.json",
+     "source_json_path": "facts.signals.aave_usdc_utilisation.min"
+    },
+    {
+     "claim": "Aave USDC utilisation maximum (liquidity stress proxy)",
+     "value": 0.872742,
+     "unit": "ratio",
+     "source_file": "evidence/episode_usdc_2023-03.json",
+     "source_json_path": "facts.signals.aave_usdc_utilisation.max"
+    },
+    {
+     "claim": "recorded deterministic decision verdict on this episode",
+     "value": "ACTION_RECOMMENDED",
+     "unit": "verdict",
+     "source_file": "evidence/decision_usdc-2023-03.json",
+     "source_json_path": "decision.verdict"
+    },
+    {
+     "claim": "bounded demonstration action size (test transfer, demonstration parameters only)",
+     "value": 100.0,
+     "unit": "USDC",
+     "source_file": "evidence/decision_usdc-2023-03.json",
+     "source_json_path": "decision.action.amount_usdc"
+    },
+    {
+     "claim": "hypothesis H2 (broad stress on asset or issuer) verdict",
+     "value": "SUPPORTED",
+     "unit": "verdict",
+     "source_file": "evidence/decision_usdc-2023-03.json",
+     "source_json_path": "hypothesis_verdicts.H2.verdict"
+    },
+    {
+     "claim": "graph fixture: market minimum carried by the contradiction relation",
+     "value": 0.80526,
+     "unit": "USD",
+     "source_file": "fixtures/graphs/usdc_2023-03.json",
+     "source_json_path": "records[relation_id=usdc-contradiction-oracle-market].payload.market_min"
+    },
+    {
+     "claim": "graph fixture: oracle minimum carried by the contradiction relation",
+     "value": 0.90687439,
+     "unit": "USD",
+     "source_file": "fixtures/graphs/usdc_2023-03.json",
+     "source_json_path": "records[relation_id=usdc-contradiction-oracle-market].payload.oracle_min"
+    },
+    {
+     "claim": "graph fixture: dispersion carried by the derivation relation",
+     "value": 870.07,
+     "unit": "bps",
+     "source_file": "fixtures/graphs/usdc_2023-03.json",
+     "source_json_path": "records[relation_id=usdc-derived-dispersion].payload.dispersion_bps"
+    },
+    {
+     "claim": "recorded agent case input: pinned venue dispersion signal",
+     "value": 870,
+     "unit": "bps",
+     "source_file": "fixtures/agents/usdc-2023-03/run_inputs.json",
+     "source_json_path": "tool_fixtures.signals.venue_dispersion_bps.value"
+    },
+    {
+     "claim": "recorded agent case input: point-in-time snapshot dispersion fact",
+     "value": 870,
+     "unit": "bps",
+     "source_file": "fixtures/agents/usdc-2023-03/run_inputs.json",
+     "source_json_path": "snapshot.facts.dispersion_bps"
+    }
+   ],
+   "expectation": {
+    "declared": "The 2023-03 USDC depeg is a documented, archived episode: venue minima 0.80526-0.882 USD on 2023-03-11 and an inter-venue dispersion of 870.07 bps (sources listed per row above). A mode that concludes a flat NO_ACTION (nothing happened) misses a documented event.",
+    "acceptable_verdicts": ["ALLOW", "REQUIRE_APPROVAL", "abstention"],
+    "miss_verdicts": ["NO_ACTION"],
+    "quality_note": "The declaration ranks only what the evidence supports ranking: a flat NO_ACTION is a missed event. A bounded action (the pre-registered 100 USDC test transfer), a brake to human approval (the recorded critic reading FRAGILE: aggregator source independence unproven), and a justified abstention are all defensible calls here and are NOT ranked against each other — the sample is far too small for that. DENY is left unranked (the authorization axis is not evaluated in the replayed configuration).",
+    "expect_agents": "brake_and_document",
+    "expect_agents_note": "The archived A2 replay critiques the evidence as FRAGILE (source-dependence of the aggregators) and escalates to REQUIRE_APPROVAL while listing what was NOT searched (executability depth). The expected agent-layer contribution is an auditable brake + provenance ledger, not a different decision. This expectation is declared from the archived recording (fixtures/agents/usdc-2023-03 + recorded store), not invented for the benchmark."
+   }
+  },
+  {
+   "case_id": "placebo-calm-2023-03",
+   "synthetic": true,
+   "title": "PLACEBO — fabricated calm stablecoin series (no signal by construction)",
+   "fabrication_note": "SYNTHETIC DATA, fabricated for this benchmark. This is NOT real market data and must never be presented as an observation of the world. Prices are pinned to 1.00000 with a deterministic +/- 0.00010 wiggle (no randomness, no clock); circulating supply is constant. No depeg, no dispersion and no supply shock exists in this series by construction.",
+   "corpus": null,
+   "a2_case_id": "placebo-calm-2023-03",
+   "a2_store": null,
+   "a0_rdof": false,
+   "a0_rdof_reason": "The RDOF predicate registry (src/orvyren/decision/rdof.py, predicate.case_scope) is scoped to case 'usdc-2023-03'; any other case id makes the dossier stage raise E_WHAT_WOULD_CHANGE_REQUIRED. Declared substitution: this case runs the v0 deterministic engine (--no-rdof); the fact is recorded per run and in the report limitations.",
+   "a2_availability_note": "No recorded agent inputs/response store exist for a synthetic case (run_agents.py requires fixtures/agents/<case>/run_inputs.json and a sealed response store; a replay may only consume recorded responses — B1 §6.3 forbids improvising LLM answers). The A2 leg is therefore EXPECTED to fail with E_CASE_UNKNOWN and is reported as not_executed with the exact motif. Declaring this openly is part of the honesty contract; fabricating agent responses for the placebo is not allowed.",
+   "synthetic_corpus": {
+    "main_window": ["2023-03-09T00:00:00+00:00", "2023-03-15T00:00:00+00:00"],
+    "control_window": ["2023-02-15T00:00:00+00:00", "2023-02-18T00:00:00+00:00"],
+    "step_minutes": 60,
+    "price_venues": ["bitstamp", "binance", "defillama"],
+    "price_metric": "price_usd",
+    "price_base": 1.0,
+    "price_wiggle": 0.0001,
+    "supply_venues": ["defillama_supply_aggregate", "defillama_supply_ethereum"],
+    "supply_metric": "circulating_usd",
+    "supply_value": 41000000000,
+    "supply_step_hours": 24,
+    "retrieved_at": "2026-10-18T00:00:00+00:00",
+    "note": "windows mirror the frozen main/control windows of run_decision.py so the placebo is evaluated on the same window structure as the real case; every row is generated, none is observed"
+   },
+   "ground_truth": [
+    {
+     "claim": "price series wiggle amplitude (0.0001 = 0.01% of peg): no depeg is possible in this series by construction",
+     "value": 0.0001,
+     "unit": "ratio",
+     "synthetic": true,
+     "source_file": "fixtures/benchmark/cases.json",
+     "source_json_path": "cases[case_id=placebo-calm-2023-03].synthetic_corpus.price_wiggle"
+    },
+    {
+     "claim": "price base (peg) of the fabricated series",
+     "value": 1.0,
+     "unit": "USD",
+     "synthetic": true,
+     "source_file": "fixtures/benchmark/cases.json",
+     "source_json_path": "cases[case_id=placebo-calm-2023-03].synthetic_corpus.price_base"
+    },
+    {
+     "claim": "circulating supply is constant across the window (no supply shock)",
+     "value": 41000000000,
+     "unit": "USD",
+     "synthetic": true,
+     "source_file": "fixtures/benchmark/cases.json",
+     "source_json_path": "cases[case_id=placebo-calm-2023-03].synthetic_corpus.supply_value"
+    }
+   ],
+   "expectation": {
+    "declared": "No signal exists in this series by construction. A mode that finds a decisive depeg, a source contradiction or an artifact here is hallucinating: the only right calls are NO_ACTION or a justified abstention. Any decisive call — or an escalation demanding human review of nothing — is a false positive and is scored as a miss.",
+    "acceptable_verdicts": ["NO_ACTION", "abstention"],
+    "miss_verdicts": ["ALLOW", "DENY", "REQUIRE_APPROVAL"],
+    "quality_note": "On a constructed no-signal series there is no judgement call to rank: the declaration is one-sided on purpose (placebo logic).",
+    "expect_agents": "abstain_or_conclude_nothing",
+    "expect_agents_note": "If/when an agent replay exists for a calm case, the agents must find nothing decisive and abstain or conclude nothing (ARRET / no-action). In this harness the A2 leg is not executable (see a2_availability_note) and is reported as a missing measurement, never as an inferred pass."
+   }
+  }
+ ]
+}

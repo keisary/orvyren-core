@@ -1,0 +1,30 @@
+{
+ "claims": [
+  {
+   "journal_id": "demo-usdc-2023-03-orchestrator-0001",
+   "refs": [],
+   "text": "VOI_NOT_ESTIMABLE: no NetVoI estimator injected — fixed bounded order kept (documented fallback)"
+  },
+  {
+   "journal_id": "demo-usdc-2023-03-orchestrator-0004",
+   "refs": [
+    "observation:chainlink/usdc-usd/2023-03-11T12:00Z"
+   ],
+   "text": "la source oracle confirme une décote du pair par rapport au pair"
+  },
+  {
+   "journal_id": "demo-usdc-2023-03-orchestrator-0008",
+   "refs": [
+    "observation:bitstamp/usdc-usd/2023-03-11T12:00Z"
+   ],
+   "text": "l'exchange indépendant confirme une décote plus profonde"
+  }
+ ],
+ "packet_id": "demo-usdc-2023-03-packet",
+ "refs": [
+  "observation:chainlink/usdc-usd/2023-03-11T12:00Z",
+  "observation:bitstamp/usdc-usd/2023-03-11T12:00Z"
+ ],
+ "snapshot_ref": "graph_snapshot:usdc-2023-03@2023-03-11T12:00:00Z",
+ "summary": "evidence packet of the bounded run (3 reflections)"
+}

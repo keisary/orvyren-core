@@ -1,0 +1,1777 @@
+{
+  "case": "usdc-2023-03",
+  "window": {
+    "label": "main",
+    "start": "2023-03-09T00:00:00+00:00",
+    "end": "2023-03-15T00:00:00+00:00",
+    "inclusive_bounds": true,
+    "duration_hours": 144.0,
+    "timezone": "UTC"
+  },
+  "inputs_summary": {
+    "corpus": {
+      "path": "corpus/usdc_observations.csv",
+      "sha256": "c31088b3de428a35cad0833e323352d3fedecb251e4ccd07f168d884b4c8ea7e",
+      "observations_in_file": 520,
+      "observations_in_window": 387
+    },
+    "sources": [
+      {
+        "venue": "binance",
+        "metric": "close_usdcusdt",
+        "observations": 83,
+        "first_timestamp_utc": "2023-03-11T14:00:00+00:00",
+        "last_timestamp_utc": "2023-03-15T00:00:00+00:00",
+        "min_value": 0.9128,
+        "max_value": 0.9961
+      },
+      {
+        "venue": "bitstamp",
+        "metric": "close_usd",
+        "observations": 145,
+        "first_timestamp_utc": "2023-03-09T00:00:00+00:00",
+        "last_timestamp_utc": "2023-03-15T00:00:00+00:00",
+        "min_value": 0.86267,
+        "max_value": 1.00002
+      },
+      {
+        "venue": "defillama",
+        "metric": "price_usd",
+        "observations": 145,
+        "first_timestamp_utc": "2023-03-09T00:00:00+00:00",
+        "last_timestamp_utc": "2023-03-15T00:00:00+00:00",
+        "min_value": 0.876675,
+        "max_value": 1.0031789557372346
+      },
+      {
+        "venue": "defillama_supply_aggregate",
+        "metric": "circulating_usd",
+        "observations": 7,
+        "first_timestamp_utc": "2023-03-09T00:00:00+00:00",
+        "last_timestamp_utc": "2023-03-15T00:00:00+00:00",
+        "min_value": 38001901940.0,
+        "max_value": 43195640252.0
+      },
+      {
+        "venue": "defillama_supply_ethereum",
+        "metric": "circulating_usd",
+        "observations": 7,
+        "first_timestamp_utc": "2023-03-09T00:00:00+00:00",
+        "last_timestamp_utc": "2023-03-15T00:00:00+00:00",
+        "min_value": 32477824617.0,
+        "max_value": 37059405596.0
+      }
+    ],
+    "peg_reference_usd": 1.0,
+    "exposure_parameters": {
+      "exposure_usdc": 500.0,
+      "floor_usdc": 350.0,
+      "action_usdc": 100.0,
+      "available_to_move_usdc": 100.0,
+      "note": "demonstration parameters only: no real wallet, no real balance, no market impact modelled"
+    },
+    "pre_registered_thresholds": {
+      "deviation_alert_pct": 1.0,
+      "aggregate_tolerance_pct": 0.5,
+      "recovery_tolerance_pct": 0.1,
+      "recovery_hours_limit": 12.0,
+      "persistence_hours_limit": 12.0,
+      "supply_drop_pct": 1.0,
+      "supply_window_hours": 24.0
+    }
+  },
+  "hypothesis_verdicts": {
+    "H1": {
+      "hypothesis_id": "H1",
+      "label": "local liquidity perturbation",
+      "statement": "The dislocation is a local liquidity perturbation: one venue moves while the aggregate stays pegged, and it recovers quickly.",
+      "verdict": "REFUTED",
+      "support_criterion": "deviation > 1% on ONE venue, aggregate within 0.5% of peg, recovery to +/-0.1% in less than 12 h",
+      "refutation_criterion": "deviation > 1% persisting more than 12 h on >= 2 independent venues",
+      "criteria_evaluated": [
+        {
+          "criterion": "support",
+          "met": false,
+          "evaluable": true,
+          "spec": "deviation > 1.0% on a single independent venue while the aggregator stays within 0.5% of peg, and recovery to within 0.1% of peg in less than 12 h",
+          "computed": {
+            "venue_deviations_above_threshold": [
+              {
+                "venue": "bitstamp",
+                "first_alert_utc": "2023-03-11T04:00:00+00:00",
+                "max_deviation_pct": 13.733,
+                "recovery_utc": "2023-03-13T14:00:00+00:00",
+                "recovery_hours": 58.0
+              },
+              {
+                "venue": "binance",
+                "first_alert_utc": "2023-03-11T14:00:00+00:00",
+                "max_deviation_pct": 8.72,
+                "recovery_utc": null,
+                "recovery_hours": null
+              }
+            ],
+            "alert_threshold_pct": 1.0,
+            "aggregator_min_value": 0.876675,
+            "aggregator_min_deviation_pct": 12.3325,
+            "aggregator_tolerance_pct": 0.5,
+            "aggregator_within_tolerance": false,
+            "recovery_limit_hours": 12.0,
+            "recovered_within_limit": false
+          },
+          "evidence_refs": [
+            {
+              "timestamp_utc": "2023-03-11T07:00:00+00:00",
+              "venue": "bitstamp",
+              "value": 0.86267
+            },
+            {
+              "timestamp_utc": "2023-03-11T04:00:00+00:00",
+              "venue": "bitstamp",
+              "value": 0.98622
+            },
+            {
+              "timestamp_utc": "2023-03-13T14:00:00+00:00",
+              "venue": "bitstamp",
+              "value": 0.99921
+            },
+            {
+              "timestamp_utc": "2023-03-11T15:00:00+00:00",
+              "venue": "binance",
+              "value": 0.9128
+            },
+            {
+              "timestamp_utc": "2023-03-11T14:00:00+00:00",
+              "venue": "binance",
+              "value": 0.9129
+            },
+            {
+              "timestamp_utc": "2023-03-11T08:00:00+00:00",
+              "venue": "defillama",
+              "value": 0.876675
+            },
+            {
+              "timestamp_utc": "2023-03-12T22:00:00+00:00",
+              "venue": "bitstamp",
+              "value": 0.98945
+            },
+            {
+              "timestamp_utc": "2023-03-13T11:00:00+00:00",
+              "venue": "binance",
+              "value": 0.987
+            }
+          ]
+        },
+        {
+          "criterion": "refutation",
+          "met": true,
+          "evaluable": true,
+          "spec": "deviation > 1.0% persisting more than 12 h on at least two independent venues",
+          "computed": {
+            "persistence_limit_hours": 12.0,
+            "persistent_episodes": [
+              {
+                "venue": "bitstamp",
+                "start_utc": "2023-03-11T04:00:00+00:00",
+                "end_utc": "2023-03-12T22:00:00+00:00",
+                "span_hours": 42.0,
+                "observations": 43
+              },
+              {
+                "venue": "binance",
+                "start_utc": "2023-03-11T14:00:00+00:00",
+                "end_utc": "2023-03-13T11:00:00+00:00",
+                "span_hours": 45.0,
+                "observations": 46
+              }
+            ],
+            "persistent_venue_count": 2
+          },
+          "evidence_refs": [
+            {
+              "timestamp_utc": "2023-03-11T04:00:00+00:00",
+              "venue": "bitstamp",
+              "value": 0.98622
+            },
+            {
+              "timestamp_utc": "2023-03-12T22:00:00+00:00",
+              "venue": "bitstamp",
+              "value": 0.98945
+            },
+            {
+              "timestamp_utc": "2023-03-11T14:00:00+00:00",
+              "venue": "binance",
+              "value": 0.9129
+            },
+            {
+              "timestamp_utc": "2023-03-13T11:00:00+00:00",
+              "venue": "binance",
+              "value": 0.987
+            }
+          ]
+        }
+      ],
+      "evidence_refs": [
+        {
+          "timestamp_utc": "2023-03-11T07:00:00+00:00",
+          "venue": "bitstamp",
+          "value": 0.86267
+        },
+        {
+          "timestamp_utc": "2023-03-11T04:00:00+00:00",
+          "venue": "bitstamp",
+          "value": 0.98622
+        },
+        {
+          "timestamp_utc": "2023-03-13T14:00:00+00:00",
+          "venue": "bitstamp",
+          "value": 0.99921
+        },
+        {
+          "timestamp_utc": "2023-03-11T15:00:00+00:00",
+          "venue": "binance",
+          "value": 0.9128
+        },
+        {
+          "timestamp_utc": "2023-03-11T14:00:00+00:00",
+          "venue": "binance",
+          "value": 0.9129
+        },
+        {
+          "timestamp_utc": "2023-03-11T08:00:00+00:00",
+          "venue": "defillama",
+          "value": 0.876675
+        },
+        {
+          "timestamp_utc": "2023-03-12T22:00:00+00:00",
+          "venue": "bitstamp",
+          "value": 0.98945
+        },
+        {
+          "timestamp_utc": "2023-03-13T11:00:00+00:00",
+          "venue": "binance",
+          "value": 0.987
+        }
+      ],
+      "missing_inputs": [],
+      "details": {
+        "independent_venues_present": [
+          "bitstamp",
+          "binance"
+        ],
+        "aggregator_present": true
+      }
+    },
+    "H2": {
+      "hypothesis_id": "H2",
+      "label": "broad stress on asset or issuer",
+      "statement": "The dislocation reflects broad stress on the asset or its issuer, not a local venue effect.",
+      "verdict": "SUPPORTED",
+      "support_criterion": "deviation > 1% simultaneously on >= 2 independent venues AND circulating supply drop > 1% in 24 h",
+      "refutation_criterion": "signals isolated to one venue AND no supply evolution",
+      "criteria_evaluated": [
+        {
+          "criterion": "support",
+          "met": true,
+          "evaluable": true,
+          "spec": "deviation > 1% simultaneously on >= 2 independent venues AND circulating supply drop > 1% within 24 h",
+          "computed": {
+            "simultaneous_alert_hours": 34,
+            "simultaneous_first_utc": "2023-03-11T14:00:00+00:00",
+            "simultaneous_last_utc": "2023-03-13T08:00:00+00:00",
+            "venues_with_alerts": [
+              "binance",
+              "bitstamp"
+            ],
+            "alert_threshold_pct": 1.0,
+            "venue_minima": {
+              "bitstamp": {
+                "value": 0.86267,
+                "timestamp_utc": "2023-03-11T07:00:00+00:00",
+                "deviation_pct": 13.733
+              },
+              "binance": {
+                "value": 0.9128,
+                "timestamp_utc": "2023-03-11T15:00:00+00:00",
+                "deviation_pct": 8.72
+              }
+            },
+            "supply_window_hours": 24.0,
+            "supply_drop_threshold_pct": 1.0,
+            "max_24h_supply_drop_pct": -7.172196,
+            "max_24h_supply_drop_from_utc": "2023-03-11T00:00:00+00:00",
+            "max_24h_supply_drop_to_utc": "2023-03-12T00:00:00+00:00",
+            "supply_drop_above_threshold": true,
+            "supply_cross_check": {
+              "venue": "defillama_supply_ethereum",
+              "max_24h_drop_pct": -6.89995,
+              "from_utc": "2023-03-11T00:00:00+00:00",
+              "to_utc": "2023-03-12T00:00:00+00:00"
+            }
+          },
+          "evidence_refs": [
+            {
+              "timestamp_utc": "2023-03-11T07:00:00+00:00",
+              "venue": "bitstamp",
+              "value": 0.86267
+            },
+            {
+              "timestamp_utc": "2023-03-11T15:00:00+00:00",
+              "venue": "binance",
+              "value": 0.9128
+            },
+            {
+              "timestamp_utc": "2023-03-11T14:00:00+00:00",
+              "venue": "bitstamp",
+              "value": 0.915
+            },
+            {
+              "timestamp_utc": "2023-03-11T14:00:00+00:00",
+              "venue": "binance",
+              "value": 0.9129
+            },
+            {
+              "timestamp_utc": "2023-03-11T15:00:00+00:00",
+              "venue": "bitstamp",
+              "value": 0.92399
+            },
+            {
+              "timestamp_utc": "2023-03-11T15:00:00+00:00",
+              "venue": "binance",
+              "value": 0.9128
+            },
+            {
+              "timestamp_utc": "2023-03-11T16:00:00+00:00",
+              "venue": "bitstamp",
+              "value": 0.92839
+            },
+            {
+              "timestamp_utc": "2023-03-11T16:00:00+00:00",
+              "venue": "binance",
+              "value": 0.9209
+            },
+            {
+              "timestamp_utc": "2023-03-11T17:00:00+00:00",
+              "venue": "bitstamp",
+              "value": 0.95001
+            },
+            {
+              "timestamp_utc": "2023-03-11T17:00:00+00:00",
+              "venue": "binance",
+              "value": 0.9385
+            },
+            {
+              "timestamp_utc": "2023-03-11T18:00:00+00:00",
+              "venue": "bitstamp",
+              "value": 0.95359
+            },
+            {
+              "timestamp_utc": "2023-03-11T18:00:00+00:00",
+              "venue": "binance",
+              "value": 0.942
+            },
+            {
+              "timestamp_utc": "2023-03-11T19:00:00+00:00",
+              "venue": "bitstamp",
+              "value": 0.9548
+            },
+            {
+              "timestamp_utc": "2023-03-11T19:00:00+00:00",
+              "venue": "binance",
+              "value": 0.9461
+            },
+            {
+              "timestamp_utc": "2023-03-11T20:00:00+00:00",
+              "venue": "bitstamp",
+              "value": 0.97333
+            },
+            {
+              "timestamp_utc": "2023-03-11T20:00:00+00:00",
+              "venue": "binance",
+              "value": 0.9764
+            },
+            {
+              "timestamp_utc": "2023-03-11T21:00:00+00:00",
+              "venue": "bitstamp",
+              "value": 0.95891
+            },
+            {
+              "timestamp_utc": "2023-03-11T21:00:00+00:00",
+              "venue": "binance",
+              "value": 0.9545
+            },
+            {
+              "timestamp_utc": "2023-03-11T22:00:00+00:00",
+              "venue": "bitstamp",
+              "value": 0.95002
+            },
+            {
+              "timestamp_utc": "2023-03-11T22:00:00+00:00",
+              "venue": "binance",
+              "value": 0.9496
+            },
+            {
+              "timestamp_utc": "2023-03-11T23:00:00+00:00",
+              "venue": "bitstamp",
+              "value": 0.96853
+            },
+            {
+              "timestamp_utc": "2023-03-11T23:00:00+00:00",
+              "venue": "binance",
+              "value": 0.9592
+            },
+            {
+              "timestamp_utc": "2023-03-12T00:00:00+00:00",
+              "venue": "bitstamp",
+              "value": 0.96763
+            },
+            {
+              "timestamp_utc": "2023-03-12T00:00:00+00:00",
+              "venue": "binance",
+              "value": 0.9605
+            },
+            {
+              "timestamp_utc": "2023-03-12T01:00:00+00:00",
+              "venue": "bitstamp",
+              "value": 0.985
+            },
+            {
+              "timestamp_utc": "2023-03-12T01:00:00+00:00",
+              "venue": "binance",
+              "value": 0.9689
+            },
+            {
+              "timestamp_utc": "2023-03-12T02:00:00+00:00",
+              "venue": "bitstamp",
+              "value": 0.985
+            },
+            {
+              "timestamp_utc": "2023-03-12T02:00:00+00:00",
+              "venue": "binance",
+              "value": 0.9662
+            },
+            {
+              "timestamp_utc": "2023-03-12T03:00:00+00:00",
+              "venue": "bitstamp",
+              "value": 0.985
+            },
+            {
+              "timestamp_utc": "2023-03-12T03:00:00+00:00",
+              "venue": "binance",
+              "value": 0.9691
+            },
+            {
+              "timestamp_utc": "2023-03-12T04:00:00+00:00",
+              "venue": "bitstamp",
+              "value": 0.985
+            },
+            {
+              "timestamp_utc": "2023-03-12T04:00:00+00:00",
+              "venue": "binance",
+              "value": 0.9596
+            },
+            {
+              "timestamp_utc": "2023-03-12T05:00:00+00:00",
+              "venue": "bitstamp",
+              "value": 0.98
+            },
+            {
+              "timestamp_utc": "2023-03-12T05:00:00+00:00",
+              "venue": "binance",
+              "value": 0.9599
+            },
+            {
+              "timestamp_utc": "2023-03-12T06:00:00+00:00",
+              "venue": "bitstamp",
+              "value": 0.95737
+            },
+            {
+              "timestamp_utc": "2023-03-12T06:00:00+00:00",
+              "venue": "binance",
+              "value": 0.9458
+            },
+            {
+              "timestamp_utc": "2023-03-12T07:00:00+00:00",
+              "venue": "bitstamp",
+              "value": 0.94757
+            },
+            {
+              "timestamp_utc": "2023-03-12T07:00:00+00:00",
+              "venue": "binance",
+              "value": 0.9396
+            },
+            {
+              "timestamp_utc": "2023-03-12T08:00:00+00:00",
+              "venue": "bitstamp",
+              "value": 0.95234
+            },
+            {
+              "timestamp_utc": "2023-03-12T08:00:00+00:00",
+              "venue": "binance",
+              "value": 0.9456
+            },
+            {
+              "timestamp_utc": "2023-03-12T09:00:00+00:00",
+              "venue": "bitstamp",
+              "value": 0.95553
+            },
+            {
+              "timestamp_utc": "2023-03-12T09:00:00+00:00",
+              "venue": "binance",
+              "value": 0.9494
+            },
+            {
+              "timestamp_utc": "2023-03-12T10:00:00+00:00",
+              "venue": "bitstamp",
+              "value": 0.9588
+            },
+            {
+              "timestamp_utc": "2023-03-12T10:00:00+00:00",
+              "venue": "binance",
+              "value": 0.9527
+            },
+            {
+              "timestamp_utc": "2023-03-12T11:00:00+00:00",
+              "venue": "bitstamp",
+              "value": 0.95789
+            },
+            {
+              "timestamp_utc": "2023-03-12T11:00:00+00:00",
+              "venue": "binance",
+              "value": 0.9529
+            },
+            {
+              "timestamp_utc": "2023-03-12T12:00:00+00:00",
+              "venue": "bitstamp",
+              "value": 0.95723
+            },
+            {
+              "timestamp_utc": "2023-03-12T12:00:00+00:00",
+              "venue": "binance",
+              "value": 0.9507
+            },
+            {
+              "timestamp_utc": "2023-03-12T13:00:00+00:00",
+              "venue": "bitstamp",
+              "value": 0.95826
+            },
+            {
+              "timestamp_utc": "2023-03-12T13:00:00+00:00",
+              "venue": "binance",
+              "value": 0.9542
+            },
+            {
+              "timestamp_utc": "2023-03-12T14:00:00+00:00",
+              "venue": "bitstamp",
+              "value": 0.9591
+            },
+            {
+              "timestamp_utc": "2023-03-12T14:00:00+00:00",
+              "venue": "binance",
+              "value": 0.9496
+            },
+            {
+              "timestamp_utc": "2023-03-12T15:00:00+00:00",
+              "venue": "bitstamp",
+              "value": 0.95904
+            },
+            {
+              "timestamp_utc": "2023-03-12T15:00:00+00:00",
+              "venue": "binance",
+              "value": 0.9484
+            },
+            {
+              "timestamp_utc": "2023-03-12T16:00:00+00:00",
+              "venue": "bitstamp",
+              "value": 0.95856
+            },
+            {
+              "timestamp_utc": "2023-03-12T16:00:00+00:00",
+              "venue": "binance",
+              "value": 0.9477
+            },
+            {
+              "timestamp_utc": "2023-03-12T17:00:00+00:00",
+              "venue": "bitstamp",
+              "value": 0.9657
+            },
+            {
+              "timestamp_utc": "2023-03-12T17:00:00+00:00",
+              "venue": "binance",
+              "value": 0.9532
+            },
+            {
+              "timestamp_utc": "2023-03-12T18:00:00+00:00",
+              "venue": "bitstamp",
+              "value": 0.96956
+            },
+            {
+              "timestamp_utc": "2023-03-12T18:00:00+00:00",
+              "venue": "binance",
+              "value": 0.9548
+            },
+            {
+              "timestamp_utc": "2023-03-12T19:00:00+00:00",
+              "venue": "bitstamp",
+              "value": 0.96731
+            },
+            {
+              "timestamp_utc": "2023-03-12T19:00:00+00:00",
+              "venue": "binance",
+              "value": 0.9528
+            },
+            {
+              "timestamp_utc": "2023-03-12T20:00:00+00:00",
+              "venue": "bitstamp",
+              "value": 0.9692
+            },
+            {
+              "timestamp_utc": "2023-03-12T20:00:00+00:00",
+              "venue": "binance",
+              "value": 0.9594
+            },
+            {
+              "timestamp_utc": "2023-03-12T21:00:00+00:00",
+              "venue": "bitstamp",
+              "value": 0.96833
+            },
+            {
+              "timestamp_utc": "2023-03-12T21:00:00+00:00",
+              "venue": "binance",
+              "value": 0.9595
+            },
+            {
+              "timestamp_utc": "2023-03-12T22:00:00+00:00",
+              "venue": "bitstamp",
+              "value": 0.98945
+            },
+            {
+              "timestamp_utc": "2023-03-12T22:00:00+00:00",
+              "venue": "binance",
+              "value": 0.9829
+            },
+            {
+              "timestamp_utc": "2023-03-13T08:00:00+00:00",
+              "venue": "bitstamp",
+              "value": 0.98843
+            },
+            {
+              "timestamp_utc": "2023-03-13T08:00:00+00:00",
+              "venue": "binance",
+              "value": 0.9879
+            },
+            {
+              "timestamp_utc": "2023-03-11T00:00:00+00:00",
+              "venue": "defillama_supply_aggregate",
+              "value": 42097257578.0
+            },
+            {
+              "timestamp_utc": "2023-03-12T00:00:00+00:00",
+              "venue": "defillama_supply_aggregate",
+              "value": 39077959674.0
+            }
+          ]
+        },
+        {
+          "criterion": "refutation",
+          "met": false,
+          "evaluable": true,
+          "spec": "signals isolated to at most one venue AND no 24 h supply change",
+          "computed": {
+            "venues_with_alerts": [
+              "bitstamp",
+              "binance"
+            ],
+            "max_24h_supply_drop_pct": -7.172196,
+            "supply_drop_above_threshold": true
+          },
+          "evidence_refs": []
+        }
+      ],
+      "evidence_refs": [
+        {
+          "timestamp_utc": "2023-03-11T07:00:00+00:00",
+          "venue": "bitstamp",
+          "value": 0.86267
+        },
+        {
+          "timestamp_utc": "2023-03-11T15:00:00+00:00",
+          "venue": "binance",
+          "value": 0.9128
+        },
+        {
+          "timestamp_utc": "2023-03-11T14:00:00+00:00",
+          "venue": "bitstamp",
+          "value": 0.915
+        },
+        {
+          "timestamp_utc": "2023-03-11T14:00:00+00:00",
+          "venue": "binance",
+          "value": 0.9129
+        },
+        {
+          "timestamp_utc": "2023-03-11T15:00:00+00:00",
+          "venue": "bitstamp",
+          "value": 0.92399
+        },
+        {
+          "timestamp_utc": "2023-03-11T15:00:00+00:00",
+          "venue": "binance",
+          "value": 0.9128
+        },
+        {
+          "timestamp_utc": "2023-03-11T16:00:00+00:00",
+          "venue": "bitstamp",
+          "value": 0.92839
+        },
+        {
+          "timestamp_utc": "2023-03-11T16:00:00+00:00",
+          "venue": "binance",
+          "value": 0.9209
+        },
+        {
+          "timestamp_utc": "2023-03-11T17:00:00+00:00",
+          "venue": "bitstamp",
+          "value": 0.95001
+        },
+        {
+          "timestamp_utc": "2023-03-11T17:00:00+00:00",
+          "venue": "binance",
+          "value": 0.9385
+        },
+        {
+          "timestamp_utc": "2023-03-11T18:00:00+00:00",
+          "venue": "bitstamp",
+          "value": 0.95359
+        },
+        {
+          "timestamp_utc": "2023-03-11T18:00:00+00:00",
+          "venue": "binance",
+          "value": 0.942
+        },
+        {
+          "timestamp_utc": "2023-03-11T19:00:00+00:00",
+          "venue": "bitstamp",
+          "value": 0.9548
+        },
+        {
+          "timestamp_utc": "2023-03-11T19:00:00+00:00",
+          "venue": "binance",
+          "value": 0.9461
+        },
+        {
+          "timestamp_utc": "2023-03-11T20:00:00+00:00",
+          "venue": "bitstamp",
+          "value": 0.97333
+        },
+        {
+          "timestamp_utc": "2023-03-11T20:00:00+00:00",
+          "venue": "binance",
+          "value": 0.9764
+        },
+        {
+          "timestamp_utc": "2023-03-11T21:00:00+00:00",
+          "venue": "bitstamp",
+          "value": 0.95891
+        },
+        {
+          "timestamp_utc": "2023-03-11T21:00:00+00:00",
+          "venue": "binance",
+          "value": 0.9545
+        },
+        {
+          "timestamp_utc": "2023-03-11T22:00:00+00:00",
+          "venue": "bitstamp",
+          "value": 0.95002
+        },
+        {
+          "timestamp_utc": "2023-03-11T22:00:00+00:00",
+          "venue": "binance",
+          "value": 0.9496
+        },
+        {
+          "timestamp_utc": "2023-03-11T23:00:00+00:00",
+          "venue": "bitstamp",
+          "value": 0.96853
+        },
+        {
+          "timestamp_utc": "2023-03-11T23:00:00+00:00",
+          "venue": "binance",
+          "value": 0.9592
+        },
+        {
+          "timestamp_utc": "2023-03-12T00:00:00+00:00",
+          "venue": "bitstamp",
+          "value": 0.96763
+        },
+        {
+          "timestamp_utc": "2023-03-12T00:00:00+00:00",
+          "venue": "binance",
+          "value": 0.9605
+        },
+        {
+          "timestamp_utc": "2023-03-12T01:00:00+00:00",
+          "venue": "bitstamp",
+          "value": 0.985
+        },
+        {
+          "timestamp_utc": "2023-03-12T01:00:00+00:00",
+          "venue": "binance",
+          "value": 0.9689
+        },
+        {
+          "timestamp_utc": "2023-03-12T02:00:00+00:00",
+          "venue": "bitstamp",
+          "value": 0.985
+        },
+        {
+          "timestamp_utc": "2023-03-12T02:00:00+00:00",
+          "venue": "binance",
+          "value": 0.9662
+        },
+        {
+          "timestamp_utc": "2023-03-12T03:00:00+00:00",
+          "venue": "bitstamp",
+          "value": 0.985
+        },
+        {
+          "timestamp_utc": "2023-03-12T03:00:00+00:00",
+          "venue": "binance",
+          "value": 0.9691
+        },
+        {
+          "timestamp_utc": "2023-03-12T04:00:00+00:00",
+          "venue": "bitstamp",
+          "value": 0.985
+        },
+        {
+          "timestamp_utc": "2023-03-12T04:00:00+00:00",
+          "venue": "binance",
+          "value": 0.9596
+        },
+        {
+          "timestamp_utc": "2023-03-12T05:00:00+00:00",
+          "venue": "bitstamp",
+          "value": 0.98
+        },
+        {
+          "timestamp_utc": "2023-03-12T05:00:00+00:00",
+          "venue": "binance",
+          "value": 0.9599
+        },
+        {
+          "timestamp_utc": "2023-03-12T06:00:00+00:00",
+          "venue": "bitstamp",
+          "value": 0.95737
+        },
+        {
+          "timestamp_utc": "2023-03-12T06:00:00+00:00",
+          "venue": "binance",
+          "value": 0.9458
+        },
+        {
+          "timestamp_utc": "2023-03-12T07:00:00+00:00",
+          "venue": "bitstamp",
+          "value": 0.94757
+        },
+        {
+          "timestamp_utc": "2023-03-12T07:00:00+00:00",
+          "venue": "binance",
+          "value": 0.9396
+        },
+        {
+          "timestamp_utc": "2023-03-12T08:00:00+00:00",
+          "venue": "bitstamp",
+          "value": 0.95234
+        },
+        {
+          "timestamp_utc": "2023-03-12T08:00:00+00:00",
+          "venue": "binance",
+          "value": 0.9456
+        },
+        {
+          "timestamp_utc": "2023-03-12T09:00:00+00:00",
+          "venue": "bitstamp",
+          "value": 0.95553
+        },
+        {
+          "timestamp_utc": "2023-03-12T09:00:00+00:00",
+          "venue": "binance",
+          "value": 0.9494
+        },
+        {
+          "timestamp_utc": "2023-03-12T10:00:00+00:00",
+          "venue": "bitstamp",
+          "value": 0.9588
+        },
+        {
+          "timestamp_utc": "2023-03-12T10:00:00+00:00",
+          "venue": "binance",
+          "value": 0.9527
+        },
+        {
+          "timestamp_utc": "2023-03-12T11:00:00+00:00",
+          "venue": "bitstamp",
+          "value": 0.95789
+        },
+        {
+          "timestamp_utc": "2023-03-12T11:00:00+00:00",
+          "venue": "binance",
+          "value": 0.9529
+        },
+        {
+          "timestamp_utc": "2023-03-12T12:00:00+00:00",
+          "venue": "bitstamp",
+          "value": 0.95723
+        },
+        {
+          "timestamp_utc": "2023-03-12T12:00:00+00:00",
+          "venue": "binance",
+          "value": 0.9507
+        },
+        {
+          "timestamp_utc": "2023-03-12T13:00:00+00:00",
+          "venue": "bitstamp",
+          "value": 0.95826
+        },
+        {
+          "timestamp_utc": "2023-03-12T13:00:00+00:00",
+          "venue": "binance",
+          "value": 0.9542
+        },
+        {
+          "timestamp_utc": "2023-03-12T14:00:00+00:00",
+          "venue": "bitstamp",
+          "value": 0.9591
+        },
+        {
+          "timestamp_utc": "2023-03-12T14:00:00+00:00",
+          "venue": "binance",
+          "value": 0.9496
+        },
+        {
+          "timestamp_utc": "2023-03-12T15:00:00+00:00",
+          "venue": "bitstamp",
+          "value": 0.95904
+        },
+        {
+          "timestamp_utc": "2023-03-12T15:00:00+00:00",
+          "venue": "binance",
+          "value": 0.9484
+        },
+        {
+          "timestamp_utc": "2023-03-12T16:00:00+00:00",
+          "venue": "bitstamp",
+          "value": 0.95856
+        },
+        {
+          "timestamp_utc": "2023-03-12T16:00:00+00:00",
+          "venue": "binance",
+          "value": 0.9477
+        },
+        {
+          "timestamp_utc": "2023-03-12T17:00:00+00:00",
+          "venue": "bitstamp",
+          "value": 0.9657
+        },
+        {
+          "timestamp_utc": "2023-03-12T17:00:00+00:00",
+          "venue": "binance",
+          "value": 0.9532
+        },
+        {
+          "timestamp_utc": "2023-03-12T18:00:00+00:00",
+          "venue": "bitstamp",
+          "value": 0.96956
+        },
+        {
+          "timestamp_utc": "2023-03-12T18:00:00+00:00",
+          "venue": "binance",
+          "value": 0.9548
+        },
+        {
+          "timestamp_utc": "2023-03-12T19:00:00+00:00",
+          "venue": "bitstamp",
+          "value": 0.96731
+        },
+        {
+          "timestamp_utc": "2023-03-12T19:00:00+00:00",
+          "venue": "binance",
+          "value": 0.9528
+        },
+        {
+          "timestamp_utc": "2023-03-12T20:00:00+00:00",
+          "venue": "bitstamp",
+          "value": 0.9692
+        },
+        {
+          "timestamp_utc": "2023-03-12T20:00:00+00:00",
+          "venue": "binance",
+          "value": 0.9594
+        },
+        {
+          "timestamp_utc": "2023-03-12T21:00:00+00:00",
+          "venue": "bitstamp",
+          "value": 0.96833
+        },
+        {
+          "timestamp_utc": "2023-03-12T21:00:00+00:00",
+          "venue": "binance",
+          "value": 0.9595
+        },
+        {
+          "timestamp_utc": "2023-03-12T22:00:00+00:00",
+          "venue": "bitstamp",
+          "value": 0.98945
+        },
+        {
+          "timestamp_utc": "2023-03-12T22:00:00+00:00",
+          "venue": "binance",
+          "value": 0.9829
+        },
+        {
+          "timestamp_utc": "2023-03-13T08:00:00+00:00",
+          "venue": "bitstamp",
+          "value": 0.98843
+        },
+        {
+          "timestamp_utc": "2023-03-13T08:00:00+00:00",
+          "venue": "binance",
+          "value": 0.9879
+        },
+        {
+          "timestamp_utc": "2023-03-11T00:00:00+00:00",
+          "venue": "defillama_supply_aggregate",
+          "value": 42097257578.0
+        },
+        {
+          "timestamp_utc": "2023-03-12T00:00:00+00:00",
+          "venue": "defillama_supply_aggregate",
+          "value": 39077959674.0
+        }
+      ],
+      "missing_inputs": [],
+      "details": {
+        "independent_venues_present": [
+          "bitstamp",
+          "binance"
+        ],
+        "supply_series_present": true,
+        "supply_observations": 7,
+        "concurrent_alerts": true
+      }
+    },
+    "H3": {
+      "hypothesis_id": "H3",
+      "label": "data or market artifact",
+      "statement": "The observed movement is a data or market artifact rather than a genuine dislocation.",
+      "verdict": "REFUTED",
+      "support_criterion": "unit/contract/timestamp inconsistency or unexplained divergence between two sources of distinct nature",
+      "refutation_criterion": "at least two independent concordant sources",
+      "criteria_evaluated": [
+        {
+          "criterion": "support",
+          "met": false,
+          "evaluable": true,
+          "spec": "unit/contract/timestamp inconsistency, or an unexplained divergence between two sources of distinct nature",
+          "computed": {
+            "structural_flags": [],
+            "unexplained_divergences": [],
+            "checks_not_possible": [
+              "contract-level verification: this corpus carries no contract/address field"
+            ]
+          },
+          "evidence_refs": [
+            {
+              "timestamp_utc": "2023-03-11T14:00:00+00:00",
+              "venue": "binance",
+              "value": 0.9129
+            },
+            {
+              "timestamp_utc": "2023-03-11T14:00:00+00:00",
+              "venue": "bitstamp",
+              "value": 0.915
+            },
+            {
+              "timestamp_utc": "2023-03-13T08:00:00+00:00",
+              "venue": "binance",
+              "value": 0.9879
+            },
+            {
+              "timestamp_utc": "2023-03-13T08:00:00+00:00",
+              "venue": "bitstamp",
+              "value": 0.98843
+            }
+          ]
+        },
+        {
+          "criterion": "refutation",
+          "met": true,
+          "evaluable": true,
+          "spec": "at least 2 independent concordant sources confirm the movement",
+          "computed": {
+            "concordant_venues": [
+              "binance",
+              "bitstamp"
+            ],
+            "simultaneous_alert_hours": 34
+          },
+          "evidence_refs": [
+            {
+              "timestamp_utc": "2023-03-11T14:00:00+00:00",
+              "venue": "binance",
+              "value": 0.9129
+            },
+            {
+              "timestamp_utc": "2023-03-11T14:00:00+00:00",
+              "venue": "bitstamp",
+              "value": 0.915
+            },
+            {
+              "timestamp_utc": "2023-03-13T08:00:00+00:00",
+              "venue": "binance",
+              "value": 0.9879
+            },
+            {
+              "timestamp_utc": "2023-03-13T08:00:00+00:00",
+              "venue": "bitstamp",
+              "value": 0.98843
+            }
+          ]
+        }
+      ],
+      "evidence_refs": [
+        {
+          "timestamp_utc": "2023-03-11T14:00:00+00:00",
+          "venue": "binance",
+          "value": 0.9129
+        },
+        {
+          "timestamp_utc": "2023-03-11T14:00:00+00:00",
+          "venue": "bitstamp",
+          "value": 0.915
+        },
+        {
+          "timestamp_utc": "2023-03-13T08:00:00+00:00",
+          "venue": "binance",
+          "value": 0.9879
+        },
+        {
+          "timestamp_utc": "2023-03-13T08:00:00+00:00",
+          "venue": "bitstamp",
+          "value": 0.98843
+        }
+      ],
+      "missing_inputs": [],
+      "details": {
+        "independent_venues_present": [
+          "bitstamp",
+          "binance"
+        ],
+        "structural_flag_count": 0,
+        "unexplained_divergence_count": 0,
+        "concordant_venue_count": 2
+      }
+    }
+  },
+  "decision": {
+    "verdict": "ACTION_RECOMMENDED",
+    "action": {
+      "type": "transfer",
+      "asset": "USDC (test)",
+      "amount_usdc": 100.0,
+      "from_wallet": "treasury",
+      "to_wallet": "reserve"
+    },
+    "rationale": [
+      "Pre-registered decision rule (frozen before evaluation): H2 SUPPORTED and available_to_move > 0 -> ACTION_RECOMMENDED (bounded 100 USDC test transfer, D8); H1 SUPPORTED and H2 REFUTED -> NO_ACTION (local perturbation, no exposure reduction); missing required series -> INCONCLUSIVE with missing_inputs.",
+      "Rule 1 fires: H2 is SUPPORTED and available_to_move = min(100.0, 500.0 - 350.0) = 100.0000 USDC > 0, so the bounded demonstration action of FREEZE_V1 D8 is recommended: transfer of 100.0000 USDC (test) from wallet 'treasury' to wallet 'reserve'.",
+      "H1 local liquidity perturbation: REFUTED. The deviation did not stay local: > 1.0% persisted more than 12 h on 2 independent venues (persistent episodes: bitstamp 42.0 h, binance 45.0 h), while the aggregator fell to 0.876675 (12.3325%), beyond the 0.5% tolerance.",
+      "H2 broad stress on asset or issuer: SUPPORTED. 34 simultaneous hourly observation(s) more than 1.0% below peg on 2 independent venues (binance, bitstamp) from 2023-03-11T14:00:00+00:00 to 2023-03-13T08:00:00+00:00; deepest: bitstamp 0.86267 at 2023-03-11T07:00:00+00:00 (13.7330%); binance 0.91280 at 2023-03-11T15:00:00+00:00 (8.7200%); circulating supply moved -7.1722% in 24 h (2023-03-11T00:00:00+00:00 -> 2023-03-12T00:00:00+00:00), threshold 1.0%.",
+      "H3 data or market artifact: REFUTED. 2 independent sources (binance, bitstamp) were concordant over 34 simultaneous hour(s); no structural inconsistency and no unexplained divergence was found in the corpus."
+    ],
+    "conditions": [
+      "Any execution must first be authorized by the deterministic policy service (src/orvyren/policy, FREEZE_V1 D9): Base Sepolia chain 84532, allowlisted test-USDC asset, allowlisted reserve recipient, <= 100 USDC per transaction, <= 300 USDC cumulative, 24 h permission, idempotent intent_id.",
+      "Test assets only; no mainnet funds (FREEZE_V1 D5/D8).",
+      "The decision is scoped to the frozen corpus revision (sha256 recorded in inputs_summary) and to the recorded window; new observations outside it invalidate the case.",
+      "Contract-level verification of the asset was not possible from this corpus (no contract field); it remains an open check before any mainnet-grade claim."
+    ],
+    "limits": [
+      "Exposure parameters are demonstration values, not a real portfolio: 500.0 USDC exposure, 350.0 USDC floor, 100.0 USDC action.",
+      "Corpus coverage is uneven: binance 83 observation(s); bitstamp 145 observation(s); defillama 145 observation(s); defillama_supply_aggregate 7 observation(s); defillama_supply_ethereum 7 observation(s); the control window has no exchange observations.",
+      "The aggregator is a multi-venue median with possible lag; the supply series is daily and covers observable on-chain supply only.",
+      "H2 identifies stress consistent with an asset/issuer event; price and supply data alone do not attribute it between the asset and its issuer.",
+      "This engine produces a decision candidate only and never executes; the baseline A0 comparison lives in evidence/baseline_report.json."
+    ],
+    "provenance": [
+      {
+        "timestamp_utc": "2023-03-11T07:00:00+00:00",
+        "venue": "bitstamp",
+        "value": 0.86267
+      },
+      {
+        "timestamp_utc": "2023-03-11T04:00:00+00:00",
+        "venue": "bitstamp",
+        "value": 0.98622
+      },
+      {
+        "timestamp_utc": "2023-03-13T14:00:00+00:00",
+        "venue": "bitstamp",
+        "value": 0.99921
+      },
+      {
+        "timestamp_utc": "2023-03-11T15:00:00+00:00",
+        "venue": "binance",
+        "value": 0.9128
+      },
+      {
+        "timestamp_utc": "2023-03-11T14:00:00+00:00",
+        "venue": "binance",
+        "value": 0.9129
+      },
+      {
+        "timestamp_utc": "2023-03-11T08:00:00+00:00",
+        "venue": "defillama",
+        "value": 0.876675
+      },
+      {
+        "timestamp_utc": "2023-03-12T22:00:00+00:00",
+        "venue": "bitstamp",
+        "value": 0.98945
+      },
+      {
+        "timestamp_utc": "2023-03-13T11:00:00+00:00",
+        "venue": "binance",
+        "value": 0.987
+      },
+      {
+        "timestamp_utc": "2023-03-11T14:00:00+00:00",
+        "venue": "bitstamp",
+        "value": 0.915
+      },
+      {
+        "timestamp_utc": "2023-03-11T15:00:00+00:00",
+        "venue": "bitstamp",
+        "value": 0.92399
+      },
+      {
+        "timestamp_utc": "2023-03-11T16:00:00+00:00",
+        "venue": "bitstamp",
+        "value": 0.92839
+      },
+      {
+        "timestamp_utc": "2023-03-11T16:00:00+00:00",
+        "venue": "binance",
+        "value": 0.9209
+      },
+      {
+        "timestamp_utc": "2023-03-11T17:00:00+00:00",
+        "venue": "bitstamp",
+        "value": 0.95001
+      },
+      {
+        "timestamp_utc": "2023-03-11T17:00:00+00:00",
+        "venue": "binance",
+        "value": 0.9385
+      },
+      {
+        "timestamp_utc": "2023-03-11T18:00:00+00:00",
+        "venue": "bitstamp",
+        "value": 0.95359
+      },
+      {
+        "timestamp_utc": "2023-03-11T18:00:00+00:00",
+        "venue": "binance",
+        "value": 0.942
+      },
+      {
+        "timestamp_utc": "2023-03-11T19:00:00+00:00",
+        "venue": "bitstamp",
+        "value": 0.9548
+      },
+      {
+        "timestamp_utc": "2023-03-11T19:00:00+00:00",
+        "venue": "binance",
+        "value": 0.9461
+      },
+      {
+        "timestamp_utc": "2023-03-11T20:00:00+00:00",
+        "venue": "bitstamp",
+        "value": 0.97333
+      },
+      {
+        "timestamp_utc": "2023-03-11T20:00:00+00:00",
+        "venue": "binance",
+        "value": 0.9764
+      },
+      {
+        "timestamp_utc": "2023-03-11T21:00:00+00:00",
+        "venue": "bitstamp",
+        "value": 0.95891
+      },
+      {
+        "timestamp_utc": "2023-03-11T21:00:00+00:00",
+        "venue": "binance",
+        "value": 0.9545
+      },
+      {
+        "timestamp_utc": "2023-03-11T22:00:00+00:00",
+        "venue": "bitstamp",
+        "value": 0.95002
+      },
+      {
+        "timestamp_utc": "2023-03-11T22:00:00+00:00",
+        "venue": "binance",
+        "value": 0.9496
+      },
+      {
+        "timestamp_utc": "2023-03-11T23:00:00+00:00",
+        "venue": "bitstamp",
+        "value": 0.96853
+      },
+      {
+        "timestamp_utc": "2023-03-11T23:00:00+00:00",
+        "venue": "binance",
+        "value": 0.9592
+      },
+      {
+        "timestamp_utc": "2023-03-12T00:00:00+00:00",
+        "venue": "bitstamp",
+        "value": 0.96763
+      },
+      {
+        "timestamp_utc": "2023-03-12T00:00:00+00:00",
+        "venue": "binance",
+        "value": 0.9605
+      },
+      {
+        "timestamp_utc": "2023-03-12T01:00:00+00:00",
+        "venue": "bitstamp",
+        "value": 0.985
+      },
+      {
+        "timestamp_utc": "2023-03-12T01:00:00+00:00",
+        "venue": "binance",
+        "value": 0.9689
+      },
+      {
+        "timestamp_utc": "2023-03-12T02:00:00+00:00",
+        "venue": "bitstamp",
+        "value": 0.985
+      },
+      {
+        "timestamp_utc": "2023-03-12T02:00:00+00:00",
+        "venue": "binance",
+        "value": 0.9662
+      },
+      {
+        "timestamp_utc": "2023-03-12T03:00:00+00:00",
+        "venue": "bitstamp",
+        "value": 0.985
+      },
+      {
+        "timestamp_utc": "2023-03-12T03:00:00+00:00",
+        "venue": "binance",
+        "value": 0.9691
+      },
+      {
+        "timestamp_utc": "2023-03-12T04:00:00+00:00",
+        "venue": "bitstamp",
+        "value": 0.985
+      },
+      {
+        "timestamp_utc": "2023-03-12T04:00:00+00:00",
+        "venue": "binance",
+        "value": 0.9596
+      },
+      {
+        "timestamp_utc": "2023-03-12T05:00:00+00:00",
+        "venue": "bitstamp",
+        "value": 0.98
+      },
+      {
+        "timestamp_utc": "2023-03-12T05:00:00+00:00",
+        "venue": "binance",
+        "value": 0.9599
+      },
+      {
+        "timestamp_utc": "2023-03-12T06:00:00+00:00",
+        "venue": "bitstamp",
+        "value": 0.95737
+      },
+      {
+        "timestamp_utc": "2023-03-12T06:00:00+00:00",
+        "venue": "binance",
+        "value": 0.9458
+      },
+      {
+        "timestamp_utc": "2023-03-12T07:00:00+00:00",
+        "venue": "bitstamp",
+        "value": 0.94757
+      },
+      {
+        "timestamp_utc": "2023-03-12T07:00:00+00:00",
+        "venue": "binance",
+        "value": 0.9396
+      },
+      {
+        "timestamp_utc": "2023-03-12T08:00:00+00:00",
+        "venue": "bitstamp",
+        "value": 0.95234
+      },
+      {
+        "timestamp_utc": "2023-03-12T08:00:00+00:00",
+        "venue": "binance",
+        "value": 0.9456
+      },
+      {
+        "timestamp_utc": "2023-03-12T09:00:00+00:00",
+        "venue": "bitstamp",
+        "value": 0.95553
+      },
+      {
+        "timestamp_utc": "2023-03-12T09:00:00+00:00",
+        "venue": "binance",
+        "value": 0.9494
+      },
+      {
+        "timestamp_utc": "2023-03-12T10:00:00+00:00",
+        "venue": "bitstamp",
+        "value": 0.9588
+      },
+      {
+        "timestamp_utc": "2023-03-12T10:00:00+00:00",
+        "venue": "binance",
+        "value": 0.9527
+      },
+      {
+        "timestamp_utc": "2023-03-12T11:00:00+00:00",
+        "venue": "bitstamp",
+        "value": 0.95789
+      },
+      {
+        "timestamp_utc": "2023-03-12T11:00:00+00:00",
+        "venue": "binance",
+        "value": 0.9529
+      },
+      {
+        "timestamp_utc": "2023-03-12T12:00:00+00:00",
+        "venue": "bitstamp",
+        "value": 0.95723
+      },
+      {
+        "timestamp_utc": "2023-03-12T12:00:00+00:00",
+        "venue": "binance",
+        "value": 0.9507
+      },
+      {
+        "timestamp_utc": "2023-03-12T13:00:00+00:00",
+        "venue": "bitstamp",
+        "value": 0.95826
+      },
+      {
+        "timestamp_utc": "2023-03-12T13:00:00+00:00",
+        "venue": "binance",
+        "value": 0.9542
+      },
+      {
+        "timestamp_utc": "2023-03-12T14:00:00+00:00",
+        "venue": "bitstamp",
+        "value": 0.9591
+      },
+      {
+        "timestamp_utc": "2023-03-12T14:00:00+00:00",
+        "venue": "binance",
+        "value": 0.9496
+      },
+      {
+        "timestamp_utc": "2023-03-12T15:00:00+00:00",
+        "venue": "bitstamp",
+        "value": 0.95904
+      },
+      {
+        "timestamp_utc": "2023-03-12T15:00:00+00:00",
+        "venue": "binance",
+        "value": 0.9484
+      },
+      {
+        "timestamp_utc": "2023-03-12T16:00:00+00:00",
+        "venue": "bitstamp",
+        "value": 0.95856
+      },
+      {
+        "timestamp_utc": "2023-03-12T16:00:00+00:00",
+        "venue": "binance",
+        "value": 0.9477
+      },
+      {
+        "timestamp_utc": "2023-03-12T17:00:00+00:00",
+        "venue": "bitstamp",
+        "value": 0.9657
+      },
+      {
+        "timestamp_utc": "2023-03-12T17:00:00+00:00",
+        "venue": "binance",
+        "value": 0.9532
+      },
+      {
+        "timestamp_utc": "2023-03-12T18:00:00+00:00",
+        "venue": "bitstamp",
+        "value": 0.96956
+      },
+      {
+        "timestamp_utc": "2023-03-12T18:00:00+00:00",
+        "venue": "binance",
+        "value": 0.9548
+      },
+      {
+        "timestamp_utc": "2023-03-12T19:00:00+00:00",
+        "venue": "bitstamp",
+        "value": 0.96731
+      },
+      {
+        "timestamp_utc": "2023-03-12T19:00:00+00:00",
+        "venue": "binance",
+        "value": 0.9528
+      },
+      {
+        "timestamp_utc": "2023-03-12T20:00:00+00:00",
+        "venue": "bitstamp",
+        "value": 0.9692
+      },
+      {
+        "timestamp_utc": "2023-03-12T20:00:00+00:00",
+        "venue": "binance",
+        "value": 0.9594
+      },
+      {
+        "timestamp_utc": "2023-03-12T21:00:00+00:00",
+        "venue": "bitstamp",
+        "value": 0.96833
+      },
+      {
+        "timestamp_utc": "2023-03-12T21:00:00+00:00",
+        "venue": "binance",
+        "value": 0.9595
+      },
+      {
+        "timestamp_utc": "2023-03-12T22:00:00+00:00",
+        "venue": "binance",
+        "value": 0.9829
+      },
+      {
+        "timestamp_utc": "2023-03-13T08:00:00+00:00",
+        "venue": "bitstamp",
+        "value": 0.98843
+      },
+      {
+        "timestamp_utc": "2023-03-13T08:00:00+00:00",
+        "venue": "binance",
+        "value": 0.9879
+      },
+      {
+        "timestamp_utc": "2023-03-11T00:00:00+00:00",
+        "venue": "defillama_supply_aggregate",
+        "value": 42097257578.0
+      },
+      {
+        "timestamp_utc": "2023-03-12T00:00:00+00:00",
+        "venue": "defillama_supply_aggregate",
+        "value": 39077959674.0
+      }
+    ],
+    "missing_inputs": []
+  },
+  "calibration": null,
+  "axes": {
+    "axes_version": "axes/v1",
+    "epistemic_verdict": "CONCLUANT",
+    "economic_action": "CONVERTIR/TRANSFÉRER",
+    "authorization_verdict": null,
+    "x_star_usdc": 100.0,
+    "supported_hypotheses": [
+      "H2"
+    ],
+    "authorization_detail": {
+      "verdict": null,
+      "reasons": [
+        "no reserve recipient configured — authorization not evaluated"
+      ],
+      "intent_id": null,
+      "evaluated": false
+    },
+    "conditions_declenchees": [],
+    "separation_note": "3 axes never fused: policy DENY != epistemic failure; INCONCLUSIVE != NO-ACTION (B3 §c.2)"
+  },
+  "rdof": {
+    "rdof_version": "rdof/v1",
+    "case": "usdc-2023-03",
+    "horizon": "2023-03-15T00:00:00+00:00",
+    "dominant_final": "H2",
+    "trace": [
+      {
+        "iteration": 1,
+        "question": "which recorded fact can change a verdict at the lowest measured cost?",
+        "chosen": "P-6.3",
+        "chosen_name": "24 h circulating supply drop",
+        "why": [
+          "rule (ii): makes a decisive criterion evaluable (H2:refutation, H2:support)"
+        ],
+        "cost": {
+          "queries": 1,
+          "seconds": 0.65,
+          "decision_delay_seconds": 0.0
+        },
+        "outcome": {
+          "value": -7.172196,
+          "class": ">=1 %",
+          "refs": [
+            {
+              "timestamp_utc": "2023-03-11T00:00:00+00:00",
+              "venue": "defillama_supply_aggregate",
+              "value": 42097257578.0
+            },
+            {
+              "timestamp_utc": "2023-03-12T00:00:00+00:00",
+              "venue": "defillama_supply_aggregate",
+              "value": 39077959674.0
+            }
+          ],
+          "detail": "drop from 2023-03-11T00:00:00+00:00 to 2023-03-12T00:00:00+00:00 (corpus: defillama_supply_aggregate)"
+        },
+        "verdicts_before": {
+          "H1": "REFUTED",
+          "H2": "INCONCLUSIVE",
+          "H3": "REFUTED"
+        },
+        "verdicts_after": {
+          "H1": "REFUTED",
+          "H2": "SUPPORTED",
+          "H3": "REFUTED"
+        }
+      }
+    ],
+    "stop": "stable decision (invariance c1)",
+    "stop_rule": "c1",
+    "budget": {
+      "limites": {
+        "recherches": 3,
+        "appels": 10,
+        "secondes": 60.0
+      },
+      "consomme": {
+        "recherches": 1,
+        "appels": 1,
+        "secondes": 0.65
+      }
+    },
+    "not_searched": [
+      {
+        "predicate_id": "P-1.2",
+        "name": "inter-venue dispersion",
+        "possible_effect": null,
+        "note": "not offline-evaluable"
+      },
+      {
+        "predicate_id": "P-1.3",
+        "name": "oracle/market divergence",
+        "possible_effect": null,
+        "note": "needs archive eth_call; the frozen corpus carries no Chainlink venue (series live in evidence/episode_*.json)"
+      },
+      {
+        "predicate_id": "P-PERS",
+        "name": "deviation persistence",
+        "possible_effect": {
+          "<=12 h": {
+            "H1": "REFUTED -> INCONCLUSIVE"
+          },
+          ">12 h": {
+            "H3": "REFUTED -> SUPPORTED"
+          }
+        },
+        "action_invariant": true
+      }
+    ],
+    "excluded": [
+      {
+        "predicate_id": "P-1.2",
+        "reason": "no registered hypothesis criterion consumes this measure — its outcome classes cannot change any verdict (never bought, rule c1)"
+      },
+      {
+        "predicate_id": "P-1.3",
+        "reason": "needs archive eth_call; the frozen corpus carries no Chainlink venue (series live in evidence/episode_*.json)"
+      },
+      {
+        "predicate_id": "P-1.4",
+        "reason": "outside the case scope usdc-2023-03 (scope: steth-2022-06, rseth-2026-04)"
+      },
+      {
+        "predicate_id": "P-2.2",
+        "reason": "outside the case scope usdc-2023-03 (scope: rseth-2026-04)"
+      },
+      {
+        "predicate_id": "P-2.5",
+        "reason": "outside the case scope usdc-2023-03 (scope: rseth-2026-04)"
+      },
+      {
+        "predicate_id": "P-5.1",
+        "reason": "outside the case scope usdc-2023-03 (scope: rseth-2026-04)"
+      }
+    ],
+    "final_verdicts": {
+      "H1": "REFUTED",
+      "H2": "SUPPORTED",
+      "H3": "REFUTED"
+    },
+    "final_action_candidate": {
+      "kind": "ACTION_RECOMMENDED",
+      "catalog": "A-D1",
+      "note": "H2 SUPPORTED and available_to_move > 0 (pre-registered rule 1)"
+    }
+  },
+  "abstention": null,
+  "action_catalog_version": "catalog/v1",
+  "price_convention": {
+    "alert_reading": "low",
+    "decision_readings": [
+      "close",
+      "low"
+    ],
+    "ref": "FREEZE_V2 C5 / DOC2 §5.4.6 — alert on the low; decision on close + low",
+    "version": "convention/v1",
+    "measured_gap": {
+      "venue": "bitstamp",
+      "timestamp_utc": "2023-03-11T08:00:00+00:00",
+      "close": 0.92,
+      "low": 0.825,
+      "gap_bps": 1151.52
+    },
+    "verdicts_under_conventions": {
+      "close": {
+        "H1": "REFUTED",
+        "H2": "SUPPORTED",
+        "H3": "REFUTED"
+      },
+      "low": {
+        "H1": "REFUTED",
+        "H2": "SUPPORTED",
+        "H3": "SUPPORTED"
+      },
+      "per_hypothesis": {
+        "H1": {
+          "close": "REFUTED",
+          "low": "REFUTED"
+        },
+        "H2": {
+          "close": "SUPPORTED",
+          "low": "SUPPORTED"
+        },
+        "H3": {
+          "close": "REFUTED",
+          "low": "SUPPORTED"
+        }
+      },
+      "ambiguous": true
+    }
+  }
+}
