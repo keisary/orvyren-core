@@ -93,17 +93,24 @@ class TestLossProperties(unittest.TestCase):
         self.assertAlmostEqual(sell["regret_usd"], 25.0, places=12)
 
     def test_exemple_w2d_b2_le_bug_affichait_vingt(self):
-        """W2-D §B.2 : l'écart réel est 10 (l'ancienne formule affichait 20)."""
-        keep_loss = loss.loss(loss.wealth_keep(0.0, 100.0, 1.0), loss.wealth_keep(0.0, 100.0, 0.90))
+        """W2-D §B.2 : l'écart réel est q·(1−P_T) (l'ancienne formule affichait 20)."""
+        # L'écart est mesuré depuis les deux pertes, dérivées des paramètres du
+        # cas. L'identité numérique directe `20.0 - 10.0 == 100.0 * (1.0 - 0.90)`
+        # était tautologique : vraie par construction, quel que soit le code
+        # testé (re-scellement visible G1 du 2026-10-18, voir le journal des
+        # variantes).
+        q, p_terminal = 100.0, 0.90
+        keep_loss = loss.loss(loss.wealth_keep(0.0, q, 1.0),
+                              loss.wealth_keep(0.0, q, p_terminal))
         sell_loss = loss.loss(
-            loss.wealth_keep(0.0, 100.0, 1.0),
-            loss.wealth_sell(0.0, 100.0, 100.0, p_exec=1.00, p_terminal=0.90, cost=0.0),
+            loss.wealth_keep(0.0, q, 1.0),
+            loss.wealth_sell(0.0, q, q, p_exec=1.00, p_terminal=p_terminal,
+                             cost=0.0),
         )
-        self.assertAlmostEqual(keep_loss, 10.0, places=12)
+        self.assertAlmostEqual(keep_loss, q * (1.0 - p_terminal), places=12)
         self.assertAlmostEqual(sell_loss, 0.0, places=12)
-        self.assertAlmostEqual(keep_loss - sell_loss, 10.0, places=12)
-        # identité du bug : écart_bugué − écart_vrai = q · (1 − P_T) = 100 × 0,10 = 10
-        self.assertAlmostEqual(20.0 - 10.0, 100.0 * (1.0 - 0.90), places=12)
+        self.assertAlmostEqual(keep_loss - sell_loss, q * (1.0 - p_terminal),
+                               places=12)
 
 
 class TestLossPersonas(unittest.TestCase):

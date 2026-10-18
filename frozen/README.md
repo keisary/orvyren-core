@@ -44,11 +44,11 @@ python scripts/freeze_sprint0.py --out /tmp/frozen_recalc
 
 | Manifeste | sha256 |
 |---|---|
-| `G1.sha256` | `e4a962426fd4e4b0c5109dfc9a817d7832a3cb6d2c62635e17ad6e562dc20581` |
+| `G1.sha256` | `02699785ab5afcaa3f98c12a6b5c02091586318e9cbdc21ca84dd41248132aef` |
 | `G2.sha256` | `412b374b6195fa0f5fce42817cd0395f3861f8430ec4f1d6414c57c2006159a2` |
 | `G3.sha256` | `37acc25fc99df6abd031ef9664e89aa2f3e87edc75ea83fa4848be4075d244e9` |
 | `G4.sha256` | `6c3cbeb13e0fe47240caa9124945b944aeef1fed9e058e93f6d473e021f81974` |
-| `G5.sha256` | `4ad6cf7a103ea344bdedc9b6ffb618eb336f919a7a338d01561f838d7bdbf415` |
+| `G5.sha256` | `0765232d196d472b093acceda0806288945c3aaca760d68ae6b9eff99850228c` |
 | `G6.sha256` | `e42e7da0529d244abbe2e29894e9494623e25fdc642324c213a2c12e5ce9c0c2` |
 
 *Note : `README.md` et `FORECASTS_DEV.md` ne figurent pas dans les manifestes Gx (ils ne sont pas

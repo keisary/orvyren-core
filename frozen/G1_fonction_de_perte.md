@@ -52,7 +52,7 @@ profondeur fournie : aucune conversion non mesurée ne se fait passer pour une m
 | T6 | Référence dégénérée (P_t = 1) | tous les regrets 0 ; action inutile = k |
 
 Preuve exécutable : `tests/test_evaluation_loss.py` — sha256
-`8f87f3f06718beb4032ffd0efe61a145764986571718a9696460d085efa541c4` ; commande
+`90b705d0b47551b8deea80c1ab58772746c1599f673d4631888a828fc9b7ba88` ; commande
 `python -m pytest tests/test_evaluation_loss.py -q` (12 tests).
 
 ## 6. Ce qui n'est PAS gelé ici (NOT DONE, écrit tel quel)

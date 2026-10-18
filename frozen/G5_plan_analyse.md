@@ -63,5 +63,5 @@ moyenner R⁻ et R⁺ ; aucun score agrégé unique ; un rapport sans hash n'est
 ## 6. Vérifications exécutables
 
 `tests/test_evaluation_calibration.py` — sha256
-`221e895f3ec3664d7e30af48aaae8722415f5d90b4dea335c8ba790ed5ef7033` : KAT exacts,
+`2e1b00644b7e9a60485ad1564d5af52829b703c0ad96d50dc8b66a1262af940d` : KAT exacts,
 Wilson vs table raw_b7 (± 0,001), bootstrap déterministe (2 exécutions identiques), cascade.

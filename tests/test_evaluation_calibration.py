@@ -94,7 +94,11 @@ class TestMcNemar(unittest.TestCase):
     def test_symetrie_et_equilibre(self):
         self.assertAlmostEqual(C.mcnemar_exact(0, 6), 0.03125, delta=1e-12)
         self.assertAlmostEqual(C.mcnemar_exact(1, 1), 1.0, delta=1e-12)
-        self.assertLess(C.mcnemar_exact(5, 1), C.mcnemar_exact(4, 2) + 1.0)  # monotone en déséquilibre
+        # monotone STRICT en déséquilibre : (6,0) < (5,1) < (4,2) — le `+ 1.0`
+        # rendait l'assertion tautologique (0,21875 < 1,6875 toujours vrai).
+        # Re-scellement visible G5 du 2026-10-18 (journal des variantes).
+        self.assertLess(C.mcnemar_exact(6, 0), C.mcnemar_exact(5, 1))
+        self.assertLess(C.mcnemar_exact(5, 1), C.mcnemar_exact(4, 2))
         with self.assertRaises(C.CalibrationError):
             C.mcnemar_exact(0, 0)
 
