@@ -1,6 +1,6 @@
 # Graph A — résultats d'ingestion et d'API (17/10/2026)
 
-**Statut** : interne, exécuté sur `D:/orvyren_core_hermes` (`feat/10h-graph`, commits `1d73183`, `9580bf1`). Après fusion B, `master` compte **932 tests** ; ce document conserve les mesures de la piste A.
+**Statut** : interne, exécuté sur `D:/orvyren_core_hermes` (`feat/10h-graph`, commits `1d73183`, `9580bf1`). Après fusion B, `master` compte **1072 tests** (1069 verts, 3 sautés) ; ce document conserve les mesures de la piste A.
 **But** : prouver que le graphe v3 peut être peuplé et interrogé, sans revendiquer plus que mesuré.
 
 ## Résultat mesuré
