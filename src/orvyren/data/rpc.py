@@ -137,6 +137,9 @@ class RpcRangeError(RpcError):
 
 def _http_post(url: str, payload: bytes, timeout: float) -> bytes:
     """Default one-shot transport: one HTTP POST, no retry (the client retries)."""
+    parts = urllib.parse.urlsplit(str(url))
+    if parts.scheme not in ("http", "https"):
+        raise ValueError(f"unsupported endpoint scheme in {url!r}")
     request = urllib.request.Request(
         url,
         data=payload,
