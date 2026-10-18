@@ -48,7 +48,8 @@ if SRC_DIR not in sys.path:
 from orvyren.agents import contracts  # noqa: E402
 from orvyren.agents import worker as worker_mod  # noqa: E402
 
-__all__ = ["main", "prepare_run", "collect_and_finish", "apply_fragility_rule"]
+__all__ = ["main", "prepare_run", "collect_and_finish", "apply_fragility_rule",
+           "default_tool_mode"]
 
 
 def _configure_stdio() -> None:
@@ -91,8 +92,16 @@ def load_case_inputs(case_id: str) -> dict:
         return json.load(handle)
 
 
+def default_tool_mode(replay_mode: str) -> str:
+    """Tool providers per run mode (P0-1): journal/scripted runs stay on the
+    frozen fixtures (byte-identical replays), a real run is ``live``."""
+    return "fixture" if str(replay_mode) in ("journal", "scripted") else "live"
+
+
 def prepare_run(*, case_id: str, mode: str, session_dir: str, inputs: dict,
-                store_dir: str, budget: dict, record_live: bool = False) -> str:
+                store_dir: str, budget: dict, record_live: bool = False,
+                tool_mode: str = "fixture", graph_db: str = None,
+                tool_store: str = None, record_tools: str = None) -> str:
     """Create the run directory + ``run.json``; returns the run directory."""
     stamp = _utc_stamp()
     # Journal mode: the run_id is PINNED ("demo-<case>") so the journal
@@ -118,9 +127,15 @@ def prepare_run(*, case_id: str, mode: str, session_dir: str, inputs: dict,
         "lacunes": inputs["lacunes"],
         "hypotheses": inputs["hypotheses"],
         "tool_fixtures": inputs["tool_fixtures"],
+        "tool_mode": str(tool_mode or "fixture"),
+        "graph_db": str(graph_db or "evidence/graph.sqlite"),
         "store_dir": os.path.abspath(store_dir),
         "created_at": created_at,
     }
+    if tool_store:
+        spec["tool_store"] = os.path.abspath(tool_store)
+    if record_tools:
+        spec["record_tools"] = os.path.abspath(record_tools)
     if record_live:
         spec["record_live"] = True
     _write_json(os.path.join(run_dir, "run.json"), spec)
@@ -258,6 +273,18 @@ def main(argv=None) -> int:
     parser.add_argument("--record-live", action="store_true",
                         help="record LIVE responses under <run_dir>/store_live "
                              "(sealed by hash; later bit-for-bit replay via --store)")
+    parser.add_argument("--tool-mode", choices=("fixture", "live", "replay"),
+                        default=None,
+                        help="tool data providers (P0-1; default: fixture for "
+                             "--replay journal/scripted, live otherwise)")
+    parser.add_argument("--graph-db", default=os.path.join("evidence", "graph.sqlite"),
+                        help="graph SQLite behind the LIVE tools "
+                             "(default: evidence/graph.sqlite)")
+    parser.add_argument("--tool-store", default=None,
+                        help="recorded tool-response store for --tool-mode replay")
+    parser.add_argument("--record-tools", default=None,
+                        help="record every LIVE tool response into this directory "
+                             "(tool_responses.jsonl; later bit-identical REPLAY)")
     parser.add_argument("--budget-llm", type=float, default=30)
     parser.add_argument("--budget-tools", type=float, default=12)
     parser.add_argument("--budget-wall", type=float, default=600)
@@ -285,9 +312,15 @@ def main(argv=None) -> int:
     store = args.store or os.path.join(REPO_ROOT, "fixtures", "agents", "store_%s" % args.case)
     budget = {"llm_calls": args.budget_llm, "tool_calls": args.budget_tools,
               "wall_seconds": args.budget_wall, "cost_usd": args.budget_usd}
+    tool_mode = args.tool_mode or default_tool_mode(args.replay)
+    if tool_mode == "replay" and not args.tool_store:
+        raise SystemExit("E_TOOL_STORE: --tool-mode replay needs --tool-store <dir> "
+                         "(recorded tool responses — a replay never simulates)")
     run_dir = prepare_run(case_id=args.case, mode=args.replay, session_dir=session,
                           inputs=inputs, store_dir=store, budget=budget,
-                          record_live=args.record_live)
+                          record_live=args.record_live, tool_mode=tool_mode,
+                          graph_db=args.graph_db, tool_store=args.tool_store,
+                          record_tools=args.record_tools)
     print("ORVYREN — run_agents · %s · mode %s" % (args.case, args.replay))
     print("  run       : %s" % run_dir)
     if args.record_live:

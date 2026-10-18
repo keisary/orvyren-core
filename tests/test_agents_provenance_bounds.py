@@ -278,5 +278,30 @@ class GraphToolBoundsTest(unittest.TestCase):
         self.assertIn("E_TOOL_ARGS_RANGE:as_of_block", result.error)
 
 
+class ReplayJournalSinkTest(unittest.TestCase):
+    def test_journal_write_is_a_sink_never_a_replayed_source(self):
+        """A replayed run must still journal its claims (P0-6 trail).
+
+        ``journal_write`` is excluded from the REPLAY envelope: it writes the
+        run's own journal instead of answering from the store, so a replay
+        keeps its provenance instead of silently losing every claim line.
+        """
+        import tempfile
+
+        from orvyren.agents.tools import build_registry
+
+        journal = AgentJournal()
+        with tempfile.TemporaryDirectory() as store_dir:
+            registry = build_registry(mode="replay", journal=journal,
+                                      store_dir=store_dir)
+            self.assertTrue(registry.has("journal_write"))
+            result = registry.get("journal_write").run(
+                {"content": "claim rejoue", "refs": []})
+            # NOT E_TOOL_NOT_RECORDED: the sink really wrote, store empty.
+            self.assertTrue(result.ok, result.error)
+            self.assertEqual(len(journal), 1)
+            self.assertEqual(journal.entries()[0].content, "claim rejoue")
+
+
 if __name__ == "__main__":
     unittest.main()

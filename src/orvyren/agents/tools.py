@@ -41,23 +41,53 @@ Two hygiene rules are enforced by construction, not by convention:
 Failure contract: missing data -> ``ToolResult(ok=False, status="FAILED",
 error="E_TOOL_NO_DATA")``. Unknown tool name -> ``KeyError("E_TOOL_UNKNOWN")``.
 
+The registry is **mode-unified** (P0-1): the tool code above is unique and only
+its data provider changes — :func:`build_registry` selects it:
+
+- ``"fixture"`` -> :class:`orvyren.agents.tool_sources.FixtureSource` (the
+  seven v1 tools, ``compute_signal`` included — simulated data, labelled);
+- ``"live"`` -> :class:`orvyren.agents.tool_sources.LiveSource`: the real
+  graph tools of :mod:`orvyren.agents.graph_tools` (Q1–Q8) + the measured
+  corpus series, with provenance; **no** ``compute_signal`` (a precomputed
+  signal is a fixture-only decision) and ``read_chain`` honestly
+  ``UNAVAILABLE`` (``E_TOOL_NO_LIVE_SOURCE``);
+- ``"replay"`` -> the live tool set enveloped in
+  :class:`orvyren.agents.tool_sources.ReplaySource`: recorded responses only
+  (``E_TOOL_NOT_RECORDED:<key>`` on a miss, never a simulation).
+
+``build_v1_registry`` stays as the fixture wrapper of
+``build_registry(mode="fixture", ...)``. The full mode contract lives in
+:mod:`orvyren.agents.tool_sources`.
+
 Standard library only.
 """
 
 from __future__ import annotations
 
-import hashlib
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Mapping, Optional, Tuple
 
 from orvyren.agents import contracts
 from orvyren.agents.journal import AgentJournal
+from orvyren.agents.tool_sources import (
+    MODES,
+    NO_DATA_CODE,
+    FixtureSource,
+    LiveSource,
+    RecordingTool,
+    ReplaySource,
+    ToolResponseStore,
+    SourceTool,
+)
 
 __all__ = [
     "FORBIDDEN_TOOL",
     "TOOL_NAMES",
+    "LIVE_TOOL_NAMES",
+    "MODES",
     "NO_DATA_CODE",
     "ToolRegistry",
+    "build_registry",
     "build_v1_registry",
     "FailingTool",
     "ReadPricesTool",
@@ -84,29 +114,33 @@ TOOL_NAMES: Tuple[str, ...] = (
     "journal_write",
 )
 
-#: Error code of the single failure contract of a fixture-backed tool.
-NO_DATA_CODE = "E_TOOL_NO_DATA"
+#: The live/replay registry names (P0-1): the v1 set minus ``compute_signal``
+#: plus the two real graph tools (``graph_path``, ``graph_snapshot``).
+LIVE_TOOL_NAMES: Tuple[str, ...] = (
+    "read_prices",
+    "read_supply",
+    "read_chain",
+    "fetch_document",
+    "graph_query",
+    "graph_path",
+    "graph_snapshot",
+    "journal_write",
+)
 
 
 # ---------------------------------------------------------------------------
-# Small helpers (fixture plumbing).
+# Small helpers (arg parsing, fixture plumbing).
 # ---------------------------------------------------------------------------
-def _bucket(fixtures: Mapping[str, Any], key: str) -> Mapping[str, Any]:
-    """The fixture sub-mapping of one tool (empty mapping when absent)."""
-    value = fixtures.get(key) if isinstance(fixtures, Mapping) else None
-    return value if isinstance(value, Mapping) else {}
+def _source_of(fixtures_or_source: Any) -> Any:
+    """The data provider behind a tool: a source, or the frozen fixtures.
 
-
-def _no_data() -> contracts.ToolResult:
-    """The one failure contract of a fixture tool: the data is not archived."""
-    return contracts.ToolResult(ok=False, status="FAILED", error=NO_DATA_CODE)
-
-
-def _observations(rows: Any) -> Tuple[Dict[str, Any], ...]:
-    """Verbatim copy of the fixture rows (mappings only, order preserved)."""
-    if not isinstance(rows, (list, tuple)):
-        return ()
-    return tuple(dict(row) for row in rows if isinstance(row, Mapping))
+    Every tool constructor accepts either a prepared source
+    (:class:`FixtureSource` / :class:`LiveSource`) or the legacy fixtures
+    mapping — the tool code is unique, only the provider changes (P0-1).
+    """
+    if isinstance(fixtures_or_source, Mapping):
+        return FixtureSource(fixtures_or_source)
+    return fixtures_or_source
 
 
 def _text(args: Mapping[str, Any], key: str) -> str:
@@ -213,59 +247,53 @@ class ToolRegistry:
 # The seven v1 tools.
 # ---------------------------------------------------------------------------
 class ReadPricesTool:
-    """``read_prices`` — archived venue prices, keyed ``venue|symbol``.
+    """``read_prices`` — venue prices from the source, keyed ``venue|symbol``.
 
-    Read-only; returns the fixture observations **verbatim** (source, timestamp
+    Read-only; returns the source observations **verbatim** (source, timestamp
     and value included as archived). Extra args (``from``/``to``) are ignored —
-    the window is already archived.
+    the window is already archived. The provider is a :class:`FixtureSource`
+    (frozen fixtures) or a :class:`LiveSource` (measured corpus): same tool
+    code, only the data provider changes (P0-1).
     """
 
     name = "read_prices"
 
-    def __init__(self, fixtures: Mapping[str, Any]) -> None:
-        self._fixtures = fixtures
+    def __init__(self, source: Any) -> None:
+        self._source = _source_of(source)
 
     def run(self, args: Mapping[str, Any], *,
             deadline_s: float = 20.0) -> contracts.ToolResult:
-        key = "%s|%s" % (_text(args, "venue"), _text(args, "symbol"))
-        observations = _observations(_bucket(self._fixtures, "prices").get(key))
-        if not observations:
-            return _no_data()
-        return contracts.ToolResult(ok=True, status="OK", observations=observations)
+        return self._source.prices(_text(args, "venue"), _text(args, "symbol"))
 
 
 class ReadSupplyTool:
-    """``read_supply`` — archived supply observations, keyed ``asset``."""
+    """``read_supply`` — supply observations from the source, keyed ``asset``."""
 
     name = "read_supply"
 
-    def __init__(self, fixtures: Mapping[str, Any]) -> None:
-        self._fixtures = fixtures
+    def __init__(self, source: Any) -> None:
+        self._source = _source_of(source)
 
     def run(self, args: Mapping[str, Any], *,
             deadline_s: float = 20.0) -> contracts.ToolResult:
-        observations = _observations(
-            _bucket(self._fixtures, "supply").get(_text(args, "asset")))
-        if not observations:
-            return _no_data()
-        return contracts.ToolResult(ok=True, status="OK", observations=observations)
+        return self._source.supply(_text(args, "asset"))
 
 
 class ReadChainTool:
-    """``read_chain`` — archived on-chain observations, keyed ``chain_id|address``."""
+    """``read_chain`` — on-chain observations, keyed ``chain_id|address``.
+
+    FIXTURE answers from the archived rows; LIVE answers an honest
+    ``UNAVAILABLE`` / ``E_TOOL_NO_LIVE_SOURCE`` (no RPC collector yet).
+    """
 
     name = "read_chain"
 
-    def __init__(self, fixtures: Mapping[str, Any]) -> None:
-        self._fixtures = fixtures
+    def __init__(self, source: Any) -> None:
+        self._source = _source_of(source)
 
     def run(self, args: Mapping[str, Any], *,
             deadline_s: float = 30.0) -> contracts.ToolResult:
-        key = "%s|%s" % (_text(args, "chain_id"), _text(args, "address"))
-        observations = _observations(_bucket(self._fixtures, "chain").get(key))
-        if not observations:
-            return _no_data()
-        return contracts.ToolResult(ok=True, status="OK", observations=observations)
+        return self._source.chain(_text(args, "chain_id"), _text(args, "address"))
 
 
 class FetchDocumentTool:
@@ -275,28 +303,18 @@ class FetchDocumentTool:
     :func:`contracts.wrap_untrusted`, stamped with its origin and returned with
     the instruction-like flags found by
     :func:`contracts.scan_untrusted_flags` (a journal-able flag, never a
-    silent filter). The bare text is not returned at all.
+    silent filter). The bare text is not returned at all. FIXTURE reads the
+    fixture bucket; LIVE reads the archived corpus document.
     """
 
     name = "fetch_document"
 
-    def __init__(self, fixtures: Mapping[str, Any]) -> None:
-        self._fixtures = fixtures
+    def __init__(self, source: Any) -> None:
+        self._source = _source_of(source)
 
     def run(self, args: Mapping[str, Any], *,
             deadline_s: float = 30.0) -> contracts.ToolResult:
-        url = _text(args, "url")
-        raw = _bucket(self._fixtures, "documents").get(url)
-        if not url or not isinstance(raw, str):
-            return _no_data()
-        observation = {
-            "url": url,
-            "untrusted": True,
-            "content": contracts.wrap_untrusted(raw, url),
-            "untrusted_flags": contracts.scan_untrusted_flags(raw),
-            "content_sha256": hashlib.sha256(raw.encode("utf-8")).hexdigest(),
-        }
-        return contracts.ToolResult(ok=True, status="OK", observations=(observation,))
+        return self._source.document(_text(args, "url"))
 
 
 class ComputeSignalTool:
@@ -305,28 +323,18 @@ class ComputeSignalTool:
     The tool computes nothing: it copies the archived value, its unit and its
     method reference. A fixture entry without a non-empty ``value``,
     ``unit`` and ``method_ref`` is refused (fail-closed: a signal without unit
-    or method is not usable evidence).
+    or method is not usable evidence). FIXTURE-only by contract: a precomputed
+    signal is a hard decision and is never substituted in LIVE/REPLAY.
     """
 
     name = "compute_signal"
 
-    def __init__(self, fixtures: Mapping[str, Any]) -> None:
-        self._fixtures = fixtures
+    def __init__(self, source: Any) -> None:
+        self._source = _source_of(source)
 
     def run(self, args: Mapping[str, Any], *,
             deadline_s: float = 5.0) -> contracts.ToolResult:
-        row = _bucket(self._fixtures, "signals").get(_text(args, "signal_id"))
-        if not isinstance(row, Mapping):
-            return _no_data()
-        if not str(row.get("unit", "")).strip() or not str(row.get("method_ref", "")).strip():
-            return _no_data()
-        if "value" not in row:
-            return _no_data()
-        value = row.get("value")
-        if value is None or isinstance(value, bool) or (
-                isinstance(value, str) and not value.strip()):
-            return _no_data()
-        return contracts.ToolResult(ok=True, status="OK", observations=(dict(row),))
+        return self._source.signal(_text(args, "signal_id"))
 
 
 class GraphQueryTool:
@@ -334,21 +342,19 @@ class GraphQueryTool:
 
     The snapshot is the point-in-time boundary of the decision; args are not
     used to re-derive it (the fixture is already frozen), so the same run
-    always reads the same graph state.
+    always reads the same graph state. This fixture tool is **not** registered
+    in LIVE/REPLAY mode — there the real ``graph_tools`` tools answer from the
+    graph API (P0-1).
     """
 
     name = "graph_query"
 
-    def __init__(self, fixtures: Mapping[str, Any]) -> None:
-        self._fixtures = fixtures
+    def __init__(self, source: Any) -> None:
+        self._source = _source_of(source)
 
     def run(self, args: Mapping[str, Any], *,
             deadline_s: float = 5.0) -> contracts.ToolResult:
-        snapshot = self._fixtures.get("snapshot") if isinstance(self._fixtures, Mapping) else None
-        if not isinstance(snapshot, Mapping) or not snapshot:
-            return _no_data()
-        return contracts.ToolResult(ok=True, status="OK",
-                                    observations=(dict(snapshot),))
+        return self._source.snapshot()
 
 
 class _ToolClock:
@@ -394,7 +400,8 @@ class JournalWriteTool:
         supplied = dict(args or {})
         content = str(supplied.pop("content", "") or "")
         if not content.strip():
-            return _no_data()
+            return contracts.ToolResult(ok=False, status="FAILED",
+                                        error=NO_DATA_CODE)
         kind = str(supplied.pop("kind", "") or "REFLECTION")
         refs = supplied.pop("refs", ())
         if refs is not None and not isinstance(refs, (list, tuple)):
@@ -475,11 +482,109 @@ class FailingTool:
             {"tool": self.name, "attempt": self.calls},))
 
 
+def _build_fixture_registry(*, fixtures: Mapping[str, Any],
+                            journal: AgentJournal,
+                            observed: Optional[contracts.ObservedRefs] = None
+                            ) -> ToolRegistry:
+    """The v1 allow-list on the frozen fixtures (FIXTURE mode internals)."""
+    ledger = observed if observed is not None \
+        else contracts.ObservedRefs(_fixture_refs(fixtures))
+    registry = ToolRegistry()
+    source = FixtureSource(fixtures)
+    for name, tool_class in _TOOL_CLASSES:
+        registry.register(name, tool_class(source))
+    registry.register("journal_write", JournalWriteTool(journal, observed=ledger))
+    return registry
+
+
+def build_registry(*, mode: str, journal: AgentJournal,
+                   observed: Optional[contracts.ObservedRefs] = None,
+                   fixtures: Optional[Mapping[str, Any]] = None,
+                   source: Any = None, store_dir: Optional[str] = None,
+                   record_dir: Optional[str] = None,
+                   db: Optional[str] = None, api: Any = None
+                   ) -> ToolRegistry:
+    """Build the ONE registry of the run (P0-1); ``mode`` picks the providers.
+
+    ``mode="fixture"``
+        The v1 allow-list (``TOOL_NAMES``): simulated, explicitly labelled
+        fixtures; ``compute_signal`` is part of it. ``build_v1_registry`` is
+        this branch.
+    ``mode="live"``
+        The real allow-list (``LIVE_TOOL_NAMES``): the measured corpus
+        (``read_prices`` / ``read_supply`` / ``fetch_document``), the real
+        graph tools of :mod:`orvyren.agents.graph_tools` behind
+        ``graph_query`` / ``graph_path`` / ``graph_snapshot`` (delegated, never
+        duplicated), an honest ``UNAVAILABLE`` ``read_chain`` and
+        ``journal_write``. **No** ``compute_signal`` and **no** fixture
+        snapshot tool. Every graph observation carries a deterministic
+        ``source_ref`` + row ``refs``. When ``record_dir`` is set, every
+        response is recorded there (feeding a later REPLAY).
+    ``mode="replay"``
+        The live tool set enveloped in
+        :class:`orvyren.agents.tool_sources.ReplaySource`: recorded responses
+        served bit-identically, ``E_TOOL_NOT_RECORDED:<key>`` on a miss, never
+        a silent simulation (``store_dir`` is required).
+
+    ``source`` injects a prepared data source (tests, custom collectors);
+    ``db`` / ``api`` configure the real graph API (``api`` defaults to
+    :mod:`orvyren.graph.api`). ``execute_intent`` is not registerable in any
+    mode (research agents read, they never act). An unknown mode raises
+    :class:`ValueError` — it never falls back to another mode.
+    """
+    clean = str(mode or "").strip().lower()
+    if clean not in MODES:
+        raise ValueError("E_TOOL_MODE_UNKNOWN: %r" % mode)
+    if clean == "fixture":
+        return _build_fixture_registry(fixtures=fixtures, journal=journal,
+                                       observed=observed)
+    if clean == "replay" and not store_dir:
+        raise ValueError("E_TOOL_REPLAY_STORE: replay mode needs store_dir")
+    live = source if source is not None else LiveSource(db=db, api=api)
+    ledger = observed if observed is not None else contracts.ObservedRefs()
+    registry = ToolRegistry()
+    for tool in (ReadPricesTool(live), ReadSupplyTool(live),
+                 ReadChainTool(live), FetchDocumentTool(live)):
+        registry.register(tool.name, tool)
+    for name, method in (("graph_query", "graph_query"),
+                         ("graph_path", "graph_path"),
+                         ("graph_snapshot", "graph_snapshot")):
+        registry.register(name, SourceTool(name, live, method))
+    registry.register("journal_write", JournalWriteTool(journal, observed=ledger))
+    if clean == "replay":
+        return _wrap_registry(registry, ReplaySource(live, store_dir).wrap)
+    if record_dir:
+        store = ToolResponseStore(record_dir)
+        return _wrap_registry(registry,
+                              lambda tool: RecordingTool(tool, store))
+    return registry
+
+
+#: Tools that are OUTPUT SINKS of the run itself, never replayable data
+#: sources: a replayed run must still journal its claims (the P0-6 provenance
+#: validation and the audit trail live in that journal).
+_UNWRAPPED_IN_REPLAY: Tuple[str, ...] = ("journal_write",)
+
+
+def _wrap_registry(registry: ToolRegistry, wrap: Any) -> ToolRegistry:
+    """Same allow-list, same order, every data tool enveloped (replay/record).
+
+    ``journal_write`` is never enveloped: it writes the run's own journal, it
+    does not answer from a data source — replaying over it would silently drop
+    the claims and the provenance trail of the replayed run.
+    """
+    wrapped = ToolRegistry()
+    for name in registry.names():
+        tool = registry.get(name)
+        wrapped.register(name, tool if name in _UNWRAPPED_IN_REPLAY else wrap(tool))
+    return wrapped
+
+
 def build_v1_registry(*, fixtures: Mapping[str, Any],
                       journal: AgentJournal,
                       observed: Optional[contracts.ObservedRefs] = None
                       ) -> ToolRegistry:
-    """Build the v1 allow-list on the frozen fixtures (worker entry point).
+    """Legacy entry point — ``build_registry(mode="fixture", ...)``.
 
     Registers exactly the seven v1 tools (``TOOL_NAMES``) — ``execute_intent``
     is not registerable. ``fixtures`` follows the frozen schema documented in
@@ -492,10 +597,5 @@ def build_v1_registry(*, fixtures: Mapping[str, Any],
     archived rows ARE the observed sources of a fixture run) — validation is
     never silently switched off.
     """
-    ledger = observed if observed is not None \
-        else contracts.ObservedRefs(_fixture_refs(fixtures))
-    registry = ToolRegistry()
-    for name, tool_class in _TOOL_CLASSES:
-        registry.register(name, tool_class(fixtures))
-    registry.register("journal_write", JournalWriteTool(journal, observed=ledger))
-    return registry
+    return build_registry(mode="fixture", journal=journal, observed=observed,
+                          fixtures=fixtures)

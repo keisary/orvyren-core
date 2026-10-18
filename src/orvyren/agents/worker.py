@@ -214,9 +214,15 @@ def build_backend(spec: Dict[str, Any], run_dir: str, role: str = ""):
 # ---------------------------------------------------------------------------
 def _build_tools(spec: Dict[str, Any], journal: AgentJournal,
                  observed: Any = None):
-    from orvyren.agents.tools import ToolRegistry, build_v1_registry
-    return build_v1_registry(fixtures=spec["tool_fixtures"], journal=journal,
-                             observed=observed)
+    """The ONE registry entry point (P0-1): ``tool_mode`` selects the data
+    providers (``fixture`` / ``live`` / ``replay``) — never the tool code."""
+    from orvyren.agents.tools import build_registry
+    return build_registry(mode=str(spec.get("tool_mode", "fixture")),
+                          journal=journal, observed=observed,
+                          fixtures=spec.get("tool_fixtures"),
+                          store_dir=spec.get("tool_store"),
+                          record_dir=spec.get("record_tools"),
+                          db=spec.get("graph_db"))
 
 
 def build_evidence_packet(journal: AgentJournal, ledger: Any, *,

@@ -238,6 +238,7 @@ def _observation_refs(tool_name: str, result: contracts.ToolResult) -> Tuple[str
                or observation.get("url") or observation.get("method_ref"))
         if ref:
             refs.append(str(ref))
+        refs.extend(str(r) for r in (observation.get("refs") if isinstance(observation.get("refs"), (list, tuple)) else ()) if r)
     if not refs and result.ok:
         refs.append("observation:%s" % tool_name)
     return tuple(dict.fromkeys(refs))
