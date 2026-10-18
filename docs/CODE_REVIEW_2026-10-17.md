@@ -38,10 +38,14 @@ Après fusion : **1 061 passed, 3 skipped**.
 | `series_from_episode` sur un JSON non-objet | `CorpusError` explicite | `faa9d16` |
 | Tests tautologiques (empreinte, fuseau, outcome) | assertions indépendantes | `b994970` |
 | Test de pureté de la politique limité à deux fichiers | scan AST de tous les modules `policy/` avec allow-list stdlib | `673c84c` |
+| Provenance des claims `run_quality` non déterministe si le manifeste corpus manque | refus explicite, plus de fallback sur l’horloge murale | `d80911c` |
+| Encodage des sous-processus du pipeline dépendant de la console Windows | capture UTF-8 avec `errors="replace"` | `d80911c` |
+| `--case` pouvait sortir du répertoire de preuve/fixtures | token de cas fichiers-safe dans `run_decision` et `run_agents` | `d80911c`, `3128f9c` |
+| Cas `null`/non-liste dans `run_pipeline` | normalisation `cases or []` | `d80911c` |
 
 ## 4. Limites de la revue
 
-- Les passes indépendantes sur `agents`, `graph`, `decision/policy`, `execution` et `scripts` ont échoué côté fournisseur LLM ; elles ne sont **pas** revendiquées comme terminées.
+- Les passes indépendantes sur `agents`, `graph`, `decision/policy`, `execution`, `scripts` et `runners/UI` ont échoué côté fournisseur LLM ; `execution/verify/audit/replay` et `runners/UI` ont été relus et corrigés manuellement, les autres restent couverts par les contrôles statiques et les tests, pas par une lecture ligne-à-ligne revendiquée.
 - Les 69 erreurs mypy restantes sont majoritairement des annotations, pas des crashes observés ; elles sont listées comme dette de typage.
 - `ruff format --check` signale 171 fichiers : le `pyproject.toml` interdit le reformatage massif de la baseline gelée ; aucun reformatage global n’a été appliqué.
 - Les findings Bandit restants sont des faux positifs à faible risque ou des SQL construits uniquement à partir de constantes et de placeholders.
