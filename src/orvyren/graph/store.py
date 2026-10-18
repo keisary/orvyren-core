@@ -371,6 +371,9 @@ class GraphStore:
             self.connection.executescript(_GUARDRAILS)
             row = self.connection.execute(
                 "SELECT MAX(version) FROM schema_version").fetchone()
+            if row[0] is not None and int(row[0]) > SCHEMA_VERSION:
+                raise RuntimeError("E_SCHEMA_TOO_NEW: database schema %s > code %s"
+                                   % (row[0], SCHEMA_VERSION))
             if row[0] is None or int(row[0]) < SCHEMA_VERSION:
                 self.connection.execute(
                     "INSERT OR IGNORE INTO schema_version (version, applied_at) "
@@ -832,8 +835,9 @@ class GraphStore:
         cursor = self.connection.execute(
             "INSERT INTO decision_nodes (node_id, revision, kind, payload, refs, "
             "inserted_at) VALUES (?, ?, ?, ?, ?, ?)",
-            (node.id, revision, node.kind, json.dumps(node.payload),
-             json.dumps(list(node.refs)), _now_iso()))
+            (node.id, revision, node.kind,
+             json.dumps(node.payload, sort_keys=True, default=str),
+             json.dumps(sorted(node.refs)), _now_iso()))
         self.connection.commit()
         return int(cursor.lastrowid)
 
@@ -897,10 +901,10 @@ class GraphStore:
 
     def claims_for_hypothesis(self, hypothesis_id: str) -> List[Claim]:
         """Claims attached to a hypothesis through supports/refutes relations."""
-        kinds = models.RELATION_SUPPORT_KINDS
+        kinds = tuple(kind.lower() for kind in models.RELATION_SUPPORT_KINDS)
         placeholders = ",".join("?" for _ in kinds)
         sql = ("SELECT DISTINCT r.src FROM relations r "
-               "WHERE r.kind IN (%s) AND r.dst = ? "
+               "WHERE LOWER(r.kind) IN (%s) AND r.dst = ? "
                "AND r.row_id = (SELECT MAX(row_id) FROM relations "
                "                WHERE relation_id = r.relation_id) "
                "ORDER BY r.src" % placeholders)

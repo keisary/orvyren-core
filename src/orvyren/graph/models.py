@@ -55,7 +55,7 @@ FINGERPRINT_LENGTH = 16
 HYPOTHESIS_STATES = ("CREATED", "UNDER_TEST", "SUPPORTED", "REFUTED", "ARCHIVED")
 
 #: Relation kinds that attach a claim to a hypothesis.
-RELATION_SUPPORT_KINDS = ("supports", "refutes")
+RELATION_SUPPORT_KINDS = ("SUPPORTS", "REFUTES")
 
 
 def _json_default(value: Any) -> Any:

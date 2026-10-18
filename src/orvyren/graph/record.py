@@ -244,6 +244,12 @@ def validate_relation_record(record: RelationRecord) -> Tuple[str, ...]:
     def reject(code: str) -> None:
         errors.append(code)
 
+    # -- Endpoints (identity): an edge without both endpoints is not a fact.
+    if not isinstance(record.src, str) or not record.src.strip():
+        reject("E_SRC_EMPTY")
+    if not isinstance(record.dst, str) or not record.dst.strip():
+        reject("E_DST_EMPTY")
+
     # -- Catalogue placement (fields 2, 3).
     spec = RELATION_CATALOG.get(record.kind)
     if spec is None:
