@@ -1,0 +1,60 @@
+@import "tailwindcss";
+
+/* ORVYREN — dark "trading terminal" theme. Offline: system fonts only. */
+@theme {
+  --color-background: #070b11;
+  --color-surface: #0d1420;
+  --color-surface2: #121d2e;
+  --color-line: #1e2c41;
+  --color-ink: #d8e4f2;
+  --color-muted: #7c92ad;
+  --color-accent: #22d3ee;
+  --color-accent2: #818cf8;
+  --color-up: #34d399;
+  --color-down: #f87171;
+  --color-warn: #fbbf24;
+
+  --font-sans: ui-sans-serif, system-ui, "Segoe UI", Roboto, "Helvetica Neue",
+    Arial, sans-serif;
+  --font-mono: ui-monospace, "Cascadia Mono", "Cascadia Code", Consolas,
+    "Courier New", monospace;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  background-color: var(--color-background);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  font-size: 13px;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* dense, terminal-like scrollbars */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #24405f transparent;
+}
+*::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+*::-webkit-scrollbar-thumb {
+  background: #24405f;
+  border-radius: 4px;
+}
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.mono {
+  font-family: var(--font-mono);
+}
+
+.tnum {
+  font-variant-numeric: tabular-nums;
+}

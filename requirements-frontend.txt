@@ -1,0 +1,6 @@
+# ORVYREN — backend du frontend live (src/orvyren/api) — Python 3.11
+# L'API importe fastapi de manière paresseuse : sans ces paquets, la suite
+# unittest reste verte (les tests API sautent proprement avec motif visible).
+fastapi>=0.115
+uvicorn>=0.30
+websockets>=12.0
