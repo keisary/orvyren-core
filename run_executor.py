@@ -88,6 +88,16 @@ def build_parser() -> argparse.ArgumentParser:
                         help="explicit offline-demo defaults: AGENT member=true and "
                              "available balance=1000 USDC when the variables are unset "
                              "(never enabled implicitly)")
+    parser.add_argument("--decision-source", choices=("corpus", "agents"), default="corpus",
+                        help="where the per-tick DecisionRecord comes from: the "
+                             "deterministic corpus engine (default) or a sealed agents "
+                             "run (requires --agents-run)")
+    parser.add_argument("--agents-run", default=None,
+                        help="directory of an agents run (run.json + run_outcome.json + "
+                             "journals) — required with --decision-source agents")
+    parser.add_argument("--no-preflight", action="store_true",
+                        help="skip the RPC preflight before signing (NOT recommended: "
+                             "the preflight is fail-closed by design)")
     mode = parser.add_mutually_exclusive_group()
     mode.add_argument("--dry-run", action="store_true", default=None,
                       help="no signature, no key read (default)")
@@ -131,6 +141,53 @@ def _human(summary: Mapping[str, Any]) -> None:
         print("  PAUSE / kill switch ENGAGED — no autonomous transfer was authorised.")
     if summary.get("demo_defaults"):
         print("  demo defaults : ENABLED (member=true, balance=1000 USDC) — explicit, never implicit")
+
+
+def _seen_intent_ids(ledger_path: str) -> set:
+    """Intent ids already recorded in the 24 h ledger (idempotency input)."""
+    try:
+        return set(executor.PeriodLedger(ledger_path).seen_intent_ids())
+    except Exception:  # noqa: BLE001 — an unreadable ledger must not widen the gate
+        return set()
+
+
+def _build_preflight_runner(env: Mapping[str, Any], ledger_path: str) -> Callable:
+    """Fail-closed RPC preflight executed before every signature.
+
+    Configuration comes from the environment (names only, values never
+    printed). A missing address is a refusal at startup, not a silent skip.
+    """
+    from orvyren.execution import preflight as preflight_mod  # noqa: PLC0415
+    from orvyren.policy import ALLOWED_ASSET, ALLOWED_CHAIN_ID  # noqa: PLC0415
+
+    rpc_url = str(env.get("ORVYREN_RPC_URL_BASE_SEPOLIA") or "").strip()
+    agent_address = str(env.get("ORVYREN_AGENT_ADDRESS") or "").strip()
+    treasury_address = str(env.get("ORVYREN_SAFE_ADDRESS") or "").strip()
+    missing = [name for name, value in (
+        ("ORVYREN_RPC_URL_BASE_SEPOLIA", rpc_url),
+        ("ORVYREN_AGENT_ADDRESS", agent_address),
+        ("ORVYREN_SAFE_ADDRESS", treasury_address)) if not value]
+    if missing:
+        raise executor.ExecuteUnavailable(
+            "preflight configuration missing: {}".format(", ".join(missing)))
+
+    rpc = preflight_mod.JsonRpc(rpc_url)
+
+    def runner(intent: Any, now: datetime) -> Mapping[str, Any]:
+        result = preflight_mod.run_preflight(
+            intent,
+            policy_verdict="ALLOW",  # reached only after an ALLOW verdict
+            processed_intent_ids=_seen_intent_ids(ledger_path),
+            now=now,
+            rpc=rpc,
+            expected_chain_id=ALLOWED_CHAIN_ID,
+            agent_address=agent_address,
+            treasury_address=treasury_address,
+            token_address=ALLOWED_ASSET,
+            env=env)
+        return result.to_dict()
+
+    return runner
 
 
 def main(argv: Optional[list] = None, env: Optional[Mapping[str, str]] = None,
@@ -212,6 +269,26 @@ def main(argv: Optional[list] = None, env: Optional[Mapping[str, str]] = None,
         print("ERROR policy: {}".format(exc), file=sys.stderr)
         return executor.EXIT_USAGE
 
+    decision_provider = None
+    if args.decision_source == "agents":
+        if not args.agents_run:
+            print("ERROR --decision-source agents: --agents-run <dir> is required",
+                  file=sys.stderr)
+            return executor.EXIT_USAGE
+        try:
+            from orvyren.decision.agents_source import (AgentsSourceError,
+                                                        build_decision_from_agents)
+            agents_record = build_decision_from_agents(
+                args.agents_run, case_id=args.case, recipient_address=recipient)
+        except AgentsSourceError as exc:
+            print("ERROR --agents-run: {}".format(exc), file=sys.stderr)
+            return executor.EXIT_USAGE
+
+        def decision_provider(_tick: int, _now: datetime,
+                              _record: Mapping[str, Any] = agents_record) -> Mapping[str, Any]:
+            """One sealed agents run -> the same DecisionRecord on every tick."""
+            return _record
+
     signer = None
     if args.execute:
         try:
@@ -223,6 +300,14 @@ def main(argv: Optional[list] = None, env: Optional[Mapping[str, str]] = None,
     run_dir = os.path.join(DEFAULT_RUN_DIR, executor.safe_case(args.case))
     journal_path = args.journal or os.path.join(run_dir, "journal.jsonl")
     ledger_path = args.ledger or os.path.join(run_dir, "ledger.json")
+
+    preflight_runner = None
+    if args.execute and not args.no_preflight:
+        try:
+            preflight_runner = _build_preflight_runner(effective_env, ledger_path)
+        except executor.ExecuteUnavailable as exc:
+            print("ERROR preflight: {}".format(exc), file=sys.stderr)
+            return executor.EXIT_EXECUTE
 
     try:
         summary = executor.run_loop(
@@ -240,6 +325,8 @@ def main(argv: Optional[list] = None, env: Optional[Mapping[str, str]] = None,
             env=effective_env,
             clock=now_fn,
             signer=signer,
+            preflight_runner=preflight_runner,
+            decision_provider=decision_provider,
             rpc_url=str(effective_env.get("ORVYREN_RPC_URL_BASE_SEPOLIA") or "") or None,
             run_id=run_id or None,
             parent_run_id=parent_run_id,

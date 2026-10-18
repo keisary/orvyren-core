@@ -1040,6 +1040,7 @@ def run_loop(bundle: PolicyBundle, *, case: str, recipient: str,
              sleep: Optional[Callable[[float], None]] = None,
              signer: Any = None,
              execute: Optional[Callable[[Intent, Dict[str, Any]], Dict[str, Any]]] = None,
+             preflight_runner: Optional[Callable[[Intent, datetime], Mapping[str, Any]]] = None,
              rpc_url: Optional[str] = None,
              receipt_timeout: int = DEFAULT_RECEIPT_TIMEOUT,
              run_id: Optional[str] = None,
@@ -1287,6 +1288,25 @@ def run_loop(bundle: PolicyBundle, *, case: str, recipient: str,
 
         # Real mode: signer imported lazily, then receipt verification.
         try:
+            if preflight_runner is not None:
+                # Fail-closed preflight: no signature unless every control passes.
+                verdict = preflight_runner(intent, now)
+                preflight = dict(verdict) if isinstance(verdict, Mapping) else {
+                    "ok": False, "failed_code": "PREFLIGHT_UNAVAILABLE", "checks": []}
+                record["preflight"] = preflight
+                if not preflight.get("ok"):
+                    code = str(preflight.get("failed_code") or "PREFLIGHT_REFUSED")
+                    chain.record("execution", "PREFLIGHT_REFUSED", {
+                        "tick": tick, "intent_id": intent.intent_id,
+                        "failed_code": code})
+                    record.update(outcome="PREFLIGHT_REFUSED", executed=False,
+                                  error="preflight refused: {}".format(code))
+                    append_tick(record)
+                    stopped = "preflight"
+                    break
+                chain.record("execution", "PREFLIGHT_PASSED", {
+                    "tick": tick, "intent_id": intent.intent_id,
+                    "failed_code": "", "gas_limit": preflight.get("gas_limit")})
             if execute is not None:  # injected path (tests/bench): no signer required
                 result = execute(intent, record)
             else:
