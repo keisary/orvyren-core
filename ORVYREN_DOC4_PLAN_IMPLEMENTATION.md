@@ -24,7 +24,7 @@ Vérifié sur le dépôt le 15/10/2026. Étiquettes : **[FAIT]** = exécuté et 
 | Exécution bornée + vérification de receipt | `run_execution_demo.py`, `src/orvyren/execution/` | [FAIT] (16/10 — exécution bornée **on-chain** : 5 runs A→E via le kit démo ; vérification de reçu + contrôle A8 du vérificateur T10) |
 | Dossier 1 page + visionneuse locale | `run_audit.py` → `evidence/dossier_usdc-2023-03.{md,html}` | [FAIT] |
 | Orchestrateur de pipeline | `run_pipeline.py` → `evidence/pipeline_summary.json` | [FAIT] |
-| Suite de tests | `python -m unittest discover -s tests` → **811 tests — OK (808 verts, 3 sautés)** | VERTE |
+| Suite de tests | `python -m unittest discover -s tests` → **1418 tests — OK (3 sautés)** (mesurée le 18/10/2026 ; pytest : 1 415 passed + 289 subtests) | VERTE |
 | `src/orvyren/branches/`, `src/orvyren/research/`, `src/orvyren/agents/` | — | [PARTIEL] (`branches/` + `agents/` MA-B livrés et **fusionnés** 16/10 — boucle, 2 processus, magasin haché ; partie live sous clé API ; `research/` absent) |
 | `src/orvyren/evaluation/`, `src/orvyren/replay/` | `run_evaluation.py` · `run_calibration.py` · `run_replay.py` → `evidence/evaluation/`, `evidence/calibration_report.{json,md}`, `evidence/replay/` | [FAIT] (Sprint 0 pour `loss`/`comparators`/`calibration`/`windows`/`forecasts`/`outcomes` + gel G1–G6 ; **17/10 — W7 complet** : `harness.py`/`report.py`, paquet `replay/` (clock PIT, corpus figé, journal k=10, archive, dossier), CLIs ; portes de gel/verrou/embargo ; correctif identité de Murphy intra-bin + **re-gel G5** documenté) |
 | `python -m orvyren.verify` (vérificateur tiers T10) | `src/orvyren/verify/` (moteur A1–A8 + B/C) ; `scripts/build_audit_packet.py` (paquet v2) | [FAIT] (16/10 — `--mutate-test` **6/6** ; vérificateur **gelé** livré dans chaque paquet ; `README_AUDIT.md` + `VERIFY_EXPECTED.txt`) |
@@ -48,7 +48,7 @@ Vérifié sur le dépôt le 15/10/2026. Étiquettes : **[FAIT]** = exécuté et 
 - Une PR qui casse la CI n'est pas mergée ; une PR mergée qui fait rougir la CI est **revertée le jour même**.
 
 ### 1.2 Tests obligatoires par module
-- **Barre non négociable** : la suite reste verte (aujourd'hui **811 tests — 808 verts, 3 sautés** : deux tests live-RPC opt-in + un conditionnel selon la présence d'`eth-account`). **Le total monte, il ne descend jamais** ; aucun test supprimé, aucun test désactivé pour faire passer une PR.
+- **Barre non négociable** : la suite reste verte (aujourd'hui **1418 tests — OK (3 sautés)**, mesurés le 18/10/2026 : deux tests live-RPC opt-in + un conditionnel selon la présence d'`eth-account`). **Le total monte, il ne descend jamais** ; aucun test supprimé, aucun test désactivé pour faire passer une PR.
 - Chaque lot apporte **ses tests dans la même PR** que le code. Les seuils par module sont en §6.
 - **Hors-ligne par défaut** : les tests lisent les fixtures archivées (`corpus/`, `evidence/`, `fixtures/`) ; un test qui exige le réseau est `skip` par défaut et exécutable explicitement (convention des 2 sautés existants).
 - **Test de contrat** : toute interface [I] a un test qui la consomme côté aval. Une PR qui change un contrat change **les deux côtés** et le test, sinon refus.
@@ -341,7 +341,7 @@ Cinq rôles, une propriété claire, un **backup déclaré** par workstream (per
 ## 5. Conventions techniques rappelées
 
 ### 5.1 Tests
-- `python -m unittest discover -s tests` — état actuel **811 tests — OK (808 verts, 3 sautés)**. Aucune baisse autorisée.
+- `python -m unittest discover -s tests` — état actuel **1418 tests — OK (3 sautés)** (18/10/2026). Aucune baisse autorisée.
 - Chaque module nouveau apporte ses fichiers `tests/test_<module>.py` ; chaque règle de politique, chaque relation du graphe, chaque état d'hypothèse a son test de rejet ou de frontière.
 - Les tests qui exigent le réseau sont `skip` par défaut, avec un drapeau explicite pour les lancer.
 - Un bug corrigé **gagne son test de non-régression** dans la même PR.
