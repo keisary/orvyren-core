@@ -118,7 +118,7 @@ détient jamais les fonds métier (B5 S6).
 1. **Créer la Safe « DAO » 2/3** sur Base Sepolia via `app.safe.global`
    (3 propriétaires distincts, seuil 2).
    *Vérification :* l'adresse de la Safe a du code (`eth_getCode` ≠ `0x`) —
-   `python scripts/demo/preflight.py --rpc --env-file scripts/demo/.env --capture-envelope demo_runs/envelope_live.json`
+   `python scripts/demo/preflight.py --rpc --env-file scripts/demo/.env --capture-envelope evidence/demo_runs/envelope_live.json`
    puis regarder l'entrée `orvyren_safe_address` du fichier capturé.
 
 2. **Déployer le module Roles POUR cette Safe** (app Zodiac /
@@ -155,7 +155,7 @@ détient jamais les fonds métier (B5 S6).
 
    ```bash
    python scripts/demo/preflight.py --rpc --env-file scripts/demo/.env \
-       --capture-envelope demo_runs/envelope_live.json
+       --capture-envelope evidence/demo_runs/envelope_live.json
    ```
 
 7. **Renseigner le bloc `role` de l'enveloppe** (`envelope.example.json` copié
@@ -187,11 +187,11 @@ Contrôles de sécurité (le kit les refait au démarrage) :
 **Répétition à blanc (aucune clé requise, aucun réseau) :**
 
 ```bash
-python scripts/demo/demo.py --run A --dry-run --session demo_runs/session_dry
-python scripts/demo/demo.py --run B --dry-run --session demo_runs/session_dry
-python scripts/demo/demo.py --run C --dry-run --session demo_runs/session_dry
-python scripts/demo/demo.py --run D --dry-run --session demo_runs/session_dry
-python scripts/demo/demo.py --run E --dry-run --session demo_runs/session_dry
+python scripts/demo/demo.py --run A --dry-run --session evidence/demo_runs/session_dry
+python scripts/demo/demo.py --run B --dry-run --session evidence/demo_runs/session_dry
+python scripts/demo/demo.py --run C --dry-run --session evidence/demo_runs/session_dry
+python scripts/demo/demo.py --run D --dry-run --session evidence/demo_runs/session_dry
+python scripts/demo/demo.py --run E --dry-run --session evidence/demo_runs/session_dry
 python -m pytest tests/test_demo_kit.py -q      # 75 tests hors chaîne
 ```
 
@@ -260,7 +260,7 @@ montrée à côté de sa preuve).
    `<run>/revocation_instruction.json`.
 2. **La DAO exécute** `assignRoles(agent, [AGENT], [false])` (2 signatures sur 3) —
    via Safe{Wallet} ou l'outil fourni : `python scripts/demo/dao_assign_roles.py --enable false`
-   (hash dans `demo_runs/setup/dao_assign_roles_last.json` ; contrôle indépendant :
+   (hash dans `evidence/demo_runs/setup/dao_assign_roles_last.json` ; contrôle indépendant :
    simulation `eth_call` de l'agent → `NoMembership`). Notez l'heure et le hash.
 3. Chronométrez puis rejouez la tentative de l'agent :
 
@@ -394,8 +394,9 @@ et `https://docs.cdp.coinbase.com/faucets/introduction/welcome` (plafonds CDP :
 `app.safe.global` (Safe{Wallet}) · `roles.gnosisguild.org` (app Roles, diff de politique).
 
 **Internes** : `FREEZE_V2.md` · the v1 design notes (archived out of the repository) ·
-`demo_runs/` (sorties d'exécution du kit : captures, préflight en ligne, dry-runs —
-créé au premier lancement ; les sondes d'origine sont archivées hors dépôt).
+`evidence/demo_runs/` (sorties d'exécution du kit : captures, préflight en ligne, dry-runs —
+les runs A→E du 16/10 y sont versionnés, les nouveaux runs s'y écrivent au premier lancement ;
+les sondes d'origine sont archivées hors dépôt).
 
 ---
 

@@ -31,7 +31,7 @@ python -m pytest tests/ -q                                   # 1486 tests (3 ski
 PYTHONPATH=src python -m orvyren.decide --case usdc-2023-03 --replay   # décision complète en une commande (3 axes, hors-ligne)
 python run_pipeline.py                                       # pipeline complet (corpus archivé)
 python scripts/reconstruct_rseth_episode.py --from-cache     # reconstruction hors-ligne (idem steth / usdc)
-python scripts/demo/demo.py --run A --dry-run --session demo_runs/session_dry   # kit démo testnet (dry-run)
+python scripts/demo/demo.py --run A --dry-run --session evidence/demo_runs/session_dry   # kit démo testnet (dry-run)
 python run_audit.py --serve                                  # UI locale : /ui (12 écrans), /panels (3 panneaux), /api/panels
 PYTHONPATH=src python -m orvyren.graph.api --db D:/orvyren_10h_2026-10-17/graph_v3.sqlite \
   q1 --holder 0xbe00a0de23a02a85d7fb7451ab9b69d84fd61fe3 \
@@ -53,7 +53,7 @@ python scripts/build_audit_packet.py --session <session> --case rseth --out-dir 
 python run_verify.py dist/audit_packets/<paquet>.zip         # vérification tierce (OFFLINE_PASS attendu)
 ```
 
-Ce qui reste **local par design** : les clés (`scripts/demo/.env`, `owners.env` — gitignorés) et les sessions d'exécution (`demo_runs/`, `dist/` — produites à l'exécution). Le **paquet d'audit** (`dist/audit_packets/*.zip`) est la pièce à transmettre : il ne contient que des données publiques (reçus, journal chaîné, hashes). L'exemplaire de référence des runs A→E du 16/10 est **versionné** : `evidence/audit_packets/` (zip + sha256 + mode de vérification).
+Ce qui reste **local par design** : les clés (`scripts/demo/.env`, `owners.env` — gitignorés) et les sessions d'exécution (`evidence/demo_runs/`, `dist/` — produites à l'exécution ; les runs A→E du 16/10 y sont versionnés comme preuves). Le **paquet d'audit** (`dist/audit_packets/*.zip`) est la pièce à transmettre : il ne contient que des données publiques (reçus, journal chaîné, hashes). L'exemplaire de référence des runs A→E du 16/10 est **versionné** : `evidence/audit_packets/` (zip + sha256 + mode de vérification).
 
 ## Structure du dépôt
 

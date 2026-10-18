@@ -46,7 +46,7 @@ test:
 	$(PYTHON) -m unittest discover -s tests -v
 
 # Guarantees the suite is green on a tree WITHOUT untracked files
-# (dist/, demo_runs/, caches...): that is the definition of a reproducible clone.
+# (dist/, caches...): that is the definition of a reproducible clone.
 test-clone:
 	@tmp=$$(mktemp -d); \
 	trap 'rm -rf "$$tmp"' EXIT INT TERM; \

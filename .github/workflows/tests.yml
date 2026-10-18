@@ -31,7 +31,7 @@ jobs:
         run: python collect_corpus.py --offline
 
   # Guarantees the suite is green on a PRISTINE clone of HEAD: `git archive`
-  # only restores tracked files (no dist/, demo_runs/, caches or local WIP).
+  # only restores tracked files (no dist/, caches or local WIP).
   # That is the definition of a reproducible clone.
   clean-clone:
     runs-on: ubuntu-latest

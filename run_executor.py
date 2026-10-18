@@ -48,7 +48,7 @@ from orvyren.execution.chain import ChainError  # noqa: E402
 
 DEFAULT_CASE = "usdc-2023-03"
 DEFAULT_POLICY = os.path.join(ROOT, "policy_v1.yaml")
-DEFAULT_RUN_DIR = os.path.join(ROOT, "demo_runs", "executor")
+DEFAULT_RUN_DIR = os.path.join(ROOT, "evidence", "demo_runs", "executor")
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -72,9 +72,9 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--fixture", default=None,
                         help="envelope fixture (default: the one declared by policy_v1.yaml)")
     parser.add_argument("--ledger", default=None,
-                        help="24 h JSON ledger (default: demo_runs/executor/<case>/ledger.json)")
+                        help="24 h JSON ledger (default: evidence/demo_runs/executor/<case>/ledger.json)")
     parser.add_argument("--journal", default=None,
-                        help="chained JSONL journal (default: demo_runs/executor/<case>/journal.jsonl)")
+                        help="chained JSONL journal (default: evidence/demo_runs/executor/<case>/journal.jsonl)")
     parser.add_argument("--run-id", default=None,
                         help="shared run identifier (event-sourced chain) — mandatory "
                              "with --execute (E_CHAIN_RUN_ID_REQUIRED), auto-generated "

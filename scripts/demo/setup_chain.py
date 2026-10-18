@@ -22,7 +22,7 @@ What the script does, in order:
 5. **Control simulations** (``eth_call`` from the agent address):
    (i) ``execTransactionWithRole`` to RECIPIENT_B for 100 USDC → must succeed;
    (ii) same call to RECIPIENT_UNLISTED → must revert.
-6. **Evidence** in ``demo_runs/setup/`` (addresses, hashes, receipts, simulations, calldata) and
+6. **Evidence** in ``evidence/demo_runs/setup/`` (addresses, hashes, receipts, simulations, calldata) and
    update of ``scripts/demo/.env`` (``ORVYREN_SAFE_ADDRESS`` / ``ORVYREN_MODULE_ADDRESS``)
    only after a successful execution.
 
@@ -1302,7 +1302,7 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     parser.add_argument("--env-file", default=os.path.join(common.HERE, ".env"))
     parser.add_argument("--owners-file", default=os.path.join(common.HERE, "owners.env"))
     parser.add_argument("--rpc-url", default=os.environ.get("ORVYREN_RPC_URL_BASE_SEPOLIA") or common.DEFAULT_RPC_URL)
-    parser.add_argument("--out-dir", default=os.path.join(common.ROOT, "demo_runs", "setup"))
+    parser.add_argument("--out-dir", default=os.path.join(common.ROOT, "evidence", "demo_runs", "setup"))
     parser.add_argument("--execute", action="store_true", help="real execution (requires gas on an owner)")
     parser.add_argument("--skip-config", action="store_true",
                         help="with --execute: do not redeploy/reconfigure (resume after a partial run)")

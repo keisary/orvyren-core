@@ -1,6 +1,0 @@
-{
- "mcnemar": null,
- "note": "tests de supériorité (Wilson, McNemar exact, bootstrap par blocs) exécutés seulement quand N ≥ 100 — le harnais refuse de publier un score agrégé unique (B7 §e.5)",
- "status": "NON CALCULÉ — N < 100",
- "window_level": []
-}

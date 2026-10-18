@@ -108,7 +108,7 @@ def main(argv=None) -> int:
     parser = argparse.ArgumentParser(prog="agents_seed_demo.py")
     parser.add_argument("--case", default="usdc-2023-03")
     parser.add_argument("--session", default=None,
-                        help="seed output directory (default demo_runs/agents_seed/<case>)")
+                        help="seed output directory (default evidence/demo_runs/agents_seed/<case>)")
     parser.add_argument("--force", action="store_true",
                         help="overwrite an existing store (protection of a real recording)")
     args = parser.parse_args(argv)
@@ -122,7 +122,8 @@ def main(argv=None) -> int:
                          "(a live recording? use --force if this really is a scripted seed)"
                          % calls_path)
 
-    session = args.session or os.path.join(REPO_ROOT, "demo_runs", "agents_seed", case_slug)
+    session = args.session or os.path.join(REPO_ROOT, "evidence", "demo_runs",
+                                           "agents_seed", case_slug)
     stamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
     run_dir = os.path.join(session, "%s_seed_%s" % (case_slug, stamp))
     os.makedirs(os.path.join(run_dir, "exchanges"), exist_ok=True)

@@ -25,7 +25,7 @@ Examples::
     python run_agents.py --case usdc-2023-03 --replay journal --budget-llm 10
     python run_agents.py --case usdc-2023-03 --replay live   # keys required
 
-Outputs: ``demo_runs/agents/<case>/<run_id>/`` (spec, JSONL journals, exchanges,
+Outputs: ``evidence/demo_runs/agents/<case>/<run_id>/`` (spec, JSONL journals, exchanges,
 ``run_outcome.json``). Stdlib only; this script imports neither policy nor
 execution (W2 boundary rule).
 """
@@ -285,7 +285,7 @@ def main(argv=None) -> int:
     parser.add_argument("--case", required=True, help="case (e.g. usdc-2023-03)")
     parser.add_argument("--replay", choices=("journal", "live"), default="journal")
     parser.add_argument("--session", default=None,
-                        help="session directory (default: demo_runs/agents/<case>)")
+                        help="session directory (default: evidence/demo_runs/agents/<case>)")
     parser.add_argument("--store", default=None,
                         help="response store (default: fixtures/agents/store_<case>)")
     parser.add_argument("--record-live", action="store_true",
@@ -347,8 +347,8 @@ def main(argv=None) -> int:
     inputs = load_case_inputs(args.case)
     # Default paths use the SAFE case token: a case id carrying path segments
     # must never steer the session/store directories outside their roots.
-    session = args.session or os.path.join(REPO_ROOT, "demo_runs", "agents",
-                                          _safe_case(args.case))
+    session = args.session or os.path.join(REPO_ROOT, "evidence", "demo_runs",
+                                          "agents", _safe_case(args.case))
     store = args.store or os.path.join(REPO_ROOT, "fixtures", "agents",
                                       "store_%s" % _safe_case(args.case))
     budget = {"llm_calls": args.budget_llm, "tool_calls": args.budget_tools,

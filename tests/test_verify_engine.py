@@ -33,7 +33,8 @@ sys.path.insert(0, ROOT)
 from orvyren.verify.engine import verify_packet  # noqa: E402
 
 # Versioned PUBLIC micro-chain (extract of the real rseth session): it keeps
-# these tests runnable on a clone, where evidence/demo_runs/ is git-ignored.
+# these tests runnable on a clone without the tracked demo sessions
+# (evidence/demo_runs/) being complete.
 SESSION_DIR = os.path.join(ROOT, "evidence", "demo_chain", "rseth")
 EVIDENCE_DIR = os.path.join(ROOT, "evidence")
 CORPUS = os.path.join(ROOT, "corpus", "usdc_observations.csv")

@@ -2,12 +2,12 @@
 # -*- coding: utf-8 -*-
 """ORVYREN — consolidation of the on-chain setup evidence (from the receipts).
 
-Reads ``demo_runs/setup/receipts/*.json`` (one receipt per step), fetches each
+Reads ``evidence/demo_runs/setup/receipts/*.json`` (one receipt per step), fetches each
 transaction's input via ``eth_getTransactionByHash``, **recomputes the Safe (EIP-712) hashes** of the
 2/3 calls and **decodes the expected events** (ProxyCreation, ModuleProxyCreation, RolesModSetup,
 ScopeTarget, ScopeFunction, SetAllowance, AssignRoles, EnabledModule, ExecutionSuccess).
 
-Output: ``demo_runs/setup/tx_hashes.json`` (full index + decoded events).
+Output: ``evidence/demo_runs/setup/tx_hashes.json`` (full index + decoded events).
 
 Usage:
     python scripts/demo/setup_evidence.py [--receipts DIR] [--out DIR] [--rpc-url URL]
@@ -160,8 +160,8 @@ def build_index(receipts_dir: str, rpc_url: str, safe_hint: Optional[str] = None
 
 def main(argv: Optional[List[str]] = None) -> int:
     parser = argparse.ArgumentParser(description="ORVYREN — consolidation of the setup evidence")
-    parser.add_argument("--receipts", default=os.path.join(common.ROOT, "demo_runs", "setup", "receipts"))
-    parser.add_argument("--out", default=os.path.join(common.ROOT, "demo_runs", "setup"))
+    parser.add_argument("--receipts", default=os.path.join(common.ROOT, "evidence", "demo_runs", "setup", "receipts"))
+    parser.add_argument("--out", default=os.path.join(common.ROOT, "evidence", "demo_runs", "setup"))
     parser.add_argument("--rpc-url", default=os.environ.get("ORVYREN_RPC_URL_BASE_SEPOLIA") or common.DEFAULT_RPC_URL)
     args = parser.parse_args(argv)
     if common.eth_chain_id(args.rpc_url) != setup_chain.CHAIN_ID_DEMO:

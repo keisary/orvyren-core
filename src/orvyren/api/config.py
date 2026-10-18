@@ -55,7 +55,8 @@ class Settings:
 
     @property
     def demo_runs_dir(self) -> str:
-        return os.path.join(self.root, "demo_runs")
+        """Demo sessions live with the other evidence (tracked submission proofs)."""
+        return os.path.join(self.root, "evidence", "demo_runs")
 
     @property
     def corpus_dir(self) -> str:

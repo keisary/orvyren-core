@@ -10,7 +10,7 @@ The AGENT role is removed (or restored) by the **DAO** — 2 signatures out of 3
 Printed evidence: Safe transaction signed/submitted from a funded owner, verified receipt,
 and **independent simulation** of the effect (eth_call from the agent: the module must revert
 ``NoMembership`` = ``0xfd8e9f28`` after revocation, and no longer do so after reset).
-No key is ever displayed; ``demo_runs/setup/dao_assign_roles_last.json`` receives the hash.
+No key is ever displayed; ``evidence/demo_runs/setup/dao_assign_roles_last.json`` receives the hash.
 """
 from __future__ import annotations
 
@@ -45,7 +45,7 @@ def main() -> int:
     parser.add_argument("--env-file", default=os.path.join(_HERE, ".env"))
     parser.add_argument("--owners-file", default=os.path.join(_HERE, "owners.env"))
     parser.add_argument("--rpc-url", default=os.environ.get("ORVYREN_RPC_URL_BASE_SEPOLIA") or common.DEFAULT_RPC_URL)
-    parser.add_argument("--out-dir", default=os.path.join(common.ROOT, "demo_runs", "setup"))
+    parser.add_argument("--out-dir", default=os.path.join(common.ROOT, "evidence", "demo_runs", "setup"))
     args = parser.parse_args()
 
     setup = sc.ChainSetup(env_file=args.env_file, owners_file=args.owners_file, rpc_url=args.rpc_url,

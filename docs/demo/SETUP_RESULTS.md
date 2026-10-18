@@ -46,7 +46,7 @@ Coût total ≈ **1,38 M de gaz** (déploiements inclus), payé par O1.
 croissante** (`v` ∈ {27,28} — chemin `ecrecover` par défaut de Safe 1.4.1), hash EIP-712 comparé à
 `Safe.getTransactionHash` **avant chaque envoi**, et **contre-vérifié après coup** : les 6 hash Safe recalculés
 localement sont **identiques aux `safeTxHash` émis par les événements `ExecutionSuccess`** (6/6, voir
-`demo_runs/setup/tx_hashes.json` → `safe_tx_hash_checks`).
+`evidence/demo_runs/setup/tx_hashes.json` → `safe_tx_hash_checks`).
 
 ## 3. Simulées de contrôle (eth_call depuis l'adresse de l'agent) — verdicts
 
@@ -60,15 +60,15 @@ localement sont **identiques aux `safeTxHash` émis par les événements `Execut
 ## 4. Capture d'enveloppe et préflight complet
 
 ```bash
-python scripts/demo/preflight.py --rpc --env-file scripts/demo/.env --capture-envelope demo_runs/envelope_live.json
+python scripts/demo/preflight.py --rpc --env-file scripts/demo/.env --capture-envelope evidence/demo_runs/envelope_live.json
 python scripts/demo/preflight.py --rpc --env-file scripts/demo/.env \
-    --envelope demo_runs/envelope_reference.json --out demo_runs/preflight_live.json
+    --envelope evidence/demo_runs/envelope_reference.json --out evidence/demo_runs/preflight_live.json
 ```
 
-- `demo_runs/envelope_live.json` : capture brute (bloc 48 189 829, 18 contrats, tailles + sha256).
-- `demo_runs/envelope_reference.json` : **enveloppe complétée** avec les faits vérifiés (rôle déclaré + sondes des
+- `evidence/demo_runs/envelope_live.json` : capture brute (bloc 48 189 829, 18 contrats, tailles + sha256).
+- `evidence/demo_runs/envelope_reference.json` : **enveloppe complétée** avec les faits vérifiés (rôle déclaré + sondes des
   getters lisibles) — c'est celle à utiliser pour les runs.
-- `demo_runs/preflight_live.json` : préflight en ligne → **verdict PASS**, dérive **D1–D9 PASS**,
+- `evidence/demo_runs/preflight_live.json` : préflight en ligne → **verdict PASS**, dérive **D1–D9 PASS**,
   reste `D10 UNKNOWN` → `SAFE MODE : ENVELOPE_UNVERIFIED:D10`.
   Sondes exécutées : `isModuleEnabled(agent)` = true (D3) ; `allowances(usdc_daily).refill` = 300 000 000 (D7) ;
   `allowances(calls_daily).refill` = 10 (D8) ; module = code + codehash épinglés (D2) ; chaîne 84532 (D1).
@@ -79,21 +79,21 @@ python scripts/demo/preflight.py --rpc --env-file scripts/demo/.env \
 |---|---|
 | `scripts/demo/setup_chain.py` | outil de montage complet (préflight, validation d'arbre, simulations, exécution, preuves, `.env`) — `--self-test` : 24 contrôles hors ligne **verts** |
 | `scripts/demo/setup_evidence.py` | consolidation des preuves depuis les reçus (index des tx, hash Safe recalculés, événements décodés) |
-| `demo_runs/setup/setup_chain.json` | journal du run (infra, conditions, prédictions, calldata préparés, étapes) |
-| `demo_runs/setup/addresses.json` | adresses Safe/module (+ owners, seuil) |
-| `demo_runs/setup/tx_hashes.json` | index des 9 tx + événements décodés + `safe_tx_hash_checks` (6/6) |
-| `demo_runs/setup/receipts/*.json` | 9 reçus bruts (un par étape) |
-| `demo_runs/setup/simulations.json` | simulations de déploiement + validation de l'arbre + RUN A/B |
-| `demo_runs/setup/integrity_enforce_simulations.json` | appel positif/négatifs sur la bibliothèque Integrity déployée |
-| `demo_runs/setup/preflight_lecture_seule.json` | lecture seule : codes, tailles, sha256, sélecteurs, événements, soldes |
-| `demo_runs/setup/abis/*.json` | ABI vérifiées (Blockscout) du mastercopy Roles et de la bibliothèque Integrity |
-| `demo_runs/setup/execution_log.txt` · `SETUP_SUMMARY.md` | journaux d'exécution |
-| `demo_runs/envelope_live.json` · `envelope_reference.json` · `preflight_live.json` | enveloppe capturée, enveloppe complétée, rapport de préflight |
+| `evidence/demo_runs/setup/setup_chain.json` | journal du run (infra, conditions, prédictions, calldata préparés, étapes) |
+| `evidence/demo_runs/setup/addresses.json` | adresses Safe/module (+ owners, seuil) |
+| `evidence/demo_runs/setup/tx_hashes.json` | index des 9 tx + événements décodés + `safe_tx_hash_checks` (6/6) |
+| `evidence/demo_runs/setup/receipts/*.json` | 9 reçus bruts (un par étape) |
+| `evidence/demo_runs/setup/simulations.json` | simulations de déploiement + validation de l'arbre + RUN A/B |
+| `evidence/demo_runs/setup/integrity_enforce_simulations.json` | appel positif/négatifs sur la bibliothèque Integrity déployée |
+| `evidence/demo_runs/setup/preflight_lecture_seule.json` | lecture seule : codes, tailles, sha256, sélecteurs, événements, soldes |
+| `evidence/demo_runs/setup/abis/*.json` | ABI vérifiées (Blockscout) du mastercopy Roles et de la bibliothèque Integrity |
+| `evidence/demo_runs/setup/execution_log.txt` · `SETUP_SUMMARY.md` | journaux d'exécution |
+| `evidence/demo_runs/envelope_live.json` · `envelope_reference.json` · `preflight_live.json` | enveloppe capturée, enveloppe complétée, rapport de préflight |
 | `docs/demo/SETUP_RESULTS.md` | ce document |
 
 `scripts/demo/.env` : `ORVYREN_SAFE_ADDRESS` et `ORVYREN_MODULE_ADDRESS` remplacés par les adresses déployées ;
 toutes les autres lignes intactes (clé privée inchangée — empreinte sha256 vérifiée avant/après).
-Aucune clé privée n'apparaît dans un artefact ou une sortie (scan des fichiers `demo_runs/` : 0 occurrence).
+Aucune clé privée n'apparaît dans un artefact ou une sortie (scan des fichiers `evidence/demo_runs/` : 0 occurrence).
 
 ## 6. Ce qui reste exactement à faire
 
@@ -109,7 +109,7 @@ Aucune clé privée n'apparaît dans un artefact ou une sortie (scan des fichier
 3. **Rapprovisionner O1 en gaz** si nécessaire : O1 porte désormais ~0,0035 ETH ; le montage a coûté ≈ 1,38 M de gaz
    (~0,0000017 ETH au prix observé). L'agent a 0,0015 ETH (suffisant pour des dizaines d'exécutions).
 4. Lancer ensuite les runs de démonstration (A/B/C/K) du kit avec `--env-file scripts/demo/.env` et l'enveloppe
-   `demo_runs/envelope_reference.json`.
+   `evidence/demo_runs/envelope_reference.json`.
 
 ## 7. Garde-fous appliqués
 
@@ -140,7 +140,7 @@ Aucune clé privée n'apparaît dans un artefact ou une sortie (scan des fichier
 - Sources contrats : `safe-global/safe-smart-account@v1.4.1` ; `zodiaceco/zodiac-core` (`Module.sol`, `Modifier.sol`,
   `ModuleProxyFactory.sol`) ; `zodiaceco/zodiac-modifier-roles@3a429ab902` (`Roles.sol`, `Types.sol`,
   `PermissionBuilder.sol`, `Integrity.sol`, `Topology.sol`, `AbiDecoder.sol`, `PermissionChecker.sol`, tests officiels).
-- ABI vérifiées on-chain (Blockscout Base Sepolia), archivées dans `demo_runs/setup/abis/`.
+- ABI vérifiées on-chain (Blockscout Base Sepolia), archivées dans `evidence/demo_runs/setup/abis/`.
 - Lectures/écritures : `https://sepolia.base.org` (`eth_chainId`, `eth_getCode`, `eth_call`, `eth_sendRawTransaction`,
   `eth_getTransactionByHash`, `eth_getTransactionReceipt`), 2026-10-16.
 
@@ -151,4 +151,4 @@ Version du mastercopy identifiée : **Zodiac Roles Modifier v2.1.1** (version co
 
 - Source vérifiée Blockscout du mastercopy `0xF2964CE6…83D5` : **26/26 fichiers identiques à l'artefact publié v2.1.1** (vs 24/26 pour v2.1.0) — les deux fichiers qui distinguent nos sources sont précisément les deux fichiers corrigés (`SignatureChecker.sol` : contrôle `success` du staticcall ERC-1271 ajouté ; `PermissionChecker.sol` : `payload.children`).
 - `code_sha256` du mastercopy : `89c5dc3313b5669f669232de7033734b4ee10339297cdf523bee5eb1b093cd05` (identique Ethereum / Base / Base Sepolia, 24 409 octets).
-- Enveloppe de référence mise à jour (`module.version=v2.1.1`, `advisory_clear=true`), preuve complète : `demo_runs/setup/d10_resolution.json`.
+- Enveloppe de référence mise à jour (`module.version=v2.1.1`, `advisory_clear=true`), preuve complète : `evidence/demo_runs/setup/d10_resolution.json`.

@@ -14,7 +14,9 @@ scripts/demo/owners.env
 secrets/
 
 # --- Local artifacts (gitignored, not reproducible) ---
-demo_runs/
+# NOTE: evidence/demo_runs/ is TRACKED (demo runs A→E are submission evidence)
+# and must stay in the build context — the API tests read it. Only a stray
+# root-level demo_runs/ would be local, and that directory no longer exists.
 dist/
 *.log
 .DS_Store

@@ -7,12 +7,12 @@ and returns them shaped for the frontend. Where a field is missing on disk,
 the loader says so instead of fabricating a value.
 
 Artefact map (repository layout):
-- ``demo_runs/**/<run>/run.json``                      run spec (hypotheses, gaps)
-- ``demo_runs/**/<run>/journal_orchestrator.jsonl``    hash-chained journal
-- ``demo_runs/**/<run>/journal_critic.jsonl``          critic journal
-- ``demo_runs/**/<run>/outcome_orchestrator.json``     budget + stop condition
-- ``demo_runs/**/<run>/run_outcome.json``              chain heads + critique
-- ``demo_runs/**/<run>/exchanges/*.json``              evidence / critique packets
+- ``evidence/demo_runs/**/<run>/run.json``             run spec (hypotheses, gaps)
+- ``evidence/demo_runs/**/<run>/journal_orchestrator.jsonl``  hash-chained journal
+- ``evidence/demo_runs/**/<run>/journal_critic.jsonl`` critic journal
+- ``evidence/demo_runs/**/<run>/outcome_orchestrator.json``   budget + stop condition
+- ``evidence/demo_runs/**/<run>/run_outcome.json``     chain heads + critique
+- ``evidence/demo_runs/**/<run>/exchanges/*.json``     evidence / critique packets
 - ``evidence/agents_live/<run>/``                      live run copies
 - ``evidence/episode_*.json``                          3 stress episodes
 - ``evidence/decision_*.json``                         decision + axes + RDOF

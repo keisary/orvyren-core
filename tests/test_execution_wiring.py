@@ -41,7 +41,7 @@ NOW = datetime(2026, 10, 18, 12, 0, tzinfo=timezone.utc)
 RUN_ID = "run-20261018T120000000000Z-00aabbccdd11"
 SEALED_RUNS = (
     os.path.join(ROOT, "evidence", "agents_live", "usdc-2023-03_live_20261017T013034Z"),
-    os.path.join(ROOT, "demo_runs", "agents", "usdc-2023-03",
+    os.path.join(ROOT, "evidence", "demo_runs", "agents", "usdc-2023-03",
                  "usdc-2023-03_live_20261017T013034Z"),
 )
 

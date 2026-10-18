@@ -1,16 +1,15 @@
 # `evidence/demo_chain/` — micro-chaîne de démonstration PUBLIQUE
 
 Extrait **versionné** de la session de démonstration réelle `rseth` exécutée le
-2026-10-16 sur **Base Sepolia** (runs A → E, cf. `evidence/demo_runs/rseth/` qui
-reste, lui, git-ignoré par design : journaux de console, `session.json`,
-`signatures.jsonl`, `runs/` locaux).
+2026-10-16 sur **Base Sepolia** (runs A → E, cf. `evidence/demo_runs/rseth/`, la
+session complète versionnée : journaux de console, `session.json`,
+`signatures.jsonl`, `runs/`).
 
-Pourquoi ce répertoire existe : un clone propre du dépôt ne contient pas
-`evidence/demo_runs/` (motif `.gitignore` `demo_runs/`). Sans ces données, les
-écrans 10–12 de l'UI affichaient « SOURCE ABSENTE » et les tests du
-vérificateur T10 se sautaient. La micro-chaîne ci-dessous rend ces preuves
-**lisibles et re-jouables hors ligne par un tiers**, sans jamais publier de
-secret.
+Pourquoi ce répertoire existe : c'est l'extrait **compact** de la session
+`rseth` (la session complète vit sous `evidence/demo_runs/rseth/`, versionnée
+elle aussi). Il rend les preuves **lisibles et re-jouables hors ligne par un
+tiers** sans dépendre du volume des sessions, et sert de filet aux écrans
+10–12 de l'UI quand une session locale manque — sans jamais publier de secret.
 
 ## Contenu (`rseth/`)
 

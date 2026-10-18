@@ -43,11 +43,11 @@ WORKDIR /app
 # Dependencies are installed once in the builder (layer cache).
 COPY --from=builder /opt/venv /opt/venv
 
-# The build context is filtered by .dockerignore (.git, secrets, dist/, demo_runs/...).
+# The build context is filtered by .dockerignore (.git, secrets, dist/...).
 COPY . .
 
 # The repo is writable by the non-root user: some runs write artifacts
-# (evidence/, replay/runs.jsonl, demo_runs/) inside the tree.
+# (evidence/, replay/runs.jsonl — evidence/demo_runs/ included) inside the tree.
 RUN chown -R orvyren:orvyren /app
 
 USER orvyren

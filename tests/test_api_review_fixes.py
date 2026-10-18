@@ -108,7 +108,7 @@ class TestVerifyJournalChain(unittest.TestCase):
         return rows, previous
 
     def _write_run(self, root, rows, head, journal_lines=None):
-        run_dir = os.path.join(root, "demo_runs", "agents", "run-1")
+        run_dir = os.path.join(root, "evidence", "demo_runs", "agents", "run-1")
         os.makedirs(run_dir, exist_ok=True)
         with open(os.path.join(run_dir, "journal_orchestrator.jsonl"),
                   "w", encoding="utf-8", newline="\n") as handle:

@@ -14,8 +14,8 @@ Covers the two things that make the bridge trustworthy:
   sits in the run directory.
 
 The bench reads the REAL sealed artefacts found on disk (``evidence/agents_live``
-first, then ``demo_runs/agents``) and skips explicitly when none exists — no
-fabricated run is ever substituted for a missing measurement.
+first, then ``evidence/demo_runs/agents``) and skips explicitly when none exists —
+no fabricated run is ever substituted for a missing measurement.
 
 Execution: ``python -m unittest tests.test_decision_agents_source -v``.
 """
@@ -46,7 +46,7 @@ REQUIRED_KEYS = ("schema", "case", "mode", "epistemic_verdict", "economic_action
 
 #: Directories scanned for sealed runs, in priority order.
 RUN_PATTERNS = ("evidence/agents_live/*/run_outcome.json",
-                "demo_runs/agents/*/*/run_outcome.json")
+                "evidence/demo_runs/agents/*/*/run_outcome.json")
 
 
 def discover_run_dirs():
