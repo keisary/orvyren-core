@@ -31,10 +31,11 @@ Standard library only.
 
 from __future__ import annotations
 
+from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional, Sequence, Tuple
 
 from orvyren.graph.models import fingerprint
-from orvyren.graph.record import (RelationRecord, record_as_dict,
+from orvyren.graph.record import (RelationRecord, parse_ts, record_as_dict,
                                   record_from_dict)
 from orvyren.graph.temporal import covers, pit_at
 
@@ -221,27 +222,47 @@ def q4_pit_state(records: Sequence[RelationRecord],
 # ---------------------------------------------------------------------------
 # Q5 — episode timeline.
 # ---------------------------------------------------------------------------
+#: Sort sentinel for records missing a clock (sorts before any real instant).
+_MIN_INSTANT = datetime.min.replace(tzinfo=timezone.utc)
+
+
+def _instant(value: Optional[str]) -> Optional[datetime]:
+    """Parse a clock reading to an aware UTC datetime (``None`` when absent)."""
+    if not value:
+        return None
+    return parse_ts(value)
+
+
 def q5_episode_timeline(records: Sequence[RelationRecord], t1: str,
                         t2: str) -> List[Dict[str, Any]]:
     """Records between T1 and T2, clocks kept separate.
 
     ``event_time`` is the world clock (``valid_from``), ``tx_time`` the system
-    clock (``inserted_at``); ordering is (event_time, tx_time).
+    clock (``inserted_at``); ordering is (event_time, tx_time). Window
+    membership and ordering compare aware UTC ``datetime`` instants, never
+    text: record timestamps and window bounds may carry different offsets.
     """
+    start, end = parse_ts(t1), parse_ts(t2)
     entries = []
     for record in records:
         event_time = record.valid_from
         tx_time = record.inserted_at
-        in_window = ((event_time and t1 <= event_time < t2)
-                     or (tx_time and t1 <= tx_time < t2))
+        event_ts, tx_ts = _instant(event_time), _instant(tx_time)
+        in_window = ((event_ts is not None and start <= event_ts < end)
+                     or (tx_ts is not None and start <= tx_ts < end))
         if not in_window:
             continue
         entries.append({"relation_id": record.relation_id, "kind": record.kind,
                         "src": record.src, "dst": record.dst,
                         "event_time": event_time, "tx_time": tx_time,
                         "payload": dict(record.payload)})
-    entries.sort(key=lambda item: (item["event_time"] or item["tx_time"],
-                                   item["tx_time"]))
+
+    def _key(item: Dict[str, Any]) -> Tuple[datetime, datetime]:
+        primary = _instant(item["event_time"]) or _instant(item["tx_time"])
+        secondary = _instant(item["tx_time"])
+        return (primary or _MIN_INSTANT, secondary or _MIN_INSTANT)
+
+    entries.sort(key=_key)
     return entries
 
 

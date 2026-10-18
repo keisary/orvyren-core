@@ -18,6 +18,7 @@ import os
 import sqlite3
 import time
 import urllib.parse
+from datetime import datetime, timezone
 from typing import Any, Dict, List, Mapping, Optional, Sequence, Tuple
 
 DEFAULT_DB = os.environ.get(
@@ -51,14 +52,40 @@ def _any_node(value: str) -> str:
     return _node_id(value, "asset")
 
 
+def _ts(value: str) -> str:
+    """Normalise a timestamp parameter to aware UTC text.
+
+    Timestamps carry heterogeneous offsets (``Z``, ``+02:00``, ``-05:00``);
+    comparing their text would order ``10:00+02:00`` after ``08:30Z``. The
+    instant is parsed as an aware ``datetime`` (``Z`` accepted, naive = UTC)
+    and normalised to UTC before it reaches SQL, where ``julianday`` applies
+    the same instant semantics to the stored column values.
+    """
+    try:
+        moment = datetime.fromisoformat(
+            value.strip().replace("Z", "+00:00").replace("z", "+00:00"))
+    except ValueError:
+        return value  # exotic input: leave it to SQLite's own parser
+    if moment.tzinfo is None:
+        moment = moment.replace(tzinfo=timezone.utc)
+    return moment.astimezone(timezone.utc).isoformat()
+
+
 def _validity(alias: str, as_of: Optional[str], as_of_block: Optional[int]) -> Tuple[List[str], List[Any]]:
+    """World-validity clauses; instants compare as UTC instants.
+
+    ``julianday`` on both sides makes the comparison offset-aware (a bare
+    ``<=`` on the text would order offsets lexicographically).
+    """
     clauses: List[str] = []
     params: List[Any] = []
     if as_of:
-        clauses.append(f"({alias}.valid_from IS NULL OR {alias}.valid_from <= ?)")
-        params.append(as_of)
-        clauses.append(f"({alias}.valid_to IS NULL OR {alias}.valid_to > ?)")
-        params.append(as_of)
+        clauses.append(f"({alias}.valid_from IS NULL OR "
+                       f"julianday({alias}.valid_from) <= julianday(?))")
+        params.append(_ts(as_of))
+        clauses.append(f"({alias}.valid_to IS NULL OR "
+                       f"julianday({alias}.valid_to) > julianday(?))")
+        params.append(_ts(as_of))
     if as_of_block is not None:
         clauses.append(f"({alias}.valid_from_block IS NULL OR {alias}.valid_from_block <= ?)")
         params.append(int(as_of_block))
@@ -95,7 +122,7 @@ def _current(as_of: Optional[str], con: Optional[sqlite3.Connection] = None) -> 
     clause = ("r.revision = (SELECT MAX(r2.revision) FROM relations r2 "
               "WHERE r2.relation_id = r.relation_id "
               "AND julianday(r2.inserted_at) <= julianday(?))")
-    return clause, [as_of]
+    return clause, [_ts(as_of)]
 
 
 def exposure(db: Optional[str] = None, holder: str = "", *,
@@ -135,8 +162,8 @@ def exposure(db: Optional[str] = None, holder: str = "", *,
         GROUP BY w.asset
         ORDER BY depth, w.asset
     """
-    params: List[Any] = ([holder_id] + vparams + cparams +
-                         [max_depth] + walk_params + cparams)
+    params: List[Any] = ([holder_id] + cparams + vparams +
+                         [max_depth] + cparams + walk_params)
     try:
         rows = [dict(row) for row in con.execute(sql, params).fetchall()]
     finally:
@@ -201,8 +228,8 @@ def dependency_paths(db: Optional[str] = None, src: str = "", dst: str = "",
         ORDER BY depth, path
         LIMIT 50
     """
-    params: List[Any] = ([src_id] + list(selected) + vparams + cparams +
-                         [depth] + list(selected) + vparams + cparams + [dst_id])
+    params: List[Any] = ([src_id] + list(selected) + cparams + vparams +
+                         [depth] + list(selected) + cparams + vparams + [dst_id])
     try:
         rows = []
         for row in con.execute(sql, params).fetchall():
@@ -265,19 +292,34 @@ def provenance(db: Optional[str] = None, relation_id: str = "") -> Dict[str, Any
 
 def timeline(db: Optional[str] = None, *, as_of: Optional[str] = None,
              as_of_block: Optional[int] = None, limit: int = 50) -> Dict[str, Any]:
-    """Q5 — recent first-class events, newest block first."""
+    """Q5 — recent first-class events, newest block first.
+
+    Point-in-time on both clocks: an event is admissible at ``as_of`` only
+    when it is observable at ``as_of`` (``observation_time``) **and** dated at
+    or before it (``event_time``). Filtering on ``event_time`` alone admits a
+    datum observed after the decision moment, which breaks INV-PIT on replay.
+    """
     started = time.perf_counter()
     clauses: List[str] = []
     params: List[Any] = []
     if as_of:
-        clauses.append("(event_time IS NULL OR event_time <= ?)")
-        params.append(as_of)
+        clauses.append("(event_time IS NULL OR "
+                       "julianday(event_time) <= julianday(?))")
+        params.append(_ts(as_of))
     if as_of_block is not None:
         clauses.append("(block_number IS NULL OR block_number <= ?)")
         params.append(int(as_of_block))
-    where = (" WHERE " + " AND ".join(clauses)) if clauses else ""
     con = _connect(db)
     try:
+        if as_of:
+            columns = {row[1] for row in con.execute("PRAGMA table_info(events)")}
+            if "observation_time" in columns:
+                clauses.append("(observation_time IS NULL OR "
+                               "julianday(observation_time) <= julianday(?))")
+                params.append(_ts(as_of))
+            # Minimal fixture schemas without ``observation_time`` keep the
+            # legacy single-clock filter (same fallback as ``_current``).
+        where = (" WHERE " + " AND ".join(clauses)) if clauses else ""
         rows = [dict(row) for row in con.execute(
             "SELECT event_id, event_type, chain_id, block_number, tx_hash, "
             "log_index, event_time, status, actors, targets FROM events" + where +
