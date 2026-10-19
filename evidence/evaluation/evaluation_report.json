@@ -2,184 +2,114 @@
  "aggregates": {
   "A0": {
    "losses": [
-    0.061400000000006116,
-    -0.29999999999998295,
-    2.6352566458240148,
-    0.22268924168822934
+    6.442000000000007
    ],
    "mean_R_minus": 0.0,
-   "mean_R_plus": 0.9189896373699007,
-   "mean_loss": 0.6548364718780668,
-   "n": 4,
+   "mean_R_plus": 0.0,
+   "mean_loss": 6.442000000000007,
+   "n": 1,
    "regrets": [
-    0.3792955737234678,
-    1.0,
-    2.137411485624483,
-    0.15925149013165196
+    7.141999999999996
    ]
   },
   "A1": {
    "losses": [
-    0.5761685847875668,
-    -0.29999999999998295,
-    2.8462199094722536,
-    0.22268924168822934
+    2.1115000000000066
    ],
    "mean_R_minus": 0.0,
-   "mean_R_plus": 1.1004225994788506,
-   "mean_loss": 0.8362694339870167,
-   "n": 4,
-   "regrets": [
-    0.8940641585110285,
-    1.0,
-    2.348374749272722,
-    0.15925149013165196
-   ]
-  },
-  "A2": {
-   "losses": [
-    0.12870000000000914
-   ],
-   "mean_R_minus": 0.0,
-   "mean_R_plus": 0.4465955737234708,
-   "mean_loss": 0.12870000000000914,
+   "mean_R_plus": 4.330500000000001,
+   "mean_loss": 2.1115000000000066,
    "n": 1,
    "regrets": [
-    0.4465955737234708
-   ]
-  },
-  "AX0": {
-   "losses": [
-    2.0174253830650883,
-    -0.29999999999998295
-   ],
-   "mean_R_minus": 0.0,
-   "mean_R_plus": 1.667660478394275,
-   "mean_loss": 0.8587126915325527,
-   "n": 2,
-   "regrets": [
-    2.33532095678855,
-    1.0
+    2.8114999999999952
    ]
   }
  },
- "banner": "DEV",
- "content_sha256": "9d5335946fbbadbf0016d603de44af4c393a89d6e690e4224199b22819894a86",
+ "banner": "EVAL",
+ "content_sha256": "c143c24316ea990e79484ce24e918f07db1351e4ce0e6b24e13f1928226e4fb8",
  "forced_mention": null,
  "frozen": {
+  "code_hashes": {
+   "src/orvyren/evaluation/calibration.py": "51f42db1dcfff81dd5fe81e5115c7344f52c84f5c3880d5340a9a48d2a536722",
+   "src/orvyren/evaluation/comparators.py": "23ac4438bdbeacfefe689a2bbdf144d4cf4b06ad2b778e59d8d212a8d5d345b3",
+   "src/orvyren/evaluation/forecasts.py": "8a519087d7c29aa1289d80e59e3d0da886a403d7a581273624ab301f72d19d33",
+   "src/orvyren/evaluation/loss.py": "98ee9bc0a3f9f3ab6023ff4bb75cb19c5131f27e7a76c07fa4548023f9ecda70",
+   "src/orvyren/evaluation/outcomes.py": "4ad4db541badefdd6efba6749ad2b71ebf657a66bc35aadd9c0c19a2ac2cfb94",
+   "src/orvyren/evaluation/windows.py": "c1cef663068761febabc8f0325759b948c0e885e4f44fc2974042c5e679eb4d0",
+   "tests/test_evaluation_calibration.py": "2e1b00644b7e9a60485ad1564d5af52829b703c0ad96d50dc8b66a1262af940d",
+   "tests/test_evaluation_comparators.py": "0c4c9e3d4203b82d0950ca37f55b1bb8293466544be00e065a6d07e132653a05",
+   "tests/test_evaluation_loss.py": "90b705d0b47551b8deea80c1ab58772746c1599f673d4631888a828fc9b7ba88"
+  },
   "dir": "frozen",
   "hashes": {
-   "G1": "fffbab916323d237eccc6ca2e05396351a0c83e105adaacb70263bc34f167459",
-   "G2": "58e4e4a1bfebbbff0a5ae97feaac4ba291b579a60359a30829333c4b14dc771d",
-   "G3": "d2cd02a94c686ff0f744247bd2b95a50e6a3a3f2bdb40ecfd86a5318e8f36f96",
-   "G4": "ce24a5172ab1d4f5a708312ce79fc355cc37317b2c26ea774a44f31c87a55797",
-   "G5": "ca6f289daad6ae5b5c341df2091bcd2efd9cdffd31d5741ffc0097e2c663e6ea",
-   "G6": "6ad4733010b4a436a33d8a5cd5490f29a72d12e3a7227276dbc93b138b656779"
+   "G1": "b8f4ed780a9c9faa1b60f765382681c3dc5188f19fe3066e349fb18ac6ce0884",
+   "G2": "f92b2f516a45da796c0d56b859b1e17568ff5724ac7ace5015c92a9498f709b0",
+   "G3": "ab6aaa1e17b0bc0c572cc9b63ae3d20276876dd802e24216e4ced8fc0a539b37",
+   "G4": "1bc17a9251a61045bf764f97fc010a90533768d865bd6198aa682e35920ec923",
+   "G5": "f528c66aa3f30658c15fa7b3c694e24548748888db91e010827b80d26a26e635",
+   "G6": "83e07ce60ebf2d6ce963c681990811501fea2c57fbd01f47c1ffa47001cf034a"
   }
  },
- "generated_at_utc": "2026-10-17T09:09:25Z",
- "n_windows": 4,
- "n_windows_skipped": 0,
+ "generated_at_utc": "2026-10-19T03:00:46Z",
+ "n_windows": 1,
+ "n_windows_skipped": 1,
  "params": {
   "b0_draws": 200,
+  "calibration_periods": [
+   "2025-01",
+   "2025-02"
+  ],
   "k": 0.0,
-  "note": "paramètres de démonstration DEV : q = 100 USDC (montant mobilisable du dossier), p_ref = 1,0, k = 0 (coûts non mesurés en DEV) — à geler pour l'EVAL",
+  "note": "DEV demonstration parameters: q = 100 USDC (mobilisable amount of the dossier), p_ref = 1.0, k = 0 (costs not measured in DEV) — to be frozen for EVAL",
   "p_ref": 1.0,
   "q": 100.0
  },
  "schema": "orvyren.evaluation-report/v1",
- "set": "dev",
- "skipped": [],
+ "set": "eval",
+ "skipped": [
+  {
+   "reason": "no series source resolved for window eval-rseth-2026-04 (evidence/episode_rseth_2026-04.json: unrecognised series in D:\\orvyren_core\\evidence/episode_rseth_2026-04.json (unexpected keys) · B7 §d.1: unrecognised source type)",
+   "window_id": "eval-rseth-2026-04"
+  }
+ ],
  "superiority": {
   "mcnemar": null,
-  "note": "tests de supériorité (Wilson, McNemar exact, bootstrap par blocs) exécutés seulement quand N ≥ 100 — le harnais refuse de publier un score agrégé unique (B7 §e.5)",
-  "status": "NON CALCULÉ — N < 100"
+  "n": 1,
+  "note": "superiority tests (Wilson, exact McNemar, block bootstrap) run only when N ≥ 100 — the status follows the content actually computed; the harness refuses to publish a single aggregate score (B7 §e.5)",
+  "status": "NOT COMPUTED — N < 100 (B7 §b.3 cascade)",
+  "tests": null
  },
- "validity": "non conclusionnel : N < 100 (cascade B7 §b.3)",
+ "validity": "non-conclusive: N < 100 (B7 §b.3 cascade)",
  "windows": [
   {
-   "config_losses": {
-    "A0": 0.061400000000006116,
-    "A1": 0.5761685847875668,
-    "A2": 0.12870000000000914,
-    "AX0": 2.0174253830650883,
-    "B0": null
-   },
-   "config_regrets": {
-    "A0": 0.3792955737234678,
-    "A1": 0.8940641585110285,
-    "A2": 0.4465955737234708,
-    "AX0": 2.33532095678855,
-    "B0": null
-   },
+   "config_losses": {},
+   "config_regrets": {},
    "notes": [
-    "paramètres de démonstration DEV : q = 100 USDC (montant mobilisable du dossier), p_ref = 1,0, k = 0 (coûts non mesurés en DEV) — à geler pour l'EVAL"
+    "DEV demonstration parameters: q = 100 USDC (mobilisable amount of the dossier), p_ref = 1.0, k = 0 (costs not measured in DEV) — to be frozen for EVAL"
    ],
-   "status": "OK",
-   "window_id": "dev-usdc-2023-03"
+   "status": "SKIPPED",
+   "window_id": "eval-rseth-2026-04"
   },
   {
    "config_losses": {
-    "A0": -0.29999999999998295,
-    "A1": -0.29999999999998295,
-    "A2": null,
-    "AX0": -0.29999999999998295,
-    "B0": null
-   },
-   "config_regrets": {
-    "A0": 1.0,
-    "A1": 1.0,
-    "A2": null,
-    "AX0": 1.0,
-    "B0": null
-   },
-   "notes": [
-    "paramètres de démonstration DEV : q = 100 USDC (montant mobilisable du dossier), p_ref = 1,0, k = 0 (coûts non mesurés en DEV) — à geler pour l'EVAL"
-   ],
-   "status": "OK",
-   "window_id": "dev-usdc-2023-02-temoin"
-  },
-  {
-   "config_losses": {
-    "A0": 2.6352566458240148,
-    "A1": 2.8462199094722536,
+    "A0": 6.442000000000007,
+    "A1": 2.1115000000000066,
     "A2": null,
     "AX0": null,
     "B0": null
    },
    "config_regrets": {
-    "A0": 2.137411485624483,
-    "A1": 2.348374749272722,
+    "A0": 7.141999999999996,
+    "A1": 2.8114999999999952,
     "A2": null,
     "AX0": null,
     "B0": null
    },
    "notes": [
-    "paramètres de démonstration DEV : q = 100 USDC (montant mobilisable du dossier), p_ref = 1,0, k = 0 (coûts non mesurés en DEV) — à geler pour l'EVAL"
+    "DEV demonstration parameters: q = 100 USDC (mobilisable amount of the dossier), p_ref = 1.0, k = 0 (costs not measured in DEV) — to be frozen for EVAL"
    ],
    "status": "OK",
-   "window_id": "dev-steth-2022-06"
-  },
-  {
-   "config_losses": {
-    "A0": 0.22268924168822934,
-    "A1": 0.22268924168822934,
-    "A2": null,
-    "AX0": null,
-    "B0": null
-   },
-   "config_regrets": {
-    "A0": 0.15925149013165196,
-    "A1": 0.15925149013165196,
-    "A2": null,
-    "AX0": null,
-    "B0": null
-   },
-   "notes": [
-    "paramètres de démonstration DEV : q = 100 USDC (montant mobilisable du dossier), p_ref = 1,0, k = 0 (coûts non mesurés en DEV) — à geler pour l'EVAL"
-   ],
-   "status": "OK",
-   "window_id": "dev-steth-2022-05-calme"
+   "window_id": "eval-usd0pp-2025-01"
   }
  ]
 }

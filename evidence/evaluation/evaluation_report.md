@@ -1,39 +1,35 @@
-> **DEV** — rapport d'évaluation — jeu `dev` — N = 4 — non conclusionnel : N < 100 (cascade B7 §b.3)
+> **EVAL** — evaluation report — set `eval` — N = 1 — non-conclusive: N < 100 (B7 §b.3 cascade)
 
-# Rapport d'évaluation ORVYREN — DEV
+# ORVYREN evaluation report — EVAL
 
-*hash de contenu* : `9d5335946fbbadbf0016d603de44af4c393a89d6e690e4224199b22819894a86` · *généré* : 2026-10-17T09:09:25Z · *fenêtres sautées* : 0
+*content hash*: `c143c24316ea990e79484ce24e918f07db1351e4ce0e6b24e13f1928226e4fb8` · *generated*: 2026-10-19T03:00:46Z · *skipped windows*: 1
 
-**Paramètres** : q = 100.0 · p_ref = 1.0 · k = 0.0 · tirages B0 = 200
+**Parameters**: q = 100.0 · p_ref = 1.0 · k = 0.0 · B0 draws = 200
 
-> paramètres de démonstration DEV : q = 100 USDC (montant mobilisable du dossier), p_ref = 1,0, k = 0 (coûts non mesurés en DEV) — à geler pour l'EVAL
+> DEV demonstration parameters: q = 100 USDC (mobilisable amount of the dossier), p_ref = 1.0, k = 0 (costs not measured in DEV) — to be frozen for EVAL
 
-## Fenêtres (N = 4)
+## Windows (N = 1)
 
-| Fenêtre | Statut | L(A0) | L(A1) | L(AX0) | L(A2) | R(A2) |
+| Window | Status | L(A0) | L(A1) | L(AX0) | L(A2) | R(A2) |
 |---|---|---|---|---|---|---|
-| `dev-usdc-2023-03` | OK | 0.0614 | 0.5762 | 2.0174 | 0.1287 | 0.4466 |
-| `dev-usdc-2023-02-temoin` | OK | -0.3000 | -0.3000 | -0.3000 | — | — |
-| `dev-steth-2022-06` | OK | 2.6353 | 2.8462 | — | — | — |
-| `dev-steth-2022-05-calme` | OK | 0.2227 | 0.2227 | — | — | — |
+| `eval-rseth-2026-04` | SKIPPED | — | — | — | — | — |
+| `eval-usd0pp-2025-01` | OK | 6.4420 | 2.1115 | — | — | — |
 
-## Agrégats par config (N affiché par ligne ; R⁻ ≠ R⁺, jamais moyennés ensemble)
+## Aggregates per config (N displayed per row; R⁻ ≠ R⁺, never averaged together)
 
-| Config | N | L moyen | R⁺ moyen | R⁻ moyen |
+| Config | N | mean L | mean R⁺ | mean R⁻ |
 |---|---|---|---|---|
-| A0 | 4 | 0.6548 | 0.9190 | 0.0000 |
-| A1 | 4 | 0.8363 | 1.1004 | 0.0000 |
-| AX0 | 2 | 0.8587 | 1.6677 | 0.0000 |
-| A2 | 1 | 0.1287 | 0.4466 | 0.0000 |
+| A0 | 1 | 6.4420 | 0.0000 | 0.0000 |
+| A1 | 1 | 2.1115 | 4.3305 | 0.0000 |
 
-## Supériorité & placebo
+## Superiority & placebo
 
-- Statut des tests de supériorité : **NON CALCULÉ — N < 100** — tests de supériorité (Wilson, McNemar exact, bootstrap par blocs) exécutés seulement quand N ≥ 100 — le harnais refuse de publier un score agrégé unique (B7 §e.5)
+- Superiority tests status: **NOT COMPUTED — N < 100 (B7 §b.3 cascade)** — superiority tests (Wilson, exact McNemar, block bootstrap) run only when N ≥ 100 — the status follows the content actually computed; the harness refuses to publish a single aggregate score (B7 §e.5)
 
-## Limites (écrites avant lecture)
+## Limits (written before reading)
 
-- Aucun score agrégé unique ; regrets R⁻/R⁺ publiés séparément (W2-D piège n°8).
-- O = borne inférieure du regret (exécution au meilleur instant observé) — pas une vérité terrain.
-- Substitutions DEV (P_exec = prix observé, k = 0, A2 = dossier déterministe) déclarées dans chaque fenêtre.
+- No single aggregate score; R⁻/R⁺ regrets published separately (W2-D pitfall #8).
+- O = lower bound of the regret (execution at the best observed instant) — not a ground truth.
+- DEV substitutions (P_exec = observed price, k = 0, A2 = deterministic dossier) declared in every window.
 
-*Rapport reproductible : hash de contenu `9d5335946fbbadbf0016d603de44af4c393a89d6e690e4224199b22819894a86` (champs d'exécution réels exclus).*
+*Reproducible report: content hash `c143c24316ea990e79484ce24e918f07db1351e4ce0e6b24e13f1928226e4fb8` (real execution fields excluded).*

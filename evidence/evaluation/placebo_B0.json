@@ -1,38 +1,21 @@
 {
- "dev-steth-2022-06": {
+ "eval-usd0pp-2025-01": {
   "draws": 200,
   "m": 200,
-  "max": 5.940509771369335,
-  "mean": 2.6291447284501444,
-  "median": 2.276736140634725,
+  "max": 10.021499999999989,
+  "mean": 2.453573499999991,
+  "median": 0.9711999999999961,
   "min": 0.0,
-  "note": "B0 apparié à A1 (A2 absent — substitution déclarée)",
+  "note": "B0 paired with A1 (A2 absent — declared substitution)",
   "paired_with": "A1",
-  "percentile_of_A1": 52.5,
+  "percentile_of_A1": 78.5,
   "quantiles": {
-   "p05": 1.1157211552187931,
-   "p50": 2.276736140634725,
-   "p95": 5.709416135806933
+   "p05": 0.0,
+   "p50": 0.9711999999999961,
+   "p95": 8.732799999999983
   },
   "seed": 20261016
  },
- "dev-usdc-2023-03": {
-  "draws": 200,
-  "m": 200,
-  "max": 12.650395573723458,
-  "mean": 2.774987205067231,
-  "median": 1.3452232625027136,
-  "min": 0.0,
-  "note": "B0 apparié à A2 (A2 présent)",
-  "paired_with": "A2",
-  "percentile_of_A2": 33.5,
-  "quantiles": {
-   "p05": 0.12655746517873467,
-   "p50": 1.3452232625027136,
-   "p95": 9.16139130943013
-  },
-  "seed": 20261016
- },
- "note": "distribution complète des tirages B0 (graine fixée) + percentile de la config appariée",
+ "note": "complete distribution of the B0 draws (fixed seed) + percentile of the paired config",
  "schema": "orvyren.evaluation-placebo/v1"
 }

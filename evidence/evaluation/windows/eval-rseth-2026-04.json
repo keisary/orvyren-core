@@ -1,0 +1,13 @@
+{
+ "end_utc": "2026-04-21T00:00:00Z",
+ "episode_id": "rseth-2026-04",
+ "kind": "stress",
+ "notes": [
+  "DEV demonstration parameters: q = 100 USDC (mobilisable amount of the dossier), p_ref = 1.0, k = 0 (costs not measured in DEV) — to be frozen for EVAL"
+ ],
+ "reason": "no series source resolved for window eval-rseth-2026-04 (evidence/episode_rseth_2026-04.json: unrecognised series in D:\\orvyren_core\\evidence/episode_rseth_2026-04.json (unexpected keys) · B7 §d.1: unrecognised source type)",
+ "set": "eval",
+ "start_utc": "2026-04-17T00:00:00Z",
+ "status": "SKIPPED",
+ "window_id": "eval-rseth-2026-04"
+}
