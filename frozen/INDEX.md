@@ -25,7 +25,7 @@ recomputation, not by a fingerprint announced in a Gx document.
 | `tests/test_evaluation_loss.py` | `90b705d0b47551b8deea80c1ab58772746c1599f673d4631888a828fc9b7ba88` | `G1_fonction_de_perte.md` | G1 executable proof (loss KAT) |
 | `src/orvyren/evaluation/comparators.py` | `23ac4438bdbeacfefe689a2bbdf144d4cf4b06ad2b778e59d8d212a8d5d345b3` | `G2_comparateurs.md` | G2 comparators (A0/A1/A2/B0/AX0/O, regret_pair) |
 | `tests/test_evaluation_comparators.py` | `0c4c9e3d4203b82d0950ca37f55b1bb8293466544be00e065a6d07e132653a05` | `G2_comparateurs.md` | G2 executable proof |
-| `src/orvyren/evaluation/windows.py` | `d3e80aa3cd64a481eebf1c08ec34b43a5e563b0bd418344785a9693ac004c04a` | `G3_fenetres.md` | G3 windows (DEV/EVAL registry, verify_frozen_package) |
+| `src/orvyren/evaluation/windows.py` | `c1cef663068761febabc8f0325759b948c0e885e4f44fc2974042c5e679eb4d0` | `G3_fenetres.md` | G3 windows (DEV/EVAL registry, verify_frozen_package) |
 | `src/orvyren/evaluation/calibration.py` | `51f42db1dcfff81dd5fe81e5115c7344f52c84f5c3880d5340a9a48d2a536722` | `G5_plan_analyse.md` | G5 calibration (verdict_for_n, exact Mcnemar, BSS) |
 | `src/orvyren/evaluation/forecasts.py` | `8a519087d7c29aa1289d80e59e3d0da886a403d7a581273624ab301f72d19d33` | `G5_plan_analyse.md` | G5 forecasts (build_forecast, prev_hash chain) |
 | `src/orvyren/evaluation/outcomes.py` | `4ad4db541badefdd6efba6749ad2b71ebf657a66bc35aadd9c0c19a2ac2cfb94` | `G5_plan_analyse.md` | G5 outcomes (resolution rules, chained outcomes) |
@@ -64,7 +64,7 @@ recomputation, not by a fingerprint announced in a Gx document.
   "src/orvyren/evaluation/windows.py": {
    "announced_in": "G3_fenetres.md",
    "role": "G3 windows (DEV/EVAL registry, verify_frozen_package)",
-   "sha256": "d3e80aa3cd64a481eebf1c08ec34b43a5e563b0bd418344785a9693ac004c04a"
+   "sha256": "c1cef663068761febabc8f0325759b948c0e885e4f44fc2974042c5e679eb4d0"
   },
   "tests/test_evaluation_calibration.py": {
    "announced_in": "G5_plan_analyse.md",

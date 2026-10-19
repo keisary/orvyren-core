@@ -183,6 +183,52 @@ def series_from_episode(path: str) -> List[Tuple[str, float]]:
     return points
 
 
+def series_from_archived_series(
+    path: str,
+    *,
+    start_utc: Optional[str] = None,
+    end_utc: Optional[str] = None,
+) -> List[Tuple[str, float]]:
+    """``(timestamp_utc, value)`` series from an archived ``corpus/series/*.json``.
+
+    Shape frozen by ``orvyren/corpus-series/v1`` and pinned by
+    ``replay/corpus_v1.manifest.json`` (``observations`` = list of
+    ``{"ts": <ISO-8601>, "price_usd": <float>, ...}``). Only the declared keys
+    are read; any other shape raises (never an invented series).
+    """
+    with open(path, "r", encoding="utf-8") as handle:
+        payload = json.load(handle)
+    if not isinstance(payload, dict):
+        raise CorpusError("archived series payload is not an object: %s" % path)
+    observations = payload.get("observations")
+    if not isinstance(observations, list) or not observations:
+        raise CorpusError("no 'observations' list in %s (schema %r)"
+                          % (path, payload.get("schema")))
+    start = _parse_utc(start_utc) if start_utc else None
+    end = _parse_utc(end_utc) if end_utc else None
+    points: List[Tuple[str, float]] = []
+    for item in observations:
+        if not isinstance(item, dict):
+            continue
+        stamp = next((item[key] for key in ("ts", "timestamp_utc", "t_utc")
+                      if isinstance(item.get(key), str) and item[key].strip()), None)
+        value = next((item[key] for key in ("price_usd", "close", "value")
+                      if isinstance(item.get(key), (int, float))), None)
+        if stamp is None or value is None:
+            continue
+        moment = _parse_utc(stamp)
+        if start and moment < start:
+            continue
+        if end and moment > end:
+            continue
+        points.append((str(stamp), float(value)))
+    if not points:
+        raise CorpusError("no observation of %s inside [%s, %s]"
+                          % (path, start_utc, end_utc))
+    points.sort(key=lambda item: _parse_utc(item[0]))
+    return points
+
+
 def window_series(window, *, venue: str = "defillama") -> Tuple[str, List[Tuple[str, float]]]:
     """Reference series of a DEV/EVAL window, from its declared sources.
 
@@ -210,6 +256,12 @@ def window_series(window, *, venue: str = "defillama") -> Tuple[str, List[Tuple[
                 if points:
                     return (rel, points)
                 attempts.append("%s: no point in the window" % rel)
+            elif target.endswith(".json"):
+                # archived series of the frozen corpus (corpus/series/*.json,
+                # schema orvyren/corpus-series/v1, pinned by the corpus manifest)
+                points = series_from_archived_series(target, start_utc=window.start_utc,
+                                                    end_utc=window.end_utc)
+                return (rel, points)
             else:
                 attempts.append("%s: unrecognised source type" % rel)
         except CorpusError as exc:

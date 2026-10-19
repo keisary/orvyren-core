@@ -184,9 +184,13 @@ EVAL_WINDOWS: Tuple[Window, ...] = (
         kind=KIND_STRESS,
         start_utc="2025-01-08T00:00:00Z",
         end_utc="2025-01-31T00:00:00Z",
-        sources=("B7 §d.1",),
+        sources=("corpus/series/usd0pp_2025-01.json", "B7 §d.1"),
         role="EVALUATION #2 (secondary) — different mechanism (contractual de-basing); likely contamination accepted.",
-        note="Price series to be assembled outside the repository (W3-C): the EVAL run is conditioned by the freeze guard.",
+        note=(
+            "Series archived in the repository (W3-C probe, corpus/series/usd0pp_2025-01.json, "
+            "pinned by replay/corpus_v1.manifest.json) — the window is instrumented; "
+            "the earlier 'series to be assembled outside the repository' caveat is closed."
+        ),
     ),
 )
 

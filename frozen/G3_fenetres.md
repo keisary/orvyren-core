@@ -2,7 +2,7 @@
 
 **Status: FROZEN v1 (open proposals marked NOT DONE)** — 2026-10-16T00:00:00Z.
 Sources: B7 §d.1/§d.2, FREEZE_V2 §7, DOC2 §5.8.4. Frozen code:
-`src/orvyren/evaluation/windows.py` — sha256 `d3e80aa3cd64a481eebf1c08ec34b43a5e563b0bd418344785a9693ac004c04a`.
+`src/orvyren/evaluation/windows.py` — sha256 `c1cef663068761febabc8f0325759b948c0e885e4f44fc2974042c5e679eb4d0`.
 
 ## 1. Registry — DEVELOPMENT set
 
@@ -18,7 +18,7 @@ Sources: B7 §d.1/§d.2, FREEZE_V2 §7, DOC2 §5.8.4. Frozen code:
 | Window | Type | UTC bounds | Sources |
 |---|---|---|---|
 | `eval-rseth-2026-04` | stress | 2026-04-17T00:00:00Z → 2026-04-21T00:00:00Z | evidence/episode_rseth_2026-04.json, B7 §d.1 |
-| `eval-usd0pp-2025-01` | stress | 2025-01-08T00:00:00Z → 2025-01-31T00:00:00Z | B7 §d.1 |
+| `eval-usd0pp-2025-01` | stress | 2025-01-08T00:00:00Z → 2025-01-31T00:00:00Z | corpus/series/usd0pp_2025-01.json, B7 §d.1 |
 
 ## 3. CALM criterion — mechanical application (the result is written, not adjusted)
 

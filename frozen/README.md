@@ -46,7 +46,7 @@ python scripts/freeze_sprint0.py --out /tmp/frozen_recalc
 |---|---|
 | `G1.sha256` | `712f4f81d505f436c6b76c54816a324e6bdde6cb7fbb13918f6dc24fed56205e` |
 | `G2.sha256` | `feecba6c7011143d7972e2bdb2dd9c9c74ad4c5ad950d444e303b3f43fd64bf7` |
-| `G3.sha256` | `cc7d6ec166a18e176078357764a5cd946c0a873723c5ec7ce1a4cfa3076be263` |
+| `G3.sha256` | `de0a00493225c7332e134470da45173cae1b783c24e447fabfda17bcded232dd` |
 | `G4.sha256` | `5d4656ddc7f420bb4c265c808d9d73d516e481f010d547daef7ef63724d47380` |
 | `G5.sha256` | `0d6aee1dbed0f47dc150230620cb5be0fce15d240a791185c77cc3d9e50325cc` |
 | `G6.sha256` | `acbdc6a7ffea93505e3dfccca8a1b2848f875ab7c84e3cd08d521cb177533709` |

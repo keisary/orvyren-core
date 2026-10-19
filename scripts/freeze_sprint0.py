@@ -19,6 +19,8 @@ Contenu produit :
 * ``Gx.sha256``                 — manifestes sha256sum (vérifiables tels quels) ;
 * ``forecasts_dev.jsonl``       — 9 prévisions DEV gelées, chaînées par hash ;
 * ``outcomes_dev.jsonl``        — résolutions déterministes de ces prévisions ;
+* ``forecasts_eval.jsonl``      — prévision EVAL de la fenêtre instrumentée (eval-usd0pp-2025-01) ;
+* ``outcomes_eval.jsonl``       — résolution déterministe de cette prévision ;
 * ``FORECASTS_DEV.md``          — lecture FR de chaque prévision + ȳ + Wilson ;
 * ``README.md``                 — comment vérifier, ce qui est gelé, ce qui ne l'est pas.
 
@@ -47,6 +49,7 @@ from orvyren.evaluation import calibration as cal  # noqa: E402
 from orvyren.evaluation import forecasts as forecasts_mod  # noqa: E402
 from orvyren.evaluation import outcomes as outcomes_mod  # noqa: E402
 from orvyren.evaluation import windows as windows_mod  # noqa: E402
+from orvyren.replay import corpus as corpus_mod  # noqa: E402
 
 #: Date de gel v1 (Sprint 0). Constante du paquet : la reproductibilité
 #: hors-ligne exige que l'horodatage d'écriture soit gelé, pas l'heure murale
@@ -945,6 +948,158 @@ def _write_manifest(frozen_dir: str, name: str, filenames: Sequence[str]) -> str
     return windows_mod.sha256_file(os.path.join(frozen_dir, f"{name}.sha256"))
 
 
+# --------------------------------------------------------------------------- #
+# EVAL forecasts/outcomes of the instrumented windows (same construction as DEV)
+# --------------------------------------------------------------------------- #
+
+#: Write stamp of the EVAL records = date of the G6 signature. Frozen constant:
+#: the artefacts stay bit-identical when the package is rebuilt (no wall clock).
+EVAL_SEAL_AT_UTC = "2026-10-19T00:00:00Z"
+EVAL_RUN_ID = "eval-instrumentation-2026-10-19"
+
+#: Signed G6 prior, taken as is (§1: « P(obligation) — EVAL windows = 0,20 per
+#: EVAL window »). Never recomputed on EVAL data, never tuned (B7 §d.2.4).
+P_OBLIGATION_EVAL = 0.20
+
+#: Archived series of eval-usd0pp-2025-01 (W3-C probe, pinned by the corpus manifest).
+USD0PP_SERIES_RELPATH = "corpus/series/usd0pp_2025-01.json"
+
+EVAL_FORECASTS_NAME = "forecasts_eval.jsonl"
+EVAL_OUTCOMES_NAME = "outcomes_eval.jsonl"
+
+
+def eval_forecast_specs(repo_root: str) -> List[Dict]:
+    """The EVAL forecasts, in write order (deterministic chaining).
+
+    One forecast per **instrumented** EVAL window: the unit of the signed
+    ``P(obligation)`` is the window, not a sub-interval. ``eval-rseth-2026-04``
+    has no archived series — nothing is produced for it (it stays SKIPPED).
+    """
+    series_path = os.path.join(repo_root, *USD0PP_SERIES_RELPATH.split("/"))
+    series_digest = windows_mod.sha256_file(series_path)
+    window = next(w for w in windows_mod.EVAL_WINDOWS if w.window_id == "eval-usd0pp-2025-01")
+    hours = (window.end - window.start).total_seconds() / 3600.0
+    return [
+        {
+            "forecast_id": "eval-usd0pp-2025-01.t-obligation",
+            "episode_id": window.episode_id,
+            "set": windows_mod.SET_EVAL,
+            "persona": "dao",
+            "statement": (
+                "Within the EVAL window 08/01 → 31/01/2025 (t_frozen → t_end), a sustained USD0++ "
+                "depeg (deviation > 1 % from the $1 peg on ≥ 2 consecutive observations of the "
+                "archived DeFiLlama hourly series, gap ≤ 90 min) is observed at least once."
+            ),
+            "t_frozen": window.start_utc,
+            "resolve_not_before": window.end_utc,
+            "kind": forecasts_mod.HORIZON_T,
+            "hours": hours,
+            "t_end": window.end_utc,
+            "y_definition": {
+                "ecart_pct": 1.0,
+                "persistance_obs": 2,
+                "max_gap_minutes": 90,
+                "venues": ["defillama"],
+                "convention": "close",
+                "peg": 1.0,
+            },
+            "p": P_OBLIGATION_EVAL,
+            "p_origin": (
+                "documented prior — G6 §1 (SIGNED 2026-10-19): P(obligation) = 0.20 per EVAL window "
+                "(unsourced working assumption, W2-D §E.2(b), kept for every EVAL window). "
+                "No empirical count is computed on the EVAL series (that would read the target "
+                "window, B7 §d.2.4); p is not produced by an LLM (G6 §2, B7 §a.5.5)."
+            ),
+            "observation_state_at_freeze": {
+                "last_values": [],
+                "notes": (
+                    "Post-hoc instrumentation of a secondary EVAL window: written at the seal "
+                    f"({EVAL_SEAL_AT_UTC}) on the series archived by the W3-C probe "
+                    f"(retrieved_at 2026-10-15, sha256 {series_digest[:16]}…), whose bounds are the "
+                    "registry window. Contamination acknowledged by the G3 registry "
+                    "('likely contamination accepted' for eval-usd0pp-2025-01). No value is invented: "
+                    "the resolution rule reads only the frozen series, gaps are reported and never filled."
+                ),
+            },
+            "series_digest": series_digest,
+            "series_relpath": USD0PP_SERIES_RELPATH,
+        }
+    ]
+
+
+def write_eval_forecasts(target_dir: str, repo_root: Optional[str] = None) -> Dict:
+    """Write ``forecasts_eval.jsonl`` / ``outcomes_eval.jsonl`` (chained).
+
+    Same construction as the DEV block of :func:`build_all`: ``build_forecast`` →
+    ``append_forecast`` → ``resolve_forecast`` → ``append_outcome`` under the
+    freeze gate. Deterministic: a rebuild of the package reproduces the very
+    same bytes (the ``frozen/`` inventory contract).
+    """
+    repo_root = repo_root or DEFAULT_REPO_ROOT
+    windows_mod.verify_frozen_package(target_dir)
+    specs = eval_forecast_specs(repo_root)
+    series_by_relpath = {
+        USD0PP_SERIES_RELPATH: corpus_mod.series_from_archived_series(
+            os.path.join(repo_root, *USD0PP_SERIES_RELPATH.split("/"))),
+    }
+
+    forecasts_path = os.path.join(target_dir, EVAL_FORECASTS_NAME)
+    outcomes_path = os.path.join(target_dir, EVAL_OUTCOMES_NAME)
+    for path in (forecasts_path, outcomes_path):
+        if os.path.exists(path):
+            os.remove(path)
+
+    written, resolved = [], []
+    for spec in specs:
+        record = forecasts_mod.build_forecast(
+            forecast_id=spec["forecast_id"],
+            run_id=EVAL_RUN_ID,
+            episode_id=spec["episode_id"],
+            set_label=spec["set"],
+            persona=spec["persona"],
+            statement=spec["statement"],
+            resolution_rule_id=outcomes_mod.RULE_SUSTAINED_DEPEG
+            if spec["y_definition"].get("ecart_pct") is not None
+            else outcomes_mod.RULE_CALM_WINDOW,
+            t_frozen_utc=spec["t_frozen"],
+            resolve_not_before_utc=spec["resolve_not_before"],
+            p=spec["p"],
+            p_origin=spec["p_origin"],
+            y_definition=spec["y_definition"],
+            observation_state_at_freeze=spec["observation_state_at_freeze"],
+            refs={"hypothesis_ids": [], "branch_ids": [], "observation_ids": []},
+            signed_by=SIGNED_BY,
+            horizon_kind=spec["kind"],
+            horizon_hours=spec["hours"],
+            t_end_utc=spec.get("t_end"),
+        )
+        record["p_origin"] = (
+            record["p_origin"]
+            + f" ; frozen series ({spec['series_relpath']}, sha256 {spec['series_digest']})"
+        )
+        record["sha256"] = forecasts_mod.record_hash(record)
+        written.append(forecasts_mod.append_forecast(forecasts_path, record, frozen_dir=target_dir))
+
+    for record, spec in zip(written, specs):
+        outcome = outcomes_mod.resolve_forecast(
+            record,
+            series_by_relpath[spec["series_relpath"]],
+            now_utc=EVAL_SEAL_AT_UTC,
+            code_hash=windows_mod.sha256_file(os.path.join(repo_root, "src", "orvyren", "evaluation", "outcomes.py")),
+        )
+        resolved.append(outcomes_mod.append_outcome(outcomes_path, outcome, frozen_dir=target_dir))
+
+    forecast_digest = windows_mod.sha256_file(forecasts_path)
+    outcome_digest = windows_mod.sha256_file(outcomes_path)
+    _write_text(os.path.join(target_dir, EVAL_FORECASTS_NAME + ".sha256"),
+                f"{forecast_digest}  {EVAL_FORECASTS_NAME}\n")
+    _write_text(os.path.join(target_dir, EVAL_OUTCOMES_NAME + ".sha256"),
+                f"{outcome_digest}  {EVAL_OUTCOMES_NAME}\n")
+    return {"forecasts": len(written), "outcomes": len(resolved),
+            "forecasts_sha256": forecast_digest, "outcomes_sha256": outcome_digest,
+            "ys": [outcome["y"] for outcome in resolved]}
+
+
 def build_all(target_dir: str, repo_root: Optional[str] = None) -> Dict:
     """Construit tout `frozen/` dans ``target_dir`` (déterministe, hors-ligne)."""
     repo_root = repo_root or DEFAULT_REPO_ROOT
@@ -1048,6 +1203,11 @@ def build_all(target_dir: str, repo_root: Optional[str] = None) -> Dict:
         resolved.append(outcomes_mod.append_outcome(outcomes_path, outcome, frozen_dir=target_dir))
 
     # --- synthèse ȳ / Wilson (FORECASTS_DEV.md) ------------------------------
+    # EVAL forecasts/outcomes of the instrumented windows — written by the same
+    # builder so that `frozen/` stays byte-for-byte reproducible (no file may
+    # live in frozen/ that build_all does not produce).
+    eval_result = write_eval_forecasts(target_dir, repo_root)
+
     ys = [outcome["y"] for outcome in resolved]
     n = len(ys)
     ybar = sum(ys) / n
@@ -1145,6 +1305,7 @@ def build_all(target_dir: str, repo_root: Optional[str] = None) -> Dict:
         "hashes": manifests,
         "forecasts_sha256": forecast_digest,
         "outcomes_sha256": outcome_digest,
+        "eval": eval_result,
     }
 
 
