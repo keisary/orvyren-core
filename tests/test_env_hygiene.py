@@ -59,6 +59,10 @@ class EnvHygieneTest(unittest.TestCase):
         path = os.path.join(self.tmp, rel)
         with open(path, "w", encoding="utf-8", newline="\n") as handle:
             handle.write(content)
+        if os.path.basename(path) == ".env":
+            # A real .env is never world-readable: H4 checks the mode, and the
+            # harness must not depend on the developer's umask.
+            os.chmod(path, 0o600)
         return path
 
     def test_tracked_env_detected_then_clean(self):

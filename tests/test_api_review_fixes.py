@@ -415,9 +415,13 @@ class TestApiHttpHardening(unittest.TestCase):
 
     def test_percent_encoded_node_id_round_trips(self):
         # Pins the frontend's encodeURIComponent(node id) against the route.
-        node_id = GraphService().full()["nodes"][0]["id"]
+        nodes = GraphService().full()["nodes"]
+        # Prefer a colon-carrying id (demo schema); the legacy fallback db
+        # ships ids without ':' — the round-trip must hold either way.
+        node_id = next((n["id"] for n in nodes if ":" in n["id"]), nodes[0]["id"])
         encoded = urllib.parse.quote(node_id, safe="")
-        self.assertIn("%", encoded)  # node ids carry ':' at the very least
+        if ":" in node_id:
+            self.assertIn("%", encoded)  # ':' must be percent-encoded
         response = self.client.get("/api/graph/node/%s" % encoded)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json()["id"], node_id)
