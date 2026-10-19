@@ -159,7 +159,7 @@ détient jamais les fonds métier (B5 S6).
    ```
 
 7. **Renseigner le bloc `role` de l'enveloppe** (`envelope.example.json` copié
-   en `scripts/demo/envelope.live.json`) : cibles/fonctions/conditions/allowances
+   en `evidence/demo_runs/envelope_live.json` — le fichier réellement produit par le `--capture-envelope` ci-dessus ; l'ancienne référence `scripts/demo/envelope.live.json` n'existait pas) : cibles/fonctions/conditions/allowances
    lus dans l'app Roles, `version` du module et `advisory_clear`, et — si vous les
    confirmez sur le contrat déployé — les `probes` (calldata des getters).
    Tant que `D3`/`D6`/`D10` restent `UNKNOWN`, le **SAFE MODE** est actif en
