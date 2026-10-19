@@ -44,7 +44,7 @@ verdict. That run is the honest unit of work — it is shipped, byte-identical, 
 ## Try it
 
 ```bash
-python -m unittest discover -s tests          # 1546 tests, OK (skipped=3) — measured 2026-10-19
+python -m unittest discover -s tests          # 1549 tests, OK (skipped=3) — measured 2026-10-19
 python scripts/verify_frozen.py               # pre-registered evaluation protocol: COMPLIANT
 PYTHONPATH=src python -m orvyren.decide --case usdc-2023-03 --replay    # full decision, offline
 python run_verify.py evidence/audit_packets/audit_packet_rseth_20261016-2340_01M526YS.zip
@@ -67,7 +67,7 @@ A single runbook, with the expected output of every step:
 
 | What | Command | Result |
 |---|---|---|
-| Test suite | `python -m unittest discover -s tests` | 1546 tests, OK (3 skipped) — measured 2026-10-19 |
+| Test suite | `python -m unittest discover -s tests` | 1549 tests, OK (3 skipped) — measured 2026-10-19 |
 | Third-party audit packet | `python run_verify.py <packet>.zip` | **measured 2026-10-19T13:42Z: `FAIL` — 16 checks, 2 failed** (`A4.dossier.rerender.md/.html`, caused by `src/orvyren/audit/dossier.py` changing after the packet was built). The shipped 16/10 packet must be rebuilt before the `OFFLINE_PASS` claim is made — `docs/CLOSURE_CHECKLIST.md` item 8 |
 | Frozen evaluation protocol | `python scripts/verify_frozen.py` | `COMPLIANT` (byte-identical recalculation) |
 | Policy | `policy_v1.yaml` + `src/orvyren/policy/` | 14 deterministic rules, production mode fail-closed |
@@ -138,7 +138,7 @@ report — threats, exact tests, measured results, residual risks — is
 src/orvyren/     the system (data · quality · graph · branches · agents · decision ·
                  policy · execution · chain · audit · verify · replay · evaluation · ui · api)
 scripts/         episode reconstructions, Aave ingestion, testnet demo kit
-tests/           1546 offline tests
+tests/           1549 offline tests
 fixtures/        archived measurements used by tests and offline modes (+ their source notes)
 evidence/        proofs: reconstructed episodes, audit packets, sealed agent runs, snapshots
 corpus/          archived USDC/SVB March 2023 observations (offline replay)

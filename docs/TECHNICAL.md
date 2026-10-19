@@ -641,7 +641,7 @@ strict one: the packet's own dossier must re-render byte-identical from its inpu
 which is why re-staging uses the same display root as the build.
 
 **9.4 Measured: the reference packet.** 47 files; zip sha256
-`a0c4562050a6c468ab8a2adea4a858acdd8e76154640b5f42b1be94ecc0a669e`, matching its
+`a0c4562050a6c468ab8a2adea4a858acdd8e76154940b5f42b1be94ecc0a669e`, matching its
 published sidecar (`sha256sum -c` → `OK`). The run prints every check
 (`CHECK A1.exec.chain RECOMPUTED ok` … `CHECK C2.refs.resolve COVERED ok`), with
 `B1.chain.rpc` reported `SKIPPED` offline, and ends
@@ -757,7 +757,7 @@ different hardware may change timings, never counts.
 
 | # | What | Command | Result |
 |---|---|---|---|
-| 1 | Test suite | `python -m unittest discover -s tests -q` | `Ran 1546 tests in 73.427s` — `OK (skipped=3)` — measured 2026-10-19T13:49Z |
+| 1 | Test suite | `python -m unittest discover -s tests -q` | `Ran 1549 tests in 73.427s` — `OK (skipped=3)` — measured 2026-10-19T13:49Z |
 | 2 | Frozen protocol | `python scripts/verify_frozen.py` | `COMPLIANT` (20 files, 1.10 s) |
 | 3 | Audit packet + tamper test | `run_verify.py …01M526YS.zip [--mutate-test]`; `sha256sum -c` on its sidecar | **2026-10-18**: `OFFLINE_PASS — 16 checks, 0 failed` · `mutations 6/6` · zip `a0c4562050a6c4…` `OK`. **Re-measured 2026-10-19T13:42Z: `FAIL — 16 checks, 2 failed`** (`A4.dossier.rerender.md/.html` — `audit/dossier.py` changed after the packet was built); packet rebuild required |
 | 4 | Testnet receipts | count over `evidence/demo_chain/rseth/receipts/*.json`; `sha256sum -c MANIFEST.sha256` | 13 files (`0x1` ×1, `0x0` ×12); manifest 16 files `OK` |

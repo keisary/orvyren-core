@@ -78,7 +78,7 @@ commands below before quoting anywhere else.
 12. **Measured performance work.** PIT indexes (Q1 −91 %, Q5 −90 % on the real
     DB), gzip + ETag/304, WS compression pinned, Sigma tuning, lazy chunks.
     Proof: `tests/test_graph_pit_fixes.py::PitIndexContractTest`.
-13. **Test suite.** `python -m unittest discover -s tests -q` → `Ran 1546
+13. **Test suite.** `python -m unittest discover -s tests -q` → `Ran 1549
     tests ... OK (skipped=3)`, measured 2026-10-19T13:49Z on this tree; the 3
     skips are documented (testnet RPC gate ×2, eth-account absent path ×1).
 

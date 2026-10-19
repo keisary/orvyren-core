@@ -219,7 +219,7 @@ inside the caps is still allowed.
 
 | Scan | Command | Measured result |
 |---|---|---|
-| Unit suite | `python -m unittest discover -s tests -q` | `Ran 1546 tests … OK (skipped=3)`, 73.4 s — measured 2026-10-19T13:49Z |
+| Unit suite | `python -m unittest discover -s tests -q` | `Ran 1549 tests … OK (skipped=3)`, 73.4 s — measured 2026-10-19T13:49Z |
 | Skipped tests | `… -v` | 2 × `set ORVYREN_LIVE_RPC=1 …` (`TestLiveRpc`), 1 × "eth-account present: the library-missing path is not testable" |
 | Bandit 1.9.4 | `python -m bandit -r src -f txt` | **40 findings, 0 High** (28 Medium, 12 Low) over 26 774 LOC, 0 `#nosec`: 22 × B608, 5 × B310, 5 × B110, 4 × B105, 2 × B311, 1 × B104, 1 × B101 — same 40 as the previous pass, on 514 more lines |
 | Ruff 0.16.5 | `python -m ruff check src scripts run_*.py` | `All checks passed!` (wider scope than the previous `src`-only run) |
@@ -269,7 +269,7 @@ No stronger claim is made elsewhere in the submission: the other documents cite 
 ```bash
 python -V                                   # 3.11.15 used for this report
 
-# 1. suite (1546 tests, 3 skips) and the per-control modules
+# 1. suite (1549 tests, 3 skips) and the per-control modules
 python -m unittest discover -s tests -q
 python -m unittest tests.test_execution_preflight tests.test_execution_wiring -q     # 43 + 12
 python -m unittest tests.test_policy tests.test_policy_yaml tests.test_policy_zodiac_conformance -q  # 52 + 17 + 8

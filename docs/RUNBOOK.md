@@ -32,7 +32,7 @@ below 20 or no registry access; `frontend/node_modules/` is gitignored, so its a
 
 ```
 $ python -m unittest discover -s tests -q
-Ran 1546 tests in 73.427s
+Ran 1549 tests in 73.427s
 
 OK (skipped=3)                              (exit 0, wall 75 s)   [measured 2026-10-19T13:49Z]
 ```
