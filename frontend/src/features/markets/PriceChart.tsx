@@ -74,8 +74,11 @@ export default function PriceChart({
         secondsVisible: false,
       },
       crosshair: {
-        vertLine: { color: ink, style: LineStyle.Dashed, labelBackgroundColor: ink },
-        horzLine: { color: ink, style: LineStyle.Dashed, labelBackgroundColor: ink },
+        // Line flips with the theme (ink); the label chip stays near-black
+        // because the library draws WHITE text on it — a light chip would
+        // make that text invisible in the dark theme.
+        vertLine: { color: ink, style: LineStyle.Dashed, labelBackgroundColor: "#131722" },
+        horzLine: { color: ink, style: LineStyle.Dashed, labelBackgroundColor: "#131722" },
       },
       localization: valueFormat
         ? { priceFormatter: (price: number) => valueFormat(price) }

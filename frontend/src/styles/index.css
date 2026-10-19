@@ -171,3 +171,47 @@ details[open] > *:not(summary) {
     animation: none;
   }
 }
+
+/* Strict reduced motion (Astra P2): under reduce, animations AND
+   transitions go to zero — the static state change carries the message. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ------------------------------------------------------------------ dark
+   Uriel : la console sort en SOMBRE. Même structure, tokens inversés :
+   sol anthracite quasi noir (teinte verte), encre ivoire, UN vert plus clair
+   lisible comme texte sur le sombre. `html.dark` est déjà posé dans
+   index.html — retirer la classe bascule sur l'ivoire §4.2.              */
+.dark {
+  --color-background: #0f1211;
+  --color-surface: #151917;
+  --color-surface2: #1c211e;
+  --color-line: #2a312d;
+  --color-line-strong: #49534d;
+
+  --color-ink: #e9ece7;
+  --color-muted: #9aa69e;
+
+  --color-accent: #6fb08c;
+  --color-accent-hover: #8cc7a6;
+  --color-accent-soft: #1d2f26;
+  --color-on-accent: #0f1512;
+
+  --color-graph-node: #7e8a83;
+  --color-graph-dim: #2a312d;
+  --color-graph-edge: #242b27;
+  --color-plot-secondary: #8fa398;
+
+  --color-up: #6fb08c;
+  --color-down: #e9ece7;
+  --color-warn: #e9ece7;
+  --color-accent2: #e9ece7;
+}

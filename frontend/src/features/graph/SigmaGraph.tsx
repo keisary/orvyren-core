@@ -99,6 +99,7 @@ export default function SigmaGraph({ payload, selected, onSelect, onLayout }: Pr
     // (never opacity < 1), reduced anti-aliasing. Node events ARE enabled —
     // without them enterNode/leaveNode never fire and hover focus is dead.
     const settings = {
+      backgroundColor: surface,
       renderEdgeLabels: false,
       enableEdgeEvents: false,
       enableNodeEvents: true,

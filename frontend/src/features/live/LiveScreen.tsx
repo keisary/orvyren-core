@@ -276,10 +276,14 @@ export default function LiveScreen() {
   const claims = (evidence?.data?.claims as Record<string, unknown>[] | undefined) ?? [];
   const criticReport = (critique?.data ?? {}) as Record<string, unknown>;
   const critiqueBlock = (runOutcome.critique ?? {}) as Record<string, unknown>;
-  const findings =
-    (runOutcome.findings as string[] | undefined) ??
-    (criticReport.findings as string[] | undefined) ??
-    (criticReport.errors as string[] | undefined) ??
+  // Findings are OBJECTS ({enonce, gravite, refs, test_discriminant, type}):
+  // never cast to string[] — that rendered "[object Object]" (Astra P0-2).
+  // Read path: run_outcome.critique.findings first, then exchange fallbacks.
+  const rawFindings: unknown[] =
+    (critiqueBlock.findings as unknown[] | undefined) ??
+    (runOutcome.findings as unknown[] | undefined) ??
+    (criticReport.findings as unknown[] | undefined) ??
+    (criticReport.errors as unknown[] | undefined) ??
     [];
   const escalation = String(runOutcome.escalation ?? outcome.escalation ?? "");
   const criticVerdict = String(
@@ -540,14 +544,55 @@ export default function LiveScreen() {
                 </Badge>
               </CardHeader>
               <CardContent className="space-y-2">
-                {findings.length > 0 ? (
+                {rawFindings.length > 0 ? (
                   <div>
                     <div className="text-meta text-muted">Findings</div>
-                    {findings.map((line, index) => (
-                      <div key={index} className="mt-1 font-mono text-code text-ink">
-                        {truncate(line, 180)}
-                      </div>
-                    ))}
+                    {rawFindings.map((item, index) => {
+                      const object =
+                        typeof item === "object" && item !== null
+                          ? (item as {
+                              enonce?: string;
+                              gravite?: string;
+                              refs?: string[];
+                              test_discriminant?: string;
+                              type?: string;
+                            })
+                          : {};
+                      const text =
+                        typeof item === "string" ? item : String(object.enonce ?? "");
+                      return (
+                        <div key={index} className="mt-1.5 border border-line px-3 py-2">
+                          <div className="flex flex-wrap items-center gap-1.5">
+                            {object.type ? <Badge variant="neutral">{object.type}</Badge> : null}
+                            {object.gravite ? (
+                              <Badge variant={object.gravite === "BLOQUANT" ? "deny" : "warn"}>
+                                {object.gravite}
+                              </Badge>
+                            ) : null}
+                          </div>
+                          <div className="mt-1 break-words text-body leading-5 text-ink">
+                            {text}
+                          </div>
+                          {(object.refs ?? []).length > 0 ? (
+                            <div className="mt-1 flex flex-wrap gap-x-3 gap-y-0.5 font-mono text-code text-muted select-text">
+                              {(object.refs ?? []).map((ref) => (
+                                <span key={ref}>{ref}</span>
+                              ))}
+                            </div>
+                          ) : null}
+                          {object.test_discriminant ? (
+                            <details className="mt-1">
+                              <summary className="cursor-pointer text-meta font-medium text-muted hover:text-ink">
+                                Discriminating test
+                              </summary>
+                              <div className="mt-0.5 break-words text-body leading-5 text-ink">
+                                {object.test_discriminant}
+                              </div>
+                            </details>
+                          ) : null}
+                        </div>
+                      );
+                    })}
                   </div>
                 ) : (
                   <div className="text-meta text-muted">No finding recorded.</div>
