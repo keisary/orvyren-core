@@ -70,7 +70,7 @@ export default function App() {
           {NAV.map(({ to, label, icon: Icon }) => (
             <NavLink
               key={to}
-              to={to}
+              to={`${to}${location.search}`}
               className={({ isActive }) =>
                 cn(
                   "flex h-10 items-center gap-2.5 border-l-2 px-3 text-body transition-colors duration-100",

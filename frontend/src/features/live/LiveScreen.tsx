@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { useLiveStore } from "@/lib/store";
 import { subscribeRun } from "@/lib/live-bridge";
@@ -142,17 +143,19 @@ function EventRow({ event, fresh }: { event: RunEvent; fresh: boolean }) {
 export default function LiveScreen() {
   const runsQuery = useQuery({ queryKey: ["runs"], queryFn: api.runs });
   const runs = useMemo(() => runsQuery.data?.runs ?? [], [runsQuery.data]);
-  // Selection lives in the URL (?run=), independent of the WS transport:
-  // a reload or a shared link keeps the same run (Astra-4 P0-3).
+  // Selection lives in the URL (?run=) via router primitives, independent of
+  // the WS transport: reloads, shared links AND cross-route navigation keep
+  // the same run (Astra-4 P0-3 / Astra-5 continuité).
+  const [searchParams, setSearchParams] = useSearchParams();
   const [runId, setRunIdState] = useState<string>(
-    () => new URLSearchParams(window.location.search).get("run") ?? "",
+    () => searchParams.get("run") ?? "",
   );
   const setRunId = (next: string) => {
     setRunIdState(next);
-    const url = new URL(window.location.href);
-    if (next) url.searchParams.set("run", next);
-    else url.searchParams.delete("run");
-    window.history.replaceState(null, "", url);
+    const params = new URLSearchParams(window.location.search);
+    if (next) params.set("run", next);
+    else params.delete("run");
+    setSearchParams(params, { replace: true });
   };
   const liveStatus = useLiveStore((s) => s.status);
   const liveEvents = useLiveStore((s) => s.events);
@@ -365,10 +368,12 @@ export default function LiveScreen() {
       }
     >
       <div className="space-y-4">
-        {runsQuery.isError && runs.length === 0 ? (
+        {runsQuery.isError ? (
           <div className="border border-line bg-surface px-4 py-4 text-center">
             <div className="text-body text-ink">
-              Runs unavailable — the API did not answer.
+              {runs.length === 0
+                ? "Runs unavailable — the API did not answer."
+                : `Refresh failed — showing runs loaded at ${fmtTime(runsQuery.dataUpdatedAt)}.`}
             </div>
             <Button
               variant="secondary"
@@ -377,6 +382,10 @@ export default function LiveScreen() {
             >
               Retry
             </Button>
+          </div>
+        ) : runsQuery.isFetching && runs.length === 0 ? (
+          <div className="border border-line bg-surface px-4 py-3 text-center text-meta text-muted">
+            Loading runs…
           </div>
         ) : null}
         <SubstitutionBanner substitution={bundle?.substitution ?? run.substitution ?? null} />
@@ -393,26 +402,58 @@ export default function LiveScreen() {
             <BudgetCell
               label="LLM calls"
               flashValue={budget.llm_calls}
-              value={budgetKnown ? fmtNumber(budget.llm_calls ?? 0, 0) : "—"}
-              ceiling={`/ ${fmtNumber(budgetLimits.llm_calls ?? 0, 0)}`}
+              value={
+                budgetKnown && budget.llm_calls !== undefined
+                  ? fmtNumber(budget.llm_calls, 0)
+                  : "—"
+              }
+              ceiling={
+                budgetLimits.llm_calls !== undefined
+                  ? `/ ${fmtNumber(budgetLimits.llm_calls, 0)}`
+                  : undefined
+              }
             />
             <BudgetCell
               label="Tool calls"
               flashValue={budget.tool_calls}
-              value={budgetKnown ? fmtNumber(budget.tool_calls ?? 0, 0) : "—"}
-              ceiling={`/ ${fmtNumber(budgetLimits.tool_calls ?? 0, 0)}`}
+              value={
+                budgetKnown && budget.tool_calls !== undefined
+                  ? fmtNumber(budget.tool_calls, 0)
+                  : "—"
+              }
+              ceiling={
+                budgetLimits.tool_calls !== undefined
+                  ? `/ ${fmtNumber(budgetLimits.tool_calls, 0)}`
+                  : undefined
+              }
             />
             <BudgetCell
               label="Elapsed time"
               flashValue={budget.wall_seconds}
-              value={budgetKnown ? fmtNumber(budget.wall_seconds ?? 0, 1) : "—"}
-              ceiling={`/ ${fmtNumber(budgetLimits.wall_seconds ?? 0, 0)} s`}
+              value={
+                budgetKnown && budget.wall_seconds !== undefined
+                  ? fmtNumber(budget.wall_seconds, 1)
+                  : "—"
+              }
+              ceiling={
+                budgetLimits.wall_seconds !== undefined
+                  ? `/ ${fmtNumber(budgetLimits.wall_seconds, 0)} s`
+                  : undefined
+              }
             />
             <BudgetCell
               label="Recorded cost"
               flashValue={budget.cost_usd}
-              value={budgetKnown ? `$${fmtNumber(budget.cost_usd ?? 0, 4)}` : "—"}
-              ceiling={`/ $${fmtNumber(budgetLimits.cost_usd ?? 0, 2)}`}
+              value={
+                budgetKnown && budget.cost_usd !== undefined
+                  ? `$${fmtNumber(budget.cost_usd, 4)}`
+                  : "—"
+              }
+              ceiling={
+                budgetLimits.cost_usd !== undefined
+                  ? `/ $${fmtNumber(budgetLimits.cost_usd, 2)}`
+                  : undefined
+              }
             />
           </div>
         </div>
@@ -435,6 +476,20 @@ export default function LiveScreen() {
                 </Button>
               </div>
             </CardHeader>
+            {eventsQuery.isError && timeline.length > 0 ? (
+              <div className="flex flex-wrap items-center justify-between gap-2 border-b border-line bg-surface2 px-4 py-2">
+                <span className="text-meta text-ink">
+                  Refresh failed — journal loaded at {fmtTime(eventsQuery.dataUpdatedAt)}
+                </span>
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  onClick={() => eventsQuery.refetch()}
+                >
+                  Retry
+                </Button>
+              </div>
+            ) : null}
             <div ref={journalRef} className="max-h-[560px] overflow-auto">
               {timeline.length === 0 ? (
                 eventsQuery.isError ? (
@@ -449,6 +504,10 @@ export default function LiveScreen() {
                     >
                       Retry
                     </Button>
+                  </div>
+                ) : !eventsQuery.data && eventsQuery.isFetching ? (
+                  <div className="px-4 py-6 text-center text-meta text-muted">
+                    Loading journal…
                   </div>
                 ) : (
                   <div className="px-4 py-6 text-center text-meta text-muted">
@@ -475,6 +534,14 @@ export default function LiveScreen() {
                 <Badge variant={verdictVariant(state)}>{state}</Badge>
               </CardHeader>
               <CardContent className="space-y-2">
+                {bundleQuery.isError ? (
+                  <div className="text-meta text-ink">
+                    Refresh failed — run dossier loaded at{" "}
+                    {fmtTime(bundleQuery.dataUpdatedAt)}
+                  </div>
+                ) : !bundleQuery.data && bundleQuery.isFetching ? (
+                  <div className="text-meta text-muted">Loading run dossier…</div>
+                ) : null}
                 {state === "ABORTED" && stopCondition ? (
                   <div className="text-[13px] font-semibold leading-[18px] text-ink">
                     Run stopped — {stopCondition}
@@ -708,7 +775,11 @@ export default function LiveScreen() {
                   />
                   <Row
                     label="Tokens"
-                    value={`${fmtCompact(budget.tokens_in ?? 0)} in · ${fmtCompact(budget.tokens_out ?? 0)} out`}
+                    value={
+                      budgetKnown
+                        ? `${fmtCompact(budget.tokens_in ?? 0)} in · ${fmtCompact(budget.tokens_out ?? 0)} out`
+                        : ""
+                    }
                   />
                   <Row label="Events" value={`${eventsQuery.data?.total ?? timeline.length}`} />
                   <Row label="Hypotheses" value={`${spec?.hypotheses?.length ?? run.hypotheses ?? 0}`} />

@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { api } from "@/lib/api";
 import type { SeriesLine } from "@/lib/types";
-import { fmtBps, fmtNumber, fmtUnix, truncate } from "@/lib/format";
+import { fmtBps, fmtNumber, fmtTime, fmtUnix, truncate } from "@/lib/format";
 import { seriesStyle } from "@/lib/graph-theme";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -338,6 +338,20 @@ export default function MarketsScreen() {
             </Select>
           </div>
           {episodeIndex ? <Badge variant="neutral">{episodeIndex.points} points</Badge> : null}
+          {episodesQuery.isError && episodesQuery.data ? (
+            <>
+              <span className="text-meta text-ink">
+                Refresh failed — list loaded at {fmtTime(episodesQuery.dataUpdatedAt)}
+              </span>
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={() => episodesQuery.refetch()}
+              >
+                Retry
+              </Button>
+            </>
+          ) : null}
         </>
       }
     >
@@ -408,6 +422,11 @@ export default function MarketsScreen() {
           </Card>
 
           <div className="grid grid-cols-1 gap-4 xl:grid-cols-[minmax(0,1fr)_320px]">
+            {groups.length === 0 && bars.length === 0 ? (
+              <div className="border border-line bg-surface px-4 py-6 text-center text-body text-muted lg:col-span-2">
+                This episode has no measurable series.
+              </div>
+            ) : null}
             <div className="space-y-4">
               {groups.map((group, groupIndex) => {
                 const shown = group.lines.filter((line) => visible[line.id] !== false);

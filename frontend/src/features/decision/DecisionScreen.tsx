@@ -183,9 +183,12 @@ export default function DecisionScreen() {
   const [caseTab, setCaseTab] = useState("rules");
 
   const decision = (decisionQuery.data ?? {}) as DecisionRecord;
-  // Absent is not zero and not a verdict (Astra-4 P1-1): without a record,
-  // every cell says so instead of inventing a value.
-  const hasRecord = decisionQuery.data != null && !decisionQuery.isError;
+  // Presence of the record and transport status are separate states
+  // (Astra-5 correction 1): a failed refresh keeps the record PRESENT.
+  const recordPresent = decisionQuery.data != null;
+  const recordPending = !decisionQuery.data && decisionQuery.isFetching;
+  const recordStale = decisionQuery.isError && recordPresent;
+  const hasRecord = recordPresent;
   const axes = (decision.axes ?? {}) as Record<string, unknown>;
   const rdof = (decision.rdof ?? {}) as Record<string, unknown>;
   const priceConvention = (decision.price_convention ?? {}) as Record<string, unknown>;
@@ -262,67 +265,112 @@ export default function DecisionScreen() {
                   · source: evidence/decision_usdc-2023-03.json · mode: recorded replay
                 </span>
               </div>
+              {recordPending ? (
+                <div className="text-meta text-muted">Loading the decision record…</div>
+              ) : recordStale ? (
+                <div className="flex flex-wrap items-center justify-between gap-2 border border-line bg-surface2 px-4 py-2">
+                  <span className="text-meta text-ink">
+                    Refresh failed — record loaded at {fmtTime(decisionQuery.dataUpdatedAt)}
+                  </span>
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    onClick={() => decisionQuery.refetch()}
+                  >
+                    Retry
+                  </Button>
+                </div>
+              ) : !recordPresent && decisionQuery.isError ? (
+                <div className="border border-line bg-surface px-4 py-4 text-center">
+                  <div className="text-body text-ink">
+                    Decision record unavailable — the API did not answer.
+                  </div>
+                  <Button
+                    variant="secondary"
+                    className="mt-2"
+                    onClick={() => decisionQuery.refetch()}
+                  >
+                    Retry
+                  </Button>
+                </div>
+              ) : null}
               {/* Summary strip: three cells, one surface (§4.7). */}
               <div className="grid grid-cols-1 gap-px border border-line bg-line lg:grid-cols-3">
                 <StripCell
                   label="Evidence assessment"
-                  value={hasRecord ? String(axes.epistemic_verdict ?? "—") : "Not available"}
-                  variant={hasRecord ? verdictVariant(axes.epistemic_verdict) : "neutral"}
+                  value={
+                    recordPending
+                      ? "Loading…"
+                      : hasRecord
+                        ? String(axes.epistemic_verdict ?? "—")
+                        : "Not available"
+                  }
+                  variant={hasRecord && !recordPending ? verdictVariant(axes.epistemic_verdict) : "neutral"}
                   detail={
-                    hasRecord
-                      ? `axis 1 — evidence question · supported hypotheses: ${supported}`
-                      : "The decision record has not been loaded."
+                    recordPending
+                      ? "Fetching the decision record."
+                      : hasRecord
+                        ? `axis 1 — evidence question · supported hypotheses: ${supported}`
+                        : "The decision record has not been loaded."
                   }
                 />
                 <StripCell
                   label="Proposed action"
                   value={
-                    !hasRecord
-                      ? "Not available"
-                      : axes.economic_action
-                        ? String(axes.economic_action)
-                        : "No action proposed"
+                    recordPending
+                      ? "Loading…"
+                      : !hasRecord
+                        ? "Not available"
+                        : axes.economic_action
+                          ? String(axes.economic_action)
+                          : "No action proposed"
                   }
                   variant={
-                    !hasRecord ? "neutral" : axes.economic_action ? "info" : "neutral"
+                    !hasRecord || recordPending ? "neutral" : axes.economic_action ? "info" : "neutral"
                   }
                   detail={
-                    !hasRecord
-                      ? ""
-                      : axes.economic_action
-                        ? `axis 2 — economic sizing · size x* = ${fmtNumber(axes.x_star_usdc ?? 0, 2)} USDC test (demonstration parameters)`
-                        : "axis 2 — economic sizing · no transfer proposed by this record"
+                    recordPending
+                      ? "Fetching the decision record."
+                      : !hasRecord
+                        ? ""
+                        : axes.economic_action
+                          ? `axis 2 — economic sizing · size x* = ${fmtNumber(axes.x_star_usdc ?? 0, 2)} USDC test (demonstration parameters)`
+                          : "axis 2 — economic sizing · no transfer proposed by this record"
                   }
                 />
                 <StripCell
                   label="Agent escalation"
                   value={
-                    !hasRecord
-                      ? "Not available"
-                      : authVerdict
-                        ? authVerdict
-                        : "Not evaluated"
+                    recordPending
+                      ? "Loading…"
+                      : !hasRecord
+                        ? "Not available"
+                        : authVerdict
+                          ? authVerdict
+                          : "Not evaluated"
                   }
                   variant={
-                    !hasRecord
+                    !hasRecord || recordPending
                       ? "neutral"
                       : authVerdict
                         ? verdictVariant(authVerdict)
                         : "neutral"
                   }
                   detail={
-                    !hasRecord
-                      ? ""
-                      : authVerdict
-                        ? truncate(
-                            String(
-                              (axes.authorization_detail as Record<string, unknown>)?.note ??
-                                axes.separation_note ??
-                                "",
-                            ),
-                            180,
-                          )
-                        : String(axes.separation_note ?? "Authorization needs a configured recipient.")
+                    recordPending
+                      ? "Fetching the decision record."
+                      : !hasRecord
+                        ? ""
+                        : authVerdict
+                          ? truncate(
+                              String(
+                                (axes.authorization_detail as Record<string, unknown>)?.note ??
+                                  axes.separation_note ??
+                                  "",
+                              ),
+                              180,
+                            )
+                          : String(axes.separation_note ?? "Authorization needs a configured recipient.")
                   }
                 />
               </div>
@@ -429,9 +477,14 @@ export default function DecisionScreen() {
                           • {truncate(line, 200)}
                         </div>
                       ))}
-                      {((rdof.not_searched as string[]) ?? []).length === 0 ? (
+                      {rdof.not_searched !== undefined &&
+                      ((rdof.not_searched as string[]) ?? []).length === 0 ? (
                         <div className="mt-1 text-meta text-muted">
                           Nothing left unsearched in this record.
+                        </div>
+                      ) : rdof.not_searched === undefined && hasRecord ? (
+                        <div className="mt-1 text-meta text-muted">
+                          Not assessed in this record.
                         </div>
                       ) : null}
                     </div>
@@ -701,6 +754,44 @@ export default function DecisionScreen() {
                     receipts
                   </Badge>
                 </CardHeader>
+                {receiptsQuery.isError && receiptsQuery.data ? (
+                  <div className="flex flex-wrap items-center justify-between gap-2 border-b border-line bg-surface2 px-4 py-2">
+                    <span className="text-meta text-ink">
+                      Refresh failed — receipts loaded at {fmtTime(receiptsQuery.dataUpdatedAt)}
+                    </span>
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      onClick={() => receiptsQuery.refetch()}
+                    >
+                      Retry
+                    </Button>
+                  </div>
+                ) : null}
+                {!receiptsQuery.data && receiptsQuery.isFetching ? (
+                  <div className="px-4 py-6 text-center text-meta text-muted">
+                    Loading receipts…
+                  </div>
+                ) : receiptsQuery.data &&
+                  (receiptsQuery.data.chain_receipts ?? []).length === 0 &&
+                  (receiptsQuery.data.setup_receipts ?? []).length === 0 ? (
+                  <div className="px-4 py-6 text-center text-meta text-muted">
+                    No receipt recorded in this view.
+                  </div>
+                ) : receiptsQuery.isError && !receiptsQuery.data ? (
+                  <div className="px-4 py-6 text-center">
+                    <div className="text-body text-ink">
+                      Receipts unavailable — the API did not answer.
+                    </div>
+                    <Button
+                      variant="secondary"
+                      className="mt-2"
+                      onClick={() => receiptsQuery.refetch()}
+                    >
+                      Retry
+                    </Button>
+                  </div>
+                ) : (
                 <div className="max-h-96 overflow-auto">
                   <ReceiptTable
                     receipts={[
@@ -709,6 +800,7 @@ export default function DecisionScreen() {
                     ]}
                   />
                 </div>
+                )}
                 <CardContent className="border-t border-line font-mono text-code text-muted">
                   mode:{" "}
                   {String(

@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { api } from "@/lib/api";
 import type { GraphQueryResult } from "@/lib/types";
@@ -145,6 +145,26 @@ export default function GraphScreen() {
     enabled: false,
   });
 
+  // One execution path for Run query AND Retry (Astra-5 correction 2):
+  // identity (query + params) is captured at invocation, the result is
+  // published ONLY on a success of THIS invocation — a failed retry keeps
+  // the previous result with its authentic date, and concurrent runs are
+  // discarded by invocation id.
+  const invocationRef = useRef(0);
+  const runAndPublish = () => {
+    const invocation = (invocationRef.current += 1);
+    const sig = JSON.stringify(params);
+    const name = queryName;
+    runQuery.refetch().then((result) => {
+      if (invocation !== invocationRef.current) return; // superseded
+      if (!result.error && result.data) {
+        setRan({ name, sig, at: new Date().toISOString(), data: result.data });
+      }
+      // error → keep the previous {name, sig, at, data} untouched; the
+      // failure note below carries the warning.
+    });
+  };
+
   const detailQuery = useQuery({
     queryKey: ["graph-node", selected],
     queryFn: () => api.graphNode(selected!),
@@ -152,6 +172,7 @@ export default function GraphScreen() {
   });
 
   const payload = graphQuery.data;
+  const graphUpdatedAt = graphQuery.dataUpdatedAt;
   const def = QUERIES[queryName];
   // A result remembers WHICH query produced it (Astra-4 P1-3): switching Q
   // without touching fields must still flag the old result as previous.
@@ -224,8 +245,23 @@ export default function GraphScreen() {
                 onLayout={setLayoutState}
               />
             ) : (
-              <div className="flex h-full items-center justify-center text-meta text-muted">
-                {graphQuery.isError ? "Graph database unavailable." : "Loading graph…"}
+              <div className="flex h-full flex-col items-center justify-center gap-2 px-6 text-center">
+                <div className="text-meta text-muted">
+                  {graphQuery.isError
+                    ? graphQuery.data
+                      ? `Refresh failed — showing the graph loaded at ${fmtTime(graphUpdatedAt)}`
+                      : "Graph database unavailable."
+                    : "Loading graph…"}
+                </div>
+                {graphQuery.isError ? (
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    onClick={() => graphQuery.refetch()}
+                  >
+                    Retry
+                  </Button>
+                ) : null}
               </div>
             )}
             <div className="pointer-events-none absolute bottom-2 left-2 max-w-[440px] border border-line bg-surface px-2.5 py-1.5 text-meta text-muted">
@@ -274,15 +310,8 @@ export default function GraphScreen() {
               </div>
               <div className="flex flex-wrap items-center gap-2">
                 <Button
-                  onClick={() => {
-                    const sig = JSON.stringify(params);
-                    const name = queryName;
-                    runQuery.refetch().then(({ data }) => {
-                      if (data) {
-                        setRan({ name, sig, at: new Date().toISOString(), data });
-                      }
-                    });
-                  }}
+                  onClick={runAndPublish}
+                  disabled={runQuery.isFetching}
                 >
                   Run query
                 </Button>
@@ -301,9 +330,17 @@ export default function GraphScreen() {
               {runQuery.isError ? (
                 <div className="space-y-1.5">
                   <div className="text-meta text-ink">
-                    Query failed — the API did not answer.
+                    Query failed — the API did not answer
+                    {ran
+                      ? ` · showing the previous result run at ${fmtTime(ran.at)}`
+                      : ""}.
                   </div>
-                  <Button variant="secondary" size="sm" onClick={() => runQuery.refetch()}>
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    onClick={runAndPublish}
+                    disabled={runQuery.isFetching}
+                  >
                     Retry
                   </Button>
                 </div>

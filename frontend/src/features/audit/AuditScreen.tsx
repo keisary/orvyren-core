@@ -132,6 +132,36 @@ export default function AuditScreen() {
     });
   }
 
+  // A failed or in-flight summary must never read as "no artefact exists"
+  // (Astra-5 correction 1): answer with loading/error/empty explicitly.
+  if (!summary) {
+    return (
+      <ScreenShell
+        title="Audit dossier"
+        subtitle="Recomputed hash chains · point-in-time snapshots · sealed packets · execution journal"
+      >
+        <div className="border border-line bg-surface px-4 py-8 text-center">
+          {summaryQuery.isError ? (
+            <>
+              <div className="text-body text-ink">
+                Audit summary unavailable — the API did not answer.
+              </div>
+              <Button
+                variant="secondary"
+                className="mt-2"
+                onClick={() => summaryQuery.refetch()}
+              >
+                Retry
+              </Button>
+            </>
+          ) : (
+            <div className="text-meta text-muted">Loading audit summary…</div>
+          )}
+        </div>
+      </ScreenShell>
+    );
+  }
+
   return (
     <ScreenShell
       title="Audit dossier"
@@ -306,7 +336,7 @@ export default function AuditScreen() {
           facts={[
             "evidence/demo_chain/rseth/audit.jsonl",
             (streamQuery.data?.records ?? [])[0]
-              ? `first record ${String(
+              ? `first record on this page ${String(
                   ((streamQuery.data?.records ?? [])[0] as Record<string, unknown>).ts_utc ?? "",
                 )}`
               : "",
@@ -346,6 +376,29 @@ export default function AuditScreen() {
               </Button>
             </div>
           </CardHeader>
+          {streamQuery.isError && streamQuery.data ? (
+            <div className="flex flex-wrap items-center justify-between gap-2 border-b border-line bg-surface2 px-4 py-2">
+              <span className="text-meta text-ink">
+                Refresh failed — journal page loaded at {fmtTime(streamQuery.dataUpdatedAt)}
+              </span>
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={() => streamQuery.refetch()}
+              >
+                Retry
+              </Button>
+            </div>
+          ) : null}
+          {!streamQuery.data && streamQuery.isFetching ? (
+            <div className="px-4 py-6 text-center text-meta text-muted">
+              Loading journal page…
+            </div>
+          ) : streamQuery.data && streamQuery.data.records.length === 0 ? (
+            <div className="px-4 py-6 text-center text-meta text-muted">
+              No record on this page of the stream.
+            </div>
+          ) : (
           <div className="max-h-96 overflow-auto">
             <Table>
               <THead>
@@ -378,6 +431,7 @@ export default function AuditScreen() {
               </TBody>
             </Table>
           </div>
+          )}
         </Card>
 
         {/* 4 — other packets, collapsed. */}
