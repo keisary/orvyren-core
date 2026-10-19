@@ -1,30 +1,31 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-"""ORVYREN-Core — comparateurs du harnais : A0, A1, AX0, B0, O (G2).
+"""ORVYREN-Core — harness comparators: A0, A1, AX0, B0, O (G2).
 
-Sources normatives : B7 §e.1 (table des comparateurs, résolution de la
-collision d'étiquettes) ; W2-D §C.1 ; FREEZE_V2 §7 (G3 : A0/A1/A2/B0 (+ AX0)).
+Normative sources: B7 §e.1 (comparator table, label-collision resolution);
+W2-D §C.1; FREEZE_V2 §7 (G3: A0/A1/A2/B0 (+ AX0)).
 
-Étiquettes gelées (B7 §e.1 — la collision « A0 » de R3 est tranchée) :
+Frozen labels (B7 §e.1 — the "A0" collision of R3 is settled):
 
-* **A0** — NO-ACTION : l'adversaire décisif du regret, zéro action ;
-* **A1** — règle de seuil : décote ``D ≥ 50 bp`` pendant 15 min → réduction
-  bornée ``x* = min(x_max, Depth_ε, x_seuil)`` ; ``Depth_ε`` non mesurée ⇒ le
-  plafond ``x_max`` est utilisé **et la substitution est écrite** ;
-* **A2** — l'agent ORVYREN (rejoue le journal, sinon l'archive) : produit par
-  les blocs A–E, pas par ce module (seule la forme des actions est définie ici) ;
-* **B0** — placebo apparié : mêmes nombre et tailles d'actions que A2,
-  horodatages tirés uniformément sur la grille horaire de la fenêtre,
-  ``M ≥ 200`` tirages, **graine fixée** ; on publie la distribution complète ;
-* **AX0** — règle gelée du dépôt (0,99 × 2 observations → réduction de
-  100 USDC ; ``decision/baseline.py``, FREEZE_V1 D6) — déléguée, jamais
-  réimplémentée (une seule source de vérité) ;
-* **O** — oracle ex post **faisable** : ``min_{b ∈ F} L(b)``, borne inférieure
-  du regret, pas une vérité terrain.
+* **A0** — NO-ACTION: the decisive adversary of regret, zero action;
+* **A1** — threshold rule: discount ``D ≥ 50 bp`` for 15 min → bounded
+  reduction ``x* = min(x_max, Depth_ε, x_seuil)``; ``Depth_ε`` not measured ⇒
+  the ``x_max`` cap is used **and the substitution is written**;
+* **A2** — the ORVYREN agent (replays the journal, otherwise the archive):
+  produced by blocks A–E, not by this module (only the shape of the actions is
+  defined here);
+* **B0** — paired placebo: same number and sizes of actions as A2, timestamps
+  drawn uniformly on the hourly grid of the window, ``M ≥ 200`` draws,
+  **fixed seed**; the complete distribution is published;
+* **AX0** — the repository frozen rule (0.99 × 2 observations → 100 USDC
+  reduction; ``decision/baseline.py``, FREEZE_V1 D6) — delegated, never
+  re-implemented (a single source of truth);
+* **O** — **feasible** ex post oracle: ``min_{b ∈ F} L(b)``, lower bound of the
+  regret, not a ground truth.
 
-Deux phrases pré-écrites (gelées AVANT exécution, B7 §e.1) — si A2 ne bat pas
-B0, la valeur n'est pas dans le **choix du moment** ; si A2 ne bat pas A1,
-elle n'est pas dans la **délibération** : on l'écrit.
+Two pre-written sentences (frozen BEFORE execution, B7 §e.1) — if A2 does not
+beat B0, the value is not in the **choice of timing**; if A2 does not beat A1,
+it is not in the **deliberation**: we write it down.
 """
 
 from __future__ import annotations
@@ -35,7 +36,7 @@ from typing import Callable, Iterable, List, Optional, Sequence, Tuple
 
 from orvyren.evaluation import loss as loss_mod
 
-# --- constantes gelées -------------------------------------------------------
+# --- frozen constants --------------------------------------------------------
 
 A0_LABEL = "A0"
 A1_LABEL = "A1"
@@ -46,42 +47,42 @@ ORACLE_LABEL = "O"
 
 COMPARATOR_LABELS = (A0_LABEL, A1_LABEL, A2_LABEL, B0_LABEL, AX0_LABEL)
 
-#: A1 — seuils issus de W2-B §1.1, à geler (G4) : décote ≥ 50 bp pendant 15 min.
+#: A1 — thresholds from W2-B §1.1, to be frozen (G4): discount ≥ 50 bp for 15 min.
 A1_MIN_DISCOUNT_BP = 50.0
 A1_PERSISTENCE_MINUTES = 15.0
-A1_MIN_OBSERVATIONS = 2  # sur grille horaire, « ≥ 15 min » = 2 lectures consécutives
+A1_MIN_OBSERVATIONS = 2  # on an hourly grid, "≥ 15 min" = 2 consecutive readings
 
-#: Plafond d'action de la démo (FREEZE_V2 §5 E2 : « Run ALLOW : 100 USDC » ;
-#: repris de evidence/decision_usdc-2023-03.json, exposure_parameters).
+#: Demo action cap (FREEZE_V2 §5 E2: "Run ALLOW: 100 USDC";
+#: taken from evidence/decision_usdc-2023-03.json, exposure_parameters).
 X_MAX_USDC_DEMO = 100.0
 
-#: B0 — placebo apparié : M ≥ 200 tirages, graine fixée (B7 §e.1).
+#: B0 — paired placebo: M ≥ 200 draws, fixed seed (B7 §e.1).
 B0_MIN_DRAWS = 200
 B0_SEED = 20261016
 B0_GRID_HOURS = 1
 
-#: Phrases gelées (à publier telles quelles si le cas se présente).
+#: Frozen sentences (to publish as is if the case arises).
 PHRASE_IF_A2_BEATS_NOT_B0 = (
-    "Si A2 ne bat pas B0, la valeur du système n'est pas dans le choix du moment — écrit tel quel."
+    "If A2 does not beat B0, the value of the system is not in the choice of timing — written as is."
 )
 PHRASE_IF_A2_BEATS_NOT_A1 = (
-    "Si A2 ne bat pas A1, la valeur du système n'est pas dans la délibération — écrit tel quel."
+    "If A2 does not beat A1, the value of the system is not in the deliberation — written as is."
 )
 
 
 class ComparatorError(ValueError):
-    """Paramètres de comparateur invalides (jamais corrigés en silence)."""
+    """Invalid comparator parameters (never silently corrected)."""
 
 
 # --- A0 : NO-ACTION ----------------------------------------------------------
 
 
 def a0_actions(*_args, **_kwargs) -> Tuple[()]:
-    """A0 — NO-ACTION sur toute la fenêtre : zéro action, coût nul."""
+    """A0 — NO-ACTION over the whole window: zero action, zero cost."""
     return ()
 
 
-# --- A1 : règle de seuil -----------------------------------------------------
+# --- A1: threshold rule ------------------------------------------------------
 
 
 def a1_signal_times(
@@ -91,15 +92,15 @@ def a1_signal_times(
     persistence_minutes: float = A1_PERSISTENCE_MINUTES,
     max_gap_minutes: float = 90.0,
 ) -> List[str]:
-    """Horodatages (ISO UTC) où la règle de seuil A1 déclenche.
+    """Timestamps (ISO UTC) at which the A1 threshold rule fires.
 
-    ``series`` : couples ``(timestamp_utc, prix)`` triés ; décote en bp
-    ``D = (peg − prix)/peg · 10 000``. Un déclenchement exige ``D ≥ seuil``
-    **soutenu** pendant ``persistence_minutes`` : sur une grille horaire,
-    ``≥ 15 min`` se dégénère mécaniquement en **deux lectures consécutives**
-    (gap ≤ ``max_gap_minutes``), règle documentée, jamais ajustée après coup.
-    Le déclenchement est horodaté à la **deuxième** lecture ; un épisode
-    persistant ne produit qu'un seul déclenchement (comme AX0).
+    ``series``: sorted ``(timestamp_utc, price)`` pairs; discount in bp
+    ``D = (peg − price)/peg · 10 000``. A firing requires ``D ≥ threshold``
+    **sustained** for ``persistence_minutes``: on an hourly grid,
+    ``≥ 15 min`` mechanically degenerates into **two consecutive readings**
+    (gap ≤ ``max_gap_minutes``), a documented rule, never adjusted afterwards.
+    The firing is timestamped at the **second** reading; one persistent
+    episode produces a single firing (like AX0).
     """
     fired: List[str] = []
     run_start: Optional[_dt.datetime] = None
@@ -145,21 +146,21 @@ def a1_actions(
     x_seuil: Optional[float] = None,
     **kwargs,
 ) -> List[dict]:
-    """Actions de A1 : réduction bornée ``x* = min(x_max, Depth_ε, x_seuil)``.
+    """A1 actions: bounded reduction ``x* = min(x_max, Depth_ε, x_seuil)``.
 
-    ``Depth_ε`` (taille maximale sortable à ≤ ε d'impact, W2-D §A.1.6 D4) et
-    ``x_seuil`` sont **mesurés ou fournis** ; tant qu'ils manquent, le plafond
-    ``x_max`` s'applique et la note de substitution est attachée à l'action
-    (aucune profondeur inventée).
+    ``Depth_ε`` (largest size sellable at ≤ ε of impact, W2-D §A.1.6 D4) and
+    ``x_seuil`` are **measured or supplied**; while they are missing, the
+    ``x_max`` cap applies and the substitution note is attached to the action
+    (no invented depth).
     """
     notes: List[str] = []
     caps: List[float] = [x_max]
     if depth_epsilon is None:
-        notes.append("Depth_ε non mesurée — plafond x_max utilisé (chantier W2-B §(f) 5)")
+        notes.append("Depth_ε not measured — x_max cap used (W2-B §(f) 5 work item)")
     else:
         caps.append(depth_epsilon)
     if x_seuil is None:
-        notes.append("x_seuil non gelé — plafond x_max utilisé")
+        notes.append("x_seuil not frozen — x_max cap used")
     else:
         caps.append(x_seuil)
     size = min(caps)
@@ -172,14 +173,14 @@ def a1_actions(
     return actions
 
 
-# --- AX0 : règle gelée du dépôt (délégation) ---------------------------------
+# --- AX0: repository frozen rule (delegation) --------------------------------
 
 
 def ax0_signals(corpus_path: str, window: Sequence[str]) -> List[dict]:
-    """AX0 — délègue à ``orvyren.decision.baseline.detect_signals``.
+    """AX0 — delegates to ``orvyren.decision.baseline.detect_signals``.
 
-    Aucune réimplémentation : la règle gelée n'existe qu'à un seul endroit
-    (une divergence entre deux copies serait un bug de mesure).
+    No re-implementation: the frozen rule exists in a single place
+    (a divergence between two copies would be a measurement bug).
     """
     from orvyren.decision import baseline
 
@@ -188,7 +189,7 @@ def ax0_signals(corpus_path: str, window: Sequence[str]) -> List[dict]:
 
 
 def ax0_actions(corpus_path: str, window: Sequence[str]) -> List[dict]:
-    """AX0 sous la forme commune d'actions (une réduction de 100 USDC par signal)."""
+    """AX0 in the common action shape (one 100 USDC reduction per signal)."""
     from orvyren.decision import baseline
 
     actions = []
@@ -205,7 +206,7 @@ def ax0_actions(corpus_path: str, window: Sequence[str]) -> List[dict]:
     return actions
 
 
-# --- B0 : placebo apparié ----------------------------------------------------
+# --- B0: paired placebo ------------------------------------------------------
 
 
 def b0_draws(
@@ -217,28 +218,28 @@ def b0_draws(
     draws: int = B0_MIN_DRAWS,
     seed: int = B0_SEED,
 ) -> List[List[dict]]:
-    """B0 — ``draws`` tirages d'un jeu d'actions apparié à A2.
+    """B0 — ``draws`` draws of an action set paired with A2.
 
-    Contrat gelé (B7 §e.1) : **même nombre** d'actions, **mêmes tailles**,
-    horodatages **tirés uniformément** sur la grille horaire de la fenêtre,
-    **M ≥ 200**, graine fixée. Le tirage est reproductible : deux appels avec
-    la même graine rendent des horodatages identiques (testé).
+    Frozen contract (B7 §e.1): **same number** of actions, **same sizes**,
+    timestamps **drawn uniformly** on the hourly grid of the window,
+    **M ≥ 200**, fixed seed. The draw is reproducible: two calls with the same
+    seed return identical timestamps (tested).
     """
     if draws < B0_MIN_DRAWS:
-        raise ComparatorError(f"B0 exige M ≥ {B0_MIN_DRAWS} tirages (reçu {draws}) — règle gelée")
+        raise ComparatorError(f"B0 requires M ≥ {B0_MIN_DRAWS} draws (got {draws}) — frozen rule")
     if count != len(sizes):
-        raise ComparatorError(f"appariement invalide : {count} actions pour {len(sizes)} tailles")
+        raise ComparatorError(f"invalid pairing: {count} actions for {len(sizes)} sizes")
     start = _parse(window_start_utc)
     end = _parse(window_end_utc)
     if end <= start:
-        raise ComparatorError("fenêtre B0 vide ou inversée")
+        raise ComparatorError("empty or inverted B0 window")
     grid: List[str] = []
     cursor = start
     while cursor < end:
         grid.append(cursor.strftime("%Y-%m-%dT%H:%M:%SZ"))
         cursor = cursor + _dt.timedelta(hours=grid_hours)
     if not grid:
-        raise ComparatorError("grille horaire vide")
+        raise ComparatorError("empty hourly grid")
     rng = random.Random(seed)
     result: List[List[dict]] = []
     for _ in range(draws):
@@ -252,10 +253,10 @@ def b0_draws(
 
 
 def b0_regret_distribution(draws: Sequence[Sequence[dict]], regret_of: Callable[[Sequence[dict]], float]) -> dict:
-    """Distribution complète des regrets des tirages B0 (jamais une moyenne seule).
+    """Complete regret distribution of the B0 draws (never a mean alone).
 
-    ``regret_of(actions)`` est le calcul de regret (loss.py gelé) appliqué au
-    jeu d'actions tiré ; le harnais fournit la fermeture.
+    ``regret_of(actions)`` is the regret computation (frozen loss.py) applied
+    to the drawn action set; the harness supplies the closure.
     """
     values = [regret_of(draw) for draw in draws]
     ordered = sorted(values)
@@ -275,14 +276,14 @@ def b0_regret_distribution(draws: Sequence[Sequence[dict]], regret_of: Callable[
     }
 
 
-# --- O : oracle ex post faisable ---------------------------------------------
+# --- O: feasible ex post oracle ----------------------------------------------
 
 
 def oracle_min_loss(losses: Iterable[float]) -> float:
-    """O — ``min_{b ∈ F} L(b)`` sur la famille **faisable** (W2-D §B.1).
+    """O — ``min_{b ∈ F} L(b)`` over the **feasible** family (W2-D §B.1).
 
-    Alias explicite de :func:`orvyren.evaluation.loss.min_feasible_loss`, pour
-    que le harnais nomme l'oracle O sans ambiguïté (ce n'est pas un oracle
-    omniscient sur les prix futurs).
+    Explicit alias of :func:`orvyren.evaluation.loss.min_feasible_loss`, so
+    that the harness names the oracle O unambiguously (it is not an omniscient
+    oracle over future prices).
     """
     return loss_mod.min_feasible_loss(losses)

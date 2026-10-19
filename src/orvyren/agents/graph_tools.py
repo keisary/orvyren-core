@@ -330,10 +330,10 @@ def graph_tool_specs() -> Tuple[Dict[str, Any], ...]:
     return (
         tool_spec(
             "graph_query",
-            "Interroge le graphe réel (lecture seule). query=Q1 exposition "
-            "(holder requis), Q4 état PIT, Q6 provenance (relation_id requis), "
-            "Q7 concentration (asset requis), Q8 permissions (subject requis). "
-            "Cadrage optionnel: as_of, as_of_block, max_depth, limit.",
+            "Query the real graph (read-only). query=Q1 exposure "
+            "(holder required), Q4 PIT state, Q6 provenance (relation_id required), "
+            "Q7 concentration (asset required), Q8 permissions (subject required). "
+            "Optional framing: as_of, as_of_block, max_depth, limit.",
             {"query": {"type": "string", "enum": list(GRAPH_QUERIES)},
              "holder": {"type": "string"}, "asset": {"type": "string"},
              "relation_id": {"type": "string"}, "subject": {"type": "string"},
@@ -342,14 +342,14 @@ def graph_tool_specs() -> Tuple[Dict[str, Any], ...]:
             ["query"]),
         tool_spec(
             "graph_path",
-            "Chemins de dépendance src→dst (Q2) bornés, avec signe.",
+            "Bounded src→dst dependency paths (Q2), with sign.",
             {"src": {"type": "string"}, "dst": {"type": "string"},
              "kinds": {"type": "array", "items": {"type": "string"}},
              "max_depth": {"type": "integer"}},
             ["src", "dst"]),
         tool_spec(
             "graph_snapshot",
-            "Hash déterministe + comptages du graphe (relations, nodes, "
+            "Deterministic hash + counts of the graph (relations, nodes, "
             "events, relation_provenance).",
             {"as_of": {"type": "string"}, "as_of_block": {"type": "integer"}},
             []),

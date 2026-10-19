@@ -1,67 +1,67 @@
-# G5 — Plan d'analyse (gel v1)
+# G5 — Analysis plan (freeze v1)
 
-**Statut : GELÉ v1** — 2026-10-16T00:00:00Z. Sources : B7 §b.1–b.4, §e.2–e.5, DOC2 §5.8.2.
-Code gelé : `calibration.py` sha256
-`0a90281453610c1b6258a99540d0d060132c56264aab2039921f81ce845fad13`,
-`forecasts.py` sha256 `b5857165694ae06f736018531c4d295031f30060af563a2f2f7b162047452d8d`,
-`outcomes.py` sha256 `9677a1c0970ad49487e122ca03b365fa723682d1d476fa5f2321ab52ad4168df`.
+**Status: FROZEN v1** — 2026-10-16T00:00:00Z. Sources: B7 §b.1–b.4, §e.2–e.5, DOC2 §5.8.2.
+Frozen code: `calibration.py` sha256
+`51f42db1dcfff81dd5fe81e5115c7344f52c84f5c3880d5340a9a48d2a536722`,
+`forecasts.py` sha256 `8a519087d7c29aa1289d80e59e3d0da886a403d7a581273624ab301f72d19d33`,
+`outcomes.py` sha256 `4ad4db541badefdd6efba6749ad2b71ebf657a66bc35aadd9c0c19a2ac2cfb94`.
 
-## 1. Métriques publiées (C1–C7) et formules
+## 1. Published metrics (C1–C7) and formulas
 
-| Code | Métrique | Formule |
+| Code | Metric | Formula |
 |---|---|---|
-| C1 | Score de Brier | `BS = (1/N) Σ (p_t − y_t)²` |
-| C2 | Décomposition de Murphy | `BS = REL − RES + UNC`, évaluée sur les **mêmes intervalles que l'ECE** (identité exacte, testée) |
-| C3 | ECE | `Σ_b (n_b/N)·|acc_b − conf_b|`, **10 intervalles fixes** `[b/10, (b+1)/10)`, gelés d'avance |
-| C4 | Courbe de fiabilité | par intervalle : `n_b`, `conf_b`, `acc_b`, IC de Wilson (intervalles vides affichés) |
-| C5 | Wilson | `z = 1,959964` ; borne sup. de 0/n = `z²/(n+z²)` |
-| C6 | Bootstrap par blocs | circulaire, blocs 6–12 h, 10 000 réplications, **graine fixée** (20261016), percentile 2,5–97,5 |
-| C7 | Compétence | `BSS = 1 − BS / (ȳ(1−ȳ))` ; `None` si climatologie dégénérée |
+| C1 | Brier score | `BS = (1/N) Σ (p_t − y_t)²` |
+| C2 | Murphy decomposition | `BS = REL − RES + UNC`, evaluated on the **same bins as the ECE** (exact identity, tested) |
+| C3 | ECE | `Σ_b (n_b/N)·|acc_b − conf_b|`, **10 fixed bins** `[b/10, (b+1)/10)`, frozen in advance |
+| C4 | Reliability curve | per bin: `n_b`, `conf_b`, `acc_b`, Wilson CI (empty bins displayed) |
+| C5 | Wilson | `z = 1,959964` ; upper bound of 0/n = `z²/(n+z²)` |
+| C6 | Block bootstrap | circular, 6–12 h blocks, 10 000 replications, **fixed seed** (20261016), percentile 2,5–97,5 |
+| C7 | Skill | `BSS = 1 − BS / (ȳ(1−ȳ))` ; `None` if the climatology is degenerate |
 
-Vecteur KAT (test unitaire de référence, tolérance 1e-12) : `p = [0,2×5 ; 0,8×5]`,
+KAT vector (reference unit test, tolerance 1e-12): `p = [0,2×5 ; 0,8×5]`,
 `y = [0,0,0,0,0, 1,1,0,1,1]` → BS 0,100 ; REL 0,020 ; RES 0,160 ; UNC 0,240 ; ECE 0,100 ; ȳ 0,400.
 
-## 2. Cascade « quand peut-on dire calibré » (applicée mécaniquement)
+## 2. Cascade "when may we say calibrated" (applied mechanically)
 
-| N (prévisions gelées résolues) | Ce qui est publié | Libellé |
+| N (resolved frozen forecasts) | What is published | Label |
 |---|---|---|
-| N < 5 | rien | « NON CALCULÉ — N insuffisant » (seuil D11) |
-| 5 ≤ N < 30 | BS, REL, RES, UNC, ȳ, liste ; ECE **sans** revendication | « non conclusionnel » |
-| 30 ≤ N < 100 | + IC bootstrap, courbe de fiabilité + Wilson par intervalle | « non conclusionnel » |
-| N ≥ 100 | tout + BSS avec borne basse | revendication possible **sous les 5 conditions** |
+| N < 5 | nothing | "NOT COMPUTED — insufficient N" (D11 threshold) |
+| 5 ≤ N < 30 | BS, REL, RES, UNC, ȳ, list ; ECE **without** any claim | "non-conclusive" |
+| 30 ≤ N < 100 | + bootstrap CI, reliability curve + Wilson per bin | "non-conclusive" |
+| N ≥ 100 | everything + BSS with lower bound | claim possible **under the 5 conditions** |
 
-**Les 5 conditions pour écrire « calibré »** : N ≥ 100 hors échantillon ; ECE ≤ 0,05 avec borne
-haute d'IC ≤ 0,08 ; pas de déviation systématique (test du signe, `max_b |acc_b − conf_b| ≤ 0,10`) ;
-borne basse de l'IC de BSS > 0 ; ≥ 2 familles d'épisodes disjointes + déclaration de non-réglage.
-Avec N = 5–12, l'état par défaut est « non conclusionnel » — **publié tel quel**.
+**The 5 conditions to write "calibrated"**: N ≥ 100 out of sample ; ECE ≤ 0,05 with CI
+upper bound ≤ 0,08 ; no systematic deviation (sign test, `max_b |acc_b − conf_b| ≤ 0,10`) ;
+BSS CI lower bound > 0 ; ≥ 2 disjoint episode families + declaration of non-tuning.
+With N = 5–12, the default state is "non-conclusive" — **published as is**.
 
-## 3. Statistiques de comparaison
+## 3. Comparison statistics
 
-* Wilson sur **toutes** les proportions ; phrase obligatoire pour un « 0 échec » :
+* Wilson on **all** proportions ; mandatory sentence for a "0 failure":
   « 0/6 ne signifie pas taux nul, mais taux compatible avec jusqu'à ≈ 39 % (borne supérieure de Wilson) » ;
-* McNemar **exact** sur les paires discordantes (`p = 2·Σ C(n,k)/2^n`, borné à 1 ; KAT 6-0 → 0,03125) ;
-* bootstrap par blocs (C6) sur toute statistique de série — jamais d'IC i.i.d. ;
-* placebo B0 : distribution complète + percentile de A2.
+* McNemar **exact** on discordant pairs (`p = 2·Σ C(n,k)/2^n`, bounded at 1 ; KAT 6-0 → 0,03125) ;
+* block bootstrap (C6) on every series statistic — never i.i.d. CIs ;
+* B0 placebo: full distribution + A2 percentile.
 
-## 4. Structure imposée du rapport (B7 §b.4, 8 sections)
+## 4. Imposed report structure (B7 §b.4, 8 sections)
 
-1. périmètre et hashes (jeu, épisodes, N, période, code_hash, data_hash, liste des forecast_id) ;
-2. tableau global (N, ȳ, BS + IC, REL/RES/UNC, ECE, BSS, verdict) ;
-3. courbe de fiabilité (une ligne par intervalle) ;
-4. décomposition par famille (persona, type, épisode — **N affiché par cellule**) ;
-5. annexe des prévisions (`forecast_id | p | y | (p−y)² | horizon | résolveur`) ;
-6. anomalies et corrections (`supersedes`, non résolues, quarantaines) ;
-7. limites en toutes lettres (contamination, non-échangeabilité, tailles) ;
-8. verdict en langage contrôlé (jamais « calibré » sans les 5 conditions).
+1. scope and hashes (set, episodes, N, period, code_hash, data_hash, list of forecast_id) ;
+2. global table (N, ȳ, BS + CI, REL/RES/UNC, ECE, BSS, verdict) ;
+3. reliability curve (one line per bin) ;
+4. decomposition by family (persona, type, episode — **N displayed per cell**) ;
+5. forecast appendix (`forecast_id | p | y | (p−y)² | horizon | resolver`) ;
+6. anomalies and corrections (`supersedes`, unresolved, quarantines) ;
+7. limitations spelled out (contamination, non-exchangeability, sample sizes) ;
+8. verdict in controlled language (never "calibrated" without the 5 conditions).
 
-## 5. Règles de langage gelées
+## 5. Frozen language rules
 
-Tout tableau porte son `N` et sa validité ; ne jamais fusionner DEV et EVAL ; ne jamais
-moyenner R⁻ et R⁺ ; aucun score agrégé unique ; un rapport sans hash n'est pas vérifiable ;
-« calibré » est un mot contrôlé (5 conditions), en dessous c'est « non établi ».
+Every table carries its `N` and its validity ; never merge DEV and EVAL ; never
+average R⁻ and R⁺ ; no single aggregate score ; a report without a hash is not verifiable ;
+"calibrated" is a controlled word (5 conditions), below that it is "not established".
 
-## 6. Vérifications exécutables
+## 6. Executable verifications
 
 `tests/test_evaluation_calibration.py` — sha256
-`2e1b00644b7e9a60485ad1564d5af52829b703c0ad96d50dc8b66a1262af940d` : KAT exacts,
-Wilson vs table raw_b7 (± 0,001), bootstrap déterministe (2 exécutions identiques), cascade.
+`2e1b00644b7e9a60485ad1564d5af52829b703c0ad96d50dc8b66a1262af940d` : exact KATs,
+Wilson vs raw_b7 table (± 0,001), deterministic bootstrap (2 identical runs), cascade.

@@ -140,7 +140,7 @@ class TestPorteDeGel(unittest.TestCase):
                 W.eval_run_gate(os.path.join(REPO_ROOT, "frozen"), lock_path=lock, force=False)
             mention = W.eval_run_gate(os.path.join(REPO_ROOT, "frozen"), lock_path=lock, force=True)
             self.assertEqual(mention, W.FORCED_RERUN_MENTION)
-            self.assertIn("invalide pour la revendication", mention)
+            self.assertIn("invalid for the claim", mention)
             # without lock and without forcing: first execution allowed (None)
             self.assertIsNone(W.eval_run_gate(os.path.join(REPO_ROOT, "frozen"), lock_path=os.path.join(tmp, "absent.lock")))
 

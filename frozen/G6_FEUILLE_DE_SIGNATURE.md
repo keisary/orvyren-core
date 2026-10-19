@@ -1,42 +1,42 @@
-# G6 — Feuille de signature des hypothèses économiques
+# G6 — Signature sheet for the economic assumptions
 
-**Statut global : SIGNÉ — validé le 2026-10-17.** 2026-10-16T00:00:00Z.
-Protocole : FREEZE_V2 §C7 (« G6 signé par le chef d'équipe (défaut) + sensibilité publiée »).
-Signataire : **AKUE-BITCHI Adote Jovanny** — validation électronique du chef d'équipe — autorisation explicite dans la session Hermes du 2026-10-17 ; une copie manuscrite scannée peut être jointe à la soumission.
+**Overall status: SIGNED — validated on 2026-10-17.** 2026-10-16T00:00:00Z.
+Protocol: FREEZE_V2 §C7 (« G6 signed by the team lead (default) + published sensitivity »).
+Signatory: **AKUE-BITCHI Adote Jovanny** — electronic validation by the team lead — explicit authorisation in the Hermes session of 2026-10-17 ; a scanned handwritten copy may be attached to the submission.
 
-Instructions : le signataire coche chaque paramètre validé, renseigne les valeurs
-marquées `NOT DONE`, date et signe. Les valeurs ci-dessous sont celles de la
-première EVAL ; toute modification après cette exécution exige une re-signature
-nommée et un re-étiquetage.
+Instructions: the signatory ticks each validated parameter, fills in the values
+marked `NOT DONE`, dates and signs. The values below are those of the
+first EVAL ; any modification after that run requires a named re-signature
+and re-labelling.
 
-## Paramètres d'hypothèses économiques
+## Economic assumption parameters
 
-| # | Paramètre | Valeur signée | Source de la proposition | COCHER |
+| # | Parameter | Signed value | Source of the proposal | TICK |
 |---|---|---|---|---|
-| 1 | `opex_ref` (jours de runway) | 44 932 $/jour | ENS IPS 6.46 : 16,4 M$/an ÷ 365 (W2-D §A.1.1/E.1) | ☑ validé ☐ modifié → …………… |
-| 2 | `P(obligation)` — exemple DEV USDC | 0,20 | valeur de travail de W2-D §E.2(b), explicitement non sourcée | ☑ validé ☐ modifié → …………… |
-| 3 | `P(obligation)` — par fenêtre EVAL | **0,20 par fenêtre EVAL** | aucune source publique (W2-D §Non trouvé 6) ; hypothèse de travail signée | ☑ fourni ci-dessous |
-| 4 | Scénarios desk (liste) | réalisé · non-rétablissement 48 h · guérison lente 5 j · venue unique contrainte 0,80526 | W2-D §(f) 7 | ☑ validé ☐ modifié → …………… |
-| 5 | `p_s` (probabilités des scénarios) | **0,25 / 0,25 / 0,25 / 0,25** | aucune distribution publique (W2-D §Non trouvé 4) ; prior uniforme signé | ☑ fourni ci-dessous |
-| 6 | `r_capital` (financement desk) | **0 %** (cash) | B7 Q16 — aucune source ; base cash sans financement | ☑ fourni ci-dessous |
-| 7 | Coût d'aller-retour (illustration desk) | 20 bp | W2-D §E.3 (« hypothétique, à mesurer ») | ☑ validé ☐ modifié → …………… |
+| 1 | `opex_ref` (runway days) | 44 932 $/day | ENS IPS 6.46: 16,4 M$/year ÷ 365 (W2-D §A.1.1/E.1) | ☑ validated ☐ modified → …………… |
+| 2 | `P(obligation)` — USDC DEV example | 0,20 | working value of W2-D §E.2(b), explicitly unsourced | ☑ validated ☐ modified → …………… |
+| 3 | `P(obligation)` — per EVAL window | **0,20 per EVAL window** | no public source (W2-D §Non trouvé 6) ; signed working assumption | ☑ provided below |
+| 4 | Desk scenarios (list) | realized · no re-establishment 48 h · slow healing 5 d · single constrained venue 0,80526 | W2-D §(f) 7 | ☑ validated ☐ modified → …………… |
+| 5 | `p_s` (scenario probabilities) | **0,25 / 0,25 / 0,25 / 0,25** | no public distribution (W2-D §Non trouvé 4) ; signed uniform prior | ☑ provided below |
+| 6 | `r_capital` (desk funding) | **0 %** (cash) | B7 Q16 — no source ; cash base without funding | ☑ provided below |
+| 7 | Round-trip cost (desk illustration) | 20 bp | W2-D §E.3 (« hypothetical, to be measured ») | ☑ validated ☐ modified → …………… |
 
-## Valeurs à fournir (le cas échéant)
+## Values to provide (where applicable)
 
-* `P(obligation)` par fenêtre EVAL (justification écrite par fenêtre) : **0,20 pour chaque
-  fenêtre EVAL** — hypothèse de travail non sourcée, identique à la valeur DEV ; aucune
-  fréquence publique de ventes forcées n'existe. La sensibilité `P*` est publiée avec le P&L.
-* `p_s` des scénarios desk (avec sensibilité) : **0,25 / 0,25 / 0,25 / 0,25** — prior uniforme
-  explicitement non calibré ; sensibilité publiée avec le P&L et le rapport.
-* `r_capital` (source ou hypothèse écrite) : **0 %** — desk financé sur cash, sans financement ;
-  les variantes de sensibilité 5 % et 10 % sont publiées avec le P&L.
+* `P(obligation)` per EVAL window (written justification per window): **0,20 for each
+  EVAL window** — unsourced working assumption, identical to the DEV value ; no
+  public frequency of forced sales exists. The `P*` sensitivity is published with the P&L.
+* `p_s` of the desk scenarios (with sensitivity): **0,25 / 0,25 / 0,25 / 0,25** — explicitly
+  uncalibrated uniform prior ; sensitivity published with the P&L and the report.
+* `r_capital` (source or written assumption): **0 %** — desk funded in cash, without funding ;
+  the 5 % and 10 % sensitivity variants are published with the P&L.
 
 ## Signatures
 
-| Rôle | Nom | Date (UTC) | Signature / hash du commit de signature |
+| Role | Name | Date (UTC) | Signature / hash of the signing commit |
 |---|---|---|---|
-| Chef d'équipe (défaut, FREEZE_V2 §C7) | AKUE-BITCHI Adote Jovanny | 2026-10-17 | validation électronique du chef d'équipe — autorisation explicite dans la session Hermes du 2026-10-17 ; une copie manuscrite scannée peut être jointe à la soumission |
-| Témoin (optionnel) | | | |
+| Team lead (default, FREEZE_V2 §C7) | AKUE-BITCHI Adote Jovanny | 2026-10-17 | electronic validation by the team lead — explicit authorisation in the Hermes session of 2026-10-17 ; a scanned handwritten copy may be attached to the submission |
+| Witness (optional) | | | |
 
-**Rappel d'embargo** : après la première exécution EVAL, toute modification de ces
-paramètres **invalide** l'évaluation (re-étiquetage obligatoire) — pas « affaiblit » (B7 §d.2.1).
+**Embargo reminder**: after the first EVAL run, any modification of these
+parameters **invalidates** the evaluation (re-labelling mandatory) — it does not "weaken" it (B7 §d.2.1).

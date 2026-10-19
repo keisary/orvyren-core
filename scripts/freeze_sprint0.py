@@ -57,9 +57,9 @@ RUN_ID = "freeze-sprint0-2026-10-16"
 # Signature électronique du chef d'équipe (validation explicite du 2026-10-17).
 G6_SIGNED_AT = "2026-10-17"
 G6_SIGNER = "AKUE-BITCHI Adote Jovanny"
-G6_SIGNATURE_NOTE = ("validation électronique du chef d'équipe — autorisation explicite "
-                     "dans la session Hermes du 2026-10-17 ; une copie manuscrite scannée "
-                     "peut être jointe à la soumission")
+G6_SIGNATURE_NOTE = ("electronic validation by the team lead — explicit authorisation "
+                     "in the Hermes session of 2026-10-17 ; a scanned handwritten copy "
+                     "may be attached to the submission")
 SIGNED_BY = {"role": "gel-g6", "name": G6_SIGNER}
 
 #: Chemins POSIX (stables entre plateformes — ils entrent dans le hash des records).
@@ -346,121 +346,121 @@ def doc_g1(repo_root: str) -> str:
         "R(a)             = L(a) − min_{b ∈ F} L(b) ≥ 0     [USD]\n"
         "R⁻ / R⁺          = coûts du faux positif / du faux négatif vs A0 (publiés séparément)"
     )
-    return f"""# G1 — Fonction de perte (gel v1)
+    return f"""# G1 — Loss function (freeze v1)
 
-**Statut : GELÉ v1** — {GEL_AT_UTC}. Source normative : W2-D §B.1 (formulation
-corrigée), §B.6 (six tests), B7 §e.1/e.3 (métriques persona). Code gelé :
+**Status: FROZEN v1** — {GEL_AT_UTC}. Normative source: W2-D §B.1 (corrected
+formulation), §B.6 (six tests), B7 §e.1/e.3 (persona metrics). Frozen code:
 `src/orvyren/evaluation/loss.py` — sha256 `{_hash(repo_root, os.path.join('src','orvyren','evaluation','loss.py'))}`.
 
-## 1. Formules gelées
+## 1. Frozen formulas
 
 ```
 {formulas}
 ```
 
-## 2. Conventions de valorisation (jamais mélangées)
+## 2. Valuation conventions (never mixed)
 
-| Convention | Définition | Usage gelé |
+| Convention | Definition | Frozen usage |
 |---|---|---|
-| `terminale` | la position restante vaut `P_T` (prix réalisable en T) | desk : terminale + financement |
-| `liquidation` | la position restante vaut le prix de liquidation mesuré à T (échelle de profondeur) | DAO (plus prudente, recommandation W2-D §(f) 3) |
+| `terminale` | the remaining position is worth `P_T` (price realizable at T) | desk: terminal + funding |
+| `liquidation` | the remaining position is worth the liquidation price measured at T (depth ladder) | DAO (more conservative, W2-D §(f) 3 recommendation) |
 
-Le code **refuse** (`ValuationError`) la convention `liquidation` sans échelle de
-profondeur fournie : aucune conversion non mesurée ne se fait passer pour une mesure.
+The code **refuses** (`ValuationError`) the `liquidation` convention without a
+provided depth ladder: no unmeasured conversion is passed off as a measurement.
 
-## 3. Famille d'actions faisables F et coût k
+## 3. Feasible action family F and cost k
 
-* `F` = fractions de q `{{0 ; 0,25 ; 0,5 ; 0,75 ; 1}}`, `x = 0` toujours inclus ;
-  plafond de politique `x_max` appliqué par `min(x, x_max)` (démo : 100 USDC, FREEZE_V2 §E2) ;
-* `k` = coûts explicites **non déjà inclus** dans `P_exec` (frais, gas, pontage, financement) ;
-* `P_exec(x)` = prix moyen obtenu pour la taille x, issu de l'échelle de profondeur mesurée —
-  jamais un prix d'écran. `Depth_ε` reste **à mesurer** (chantier W2-B §(f) 5) : NOT DONE.
+* `F` = fractions of q `{{0 ; 0,25 ; 0,5 ; 0,75 ; 1}}`, `x = 0` always included;
+  policy cap `x_max` applied by `min(x, x_max)` (demo: 100 USDC, FREEZE_V2 §E2) ;
+* `k` = explicit costs **not already included** in `P_exec` (fees, gas, bridging, funding) ;
+* `P_exec(x)` = average price obtained for size x, taken from the measured depth ladder —
+  never a screen price. `Depth_ε` remains **to be measured** (work item W2-B §(f) 5): NOT DONE.
 
 ## 4. Personas
 
-* **DAO** — pas de re-entrée dans l'épisode ; perte évitée conditionnelle
-  `E[perte] = P(oblig) · (perte | oblig) − (1 − P(oblig)) · coût_AR` (les deux facteurs publiés) ;
-  seconde lecture en **jours de runway**, `opex_ref = 44 932 $/j` (G6).
-* **desk** — re-entrée modélisée dans la même fenêtre : `ΔP&L = x·(P_exec − P_T) − k − financement` ;
-  agrégats Sharpe/Sortino/MaxDD (R_f = 0 par convention crypto ; `None` quand non calculable).
+* **DAO** — no re-entry during the episode; conditional avoided loss
+  `E[perte] = P(oblig) · (perte | oblig) − (1 − P(oblig)) · coût_AR` (both factors published);
+  second reading in **runway days**, `opex_ref = 44 932 $/day` (G6).
+* **desk** — re-entry modelled in the same window: `ΔP&L = x·(P_exec − P_T) − k − financement` ;
+  Sharpe/Sortino/MaxDD aggregates (R_f = 0 by crypto convention; `None` when not computable).
 
-## 5. Les six tests (W2-D §B.6) — doivent passer avant le gel
+## 5. The six tests (W2-D §B.6) — must pass before the freeze
 
-| # | Test | Attendu |
+| # | Test | Expected |
 |---|---|---|
-| T1 | Neutralité (P_exec = P_T, k = 0 ⇒ R = 0) | 0 exact (détecte le double comptage §B.2) |
-| T2 | Invariance par translation | R inchangé à 1e-12 |
-| T3 | Monotonie en coût | L et R croissants |
-| T4 | Cohérence de signe (P_exec > P_T) | R(agir) = 0, R(ne rien faire) > 0 |
-| T5 | Additivité de l'inventaire | linéaire en q et en x |
-| T6 | Référence dégénérée (P_t = 1) | tous les regrets 0 ; action inutile = k |
+| T1 | Neutrality (P_exec = P_T, k = 0 ⇒ R = 0) | 0 exact (detects the double counting of §B.2) |
+| T2 | Translation invariance | R unchanged to 1e-12 |
+| T3 | Monotonicity in cost | L and R increasing |
+| T4 | Sign consistency (P_exec > P_T) | R(agir) = 0, R(ne rien faire) > 0 |
+| T5 | Inventory additivity | linear in q and in x |
+| T6 | Degenerate reference (P_t = 1) | all regrets 0 ; useless action = k |
 
-Preuve exécutable : `tests/test_evaluation_loss.py` — sha256
-`{_hash(repo_root, os.path.join('tests','test_evaluation_loss.py'))}` ; commande
+Executable proof: `tests/test_evaluation_loss.py` — sha256
+`{_hash(repo_root, os.path.join('tests','test_evaluation_loss.py'))}` ; command
 `python -m pytest tests/test_evaluation_loss.py -q` (12 tests).
 
-## 6. Ce qui n'est PAS gelé ici (NOT DONE, écrit tel quel)
+## 6. What is NOT frozen here (NOT DONE, written as is)
 
-* `Depth_ε` (profondeur d'exécution en crise) : non mesurée → plafond x_max utilisé et **noté** sur chaque action A1 ;
-* `r_capital` (taux de financement desk) : aucune source — voir G6 ;
-* le bug historique `q(1 − P_T)` de la formule antérieure (W2-D §B.2) est reproduit en test pour non-régression (écart affiché 20 contre écart réel 10).
+* `Depth_ε` (execution depth in crisis): not measured → x_max cap used and **noted** on every A1 action;
+* `r_capital` (desk funding rate): no source — see G6;
+* the historical `q(1 − P_T)` bug of the earlier formula (W2-D §B.2) is reproduced in a test for non-regression (displayed gap 20 against real gap 10).
 
-## 7. Révision
+## 7. Revision
 
-Toute modification de ce fichier ou de `loss.py` après la première exécution
-EVAL **invalide** l'évaluation (embargo de paramètres, B7 §d.2.1) : nouvelle
-version datée + hash + entrée au journal des variantes.
+Any modification of this file or of `loss.py` after the first EVAL run
+**invalidates** the evaluation (parameter embargo, B7 §d.2.1): new dated
+version + hash + entry in the variants log.
 """
 
 
 def doc_g2(repo_root: str) -> str:
-    return f"""# G2 — Comparateurs (gel v1)
+    return f"""# G2 — Comparators (freeze v1)
 
-**Statut : GELÉ v1** — {GEL_AT_UTC}. Sources : B7 §e.1 (table + collision
-d'étiquettes tranchée), W2-D §C.1. Code gelé : `src/orvyren/evaluation/comparators.py` —
+**Status: FROZEN v1** — {GEL_AT_UTC}. Sources: B7 §e.1 (table + resolved
+label collision), W2-D §C.1. Frozen code: `src/orvyren/evaluation/comparators.py` —
 sha256 `{_hash(repo_root, os.path.join('src','orvyren','evaluation','comparators.py'))}`.
 
-## 1. Étiquettes gelées (la collision R3/W2-D est tranchée)
+## 1. Frozen labels (the R3/W2-D collision is resolved)
 
-| Code | Système | Définition opérationnelle | Coût |
+| Code | System | Operational definition | Cost |
 |---|---|---|---|
-| **A0** | NO-ACTION | ne rien faire sur toute la fenêtre | 0 |
-| **A1** | Règle de seuil | décote D ≥ 50 bp pendant 15 min → réduction bornée x* = min(x_max, Depth_ε, x_seuil) | ~0 |
-| **A2** | Agent ORVYREN | corpus → graphe → hypothèses → branche → critique → politique bornée (rejeu journal sinon archive k=3) | plafonné, mesuré |
-| **B0** | Placebo apparié | mêmes nombre et tailles d'actions que A2, horodatages tirés uniformément sur la grille horaire, M ≥ 200, graine fixée | ~0 |
-| **AX0** | Règle gelée du dépôt (ex-« A0 » de R3) | 0,99 × 2 obs consécutives → réduction de 100 USDC ; déléguée à `decision/baseline.py` | ~0 |
-| **O** | Oracle ex post faisable | `min_{{b ∈ F}} L(b)` avec la fonction de perte gelée — borne inférieure du regret, pas une vérité terrain | hors ligne |
+| **A0** | NO-ACTION | do nothing over the whole window | 0 |
+| **A1** | Threshold rule | discount D ≥ 50 bp for 15 min → bounded reduction x* = min(x_max, Depth_ε, x_seuil) | ~0 |
+| **A2** | ORVYREN agent | corpus → graph → hypotheses → branch → critique → bounded policy (journal replay otherwise archive k=3) | capped, measured |
+| **B0** | Matched placebo | same number and sizes of actions as A2, timestamps drawn uniformly over the hourly grid, M ≥ 200, fixed seed | ~0 |
+| **AX0** | Frozen repository rule (ex-R3 "A0") | 0,99 × 2 consecutive obs → 100 USDC reduction ; delegated to `decision/baseline.py` | ~0 |
+| **O** | Ex post feasible oracle | `min_{{b ∈ F}} L(b)` with the frozen loss function — lower bound of the regret, not ground truth | offline |
 
-La règle gelée du dépôt s'écrit **AX0** dans tous les rapports du concours (l'étiquette
-« A0-code » est interdite : sans cette résolution, « A0 a fait mieux que A0 » était écrit).
+The frozen repository rule is written **AX0** in every competition report (the label
+"A0-code" is forbidden: without that resolution, "A0 did better than A0" was written).
 
-## 2. Paramètres gelés
+## 2. Frozen parameters
 
-* A1 : `min_discount_bp = 50`, `persistence_minutes = 15` (soit, sur grille horaire, **deux
-  lectures consécutives**, gap ≤ 90 min ; un épisode = un seul déclenchement) ;
-* B0 : `seed = {20261016}`, `M ≥ 200`, grille horaire, tirages **reproductibles** (même graine → mêmes horodatages) ;
-* plafond d'action démo `x_max = 100 USDC` (FREEZE_V2 §E2 ; repris de
+* A1: `min_discount_bp = 50`, `persistence_minutes = 15` (i.e. on the hourly grid, **two
+  consecutive readings**, gap ≤ 90 min ; one episode = a single trigger) ;
+* B0: `seed = {20261016}`, `M ≥ 200`, hourly grid, draws **reproducible** (same seed → same timestamps) ;
+* demo action cap `x_max = 100 USDC` (FREEZE_V2 §E2 ; taken from
   `evidence/decision_usdc-2023-03.json`).
 
-## 3. Phrases pré-écrites (gelées AVANT exécution, B7 §e.1)
+## 3. Pre-written sentences (frozen BEFORE execution, B7 §e.1)
 
-> Si A2 ne bat pas B0, la valeur du système n'est pas dans le **choix du moment** — écrit tel quel.
+> If A2 does not beat B0, the value of the system is not in the **choice of timing** — written as is.
 >
-> Si A2 ne bat pas A1, la valeur du système n'est pas dans la **délibération** — écrit tel quel.
+> If A2 does not beat A1, the value of the system is not in the **deliberation** — written as is.
 
-## 4. Vérifications exécutables
+## 4. Executable verifications
 
 `tests/test_evaluation_comparators.py` — sha256
 `{_hash(repo_root, os.path.join('tests','test_evaluation_comparators.py'))}` :
-A0 = 0 action ; A1 déclenche/un-seul-signal/trou casse la contiguïté ; **AX0 reproduit
-`evidence/baseline_report.json`** (2 signaux fenêtre principale, 0 sur la fenêtre témoin) ;
-B0 reproductible et M ≥ 200 exigé ; oracle = membre de F.
+A0 = 0 action ; A1 triggers/single-signal/gap breaks contiguity ; **AX0 reproduces
+`evidence/baseline_report.json`** (2 signals main window, 0 on the control window) ;
+B0 reproducible and M ≥ 200 required ; oracle = member of F.
 
 ## 5. NOT DONE
 
-* A2 : code produit par les blocs A–E (agents, graphe, politique) — hors Sprint 0 ; les clés API
-  d'équipe restent un bloquant du mode `REPLAY-ARCHIVE` (B7 §0.11) ;
-* `Depth_ε` et `x_seuil` d'A1 : non mesurés → plafond x_max, note de substitution sur chaque action.
+* A2: code produced by blocks A–E (agents, graph, policy) — outside Sprint 0 ; team API
+  keys remain a blocker for `REPLAY-ARCHIVE` mode (B7 §0.11) ;
+* `Depth_ε` and `x_seuil` of A1: not measured → x_max cap, substitution note on every action.
 """
 
 
@@ -476,332 +476,332 @@ def doc_g3(repo_root: str, calm_values: Dict[str, float]) -> str:
     pending_rows = "\n".join(
         f"| {entry['window_id']} | {entry['status']} | {entry['reason']} |" for entry in windows_mod.PENDING_WINDOWS
     )
-    return f"""# G3 — Fenêtres DEV/EVAL, embargos (gel v1)
+    return f"""# G3 — DEV/EVAL windows, embargoes (freeze v1)
 
-**Statut : GELÉ v1 (propositions ouvertes marquées NOT DONE)** — {GEL_AT_UTC}.
-Sources : B7 §d.1/§d.2, FREEZE_V2 §7, DOC2 §5.8.4. Code gelé :
+**Status: FROZEN v1 (open proposals marked NOT DONE)** — {GEL_AT_UTC}.
+Sources: B7 §d.1/§d.2, FREEZE_V2 §7, DOC2 §5.8.4. Frozen code:
 `src/orvyren/evaluation/windows.py` — sha256 `{_hash(repo_root, os.path.join('src','orvyren','evaluation','windows.py'))}`.
 
-## 1. Registre — jeu DÉVELOPPEMENT
+## 1. Registry — DEVELOPMENT set
 
-| Fenêtre | Type | Bornes UTC | Sources |
+| Window | Type | UTC bounds | Sources |
 |---|---|---|---|
 {dev_rows}
 
-## 2. Registre — jeu ÉVALUATION
+## 2. Registry — EVALUATION set
 
-| Fenêtre | Type | Bornes UTC | Sources |
+| Window | Type | UTC bounds | Sources |
 |---|---|---|---|
 {eval_rows}
 
-## 3. Critère CALME — application mécanique (le résultat s'écrit, il ne s'ajuste pas)
+## 3. CALM criterion — mechanical application (the result is written, not adjusted)
 
-Critère gelé (B7 §d.1) : `max|P_t − 1| < 0,5 %` sur toute la fenêtre ; échec → reclassée STRESS.
+Frozen criterion (B7 §d.1): `max|P_t − 1| < 0,5 %` over the whole window ; failure → reclassified STRESS.
 
-* fenêtre témoin USDC 15–18/02/2023 : écart maximal mesuré **{calm_values['usdc_temoin_max_dev_pct']:.6f} %** ≥ 0,5 % → **reclassée STRESS** (mais 0 dépeg soutenu : la règle AX0 n'y produit aucun signal, cf. `evidence/baseline_report.json`) ;
-* fenêtre calme stETH 01–08/05/2022 : écart maximal mesuré **{calm_values['steth_calme_max_dev_pct']:.6f} %** < 0,5 % → **CALME confirmée** (mesure sur la série de décote réalisable get_dy).
+* USDC control window 15–18/02/2023: measured maximum deviation **{calm_values['usdc_temoin_max_dev_pct']:.6f} %** ≥ 0,5 % → **reclassified STRESS** (but 0 sustained depeg: rule AX0 produces no signal there, cf. `evidence/baseline_report.json`) ;
+* stETH calm window 01–08/05/2022: measured maximum deviation **{calm_values['steth_calme_max_dev_pct']:.6f} %** < 0,5 % → **CALM confirmed** (measurement on the realizable get_dy discount series).
 
-## 4. NOT DONE — fenêtres non dérivables (jamais inventées)
+## 4. NOT DONE — windows that cannot be derived (never invented)
 
-| Fenêtre | Statut | Motif |
+| Window | Status | Reason |
 |---|---|---|
 {pending_rows}
 
-## 5. Les quatre embargos (vérificateurs dans `windows.py`)
+## 5. The four embargoes (verifiers in `windows.py`)
 
-1. **Paramètres** — aucune constante de G1–G6 modifiable après la première exécution EVAL ; toute
-   modification invalide l'évaluation (nouvelle version datée + hash + journal des variantes).
-2. **Données (24 h)** — la bande `[début EVAL − 24 h, début EVAL]` est retirée du DEV
+1. **Parameters** — no constant of G1–G6 may be modified after the first EVAL run ; any
+   modification invalidates the evaluation (new dated version + hash + variants log).
+2. **Data (24 h)** — the band `[début EVAL − 24 h, début EVAL]` is removed from DEV
    (`data_embargo_violations`).
-3. **Inspection** — avant le gel, aucune inspection des fenêtres EVAL au-delà du publié ;
-   après la première exécution, le jeu est brûlé.
-4. **Calibration croisée** — les mois de calibration des seuils ne peuvent chevaucher une
-   fenêtre CALME EVAL (`cross_calibration_violations`) ; sans cette règle, la calibration
-   « voit » le jeu d'évaluation.
+3. **Inspection** — before the freeze, no inspection of the EVAL windows beyond what is published ;
+   after the first run, the set is burned.
+4. **Cross-calibration** — the calibration months of the thresholds cannot overlap an
+   EVAL CALM window (`cross_calibration_violations`) ; without this rule, calibration
+   "sees" the evaluation set.
 
-## 6. Porte de gel (vérification mécanique, B7 §d.2.5)
+## 6. Freeze gate (mechanical verification, B7 §d.2.5)
 
-* `verify_frozen_package(frozen_dir)` : `G1..G6.sha256` présents, lisibles, concordants — sinon **refus** ;
-* `eval_run_gate(frozen_dir, lock_path, force)` : refus de la 2ᵉ exécution EVAL sans `--force` ;
-  avec `--force`, mention obligatoire : « évaluation ré-exécutée (invalide pour la revendication) » ;
-* le script d'évaluation EVAL doit refuser d'écrire si une fenêtre CALME EVAL chevauche la
-  période de calibration déclarée.
+* `verify_frozen_package(frozen_dir)`: `G1..G6.sha256` present, readable, matching — otherwise **refusal** ;
+* `eval_run_gate(frozen_dir, lock_path, force)`: refusal of the 2nd EVAL run without `--force` ;
+  with `--force`, mandatory mention: "evaluation re-executed (invalid for the claim)" ;
+* the EVAL evaluation script must refuse to write if an EVAL CALM window overlaps the
+  declared calibration period.
 
-## 7. Ce qui reste ouvert (écrit, non bloquant)
+## 7. What remains open (written, non-blocking)
 
-Liste exacte des fenêtres CALME EVAL 2025–2026 (B7 Q6) et fenêtres calmes DEV restantes
-(R3 §C.8) : dépendent d'un chantier de collecte — NOT DONE assumé.
+Exact list of the 2025–2026 CALM EVAL windows (B7 Q6) and remaining DEV calm windows
+(R3 §C.8): they depend on a collection work item — assumed NOT DONE.
 """
 
 
 def doc_g4(repo_root: str) -> str:
-    return f"""# G4 — Seuils par persona (gel v1, statut VALIDÉ)
+    return f"""# G4 — Per-persona thresholds (freeze v1, status VALIDATED)
 
-**Statut : VALIDÉ — validation électronique du chef d'équipe le {G6_SIGNED_AT}.** {GEL_AT_UTC}.
-Signataire : **{G6_SIGNER}** — {G6_SIGNATURE_NOTE}. Sources : W2-D §C.4.1 (DAO), §C.4.2 (desk),
-B7 §e.3/e.4 (métriques). Les valeurs ci-dessous sont **reprises telles quelles**
-des documents sources et **validées** ; elles ne sont pas des faits mesurés.
+**Status: VALIDATED — electronic validation by the team lead on {G6_SIGNED_AT}.** {GEL_AT_UTC}.
+Signatory: **{G6_SIGNER}** — {G6_SIGNATURE_NOTE}. Sources: W2-D §C.4.1 (DAO), §C.4.2 (desk),
+B7 §e.3/e.4 (metrics). The values below are **taken as is**
+from the source documents and **validated**; they are not measured facts.
 
-## 1. Persona DAO (trésorerie)
+## 1. DAO persona (treasury)
 
-| Code | Critère | Formulation | Valeur validée |
+| Code | Criterion | Formulation | Validated value |
 |---|---|---|---|
-| SD1 | Perte évitée matérielle | `(L(A0) − L(A2)) / q` en % de l'exposition, conditionnellement à l'obligation ; second affichage en jours de runway | ≥ 5 % |
-| SD2 | Friction maîtrisée | coût cumulé de A2 sur fenêtres CALME | ≤ 10 % de la perte évitée de crise |
-| SD3 | Anticipation | antériorité vs point bas du prix réalisable ; délai de réaction | ≥ 6 h sur ≥ 1 épisode EVAL ; ≤ 60 min |
-| SD4 | Supériorité | `R̄(A2) < R̄(A1)` et `< R̄(B0)`, avec intervalles, R⁻/R⁺ séparés | strictement inférieur |
-| SD5 | Traçabilité | provenance + hash sur 100 % des actions ; 0 action hors enveloppe | 100 % / 0 |
-| SD6 | Honnêteté | « non conclusionnel » partout où la puissance manque ; perte évitée publiée `P × conditionnel` | présent/absent |
+| SD1 | Material avoided loss | `(L(A0) − L(A2)) / q` in % of the exposure, conditional on the obligation ; second display in runway days | ≥ 5 % |
+| SD2 | Controlled friction | cumulative cost of A2 over CALM windows | ≤ 10 % of the crisis avoided loss |
+| SD3 | Anticipation | lead time vs the low point of the realizable price ; reaction delay | ≥ 6 h on ≥ 1 EVAL episode ; ≤ 60 min |
+| SD4 | Superiority | `R̄(A2) < R̄(A1)` and `< R̄(B0)`, with intervals, R⁻/R⁺ separate | strictly lower |
+| SD5 | Traceability | provenance + hash on 100 % of actions ; 0 action outside the envelope | 100 % / 0 |
+| SD6 | Honesty | "non-conclusive" everywhere power is missing ; avoided loss published as `P × conditionnel` | present/absent |
 
-## 2. Persona desk (P&L)
+## 2. desk persona (P&L)
 
-| Code | Critère | Formulation | Valeur validée |
+| Code | Criterion | Formulation | Validated value |
 |---|---|---|---|
-| ST1 | P&L net cumulé | tous coûts inclus (frais, slippage mesuré, financement) + intervalle bootstrap par blocs | > 0 |
-| ST2 | Qualité d'exécution | slippage réalisé vs échelle `get_dy` ; taille ≤ Depth_100bp | ≤ 30 bp en stress |
-| ST3 | Risque borné | MaxDD de la série de décisions sur le capital alloué | ≤ 20 % par épisode |
-| ST4 | Risque ajusté | Sharpe/Sortino + DSR corrigé du nombre de variantes | borne basse d'IC > 0 sinon « non conclusionnel » |
-| ST5 | Supériorité | `ΔP&L(A2) > ΔP&L(A1)` et `> ΔP&L(B0)` avec intervalles | strictement supérieur |
-| ST6 | Asymétrie déclarée | agent décrit comme un put ; scénarios `p_s` publiés | présent/absent |
+| ST1 | Cumulative net P&L | all costs included (fees, measured slippage, funding) + block bootstrap interval | > 0 |
+| ST2 | Execution quality | realized slippage vs the `get_dy` ladder ; size ≤ Depth_100bp | ≤ 30 bp in stress |
+| ST3 | Bounded risk | MaxDD of the decision series over the allocated capital | ≤ 20 % per episode |
+| ST4 | Risk-adjusted | Sharpe/Sortino + DSR corrected for the number of variants | CI lower bound > 0 otherwise "non-conclusive" |
+| ST5 | Superiority | `ΔP&L(A2) > ΔP&L(A1)` and `> ΔP&L(B0)` with intervals | strictly greater |
+| ST6 | Declared asymmetry | agent described as a put ; `p_s` scenarios published | present/absent |
 
-## 3. Anti-optimisme commun (dispositifs obligatoires)
+## 3. Common anti-optimism (mandatory devices)
 
-B0 (M ≥ 200, distribution complète) · fenêtres CALME obligatoires dans les deux jeux ·
-`ȳ` publié partout · Wilson sur toute proportion · bootstrap par blocs (6–12 h, 10 000
-réplications, graine fixée) · DSR/journal des variantes · R⁻/R⁺ séparés + table de
-contingence · mention de contamination · « ce que nous ne revendiquons pas » ·
-**un scalaire est interdit** (vecteur de métriques + axes non mesurés déclarés).
+B0 (M ≥ 200, full distribution) · CALM windows mandatory in both sets ·
+`ȳ` published everywhere · Wilson on every proportion · block bootstrap (6–12 h, 10 000
+replications, fixed seed) · DSR/variants log · separate R⁻/R⁺ + contingency table ·
+contamination mention · "what we do not claim" ·
+**a single scalar is forbidden** (metric vector + declared unmeasured axes).
 
-## 4. Vérification exécutable à venir
+## 4. Executable verification to come
 
-Les seuils SD/ST ne sont **pas encore lus par du code** (le harnais §e.6 items 6–7 n'est pas
-construit) : ce document les gèle en tant que déclaration **validée**, la vérification
-exécutable viendra avec `harness.py`. Toute modification après la première exécution EVAL
-invalide l'évaluation (embargo de paramètres).
+The SD/ST thresholds are **not yet read by code** (harness §e.6 items 6–7 are not
+built): this document freezes them as a **validated** declaration, the executable
+verification will come with `harness.py`. Any modification after the first EVAL run
+invalidates the evaluation (parameter embargo).
 """
 
 
 def doc_g5(repo_root: str) -> str:
-    return f"""# G5 — Plan d'analyse (gel v1)
+    return f"""# G5 — Analysis plan (freeze v1)
 
-**Statut : GELÉ v1** — {GEL_AT_UTC}. Sources : B7 §b.1–b.4, §e.2–e.5, DOC2 §5.8.2.
-Code gelé : `calibration.py` sha256
+**Status: FROZEN v1** — {GEL_AT_UTC}. Sources: B7 §b.1–b.4, §e.2–e.5, DOC2 §5.8.2.
+Frozen code: `calibration.py` sha256
 `{_hash(repo_root, os.path.join('src','orvyren','evaluation','calibration.py'))}`,
 `forecasts.py` sha256 `{_hash(repo_root, os.path.join('src','orvyren','evaluation','forecasts.py'))}`,
 `outcomes.py` sha256 `{_hash(repo_root, os.path.join('src','orvyren','evaluation','outcomes.py'))}`.
 
-## 1. Métriques publiées (C1–C7) et formules
+## 1. Published metrics (C1–C7) and formulas
 
-| Code | Métrique | Formule |
+| Code | Metric | Formula |
 |---|---|---|
-| C1 | Score de Brier | `BS = (1/N) Σ (p_t − y_t)²` |
-| C2 | Décomposition de Murphy | `BS = REL − RES + UNC`, évaluée sur les **mêmes intervalles que l'ECE** (identité exacte, testée) |
-| C3 | ECE | `Σ_b (n_b/N)·|acc_b − conf_b|`, **10 intervalles fixes** `[b/10, (b+1)/10)`, gelés d'avance |
-| C4 | Courbe de fiabilité | par intervalle : `n_b`, `conf_b`, `acc_b`, IC de Wilson (intervalles vides affichés) |
-| C5 | Wilson | `z = 1,959964` ; borne sup. de 0/n = `z²/(n+z²)` |
-| C6 | Bootstrap par blocs | circulaire, blocs 6–12 h, 10 000 réplications, **graine fixée** ({20261016}), percentile 2,5–97,5 |
-| C7 | Compétence | `BSS = 1 − BS / (ȳ(1−ȳ))` ; `None` si climatologie dégénérée |
+| C1 | Brier score | `BS = (1/N) Σ (p_t − y_t)²` |
+| C2 | Murphy decomposition | `BS = REL − RES + UNC`, evaluated on the **same bins as the ECE** (exact identity, tested) |
+| C3 | ECE | `Σ_b (n_b/N)·|acc_b − conf_b|`, **10 fixed bins** `[b/10, (b+1)/10)`, frozen in advance |
+| C4 | Reliability curve | per bin: `n_b`, `conf_b`, `acc_b`, Wilson CI (empty bins displayed) |
+| C5 | Wilson | `z = 1,959964` ; upper bound of 0/n = `z²/(n+z²)` |
+| C6 | Block bootstrap | circular, 6–12 h blocks, 10 000 replications, **fixed seed** ({20261016}), percentile 2,5–97,5 |
+| C7 | Skill | `BSS = 1 − BS / (ȳ(1−ȳ))` ; `None` if the climatology is degenerate |
 
-Vecteur KAT (test unitaire de référence, tolérance 1e-12) : `p = [0,2×5 ; 0,8×5]`,
+KAT vector (reference unit test, tolerance 1e-12): `p = [0,2×5 ; 0,8×5]`,
 `y = [0,0,0,0,0, 1,1,0,1,1]` → BS 0,100 ; REL 0,020 ; RES 0,160 ; UNC 0,240 ; ECE 0,100 ; ȳ 0,400.
 
-## 2. Cascade « quand peut-on dire calibré » (applicée mécaniquement)
+## 2. Cascade "when may we say calibrated" (applied mechanically)
 
-| N (prévisions gelées résolues) | Ce qui est publié | Libellé |
+| N (resolved frozen forecasts) | What is published | Label |
 |---|---|---|
-| N < 5 | rien | « NON CALCULÉ — N insuffisant » (seuil D11) |
-| 5 ≤ N < 30 | BS, REL, RES, UNC, ȳ, liste ; ECE **sans** revendication | « non conclusionnel » |
-| 30 ≤ N < 100 | + IC bootstrap, courbe de fiabilité + Wilson par intervalle | « non conclusionnel » |
-| N ≥ 100 | tout + BSS avec borne basse | revendication possible **sous les 5 conditions** |
+| N < 5 | nothing | "NOT COMPUTED — insufficient N" (D11 threshold) |
+| 5 ≤ N < 30 | BS, REL, RES, UNC, ȳ, list ; ECE **without** any claim | "non-conclusive" |
+| 30 ≤ N < 100 | + bootstrap CI, reliability curve + Wilson per bin | "non-conclusive" |
+| N ≥ 100 | everything + BSS with lower bound | claim possible **under the 5 conditions** |
 
-**Les 5 conditions pour écrire « calibré »** : N ≥ 100 hors échantillon ; ECE ≤ 0,05 avec borne
-haute d'IC ≤ 0,08 ; pas de déviation systématique (test du signe, `max_b |acc_b − conf_b| ≤ 0,10`) ;
-borne basse de l'IC de BSS > 0 ; ≥ 2 familles d'épisodes disjointes + déclaration de non-réglage.
-Avec N = 5–12, l'état par défaut est « non conclusionnel » — **publié tel quel**.
+**The 5 conditions to write "calibrated"**: N ≥ 100 out of sample ; ECE ≤ 0,05 with CI
+upper bound ≤ 0,08 ; no systematic deviation (sign test, `max_b |acc_b − conf_b| ≤ 0,10`) ;
+BSS CI lower bound > 0 ; ≥ 2 disjoint episode families + declaration of non-tuning.
+With N = 5–12, the default state is "non-conclusive" — **published as is**.
 
-## 3. Statistiques de comparaison
+## 3. Comparison statistics
 
-* Wilson sur **toutes** les proportions ; phrase obligatoire pour un « 0 échec » :
+* Wilson on **all** proportions ; mandatory sentence for a "0 failure":
   « 0/6 ne signifie pas taux nul, mais taux compatible avec jusqu'à ≈ 39 % (borne supérieure de Wilson) » ;
-* McNemar **exact** sur les paires discordantes (`p = 2·Σ C(n,k)/2^n`, borné à 1 ; KAT 6-0 → 0,03125) ;
-* bootstrap par blocs (C6) sur toute statistique de série — jamais d'IC i.i.d. ;
-* placebo B0 : distribution complète + percentile de A2.
+* McNemar **exact** on discordant pairs (`p = 2·Σ C(n,k)/2^n`, bounded at 1 ; KAT 6-0 → 0,03125) ;
+* block bootstrap (C6) on every series statistic — never i.i.d. CIs ;
+* B0 placebo: full distribution + A2 percentile.
 
-## 4. Structure imposée du rapport (B7 §b.4, 8 sections)
+## 4. Imposed report structure (B7 §b.4, 8 sections)
 
-1. périmètre et hashes (jeu, épisodes, N, période, code_hash, data_hash, liste des forecast_id) ;
-2. tableau global (N, ȳ, BS + IC, REL/RES/UNC, ECE, BSS, verdict) ;
-3. courbe de fiabilité (une ligne par intervalle) ;
-4. décomposition par famille (persona, type, épisode — **N affiché par cellule**) ;
-5. annexe des prévisions (`forecast_id | p | y | (p−y)² | horizon | résolveur`) ;
-6. anomalies et corrections (`supersedes`, non résolues, quarantaines) ;
-7. limites en toutes lettres (contamination, non-échangeabilité, tailles) ;
-8. verdict en langage contrôlé (jamais « calibré » sans les 5 conditions).
+1. scope and hashes (set, episodes, N, period, code_hash, data_hash, list of forecast_id) ;
+2. global table (N, ȳ, BS + CI, REL/RES/UNC, ECE, BSS, verdict) ;
+3. reliability curve (one line per bin) ;
+4. decomposition by family (persona, type, episode — **N displayed per cell**) ;
+5. forecast appendix (`forecast_id | p | y | (p−y)² | horizon | resolver`) ;
+6. anomalies and corrections (`supersedes`, unresolved, quarantines) ;
+7. limitations spelled out (contamination, non-exchangeability, sample sizes) ;
+8. verdict in controlled language (never "calibrated" without the 5 conditions).
 
-## 5. Règles de langage gelées
+## 5. Frozen language rules
 
-Tout tableau porte son `N` et sa validité ; ne jamais fusionner DEV et EVAL ; ne jamais
-moyenner R⁻ et R⁺ ; aucun score agrégé unique ; un rapport sans hash n'est pas vérifiable ;
-« calibré » est un mot contrôlé (5 conditions), en dessous c'est « non établi ».
+Every table carries its `N` and its validity ; never merge DEV and EVAL ; never
+average R⁻ and R⁺ ; no single aggregate score ; a report without a hash is not verifiable ;
+"calibrated" is a controlled word (5 conditions), below that it is "not established".
 
-## 6. Vérifications exécutables
+## 6. Executable verifications
 
 `tests/test_evaluation_calibration.py` — sha256
-`{_hash(repo_root, os.path.join('tests','test_evaluation_calibration.py'))}` : KAT exacts,
-Wilson vs table raw_b7 (± 0,001), bootstrap déterministe (2 exécutions identiques), cascade.
+`{_hash(repo_root, os.path.join('tests','test_evaluation_calibration.py'))}` : exact KATs,
+Wilson vs raw_b7 table (± 0,001), deterministic bootstrap (2 identical runs), cascade.
 """
 
 
 def doc_g6(repo_root: str) -> str:
-    return f"""# G6 — Hypothèses économiques (gel v1, statut SIGNÉ)
+    return f"""# G6 — Economic assumptions (freeze v1, status SIGNED)
 
-**Statut : SIGNÉ — validation électronique du chef d'équipe le {G6_SIGNED_AT}.** {GEL_AT_UTC}.
-Signataire : **{G6_SIGNER}** — {G6_SIGNATURE_NOTE}. La feuille
-`G6_FEUILLE_DE_SIGNATURE.md` porte la validation ; les valeurs ci-dessous sont
-celles sur lesquelles la première EVAL s'exécute.
-Sources : W2-D §B.3/B.4, §E.2, §(f) 1–7 et 11–12 ; B7 §b.5, §e.3/e.4, Q1 ; FREEZE_V2 §C7.
+**Status: SIGNED — electronic validation by the team lead on {G6_SIGNED_AT}.** {GEL_AT_UTC}.
+Signatory: **{G6_SIGNER}** — {G6_SIGNATURE_NOTE}. The sheet
+`G6_FEUILLE_DE_SIGNATURE.md` carries the validation ; the values below are
+those on which the first EVAL runs.
+Sources: W2-D §B.3/B.4, §E.2, §(f) 1–7 and 11–12 ; B7 §b.5, §e.3/e.4, Q1 ; FREEZE_V2 §C7.
 
-## 1. Paramètres et valeurs signées
+## 1. Signed parameters and values
 
-| Paramètre | Valeur signée | Statut | Source / justification |
+| Parameter | Signed value | Status | Source / justification |
 |---|---|---|---|
-| `opex_ref` (jours de runway) | **44 932 $/jour** | VALIDÉ (référence externe déclarée) | ENS IPS 6.46 : 16,4 M$/an de charges 2025 ; conversion calculée 16 400 000 ÷ 365 (W2-D §A.1.1, §E.1 ; B7 Q13) |
-| `P(obligation)` — fenêtre USDC DEV (exemple de calcul) | **0,20** | VALIDÉ (hypothèse non sourcée) | valeur de travail de W2-D §E.2(b) — « hypothèse à figer, non sourcée » ; aucune fréquence publique de ventes forcées n'existe |
-| `P(obligation)` — fenêtres EVAL | **0,20 par fenêtre EVAL** | SIGNÉ — hypothèse de travail non sourcée | aucune source publique (W2-D §Non trouvé 6) ; valeur DEV conservée pour toutes les fenêtres EVAL, avec justification écrite et sensibilité `P*` publiée |
-| Scénarios desk `p_s` | **4 scénarios** : (i) réalisé, (ii) non-rétablissement à 48 h, (iii) guérison lente (5 j), (iv) venue unique contrainte (0,80526 — contrefactuel) ; **p_s = 0,25 / 0,25 / 0,25 / 0,25** | SIGNÉ — liste et prior uniforme non calibrés | W2-D §(f) 7 ; aucune distribution publique de scénarios de dépeg (W2-D §Non trouvé 4) : les `p_s` sont des hypothèses signées, publiées avec le P&L et leur sensibilité |
-| `r_capital` (taux de financement desk) | **0 %** (desk financé sur cash) | SIGNÉ — hypothèse de travail | aucune source trouvée (B7 Q16) ; base « cash sans financement », sensibilités 5 % et 10 % publiées avec le P&L |
-| Coût d'aller-retour desk (illustratif) | 20 bp (`k = 4 000 $` sur 2 M$) | VALIDÉ (illustration) | W2-D §E.3 — « hypothétique, à mesurer réellement » |
+| `opex_ref` (runway days) | **44 932 $/day** | VALIDATED (declared external reference) | ENS IPS 6.46: 16,4 M$/year of 2025 expenses ; computed conversion 16 400 000 ÷ 365 (W2-D §A.1.1, §E.1 ; B7 Q13) |
+| `P(obligation)` — USDC DEV window (calculation example) | **0,20** | VALIDATED (unsourced assumption) | working value of W2-D §E.2(b) — « an assumption to be frozen, unsourced » ; no public frequency of forced sales exists |
+| `P(obligation)` — EVAL windows | **0,20 per EVAL window** | SIGNED — unsourced working assumption | no public source (W2-D §Non trouvé 6) ; DEV value kept for all EVAL windows, with written justification and published `P*` sensitivity |
+| desk scenarios `p_s` | **4 scenarios**: (i) realized, (ii) no re-establishment at 48 h, (iii) slow healing (5 d), (iv) single constrained venue (0,80526 — counterfactual) ; **p_s = 0,25 / 0,25 / 0,25 / 0,25** | SIGNED — list and uniform prior not calibrated | W2-D §(f) 7 ; no public distribution of depeg scenarios (W2-D §Non trouvé 4): the `p_s` are signed assumptions, published with the P&L and their sensitivity |
+| `r_capital` (desk funding rate) | **0 %** (desk funded in cash) | SIGNED — working assumption | no source found (B7 Q16) ; "cash without funding" base, 5 % and 10 % sensitivities published with the P&L |
+| desk round-trip cost (illustrative) | 20 bp (`k = 4 000 $` on 2 M$) | VALIDATED (illustration) | W2-D §E.3 — « hypothetical, to be measured for real » |
 
-## 2. Règles attachées (gelées)
+## 2. Attached rules (frozen)
 
-* la perte évitée n'est **jamais** publiée inconditionnellement :
-  `E[perte évitée] = P(oblig) · (perte | oblig) − (1 − P(oblig)) · coût_AR`, les deux facteurs visibles ;
-* toute modification de `P(obligation)`, des `p_s` ou de `r_capital` exige une **re-signature nommée**
-  + justification + sensibilité publiée (B7 §f.2) ;
-* une prévision `p` ne peut **jamais** être produite par un LLM (interdit par construction, B7 §a.5.5).
+* avoided loss is **never** published unconditionally:
+  `E[perte évitée] = P(oblig) · (perte | oblig) − (1 − P(oblig)) · coût_AR`, both factors visible ;
+* any modification of `P(obligation)`, of the `p_s` or of `r_capital` requires a **named re-signature**
+  + justification + published sensitivity (B7 §f.2) ;
+* a forecast `p` can **never** be produced by an LLM (forbidden by construction, B7 §a.5.5).
 
-## 3. Sensibilité exigée
+## 3. Required sensitivity
 
-Pour chaque fenêtre où `P(obligation)` entre dans un verdict, publier la sensibilité du
-signe de `E[perte évitée]` à `P(obligation)` : la valeur de bascule est calculable
-exactement (`P* = coût_AR / (perte|oblig + coût_AR)`) — elle doit figurer au dossier.
+For every window where `P(obligation)` enters a verdict, publish the sensitivity of the
+sign of `E[perte évitée]` to `P(obligation)`: the switch value is exactly computable
+(`P* = coût_AR / (perte|oblig + coût_AR)`) — it must appear in the dossier.
 
 ## 4. Signature
 
-Validé par **{G6_SIGNER}** le **{G6_SIGNED_AT}** — {G6_SIGNATURE_NOTE}.
-Une copie manuscrite scannée peut être jointe à la soumission ; la validation
-électronique de référence est ce document et `G6_FEUILLE_DE_SIGNATURE.md`.
+Validated by **{G6_SIGNER}** on **{G6_SIGNED_AT}** — {G6_SIGNATURE_NOTE}.
+A scanned handwritten copy may be attached to the submission ; the reference
+electronic validation is this document and `G6_FEUILLE_DE_SIGNATURE.md`.
 """
 
 
 def doc_g6_signature(repo_root: str) -> str:
-    return f"""# G6 — Feuille de signature des hypothèses économiques
+    return f"""# G6 — Signature sheet for the economic assumptions
 
-**Statut global : SIGNÉ — validé le {G6_SIGNED_AT}.** {GEL_AT_UTC}.
-Protocole : FREEZE_V2 §C7 (« G6 signé par le chef d'équipe (défaut) + sensibilité publiée »).
-Signataire : **{G6_SIGNER}** — {G6_SIGNATURE_NOTE}.
+**Overall status: SIGNED — validated on {G6_SIGNED_AT}.** {GEL_AT_UTC}.
+Protocol: FREEZE_V2 §C7 (« G6 signed by the team lead (default) + published sensitivity »).
+Signatory: **{G6_SIGNER}** — {G6_SIGNATURE_NOTE}.
 
-Instructions : le signataire coche chaque paramètre validé, renseigne les valeurs
-marquées `NOT DONE`, date et signe. Les valeurs ci-dessous sont celles de la
-première EVAL ; toute modification après cette exécution exige une re-signature
-nommée et un re-étiquetage.
+Instructions: the signatory ticks each validated parameter, fills in the values
+marked `NOT DONE`, dates and signs. The values below are those of the
+first EVAL ; any modification after that run requires a named re-signature
+and re-labelling.
 
-## Paramètres d'hypothèses économiques
+## Economic assumption parameters
 
-| # | Paramètre | Valeur signée | Source de la proposition | COCHER |
+| # | Parameter | Signed value | Source of the proposal | TICK |
 |---|---|---|---|---|
-| 1 | `opex_ref` (jours de runway) | 44 932 $/jour | ENS IPS 6.46 : 16,4 M$/an ÷ 365 (W2-D §A.1.1/E.1) | ☑ validé ☐ modifié → …………… |
-| 2 | `P(obligation)` — exemple DEV USDC | 0,20 | valeur de travail de W2-D §E.2(b), explicitement non sourcée | ☑ validé ☐ modifié → …………… |
-| 3 | `P(obligation)` — par fenêtre EVAL | **0,20 par fenêtre EVAL** | aucune source publique (W2-D §Non trouvé 6) ; hypothèse de travail signée | ☑ fourni ci-dessous |
-| 4 | Scénarios desk (liste) | réalisé · non-rétablissement 48 h · guérison lente 5 j · venue unique contrainte 0,80526 | W2-D §(f) 7 | ☑ validé ☐ modifié → …………… |
-| 5 | `p_s` (probabilités des scénarios) | **0,25 / 0,25 / 0,25 / 0,25** | aucune distribution publique (W2-D §Non trouvé 4) ; prior uniforme signé | ☑ fourni ci-dessous |
-| 6 | `r_capital` (financement desk) | **0 %** (cash) | B7 Q16 — aucune source ; base cash sans financement | ☑ fourni ci-dessous |
-| 7 | Coût d'aller-retour (illustration desk) | 20 bp | W2-D §E.3 (« hypothétique, à mesurer ») | ☑ validé ☐ modifié → …………… |
+| 1 | `opex_ref` (runway days) | 44 932 $/day | ENS IPS 6.46: 16,4 M$/year ÷ 365 (W2-D §A.1.1/E.1) | ☑ validated ☐ modified → …………… |
+| 2 | `P(obligation)` — USDC DEV example | 0,20 | working value of W2-D §E.2(b), explicitly unsourced | ☑ validated ☐ modified → …………… |
+| 3 | `P(obligation)` — per EVAL window | **0,20 per EVAL window** | no public source (W2-D §Non trouvé 6) ; signed working assumption | ☑ provided below |
+| 4 | Desk scenarios (list) | realized · no re-establishment 48 h · slow healing 5 d · single constrained venue 0,80526 | W2-D §(f) 7 | ☑ validated ☐ modified → …………… |
+| 5 | `p_s` (scenario probabilities) | **0,25 / 0,25 / 0,25 / 0,25** | no public distribution (W2-D §Non trouvé 4) ; signed uniform prior | ☑ provided below |
+| 6 | `r_capital` (desk funding) | **0 %** (cash) | B7 Q16 — no source ; cash base without funding | ☑ provided below |
+| 7 | Round-trip cost (desk illustration) | 20 bp | W2-D §E.3 (« hypothetical, to be measured ») | ☑ validated ☐ modified → …………… |
 
-## Valeurs à fournir (le cas échéant)
+## Values to provide (where applicable)
 
-* `P(obligation)` par fenêtre EVAL (justification écrite par fenêtre) : **0,20 pour chaque
-  fenêtre EVAL** — hypothèse de travail non sourcée, identique à la valeur DEV ; aucune
-  fréquence publique de ventes forcées n'existe. La sensibilité `P*` est publiée avec le P&L.
-* `p_s` des scénarios desk (avec sensibilité) : **0,25 / 0,25 / 0,25 / 0,25** — prior uniforme
-  explicitement non calibré ; sensibilité publiée avec le P&L et le rapport.
-* `r_capital` (source ou hypothèse écrite) : **0 %** — desk financé sur cash, sans financement ;
-  les variantes de sensibilité 5 % et 10 % sont publiées avec le P&L.
+* `P(obligation)` per EVAL window (written justification per window): **0,20 for each
+  EVAL window** — unsourced working assumption, identical to the DEV value ; no
+  public frequency of forced sales exists. The `P*` sensitivity is published with the P&L.
+* `p_s` of the desk scenarios (with sensitivity): **0,25 / 0,25 / 0,25 / 0,25** — explicitly
+  uncalibrated uniform prior ; sensitivity published with the P&L and the report.
+* `r_capital` (source or written assumption): **0 %** — desk funded in cash, without funding ;
+  the 5 % and 10 % sensitivity variants are published with the P&L.
 
 ## Signatures
 
-| Rôle | Nom | Date (UTC) | Signature / hash du commit de signature |
+| Role | Name | Date (UTC) | Signature / hash of the signing commit |
 |---|---|---|---|
-| Chef d'équipe (défaut, FREEZE_V2 §C7) | {G6_SIGNER} | {G6_SIGNED_AT} | {G6_SIGNATURE_NOTE} |
-| Témoin (optionnel) | | | |
+| Team lead (default, FREEZE_V2 §C7) | {G6_SIGNER} | {G6_SIGNED_AT} | {G6_SIGNATURE_NOTE} |
+| Witness (optional) | | | |
 
-**Rappel d'embargo** : après la première exécution EVAL, toute modification de ces
-paramètres **invalide** l'évaluation (re-étiquetage obligatoire) — pas « affaiblit » (B7 §d.2.1).
+**Embargo reminder**: after the first EVAL run, any modification of these
+parameters **invalidates** the evaluation (re-labelling mandatory) — it does not "weaken" it (B7 §d.2.1).
 """
 
 
 def doc_readme(frozen_hashes: Dict[str, str]) -> str:
     rows = "\n".join(f"| `{name}.sha256` | `{digest}` |" for name, digest in sorted(frozen_hashes.items()))
-    return f"""# `frozen/` — paquet de gel « Sprint 0 » (G1–G6 + prévisions DEV)
+    return f"""# `frozen/` — "Sprint 0" freeze package (G1–G6 + DEV forecasts)
 
-**Date de gel : {GEL_AT_UTC}** · Généré par `scripts/freeze_sprint0.py` · Vérifié par
+**Freeze date: {GEL_AT_UTC}** · Generated by `scripts/freeze_sprint0.py` · Verified by
 `scripts/verify_frozen.py`.
 
-## Contenu
+## Contents
 
-| Fichier | Rôle |
+| File | Role |
 |---|---|
-| `G1_fonction_de_perte.md` | G1 — formules de perte, conventions, six tests |
-| `G2_comparateurs.md` | G2 — A0/A1/A2/B0/AX0/O, paramètres, phrases gelées |
-| `G3_fenetres.md` | G3 — registre DEV/EVAL, embargos, porte de gel |
-| `G4_seuils.md` | G4 — seuils persona (VALIDÉ) |
-| `G5_plan_analyse.md` | G5 — métriques, cascade, rapport |
-| `G6_hypotheses_economiques.md` | G6 — hypothèses économiques (SIGNÉ) |
-| `G6_FEUILLE_DE_SIGNATURE.md` | Feuille de signature du chef d'équipe |
-| `Gx.sha256` | Manifestes sha256sum des documents ci-dessus |
-| `forecasts_dev.jsonl` | Prévisions DEV gelées, chaînées par `prev_hash` |
-| `outcomes_dev.jsonl` | Résolutions déterministes, chaînées |
-| `FORECASTS_DEV.md` | Lecture FR des prévisions (provenance, ȳ, Wilson) |
-| `README.md` | Ce fichier (non auto-référencé : voir note) |
+| `G1_fonction_de_perte.md` | G1 — loss formulas, conventions, six tests |
+| `G2_comparateurs.md` | G2 — A0/A1/A2/B0/AX0/O, parameters, frozen sentences |
+| `G3_fenetres.md` | G3 — DEV/EVAL registry, embargoes, freeze gate |
+| `G4_seuils.md` | G4 — persona thresholds (VALIDATED) |
+| `G5_plan_analyse.md` | G5 — metrics, cascade, report |
+| `G6_hypotheses_economiques.md` | G6 — economic assumptions (SIGNED) |
+| `G6_FEUILLE_DE_SIGNATURE.md` | Team lead signature sheet |
+| `Gx.sha256` | sha256sum manifests of the documents above |
+| `forecasts_dev.jsonl` | Frozen DEV forecasts, chained by `prev_hash` |
+| `outcomes_dev.jsonl` | Deterministic resolutions, chained |
+| `FORECASTS_DEV.md` | Detailed reading of the forecasts (provenance, ȳ, Wilson) |
+| `README.md` | This file (not self-referenced: see note) |
 
-## Vérifier (2 minutes, hors-ligne)
+## Verify (2 minutes, offline)
 
 ```bash
-# 1. Empreintes des manifestes de gel
-python scripts/verify_frozen.py          # tout : sha256 + chaînes + recalcul complet
-cd frozen && sha256sum -c G1.sha256      # (idem G2..G6 ; GNU coreutils)
-# 2. Recalcul intégral du paquet dans un répertoire temporaire et comparaison octet à octet
+# 1. Fingerprints of the freeze manifests
+python scripts/verify_frozen.py          # everything: sha256 + chains + full recalculation
+cd frozen && sha256sum -c G1.sha256      # (same for G2..G6 ; GNU coreutils)
+# 2. Full recalculation of the package in a temporary directory and byte-for-byte comparison
 python scripts/freeze_sprint0.py --out /tmp/frozen_recalc
 ```
 
-## Ce qui est gelé, ce qui ne l'est pas
+## What is frozen, what is not
 
-* **GELÉ** : les six documents, leurs empreintes, les 9 prévisions DEV (hash chaîné) et leurs
-  résolutions déterministes ;
-* **VALIDÉ / SIGNÉ le {G6_SIGNED_AT}** : G4 (seuils persona, validés) et G6 (hypothèses
-  économiques, signées par **{G6_SIGNER}**) — l'EVAL peut être revendiquée à partir de ce paquet ;
-* **NOT DONE (jamais inventé)** : fenêtres CALME EVAL 2025–2026 (B7 Q6) et `Depth_ε` —
-  voir `G3_fenetres.md` §4 ; les hypothèses G6 précédemment manquantes sont désormais
-  signées (P(obligation) EVAL = 0,20 ; `p_s` uniformes ; `r_capital` = 0 %).
+* **FROZEN**: the six documents, their fingerprints, the 9 DEV forecasts (chained hash) and their
+  deterministic resolutions ;
+* **VALIDATED / SIGNED on {G6_SIGNED_AT}**: G4 (persona thresholds, validated) and G6 (economic
+  assumptions, signed by **{G6_SIGNER}**) — the EVAL can be claimed from this package ;
+* **NOT DONE (never invented)**: 2025–2026 CALM EVAL windows (B7 Q6) and `Depth_ε` —
+  see `G3_fenetres.md` §4 ; the previously missing G6 assumptions are now
+  signed (P(obligation) EVAL = 0,20 ; uniform `p_s` ; `r_capital` = 0 %).
 
-## Empreintes des manifestes (recopiables)
+## Manifest fingerprints (copyable)
 
-| Manifeste | sha256 |
+| Manifest | sha256 |
 |---|---|
 {rows}
 
-*Note : `README.md` et `FORECASTS_DEV.md` ne figurent pas dans les manifestes Gx (ils ne sont pas
-des documents gelés au sens du protocole) ; leurs empreintes sont vérifiées par `verify_frozen.py`
-lors du recalcul octet à octet.*
+*Note: `README.md` and `FORECASTS_DEV.md` do not appear in the Gx manifests (they are not
+frozen documents in the sense of the protocol) ; their fingerprints are verified by `verify_frozen.py`
+during the byte-for-byte recalculation.*
 
-## Attention — quand régénérer
+## Warning — when to regenerate
 
-Les documents G1, G2, G3, G5 portent les **empreintes du code** (`loss.py`, `comparators.py`,
-`windows.py`, `calibration.py`, `forecasts.py`, `outcomes.py`) : toute modification de ces
-fichiers **oblige à régénérer le paquet** (`python scripts/freeze_sprint0.py`), sinon
-`verify_frozen.py` signale l'écart — c'est voulu (un gel qui ne correspond plus au code
-n'est plus un gel). Après la première exécution EVAL, modifier quoi que ce soit dans G1–G6
-**invalide** l'évaluation (re-étiquetage obligatoire).
+The G1, G2, G3, G5 documents carry the **code fingerprints** (`loss.py`, `comparators.py`,
+`windows.py`, `calibration.py`, `forecasts.py`, `outcomes.py`): any modification of these
+files **requires regenerating the package** (`python scripts/freeze_sprint0.py`), otherwise
+`verify_frozen.py` reports the discrepancy — this is intended (a freeze that no longer matches
+the code is no longer a freeze). After the first EVAL run, modifying anything in G1–G6
+**invalidates** the evaluation (re-labelling mandatory).
 """
 
 
@@ -1063,64 +1063,64 @@ def build_all(target_dir: str, repo_root: Optional[str] = None) -> Dict:
     depeg_n = len(depeg_subset)
 
     lines = [
-        "# Prévisions DEV gelées — lecture détaillée (FR)",
+        "# Frozen DEV forecasts — detailed reading",
         "",
-        f"**{n} prévisions gelées le {GEL_AT_UTC}**, chaînées par `prev_hash` dans "
-        "`frozen/forecasts_dev.jsonl`, résolues par le résolveur déterministe "
-        "(`frozen/outcomes_dev.jsonl`). Jeu **DEV** exclusivement : ces prévisions "
-        "démontrent la **méthode** (falsifiabilité + résolution + scores), elles ne "
-        "revendiquent **aucune** performance prédictive — les épisodes 2022–2023 sont "
-        "dans les données d'entraînement des modèles 2026 (B7 §d.1, DECLARÉ).",
+        f"**{n} forecasts frozen on {GEL_AT_UTC}**, chained by `prev_hash` in "
+        "`frozen/forecasts_dev.jsonl`, resolved by the deterministic resolver "
+        "(`frozen/outcomes_dev.jsonl`). **DEV** set exclusively: these forecasts "
+        "demonstrate the **method** (falsifiability + resolution + scores), they claim "
+        "**no** predictive performance — the 2022–2023 episodes are "
+        "inside the training data of the 2026 models (B7 §d.1, DECLARED).",
         "",
-        f"## Synthèse (N = {n}, libellé de la cascade : « {cal.verdict_for_n(n)} »)",
+        f"## Summary (N = {n}, cascade label: « {cal.verdict_for_n(n)} »)",
         "",
-        f"* `ȳ` (climatologie DEV) = **{ybar:.6f}** ({k_ones}/{n} prévisions résolues à 1) ;",
-        f"* proportion de dépeg soutenu (sous-ensemble `depeg`, {depeg_n} prévisions) : "
+        f"* `ȳ` (DEV climatology) = **{ybar:.6f}** ({k_ones}/{n} forecasts resolved to 1) ;",
+        f"* sustained-depeg proportion (`depeg` subset, {depeg_n} forecasts): "
         f"{depeg_k}/{depeg_n} ;",
-        f"* proportion sur l'ensemble : {k_ones}/{n}, IC de Wilson 95 % = "
+        f"* proportion over the whole set: {k_ones}/{n}, Wilson 95 % CI = "
         f"[{wilson_all[0]:.4f} ; {wilson_all[1]:.4f}] ;",
-        f"* sous-ensemble `absence_attendue` ({quiet_n} prévisions : fenêtres témoin + pré/post-crise) : "
-        f"{quiet_k}/{quiet_n} dépeg observé — borne supérieure de Wilson = {quiet_upper:.4f} ;",
-        f"* phrase obligatoire (B7 §b.2) : « {cal.PHRASE_ZERO_SUCCESS} » ; transposée ici : "
-        f"{quiet_k}/{quiet_n} ne signifie pas taux nul — taux compatible avec jusqu'à ≈ {quiet_upper*100:.1f} %.",
+        f"* `absence_attendue` subset ({quiet_n} forecasts: control windows + pre/post-crisis): "
+        f"{quiet_k}/{quiet_n} observed depeg — Wilson upper bound = {quiet_upper:.4f} ;",
+        f"* mandatory sentence (B7 §b.2): « {cal.PHRASE_ZERO_SUCCESS} » ; transposed here: "
+        f"{quiet_k}/{quiet_n} does not mean a zero rate — a rate compatible with up to ≈ {quiet_upper*100:.1f} %.",
         "",
-        f"`BS/REL/RES/UNC/ECE` : **non publiés dans ce fichier** — le rapport de calibration officiel "
-        "(`evidence/calibration_report_skeleton.md`) reste le squelette N = 0, et la cascade impose "
-        f"« {cal.verdict_for_n(n)} » tant que N < 30 (sera calculable dès que le harnais publiera ses scores).",
+        f"`BS/REL/RES/UNC/ECE`: **not published in this file** — the official calibration report "
+        "(`evidence/calibration_report_skeleton.md`) remains the N = 0 skeleton, and the cascade imposes "
+        f"« {cal.verdict_for_n(n)} » as long as N < 30 (computable as soon as the harness publishes its scores).",
         "",
-        "**Constat d'honnêteté sur les `p`** : le prior employé est un comptage de climatologie LOO. "
-        "Mécaniquement, exclure la fenêtre cible retire des fenêtres de crise du comptage des prévisions "
-        "de crise : `p` peut donc être **plus bas en crise qu'en calme** (ex. h-crise 0,2437 contre "
-        "h-calme-1 0,2995). Ce n'est pas une erreur de calcul, c'est la limite du prior — un estimateur "
-        "conditionnel à l'état courant (et non une climatologie globale) est un chantier identifié, hors v1.",
+        "**Honesty observation on the `p` values**: the prior used is an LOO climatology count. "
+        "Mechanically, excluding the target window removes crisis windows from the count of crisis "
+        "forecasts: `p` can therefore be **lower in crisis than in calm** (e.g. h-crise 0,2437 against "
+        "h-calme-1 0,2995). This is not a computation error, it is the limit of the prior — an estimator "
+        "conditioned on the current state (rather than a global climatology) is an identified work item, outside v1.",
         "",
-        "## Détail des prévisions",
+        "## Forecast details",
         "",
     ]
     for record, outcome, spec in zip(written, resolved, specs):
         lines += [
             f"### `{record['forecast_id']}` — {spec['cas']}",
             "",
-            f"* **Énoncé** : {record['statement']}",
-            f"* **Jeu** : {record['set']} · **persona** : {record['persona']} · **horizon** : "
-            f"{record['horizon']['kind']} ({record['horizon']['hours']} h) · gelée : {record['horizon']['t_frozen_utc']}",
-            f"* **p = {record['p']:.6f}** — origine : {record['p_origin']}",
-            f"* **Règle de résolution** : `{record['resolution_rule_id']}` · `resolve_not_before` = "
+            f"* **Statement**: {record['statement']}",
+            f"* **Set**: {record['set']} · **persona**: {record['persona']} · **horizon**: "
+            f"{record['horizon']['kind']} ({record['horizon']['hours']} h) · frozen: {record['horizon']['t_frozen_utc']}",
+            f"* **p = {record['p']:.6f}** — origin: {record['p_origin']}",
+            f"* **Resolution rule**: `{record['resolution_rule_id']}` · `resolve_not_before` = "
             f"{record['horizon']['resolve_not_before_utc']}",
-            f"* **Résolution (déterministe)** : y = **{outcome['y']}** — "
-            f"observé : {json.dumps(outcome['observed'], ensure_ascii=False)}",
-            f"* **Provenance/hash** : sha256 `{record['sha256'][:32]}…` · prev_hash "
+            f"* **Resolution (deterministic)**: y = **{outcome['y']}** — "
+            f"observed: {json.dumps(outcome['observed'], ensure_ascii=False)}",
+            f"* **Provenance/hash**: sha256 `{record['sha256'][:32]}…` · prev_hash "
             f"`{record['prev_hash'][:16]}…` · outcome `{outcome['outcome_id']}`",
             "",
         ]
     lines += [
-        "## Ce qui n'est PAS revendiqué",
+        "## What is NOT claimed",
         "",
-        "* aucune supériorité de l'agent A2 (le harnais A0/A1/B0 n'est pas construit) ;",
-        "* aucune calibration (« non conclusionnel » à N < 30, exigence des 5 conditions à N ≥ 100) ;",
-        "* l'origine de chaque `p` est publiée avec ses effectifs (fonction `base_rate_loo`) : "
-        "la fenêtre cible est exclue du comptage, mais le comptage reste un prior de climatologie "
-        "— sur des fenêtres de crise, un prior de climatologie sous-estime mécaniquement le risque (constat, pas excuse).",
+        "* no superiority of agent A2 (the A0/A1/B0 harness is not built) ;",
+        "* no calibration ('non-conclusive' at N < 30, 5-condition requirement at N ≥ 100) ;",
+        "* the origin of each `p` is published with its counts (function `base_rate_loo`): "
+        "the target window is excluded from the count, but the count remains a climatology prior "
+        "— on crisis windows, a climatology prior mechanically underestimates risk (observation, not excuse).",
         "",
     ]
     _write_text(os.path.join(target_dir, "FORECASTS_DEV.md"), "\n".join(lines))

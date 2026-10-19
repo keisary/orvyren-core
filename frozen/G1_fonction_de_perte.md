@@ -1,10 +1,10 @@
-# G1 — Fonction de perte (gel v1)
+# G1 — Loss function (freeze v1)
 
-**Statut : GELÉ v1** — 2026-10-16T00:00:00Z. Source normative : W2-D §B.1 (formulation
-corrigée), §B.6 (six tests), B7 §e.1/e.3 (métriques persona). Code gelé :
-`src/orvyren/evaluation/loss.py` — sha256 `2742dbc10c3ed0b67b4625edcf75625e12a5917c0bc4e68d7e37abab5f5247a8`.
+**Status: FROZEN v1** — 2026-10-16T00:00:00Z. Normative source: W2-D §B.1 (corrected
+formulation), §B.6 (six tests), B7 §e.1/e.3 (persona metrics). Frozen code:
+`src/orvyren/evaluation/loss.py` — sha256 `8c93911fa4c56690e94f1dd8838ae48d3aa098a0c9a128b54228c7d55fce1db1`.
 
-## 1. Formules gelées
+## 1. Frozen formulas
 
 ```
 W_T(conserver)   = C + q · P_T
@@ -14,55 +14,55 @@ R(a)             = L(a) − min_{b ∈ F} L(b) ≥ 0     [USD]
 R⁻ / R⁺          = coûts du faux positif / du faux négatif vs A0 (publiés séparément)
 ```
 
-## 2. Conventions de valorisation (jamais mélangées)
+## 2. Valuation conventions (never mixed)
 
-| Convention | Définition | Usage gelé |
+| Convention | Definition | Frozen usage |
 |---|---|---|
-| `terminale` | la position restante vaut `P_T` (prix réalisable en T) | desk : terminale + financement |
-| `liquidation` | la position restante vaut le prix de liquidation mesuré à T (échelle de profondeur) | DAO (plus prudente, recommandation W2-D §(f) 3) |
+| `terminale` | the remaining position is worth `P_T` (price realizable at T) | desk: terminal + funding |
+| `liquidation` | the remaining position is worth the liquidation price measured at T (depth ladder) | DAO (more conservative, W2-D §(f) 3 recommendation) |
 
-Le code **refuse** (`ValuationError`) la convention `liquidation` sans échelle de
-profondeur fournie : aucune conversion non mesurée ne se fait passer pour une mesure.
+The code **refuses** (`ValuationError`) the `liquidation` convention without a
+provided depth ladder: no unmeasured conversion is passed off as a measurement.
 
-## 3. Famille d'actions faisables F et coût k
+## 3. Feasible action family F and cost k
 
-* `F` = fractions de q `{0 ; 0,25 ; 0,5 ; 0,75 ; 1}`, `x = 0` toujours inclus ;
-  plafond de politique `x_max` appliqué par `min(x, x_max)` (démo : 100 USDC, FREEZE_V2 §E2) ;
-* `k` = coûts explicites **non déjà inclus** dans `P_exec` (frais, gas, pontage, financement) ;
-* `P_exec(x)` = prix moyen obtenu pour la taille x, issu de l'échelle de profondeur mesurée —
-  jamais un prix d'écran. `Depth_ε` reste **à mesurer** (chantier W2-B §(f) 5) : NOT DONE.
+* `F` = fractions of q `{0 ; 0,25 ; 0,5 ; 0,75 ; 1}`, `x = 0` always included;
+  policy cap `x_max` applied by `min(x, x_max)` (demo: 100 USDC, FREEZE_V2 §E2) ;
+* `k` = explicit costs **not already included** in `P_exec` (fees, gas, bridging, funding) ;
+* `P_exec(x)` = average price obtained for size x, taken from the measured depth ladder —
+  never a screen price. `Depth_ε` remains **to be measured** (work item W2-B §(f) 5): NOT DONE.
 
 ## 4. Personas
 
-* **DAO** — pas de re-entrée dans l'épisode ; perte évitée conditionnelle
-  `E[perte] = P(oblig) · (perte | oblig) − (1 − P(oblig)) · coût_AR` (les deux facteurs publiés) ;
-  seconde lecture en **jours de runway**, `opex_ref = 44 932 $/j` (G6).
-* **desk** — re-entrée modélisée dans la même fenêtre : `ΔP&L = x·(P_exec − P_T) − k − financement` ;
-  agrégats Sharpe/Sortino/MaxDD (R_f = 0 par convention crypto ; `None` quand non calculable).
+* **DAO** — no re-entry during the episode; conditional avoided loss
+  `E[perte] = P(oblig) · (perte | oblig) − (1 − P(oblig)) · coût_AR` (both factors published);
+  second reading in **runway days**, `opex_ref = 44 932 $/day` (G6).
+* **desk** — re-entry modelled in the same window: `ΔP&L = x·(P_exec − P_T) − k − financement` ;
+  Sharpe/Sortino/MaxDD aggregates (R_f = 0 by crypto convention; `None` when not computable).
 
-## 5. Les six tests (W2-D §B.6) — doivent passer avant le gel
+## 5. The six tests (W2-D §B.6) — must pass before the freeze
 
-| # | Test | Attendu |
+| # | Test | Expected |
 |---|---|---|
-| T1 | Neutralité (P_exec = P_T, k = 0 ⇒ R = 0) | 0 exact (détecte le double comptage §B.2) |
-| T2 | Invariance par translation | R inchangé à 1e-12 |
-| T3 | Monotonie en coût | L et R croissants |
-| T4 | Cohérence de signe (P_exec > P_T) | R(agir) = 0, R(ne rien faire) > 0 |
-| T5 | Additivité de l'inventaire | linéaire en q et en x |
-| T6 | Référence dégénérée (P_t = 1) | tous les regrets 0 ; action inutile = k |
+| T1 | Neutrality (P_exec = P_T, k = 0 ⇒ R = 0) | 0 exact (detects the double counting of §B.2) |
+| T2 | Translation invariance | R unchanged to 1e-12 |
+| T3 | Monotonicity in cost | L and R increasing |
+| T4 | Sign consistency (P_exec > P_T) | R(agir) = 0, R(ne rien faire) > 0 |
+| T5 | Inventory additivity | linear in q and in x |
+| T6 | Degenerate reference (P_t = 1) | all regrets 0 ; useless action = k |
 
-Preuve exécutable : `tests/test_evaluation_loss.py` — sha256
-`90b705d0b47551b8deea80c1ab58772746c1599f673d4631888a828fc9b7ba88` ; commande
+Executable proof: `tests/test_evaluation_loss.py` — sha256
+`90b705d0b47551b8deea80c1ab58772746c1599f673d4631888a828fc9b7ba88` ; command
 `python -m pytest tests/test_evaluation_loss.py -q` (12 tests).
 
-## 6. Ce qui n'est PAS gelé ici (NOT DONE, écrit tel quel)
+## 6. What is NOT frozen here (NOT DONE, written as is)
 
-* `Depth_ε` (profondeur d'exécution en crise) : non mesurée → plafond x_max utilisé et **noté** sur chaque action A1 ;
-* `r_capital` (taux de financement desk) : aucune source — voir G6 ;
-* le bug historique `q(1 − P_T)` de la formule antérieure (W2-D §B.2) est reproduit en test pour non-régression (écart affiché 20 contre écart réel 10).
+* `Depth_ε` (execution depth in crisis): not measured → x_max cap used and **noted** on every A1 action;
+* `r_capital` (desk funding rate): no source — see G6;
+* the historical `q(1 − P_T)` bug of the earlier formula (W2-D §B.2) is reproduced in a test for non-regression (displayed gap 20 against real gap 10).
 
-## 7. Révision
+## 7. Revision
 
-Toute modification de ce fichier ou de `loss.py` après la première exécution
-EVAL **invalide** l'évaluation (embargo de paramètres, B7 §d.2.1) : nouvelle
-version datée + hash + entrée au journal des variantes.
+Any modification of this file or of `loss.py` after the first EVAL run
+**invalidates** the evaluation (parameter embargo, B7 §d.2.1): new dated
+version + hash + entry in the variants log.

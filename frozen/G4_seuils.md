@@ -1,43 +1,43 @@
-# G4 — Seuils par persona (gel v1, statut VALIDÉ)
+# G4 — Per-persona thresholds (freeze v1, status VALIDATED)
 
-**Statut : VALIDÉ — validation électronique du chef d'équipe le 2026-10-17.** 2026-10-16T00:00:00Z.
-Signataire : **AKUE-BITCHI Adote Jovanny** — validation électronique du chef d'équipe — autorisation explicite dans la session Hermes du 2026-10-17 ; une copie manuscrite scannée peut être jointe à la soumission. Sources : W2-D §C.4.1 (DAO), §C.4.2 (desk),
-B7 §e.3/e.4 (métriques). Les valeurs ci-dessous sont **reprises telles quelles**
-des documents sources et **validées** ; elles ne sont pas des faits mesurés.
+**Status: VALIDATED — electronic validation by the team lead on 2026-10-17.** 2026-10-16T00:00:00Z.
+Signatory: **AKUE-BITCHI Adote Jovanny** — electronic validation by the team lead — explicit authorisation in the Hermes session of 2026-10-17 ; a scanned handwritten copy may be attached to the submission. Sources: W2-D §C.4.1 (DAO), §C.4.2 (desk),
+B7 §e.3/e.4 (metrics). The values below are **taken as is**
+from the source documents and **validated**; they are not measured facts.
 
-## 1. Persona DAO (trésorerie)
+## 1. DAO persona (treasury)
 
-| Code | Critère | Formulation | Valeur validée |
+| Code | Criterion | Formulation | Validated value |
 |---|---|---|---|
-| SD1 | Perte évitée matérielle | `(L(A0) − L(A2)) / q` en % de l'exposition, conditionnellement à l'obligation ; second affichage en jours de runway | ≥ 5 % |
-| SD2 | Friction maîtrisée | coût cumulé de A2 sur fenêtres CALME | ≤ 10 % de la perte évitée de crise |
-| SD3 | Anticipation | antériorité vs point bas du prix réalisable ; délai de réaction | ≥ 6 h sur ≥ 1 épisode EVAL ; ≤ 60 min |
-| SD4 | Supériorité | `R̄(A2) < R̄(A1)` et `< R̄(B0)`, avec intervalles, R⁻/R⁺ séparés | strictement inférieur |
-| SD5 | Traçabilité | provenance + hash sur 100 % des actions ; 0 action hors enveloppe | 100 % / 0 |
-| SD6 | Honnêteté | « non conclusionnel » partout où la puissance manque ; perte évitée publiée `P × conditionnel` | présent/absent |
+| SD1 | Material avoided loss | `(L(A0) − L(A2)) / q` in % of the exposure, conditional on the obligation ; second display in runway days | ≥ 5 % |
+| SD2 | Controlled friction | cumulative cost of A2 over CALM windows | ≤ 10 % of the crisis avoided loss |
+| SD3 | Anticipation | lead time vs the low point of the realizable price ; reaction delay | ≥ 6 h on ≥ 1 EVAL episode ; ≤ 60 min |
+| SD4 | Superiority | `R̄(A2) < R̄(A1)` and `< R̄(B0)`, with intervals, R⁻/R⁺ separate | strictly lower |
+| SD5 | Traceability | provenance + hash on 100 % of actions ; 0 action outside the envelope | 100 % / 0 |
+| SD6 | Honesty | "non-conclusive" everywhere power is missing ; avoided loss published as `P × conditionnel` | present/absent |
 
-## 2. Persona desk (P&L)
+## 2. desk persona (P&L)
 
-| Code | Critère | Formulation | Valeur validée |
+| Code | Criterion | Formulation | Validated value |
 |---|---|---|---|
-| ST1 | P&L net cumulé | tous coûts inclus (frais, slippage mesuré, financement) + intervalle bootstrap par blocs | > 0 |
-| ST2 | Qualité d'exécution | slippage réalisé vs échelle `get_dy` ; taille ≤ Depth_100bp | ≤ 30 bp en stress |
-| ST3 | Risque borné | MaxDD de la série de décisions sur le capital alloué | ≤ 20 % par épisode |
-| ST4 | Risque ajusté | Sharpe/Sortino + DSR corrigé du nombre de variantes | borne basse d'IC > 0 sinon « non conclusionnel » |
-| ST5 | Supériorité | `ΔP&L(A2) > ΔP&L(A1)` et `> ΔP&L(B0)` avec intervalles | strictement supérieur |
-| ST6 | Asymétrie déclarée | agent décrit comme un put ; scénarios `p_s` publiés | présent/absent |
+| ST1 | Cumulative net P&L | all costs included (fees, measured slippage, funding) + block bootstrap interval | > 0 |
+| ST2 | Execution quality | realized slippage vs the `get_dy` ladder ; size ≤ Depth_100bp | ≤ 30 bp in stress |
+| ST3 | Bounded risk | MaxDD of the decision series over the allocated capital | ≤ 20 % per episode |
+| ST4 | Risk-adjusted | Sharpe/Sortino + DSR corrected for the number of variants | CI lower bound > 0 otherwise "non-conclusive" |
+| ST5 | Superiority | `ΔP&L(A2) > ΔP&L(A1)` and `> ΔP&L(B0)` with intervals | strictly greater |
+| ST6 | Declared asymmetry | agent described as a put ; `p_s` scenarios published | present/absent |
 
-## 3. Anti-optimisme commun (dispositifs obligatoires)
+## 3. Common anti-optimism (mandatory devices)
 
-B0 (M ≥ 200, distribution complète) · fenêtres CALME obligatoires dans les deux jeux ·
-`ȳ` publié partout · Wilson sur toute proportion · bootstrap par blocs (6–12 h, 10 000
-réplications, graine fixée) · DSR/journal des variantes · R⁻/R⁺ séparés + table de
-contingence · mention de contamination · « ce que nous ne revendiquons pas » ·
-**un scalaire est interdit** (vecteur de métriques + axes non mesurés déclarés).
+B0 (M ≥ 200, full distribution) · CALM windows mandatory in both sets ·
+`ȳ` published everywhere · Wilson on every proportion · block bootstrap (6–12 h, 10 000
+replications, fixed seed) · DSR/variants log · separate R⁻/R⁺ + contingency table ·
+contamination mention · "what we do not claim" ·
+**a single scalar is forbidden** (metric vector + declared unmeasured axes).
 
-## 4. Vérification exécutable à venir
+## 4. Executable verification to come
 
-Les seuils SD/ST ne sont **pas encore lus par du code** (le harnais §e.6 items 6–7 n'est pas
-construit) : ce document les gèle en tant que déclaration **validée**, la vérification
-exécutable viendra avec `harness.py`. Toute modification après la première exécution EVAL
-invalide l'évaluation (embargo de paramètres).
+The SD/ST thresholds are **not yet read by code** (harness §e.6 items 6–7 are not
+built): this document freezes them as a **validated** declaration, the executable
+verification will come with `harness.py`. Any modification after the first EVAL run
+invalidates the evaluation (parameter embargo).

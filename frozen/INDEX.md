@@ -21,14 +21,14 @@ octet à octet, pas par une empreinte annoncée dans un document Gx.
 
 | fichier | sha256 déclaré | annoncé dans | rôle |
 |---|---|---|---|
-| `src/orvyren/evaluation/loss.py` | `2742dbc10c3ed0b67b4625edcf75625e12a5917c0bc4e68d7e37abab5f5247a8` | `G1_fonction_de_perte.md` | fonction de perte G1 (W_T, L(a), R(a), regrets) |
+| `src/orvyren/evaluation/loss.py` | `8c93911fa4c56690e94f1dd8838ae48d3aa098a0c9a128b54228c7d55fce1db1` | `G1_fonction_de_perte.md` | fonction de perte G1 (W_T, L(a), R(a), regrets) |
 | `tests/test_evaluation_loss.py` | `90b705d0b47551b8deea80c1ab58772746c1599f673d4631888a828fc9b7ba88` | `G1_fonction_de_perte.md` | preuve exécutable G1 (KAT de perte) |
-| `src/orvyren/evaluation/comparators.py` | `29d93707ad86058acc6c7994aad66b478743d1928d99a2ca60314d807a47aece` | `G2_comparateurs.md` | comparateurs G2 (A0/A1/A2/B0/AX0/O, regret_pair) |
+| `src/orvyren/evaluation/comparators.py` | `23ac4438bdbeacfefe689a2bbdf144d4cf4b06ad2b778e59d8d212a8d5d345b3` | `G2_comparateurs.md` | comparateurs G2 (A0/A1/A2/B0/AX0/O, regret_pair) |
 | `tests/test_evaluation_comparators.py` | `0c4c9e3d4203b82d0950ca37f55b1bb8293466544be00e065a6d07e132653a05` | `G2_comparateurs.md` | preuve exécutable G2 |
-| `src/orvyren/evaluation/windows.py` | `25a3315434945d292a1365e40777085467c03f68a3d6db47d3bfdd26d72f0338` | `G3_fenetres.md` | fenêtres G3 (registre DEV/EVAL, verify_frozen_package) |
-| `src/orvyren/evaluation/calibration.py` | `0a90281453610c1b6258a99540d0d060132c56264aab2039921f81ce845fad13` | `G5_plan_analyse.md` | calibration G5 (verdict_for_n, Mcnemar exact, BSS) |
-| `src/orvyren/evaluation/forecasts.py` | `b5857165694ae06f736018531c4d295031f30060af563a2f2f7b162047452d8d` | `G5_plan_analyse.md` | prévisions G5 (build_forecast, chaîne prev_hash) |
-| `src/orvyren/evaluation/outcomes.py` | `9677a1c0970ad49487e122ca03b365fa723682d1d476fa5f2321ab52ad4168df` | `G5_plan_analyse.md` | résolutions G5 (règles de résolution, outcomes chaînés) |
+| `src/orvyren/evaluation/windows.py` | `d3e80aa3cd64a481eebf1c08ec34b43a5e563b0bd418344785a9693ac004c04a` | `G3_fenetres.md` | fenêtres G3 (registre DEV/EVAL, verify_frozen_package) |
+| `src/orvyren/evaluation/calibration.py` | `51f42db1dcfff81dd5fe81e5115c7344f52c84f5c3880d5340a9a48d2a536722` | `G5_plan_analyse.md` | calibration G5 (verdict_for_n, Mcnemar exact, BSS) |
+| `src/orvyren/evaluation/forecasts.py` | `8a519087d7c29aa1289d80e59e3d0da886a403d7a581273624ab301f72d19d33` | `G5_plan_analyse.md` | prévisions G5 (build_forecast, chaîne prev_hash) |
+| `src/orvyren/evaluation/outcomes.py` | `4ad4db541badefdd6efba6749ad2b71ebf657a66bc35aadd9c0c19a2ac2cfb94` | `G5_plan_analyse.md` | résolutions G5 (règles de résolution, outcomes chaînés) |
 | `tests/test_evaluation_calibration.py` | `2e1b00644b7e9a60485ad1564d5af52829b703c0ad96d50dc8b66a1262af940d` | `G5_plan_analyse.md` | preuve exécutable G5 (KAT de calibration) |
 
 ## 2. Bloc machine (JSON canonique)
@@ -39,32 +39,32 @@ octet à octet, pas par une empreinte annoncée dans un document Gx.
   "src/orvyren/evaluation/calibration.py": {
    "announced_in": "G5_plan_analyse.md",
    "role": "calibration G5 (verdict_for_n, Mcnemar exact, BSS)",
-   "sha256": "0a90281453610c1b6258a99540d0d060132c56264aab2039921f81ce845fad13"
+   "sha256": "51f42db1dcfff81dd5fe81e5115c7344f52c84f5c3880d5340a9a48d2a536722"
   },
   "src/orvyren/evaluation/comparators.py": {
    "announced_in": "G2_comparateurs.md",
    "role": "comparateurs G2 (A0/A1/A2/B0/AX0/O, regret_pair)",
-   "sha256": "29d93707ad86058acc6c7994aad66b478743d1928d99a2ca60314d807a47aece"
+   "sha256": "23ac4438bdbeacfefe689a2bbdf144d4cf4b06ad2b778e59d8d212a8d5d345b3"
   },
   "src/orvyren/evaluation/forecasts.py": {
    "announced_in": "G5_plan_analyse.md",
    "role": "prévisions G5 (build_forecast, chaîne prev_hash)",
-   "sha256": "b5857165694ae06f736018531c4d295031f30060af563a2f2f7b162047452d8d"
+   "sha256": "8a519087d7c29aa1289d80e59e3d0da886a403d7a581273624ab301f72d19d33"
   },
   "src/orvyren/evaluation/loss.py": {
    "announced_in": "G1_fonction_de_perte.md",
    "role": "fonction de perte G1 (W_T, L(a), R(a), regrets)",
-   "sha256": "2742dbc10c3ed0b67b4625edcf75625e12a5917c0bc4e68d7e37abab5f5247a8"
+   "sha256": "8c93911fa4c56690e94f1dd8838ae48d3aa098a0c9a128b54228c7d55fce1db1"
   },
   "src/orvyren/evaluation/outcomes.py": {
    "announced_in": "G5_plan_analyse.md",
    "role": "résolutions G5 (règles de résolution, outcomes chaînés)",
-   "sha256": "9677a1c0970ad49487e122ca03b365fa723682d1d476fa5f2321ab52ad4168df"
+   "sha256": "4ad4db541badefdd6efba6749ad2b71ebf657a66bc35aadd9c0c19a2ac2cfb94"
   },
   "src/orvyren/evaluation/windows.py": {
    "announced_in": "G3_fenetres.md",
    "role": "fenêtres G3 (registre DEV/EVAL, verify_frozen_package)",
-   "sha256": "25a3315434945d292a1365e40777085467c03f68a3d6db47d3bfdd26d72f0338"
+   "sha256": "d3e80aa3cd64a481eebf1c08ec34b43a5e563b0bd418344785a9693ac004c04a"
   },
   "tests/test_evaluation_calibration.py": {
    "announced_in": "G5_plan_analyse.md",

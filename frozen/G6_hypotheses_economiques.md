@@ -1,38 +1,38 @@
-# G6 — Hypothèses économiques (gel v1, statut SIGNÉ)
+# G6 — Economic assumptions (freeze v1, status SIGNED)
 
-**Statut : SIGNÉ — validation électronique du chef d'équipe le 2026-10-17.** 2026-10-16T00:00:00Z.
-Signataire : **AKUE-BITCHI Adote Jovanny** — validation électronique du chef d'équipe — autorisation explicite dans la session Hermes du 2026-10-17 ; une copie manuscrite scannée peut être jointe à la soumission. La feuille
-`G6_FEUILLE_DE_SIGNATURE.md` porte la validation ; les valeurs ci-dessous sont
-celles sur lesquelles la première EVAL s'exécute.
-Sources : W2-D §B.3/B.4, §E.2, §(f) 1–7 et 11–12 ; B7 §b.5, §e.3/e.4, Q1 ; FREEZE_V2 §C7.
+**Status: SIGNED — electronic validation by the team lead on 2026-10-17.** 2026-10-16T00:00:00Z.
+Signatory: **AKUE-BITCHI Adote Jovanny** — electronic validation by the team lead — explicit authorisation in the Hermes session of 2026-10-17 ; a scanned handwritten copy may be attached to the submission. The sheet
+`G6_FEUILLE_DE_SIGNATURE.md` carries the validation ; the values below are
+those on which the first EVAL runs.
+Sources: W2-D §B.3/B.4, §E.2, §(f) 1–7 and 11–12 ; B7 §b.5, §e.3/e.4, Q1 ; FREEZE_V2 §C7.
 
-## 1. Paramètres et valeurs signées
+## 1. Signed parameters and values
 
-| Paramètre | Valeur signée | Statut | Source / justification |
+| Parameter | Signed value | Status | Source / justification |
 |---|---|---|---|
-| `opex_ref` (jours de runway) | **44 932 $/jour** | VALIDÉ (référence externe déclarée) | ENS IPS 6.46 : 16,4 M$/an de charges 2025 ; conversion calculée 16 400 000 ÷ 365 (W2-D §A.1.1, §E.1 ; B7 Q13) |
-| `P(obligation)` — fenêtre USDC DEV (exemple de calcul) | **0,20** | VALIDÉ (hypothèse non sourcée) | valeur de travail de W2-D §E.2(b) — « hypothèse à figer, non sourcée » ; aucune fréquence publique de ventes forcées n'existe |
-| `P(obligation)` — fenêtres EVAL | **0,20 par fenêtre EVAL** | SIGNÉ — hypothèse de travail non sourcée | aucune source publique (W2-D §Non trouvé 6) ; valeur DEV conservée pour toutes les fenêtres EVAL, avec justification écrite et sensibilité `P*` publiée |
-| Scénarios desk `p_s` | **4 scénarios** : (i) réalisé, (ii) non-rétablissement à 48 h, (iii) guérison lente (5 j), (iv) venue unique contrainte (0,80526 — contrefactuel) ; **p_s = 0,25 / 0,25 / 0,25 / 0,25** | SIGNÉ — liste et prior uniforme non calibrés | W2-D §(f) 7 ; aucune distribution publique de scénarios de dépeg (W2-D §Non trouvé 4) : les `p_s` sont des hypothèses signées, publiées avec le P&L et leur sensibilité |
-| `r_capital` (taux de financement desk) | **0 %** (desk financé sur cash) | SIGNÉ — hypothèse de travail | aucune source trouvée (B7 Q16) ; base « cash sans financement », sensibilités 5 % et 10 % publiées avec le P&L |
-| Coût d'aller-retour desk (illustratif) | 20 bp (`k = 4 000 $` sur 2 M$) | VALIDÉ (illustration) | W2-D §E.3 — « hypothétique, à mesurer réellement » |
+| `opex_ref` (runway days) | **44 932 $/day** | VALIDATED (declared external reference) | ENS IPS 6.46: 16,4 M$/year of 2025 expenses ; computed conversion 16 400 000 ÷ 365 (W2-D §A.1.1, §E.1 ; B7 Q13) |
+| `P(obligation)` — USDC DEV window (calculation example) | **0,20** | VALIDATED (unsourced assumption) | working value of W2-D §E.2(b) — « an assumption to be frozen, unsourced » ; no public frequency of forced sales exists |
+| `P(obligation)` — EVAL windows | **0,20 per EVAL window** | SIGNED — unsourced working assumption | no public source (W2-D §Non trouvé 6) ; DEV value kept for all EVAL windows, with written justification and published `P*` sensitivity |
+| desk scenarios `p_s` | **4 scenarios**: (i) realized, (ii) no re-establishment at 48 h, (iii) slow healing (5 d), (iv) single constrained venue (0,80526 — counterfactual) ; **p_s = 0,25 / 0,25 / 0,25 / 0,25** | SIGNED — list and uniform prior not calibrated | W2-D §(f) 7 ; no public distribution of depeg scenarios (W2-D §Non trouvé 4): the `p_s` are signed assumptions, published with the P&L and their sensitivity |
+| `r_capital` (desk funding rate) | **0 %** (desk funded in cash) | SIGNED — working assumption | no source found (B7 Q16) ; "cash without funding" base, 5 % and 10 % sensitivities published with the P&L |
+| desk round-trip cost (illustrative) | 20 bp (`k = 4 000 $` on 2 M$) | VALIDATED (illustration) | W2-D §E.3 — « hypothetical, to be measured for real » |
 
-## 2. Règles attachées (gelées)
+## 2. Attached rules (frozen)
 
-* la perte évitée n'est **jamais** publiée inconditionnellement :
-  `E[perte évitée] = P(oblig) · (perte | oblig) − (1 − P(oblig)) · coût_AR`, les deux facteurs visibles ;
-* toute modification de `P(obligation)`, des `p_s` ou de `r_capital` exige une **re-signature nommée**
-  + justification + sensibilité publiée (B7 §f.2) ;
-* une prévision `p` ne peut **jamais** être produite par un LLM (interdit par construction, B7 §a.5.5).
+* avoided loss is **never** published unconditionally:
+  `E[perte évitée] = P(oblig) · (perte | oblig) − (1 − P(oblig)) · coût_AR`, both factors visible ;
+* any modification of `P(obligation)`, of the `p_s` or of `r_capital` requires a **named re-signature**
+  + justification + published sensitivity (B7 §f.2) ;
+* a forecast `p` can **never** be produced by an LLM (forbidden by construction, B7 §a.5.5).
 
-## 3. Sensibilité exigée
+## 3. Required sensitivity
 
-Pour chaque fenêtre où `P(obligation)` entre dans un verdict, publier la sensibilité du
-signe de `E[perte évitée]` à `P(obligation)` : la valeur de bascule est calculable
-exactement (`P* = coût_AR / (perte|oblig + coût_AR)`) — elle doit figurer au dossier.
+For every window where `P(obligation)` enters a verdict, publish the sensitivity of the
+sign of `E[perte évitée]` to `P(obligation)`: the switch value is exactly computable
+(`P* = coût_AR / (perte|oblig + coût_AR)`) — it must appear in the dossier.
 
 ## 4. Signature
 
-Validé par **AKUE-BITCHI Adote Jovanny** le **2026-10-17** — validation électronique du chef d'équipe — autorisation explicite dans la session Hermes du 2026-10-17 ; une copie manuscrite scannée peut être jointe à la soumission.
-Une copie manuscrite scannée peut être jointe à la soumission ; la validation
-électronique de référence est ce document et `G6_FEUILLE_DE_SIGNATURE.md`.
+Validated by **AKUE-BITCHI Adote Jovanny** on **2026-10-17** — electronic validation by the team lead — explicit authorisation in the Hermes session of 2026-10-17 ; a scanned handwritten copy may be attached to the submission.
+A scanned handwritten copy may be attached to the submission ; the reference
+electronic validation is this document and `G6_FEUILLE_DE_SIGNATURE.md`.

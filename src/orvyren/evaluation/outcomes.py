@@ -1,34 +1,35 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-"""ORVYREN-Core — outcomes : résolveur déterministe, formats chaînés.
+"""
+ORVYREN-Core — outcomes: deterministic resolver, chained formats.
 
-Source normative : B7 §a.2 (trois producteurs), §a.3 (fenêtres et états),
-§a.4 (schéma JSON de l'outcome), §a.5 (règles opposables), §a.7 (ce qui n'est
-pas un outcome), DOC2 §5.8.1.
+Normative source: B7 §a.2 (three producers), §a.3 (windows and states),
+§a.4 (JSON schema of the outcome), §a.5 (opposable rules), §a.7 (what is not
+an outcome), DOC2 §5.8.1.
 
-Trois règles de résolution, chacune gelée par identifiant :
+Three resolution rules, each frozen by identifier:
 
-* ``sustained_depeg_v1`` — « dépeg soutenu » (R3 M2 / B7 §0.2) : écart
-  ``> ecart_pct`` **persistant ≥ persistance_obs observations** de la grille,
-  contiguïté exigée (gap ≤ ``max_gap_minutes``). Paramètres portés par le
-  forecast (``y_definition``), pas inventés ici ;
-* ``calm_window_v1`` — critère CALME gelé (B7 §d.1) : ``max|P_t − 1| < 0,5 %``
-  sur toute la fenêtre ; échec → reclassé STRESS (le résultat est un échec de
-  l'énoncé, pas un ajustement de l'énoncé).
+* ``sustained_depeg_v1`` — "sustained depeg" (R3 M2 / B7 §0.2): deviation
+  ``> ecart_pct`` **persisting ≥ persistance_obs observations** of the grid,
+  contiguity required (gap ≤ ``max_gap_minutes``). Parameters carried by the
+  forecast (``y_definition``), not invented here;
+* ``calm_window_v1`` — frozen CALM criterion (B7 §d.1): ``max|P_t − 1| < 0.5 %``
+  over the whole window; failure → reclassified STRESS (the result is a failure
+  of the statement, not an adjustment of the statement).
 
-Gardes de code (testées) :
+Code guards (tested):
 
-* **``resolve_not_before``** : un outcome ne peut pas être écrit avant
-  l'horizon de résolution (``ResolutionTooEarly``) — B7 §a.5.5 ;
-* **liaison par empreinte** : ``forecast_hash`` doit correspondre à l'empreinte
-  recalculée de la prévision sur disque, sinon l'outcome est rejeté ;
-* **append-only + chaînage** ``prev_hash`` (même mécanique que les prévisions) ;
-* **corrections** : nouveau outcome avec ``supersedes: <outcome_id>`` — les
-  deux restent visibles (B7 §a.5.3).
+* **``resolve_not_before``**: an outcome cannot be written before the
+  resolution horizon (``ResolutionTooEarly``) — B7 §a.5.5;
+* **digest binding**: ``forecast_hash`` must match the recomputed digest of the
+  forecast on disk, otherwise the outcome is rejected;
+* **append-only + ``prev_hash`` chaining** (same mechanics as the forecasts);
+* **corrections**: new outcome with ``supersedes: <outcome_id>`` — both remain
+  visible (B7 §a.5.3).
 
-``resolution_time`` est l'horodatage de la **fenêtre de résolution** (pas
-l'heure d'exécution du job) ; ``written_at_utc`` est l'heure d'écriture réelle ;
-les deux sont distincts et publiés.
+``resolution_time`` is the timestamp of the **resolution window** (not the job
+execution time); ``written_at_utc`` is the actual write time; the two are
+distinct and published.
 """
 
 from __future__ import annotations
@@ -69,18 +70,18 @@ REQUIRED_FIELDS = (
 
 
 class OutcomeError(ValueError):
-    """Outcome invalide (champs, y, liaison, chaîne)."""
+    """Invalid outcome (fields, y, binding, chain)."""
 
 
 class ResolutionTooEarly(RuntimeError):
-    """Tentative d'écriture d'un outcome avant ``resolve_not_before`` : refus."""
+    """Attempt to write an outcome before ``resolve_not_before``: refused."""
 
 
 def canonical_bytes(record: Dict) -> bytes:
     return json.dumps(record, sort_keys=True, separators=(",", ":"), ensure_ascii=False).encode("utf-8")
 
 
-# --- résolution : les règles ------------------------------------------------
+# --- resolution: the rules --------------------------------------------------
 
 
 def _series_in_window(series: Sequence[Tuple[str, float]], start: _dt.datetime, end: _dt.datetime):
@@ -102,21 +103,21 @@ def sustained_depeg_v1(
     max_gap_minutes: float = 90.0,
     peg: float = 1.0,
 ) -> dict:
-    """Règle ``sustained_depeg_v1`` : ``y = 1`` ssi un dépeg soutenu est observé.
+    """Rule ``sustained_depeg_v1``: ``y = 1`` iff a sustained depeg is observed.
 
-    Un « dépeg soutenu » = ``persistance_obs`` observations **consécutives**
-    (gap ≤ ``max_gap_minutes``) avec écart ``(peg − prix)/peg · 100 > ecart_pct``,
-    dans la fenêtre ``[t_from, t_to]``. Déterministe : le même corpus donne le
-    même résultat, bit à bit.
+    A "sustained depeg" = ``persistance_obs`` **consecutive** observations
+    (gap ≤ ``max_gap_minutes``) with deviation ``(peg − price)/peg · 100 > ecart_pct``,
+    inside the window ``[t_from, t_to]``. Deterministic: the same corpus gives
+    the same result, bit for bit.
     """
     if persistance_obs < 2:
-        raise OutcomeError("persistance_obs ≥ 2 exigée (« soutenu » = au moins deux observations)")
+        raise OutcomeError("persistance_obs ≥ 2 required (\"sustained\" = at least two observations)")
     start, end = windows_mod.parse_utc(t_from_utc), windows_mod.parse_utc(t_to_utc)
     if end < start:
-        raise OutcomeError("fenêtre de résolution inversée")
+        raise OutcomeError("inverted resolution window")
     points = _series_in_window(series, start, end)
     if not points:
-        raise OutcomeError(f"aucune observation dans la fenêtre {t_from_utc} → {t_to_utc} : non résoluble")
+        raise OutcomeError(f"no observation in the window {t_from_utc} → {t_to_utc}: not resolvable")
     worst_utc, worst_price = min(points, key=lambda pair: pair[1])
     max_discount_pct = (peg - worst_price) / peg * 100.0
     gaps = _dt.timedelta(minutes=max_gap_minutes)
@@ -168,18 +169,18 @@ def calm_window_v1(
     tolerance_pct: float = 0.5,
     peg: float = 1.0,
 ) -> dict:
-    """Règle ``calm_window_v1`` : critère CALME gelé ``max|P_t − 1| < 0,5 %``.
+    """Rule ``calm_window_v1``: frozen CALM criterion ``max|P_t − 1| < 0.5 %``.
 
-    ``y = 1`` ssi la fenêtre est **entièrement** calme au sens du critère
-    (échec → reclassement STRESS, résultat publié tel quel — jamais un
-    ajustement rétroactif du critère).
+    ``y = 1`` iff the window is **entirely** calm in the sense of the criterion
+    (failure → STRESS reclassification, result published as is — never a
+    retroactive adjustment of the criterion).
     """
     start, end = windows_mod.parse_utc(t_from_utc), windows_mod.parse_utc(t_to_utc)
     if end < start:
-        raise OutcomeError("fenêtre de résolution inversée")
+        raise OutcomeError("inverted resolution window")
     points = _series_in_window(series, start, end)
     if not points:
-        raise OutcomeError(f"aucune observation dans la fenêtre {t_from_utc} → {t_to_utc} : non résoluble")
+        raise OutcomeError(f"no observation in the window {t_from_utc} → {t_to_utc}: not resolvable")
     worst_moment, worst_price = max(points, key=lambda pair: abs(pair[1] - peg))
     max_dev_pct = abs(worst_price - peg) / peg * 100.0
     return {
@@ -203,7 +204,7 @@ _RESOLVERS = {
 }
 
 
-# --- résolution d'une prévision ---------------------------------------------
+# --- resolution of a forecast ------------------------------------------------
 
 
 def resolve_forecast(
@@ -213,30 +214,30 @@ def resolve_forecast(
     code_hash: Optional[str] = None,
     supersedes: Optional[str] = None,
 ) -> Dict:
-    """Résout une prévision gelée → outcome (non encore chaîné).
+    """Resolve a frozen forecast → outcome (not yet chained).
 
-    Refus : empreinte de la prévision non concordante ; ``now`` antérieur à
-    ``resolve_not_before_utc`` ; règle inconnue ; fenêtre sans observation.
+    Refusals: mismatched forecast digest; ``now`` earlier than
+    ``resolve_not_before_utc``; unknown rule; window without observation.
     """
     expected_hash = forecasts_mod.record_hash(forecast)
     if forecast.get("sha256") != expected_hash:
         raise OutcomeError(
-            f"prévision {forecast.get('forecast_id')} : empreinte non concordante "
-            f"({forecast.get('sha256')} ≠ {expected_hash}) — liaison par empreinte rompue"
+            f"forecast {forecast.get('forecast_id')}: mismatched digest "
+            f"({forecast.get('sha256')} ≠ {expected_hash}) — digest binding broken"
         )
     horizon = forecast["horizon"]
     resolve_not_before = windows_mod.parse_utc(horizon["resolve_not_before_utc"])
     reference_now = windows_mod.parse_utc(now_utc) if now_utc else _dt.datetime.now(_dt.timezone.utc)
     if reference_now < resolve_not_before:
         raise ResolutionTooEarly(
-            f"prévision {forecast['forecast_id']} : resolve_not_before = "
+            f"forecast {forecast['forecast_id']}: resolve_not_before = "
             f"{horizon['resolve_not_before_utc']} > {windows_mod.format_utc(reference_now)} — "
-            "un outcome ne s'écrit jamais avant l'horizon (garde de code, B7 §a.5.5)"
+            "an outcome is never written before the horizon (code guard, B7 §a.5.5)"
         )
     rule_id = forecast["resolution_rule_id"]
     resolver = _RESOLVERS.get(rule_id)
     if resolver is None:
-        raise OutcomeError(f"règle de résolution inconnue : {rule_id!r} (connues : {RULES})")
+        raise OutcomeError(f"unknown resolution rule: {rule_id!r} (known: {RULES})")
     definition = forecast.get("y_definition", {})
     kwargs = {"peg": definition.get("peg", 1.0)}
     for key in ("ecart_pct", "persistance_obs", "max_gap_minutes", "tolerance_pct"):
@@ -276,7 +277,7 @@ def resolve_forecast(
 
 
 def outcome_hash(record: Dict) -> str:
-    """Empreinte d'un outcome (le champ ``signature`` s'auto-exclut)."""
+    """Digest of an outcome (the ``signature`` field excludes itself)."""
     body = {key: value for key, value in record.items() if key != "signature"}
     return hashlib.sha256(canonical_bytes(body)).hexdigest()
 
@@ -297,20 +298,20 @@ def load_outcomes(path: str) -> List[Dict]:
     return records
 
 
-def verify_outcome_chain(records: Sequence[Dict], path: str = "<mémoire>") -> List[str]:
-    """Vérifie le chaînage ``prev_hash`` des outcomes (l'empreinte d'un outcome
-    est celle de son contenu JSONL, recalculable par un tiers)."""
+def verify_outcome_chain(records: Sequence[Dict], path: str = "<memory>") -> List[str]:
+    """Verify the ``prev_hash`` chaining of the outcomes (an outcome digest is
+    the digest of its JSONL content, recomputable by a third party)."""
     previous = forecasts_mod.GENESIS_HASH
     ids: List[str] = []
     for index, record in enumerate(records, start=1):
         if record.get("prev_hash") != previous:
             raise OutcomeError(
-                f"{path} ligne {index} : chaînage cassé (prev_hash {record.get('prev_hash')} ≠ {previous})"
+                f"{path} line {index}: broken chain (prev_hash {record.get('prev_hash')} ≠ {previous})"
             )
         previous = outcome_hash(record)
         if record.get("signature") and record["signature"] != previous:
             raise OutcomeError(
-                f"{path} ligne {index} : signature d'outcome non concordante")
+                f"{path} line {index}: mismatched outcome signature")
         ids.append(record["outcome_id"])
     return ids
 
@@ -318,36 +319,36 @@ def verify_outcome_chain(records: Sequence[Dict], path: str = "<mémoire>") -> L
 def _validate_outcome(record: Dict) -> None:
     missing = [field for field in REQUIRED_FIELDS if field not in record]
     if missing:
-        raise OutcomeError(f"champs obligatoires manquants : {missing}")
+        raise OutcomeError(f"missing required fields: {missing}")
     if record["schema"] != SCHEMA:
-        raise OutcomeError(f"schéma attendu {SCHEMA!r}, reçu {record['schema']!r}")
+        raise OutcomeError(f"expected schema {SCHEMA!r}, got {record['schema']!r}")
     if record["y"] not in (0, 1):
-        raise OutcomeError(f"y hors {{0, 1}} : {record['y']!r}")
+        raise OutcomeError(f"y outside {{0, 1}}: {record['y']!r}")
     if not record["evidence_refs"]:
-        raise OutcomeError("evidence_refs vide : un outcome sans preuve n'est pas recevable")
+        raise OutcomeError("empty evidence_refs: an outcome without evidence is not admissible")
     forecast_hash = record.get("forecast_hash")
     if not isinstance(forecast_hash, str) or len(forecast_hash) != 64 or any(
             ch not in "0123456789abcdef" for ch in forecast_hash):
-        raise OutcomeError("forecast_hash invalide (sha256 hex attendu)")
+        raise OutcomeError("invalid forecast_hash (sha256 hex expected)")
     horizon = record.get("horizon")
     if not isinstance(horizon, dict) or not horizon.get("t_resolution_window_utc"):
-        raise OutcomeError("horizon.t_resolution_window_utc manquant : resolution non datée")
+        raise OutcomeError("horizon.t_resolution_window_utc missing: undated resolution")
     if record["resolver"].get("mode") != RESOLVER_MODE_DETERMINISTIC:
         raise OutcomeError(
-            "mode de résolution non déterministe : les outcomes 'operator' se publient séparément (B7 §a.2)"
+            "non-deterministic resolution mode: 'operator' outcomes are published separately (B7 §a.2)"
         )
 
 
 def check_link(forecast: Dict, outcome: Dict) -> None:
-    """Liaison prévision ↔ outcome par empreinte (B7 §a.5.1) — rejet si rompue."""
+    """Forecast ↔ outcome binding by digest (B7 §a.5.1) — rejected if broken."""
     fresh = forecasts_mod.record_hash(forecast)
     if forecast.get("sha256") != fresh:
-        raise OutcomeError(f"prévision {forecast.get('forecast_id')} : empreinte non concordante (disque)")
+        raise OutcomeError(f"forecast {forecast.get('forecast_id')}: mismatched digest (disk)")
     if outcome["forecast_id"] != forecast["forecast_id"]:
-        raise OutcomeError("identifiants de prévision différents")
+        raise OutcomeError("different forecast identifiers")
     if outcome["forecast_hash"] != forecast["sha256"]:
         raise OutcomeError(
-            f"forecast_hash non concordant : {outcome['forecast_hash']} ≠ {forecast['sha256']} — outcome rejeté"
+            f"mismatched forecast_hash: {outcome['forecast_hash']} ≠ {forecast['sha256']} — outcome rejected"
         )
 
 
@@ -357,11 +358,11 @@ def append_outcome(
     frozen_dir: Optional[str] = None,
     require_frozen: bool = True,
 ) -> Dict:
-    """Écrit un outcome en fin de fichier (chaînage ``prev_hash``).
+    """Write an outcome at the end of the file (``prev_hash`` chaining).
 
-    Comme pour les prévisions : append-only, refus explicites ; le paquet de
-    gel est vérifié quand ``require_frozen`` (défaut — un outcome d'évaluation
-    postérieur à un gel modifié serait un résultat invalide).
+    As for the forecasts: append-only, explicit refusals; the freeze package is
+    verified when ``require_frozen`` (default — an evaluation outcome recorded
+    after a modified freeze would be an invalid result).
     """
     if require_frozen:
         windows_mod.verify_frozen_package(frozen_dir or forecasts_mod.default_frozen_dir())
@@ -373,20 +374,20 @@ def append_outcome(
         resolution_moment = windows_mod.parse_utc(resolution_window) if resolution_window else None
         written_moment = windows_mod.parse_utc(written_at) if written_at else None
     except (TypeError, ValueError) as exc:
-        raise OutcomeError("horizon/written_at illisible: %s" % exc) from exc
+        raise OutcomeError("unreadable horizon/written_at: %s" % exc) from exc
     if resolution_moment is not None and written_moment is not None:
         if written_moment < resolution_moment:
             raise ResolutionTooEarly(
-                "outcome écrit avant resolve_not_before: written_at=%s, horizon=%s"
+                "outcome written before resolve_not_before: written_at=%s, horizon=%s"
                 % (written_at, resolution_window))
     existing = load_outcomes(path)
     verify_outcome_chain(existing, path=path)
     if any(prior["outcome_id"] == outcome["outcome_id"] for prior in existing):
-        raise OutcomeError(f"outcome déjà écrit : {outcome['outcome_id']} (append-only ; utiliser supersedes)")
+        raise OutcomeError(f"outcome already written: {outcome['outcome_id']} (append-only; use supersedes)")
     if outcome.get("supersedes"):
         known = {prior["outcome_id"] for prior in existing}
         if outcome["supersedes"] not in known:
-            raise OutcomeError(f"supersedes référence un outcome inconnu : {outcome['supersedes']}")
+            raise OutcomeError(f"supersedes references an unknown outcome: {outcome['supersedes']}")
     final = dict(outcome)
     final["prev_hash"] = outcome_hash(existing[-1]) if existing else forecasts_mod.GENESIS_HASH
     final["signature"] = outcome_hash(final)
@@ -403,7 +404,7 @@ def build_superseding_outcome(
     now_utc: Optional[str] = None,
     code_hash: Optional[str] = None,
 ) -> Dict:
-    """Correction : nouveau outcome référençant ``supersedes`` (B7 §a.5.3)."""
+    """Correction: new outcome referencing ``supersedes`` (B7 §a.5.3)."""
     corrected = resolve_forecast(forecast, series, now_utc=now_utc, code_hash=code_hash, supersedes=previous["outcome_id"])
     corrected["outcome_id"] = f"{previous['outcome_id']}.correction"
     return corrected

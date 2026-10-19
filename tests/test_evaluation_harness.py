@@ -52,7 +52,7 @@ class HarnessDevTest(unittest.TestCase):
         self.assertEqual(content["banner"], "DEV")
         self.assertEqual(content["n_windows"], 4)
         self.assertEqual(content["n_windows_skipped"], 0)
-        self.assertIn("non conclusionnel", content["validity"])
+        self.assertIn("non-conclusive", content["validity"])
         for label in ("A0", "A1"):
             self.assertIn(label, content["aggregates"])
             self.assertEqual(content["aggregates"][label]["n"], 4)

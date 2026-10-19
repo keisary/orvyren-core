@@ -59,8 +59,8 @@ DEFAULT_OUT_DIR = os.path.join(REPO_ROOT, "evidence", "evaluation")
 Q_DEV_USDC = 100.0  # mobilisable amount (available_to_move_usdc of the dossier)
 P_REF = 1.0
 COST_K = 0.0
-NOTE_PARAMS = ("paramètres de démonstration DEV : q = 100 USDC (montant mobilisable du "
-               "dossier), p_ref = 1,0, k = 0 (coûts non mesurés en DEV) — à geler pour l'EVAL")
+NOTE_PARAMS = ("DEV demonstration parameters: q = 100 USDC (mobilisable amount of the "
+               "dossier), p_ref = 1.0, k = 0 (costs not measured in DEV) — to be frozen for EVAL")
 
 CONFIG_LABELS = ("A0", "A1", "AX0", "A2", "B0")
 
@@ -95,7 +95,7 @@ def _value_at(points: Sequence[Tuple[str, float]], moment_utc: str) -> Optional[
 
 #: `` `path` — sha256 `hex64` `` announcement inside a Gx document. Whitespace
 #: between the name and the digest is immaterial, so multi-line announcements
-#: (G5's "Code gelé" block) are read back correctly.
+#: (G5's "Frozen code" block) are read back correctly.
 CODE_HASH_ANNOUNCEMENT = re.compile(
     r"`([^`]+)`\s*[-—–]?\s*sha256\s*`([0-9a-f]{64})`")
 
@@ -114,7 +114,7 @@ def _resolve_announced_target(target: str, repo_root: str) -> str:
         if os.path.isfile(candidate):
             return candidate
     raise windows_mod.FreezeGateError(
-        "les documents Gx annoncent le hash d'un fichier absent : %s" % target)
+        "the Gx documents announce the hash of a missing file: %s" % target)
 
 def verify_code_hashes(frozen_dir: str, repo_root: str = REPO_ROOT) -> Dict[str, str]:
     """Verify the code hashes **announced inside the Gx documents**.
@@ -135,13 +135,13 @@ def verify_code_hashes(frozen_dir: str, repo_root: str = REPO_ROOT) -> Dict[str,
     for name in windows_mod.FROZEN_FILES:
         manifest = os.path.join(frozen_dir, "%s.sha256" % name)
         if not os.path.isfile(manifest):
-            raise windows_mod.FreezeGateError(f"manifeste de gel manquant : {manifest}")
+            raise windows_mod.FreezeGateError(f"freeze manifest missing: {manifest}")
         for _document_digest, referenced in windows_mod._read_sha256sum(manifest):
             document = (referenced if os.path.isabs(referenced)
                         else os.path.join(frozen_dir, referenced))
             if not os.path.isfile(document):
                 raise windows_mod.FreezeGateError(
-                    f"{manifest} référence un fichier absent : {referenced}")
+                    f"{manifest} references a missing file: {referenced}")
             with open(document, "r", encoding="utf-8") as handle:
                 flat = re.sub(r"\s+", " ", handle.read())
             for target, announced in CODE_HASH_ANNOUNCEMENT.findall(flat):
@@ -149,18 +149,18 @@ def verify_code_hashes(frozen_dir: str, repo_root: str = REPO_ROOT) -> Dict[str,
                 relative = os.path.relpath(path, repo_root).replace(os.sep, "/")
                 if relative in digests and digests[relative] != announced:
                     raise windows_mod.FreezeGateError(
-                        f"les documents Gx annoncent des hashes divergents pour {relative} : "
+                        f"the Gx documents announce divergent hashes for {relative}: "
                         f"{digests[relative]} ≠ {announced}")
                 digests[relative] = announced
                 actual = windows_mod.sha256_file(path)
                 if actual != announced:
                     raise windows_mod.FreezeGateError(
-                        f"empreinte de code non concordante pour {relative} : "
-                        f"{actual} ≠ {announced} (annoncé dans {referenced}) — "
-                        f"code modifié après le gel ?")
+                        f"mismatched code digest for {relative}: "
+                        f"{actual} ≠ {announced} (announced in {referenced}) — "
+                        f"code modified after the freeze?")
     if not digests:
         raise windows_mod.FreezeGateError(
-            "aucun hash de code annoncé dans les documents Gx — vérification impossible (refus)")
+            "no code hash announced in the Gx documents — verification impossible (refused)")
     return dict(sorted(digests.items()))
 
 # --------------------------------------------------------------------------- #
@@ -188,9 +188,9 @@ def a2_actions_from_dossier(decision_path: str = DEFAULT_DECISION) -> Tuple[List
                            % decision_path)
     action_time = max(stamps, key=_parse_utc)
     notes = [
-        "A2 DEV = dossier déterministe (%s) — substitution déclarée" % os.path.basename(decision_path),
-        "horodatage = dernière observation de la provenance du dossier (le dossier ne date pas "
-        "autrement son action)",
+        "A2 DEV = deterministic dossier (%s) — declared substitution" % os.path.basename(decision_path),
+        "timestamp = last observation of the dossier provenance (the dossier does not date "
+        "its action otherwise)",
     ]
     return ([{"type": "reduce_exposure", "amount_usdc": float(amount),
               "triggered_at_utc": action_time, "rule": "a2_dossier_deterministe",
@@ -214,19 +214,19 @@ def loss_for_actions(actions: Sequence[dict], points: Sequence[Tuple[str, float]
             continue
         remaining = q - total_sold
         if remaining <= 0:
-            notes.append("action ignorée : exposition déjà entièrement réduite")
+            notes.append("action ignored: exposure already fully reduced")
             continue
         size = min(size, remaining)
         if size < float(action.get("amount_usdc") or 0.0):
-            notes.append("action plafonnée à l'exposition restante (%.2f)" % remaining)
+            notes.append("action capped to the remaining exposure (%.2f)" % remaining)
         triggered_at = action.get("triggered_at_utc")
         if not triggered_at:
-            raise HarnessError("action sans triggered_at_utc — P_exec non datable, "
-                               "L(a) refusée (jamais de prix inventé)")
+            raise HarnessError("action without triggered_at_utc — P_exec cannot be dated, "
+                               "L(a) refused (never an invented price)")
         price = _value_at(points, triggered_at)
         if price is None:
             price = p_ref
-            notes.append("aucune observation ≤ action — prix de référence utilisé (déclaré)")
+            notes.append("no observation ≤ action — reference price used (declared)")
         total_sold += size
         proceeds += size * price
     wealth_terminal = proceeds + (q - total_sold) * p_terminal - cost_k
@@ -250,8 +250,8 @@ def oracle_feasible_loss(points: Sequence[Tuple[str, float]], *, q: float = Q_DE
     best = min(candidates, key=lambda item: item["loss"])
     return {"loss": best["loss"], "x": best["x"], "best_price": best_price,
             "best_stamp_utc": best_stamp,
-            "note": "O = oracle ex post FAISABLE (exécution au meilleur instant observé, "
-                    "famille G1) — borne inférieure du regret, pas une vérité terrain"}
+            "note": "O = FEASIBLE ex post oracle (execution at the best observed instant, "
+                    "G1 family) — lower bound of the regret, not a ground truth"}
 
 
 def regret_pair(loss_value: float, oracle_loss: float,
@@ -260,7 +260,7 @@ def regret_pair(loss_value: float, oracle_loss: float,
     return {"R": regret,
             "R_plus": loss_mod.regret_positive(loss_value, no_action_loss),
             "R_minus": loss_mod.regret_negative(loss_value, no_action_loss),
-            "note": "R⁻ et R⁺ ne sont jamais moyennés ensemble (règle de langage B7 §e.5)"}
+            "note": "R⁻ and R⁺ are never averaged together (language rule B7 §e.5)"}
 
 
 def _b0_quantiles(ordered: Sequence[float]) -> Dict[str, float]:
@@ -290,8 +290,8 @@ def run_window(window, *, decision_path: str = DEFAULT_DECISION,
     gaps = corpus_mod.find_gaps(points)
     detail["series"] = {"source": source_label, "points": len(points),
                         "gaps": gaps,
-                        "grid_note": ("grille horaire" if len(points) > 100
-                                      else "grille non horaire (%d points) — déclarée"
+                        "grid_note": ("hourly grid" if len(points) > 100
+                                      else "non-hourly grid (%d points) — declared"
                                            % len(points))}
     p_terminal = points[-1][1]
     detail["p_terminal"] = p_terminal
@@ -313,7 +313,7 @@ def run_window(window, *, decision_path: str = DEFAULT_DECISION,
         configs["AX0"] = {"actions": ax0, **loss_for_actions(ax0, points, p_terminal=p_terminal)}
     else:
         configs["AX0"] = {"actions": None, "status": "NOT APPLICABLE",
-                          "reason": "règle AX0 = règle USDC gelée ; sans portée sur %s"
+                          "reason": "AX0 rule = frozen USDC rule; no scope on %s"
                                     % window.episode_id}
 
     # A2 — deterministic dossier (declared DEV substitution)
@@ -323,8 +323,8 @@ def run_window(window, *, decision_path: str = DEFAULT_DECISION,
                          **loss_for_actions(a2, points, p_terminal=p_terminal)}
     else:
         configs["A2"] = {"actions": None, "status": "DECLARED", "reason":
-                         "pas de dossier déterministe pour %s sur DEV — A2 viendra du rejeu "
-                         "journal/archive (déclaré)" % window.episode_id}
+                         "no deterministic dossier for %s on DEV — A2 will come from the "
+                         "journal/archive replay (declared)" % window.episode_id}
 
     # O — feasible oracle
     oracle = oracle_feasible_loss(points, p_terminal=p_terminal)
@@ -350,8 +350,8 @@ def run_window(window, *, decision_path: str = DEFAULT_DECISION,
                         "quantiles": _b0_quantiles(ordered),
                         "seed": comparators_mod.B0_SEED, "draws": b0_draws,
                         "paired_with": paired_label,
-                        "note": ("B0 apparié à %s (%s)" % (paired_label,
-                                 "A2 présent" if paired_label == "A2" else "A2 absent — substitution déclarée"))}
+                        "note": ("B0 paired with %s (%s)" % (paired_label,
+                                 "A2 present" if paired_label == "A2" else "A2 absent — declared substitution"))}
         paired_regret = configs[paired_label]["regret"]["R"]
         distribution["percentile_of_%s" % paired_label] = calibration_mod.bootstrap_percentile(
             ordered, paired_regret)
@@ -359,7 +359,7 @@ def run_window(window, *, decision_path: str = DEFAULT_DECISION,
                          "distribution": distribution}
     else:
         configs["B0"] = {"actions": None, "status": "DECLARED",
-                         "reason": "aucune taille d'action à apparier"}
+                         "reason": "no action size to pair"}
 
     detail["configs"] = configs
     detail["status"] = "OK"
@@ -402,11 +402,11 @@ def paired_superiority(ran: Sequence[Dict[str, Any]], *,
     n = len(ran)
     if n < calibration_mod.N_CLAIM_MIN:
         return {"n": n,
-                "status": "NON CALCULÉ — N < %d (cascade B7 §b.3)" % calibration_mod.N_CLAIM_MIN,
+                "status": "NOT COMPUTED — N < %d (B7 §b.3 cascade)" % calibration_mod.N_CLAIM_MIN,
                 "mcnemar": None, "tests": None,
-                "note": ("tests de supériorité (Wilson, McNemar exact, bootstrap par blocs) exécutés "
-                         "seulement quand N ≥ %d — le statut suit le contenu réellement calculé ; "
-                         "le harnais refuse de publier un score agrégé unique (B7 §e.5)"
+                "note": ("superiority tests (Wilson, exact McNemar, block bootstrap) run "
+                         "only when N ≥ %d — the status follows the content actually computed; "
+                         "the harness refuses to publish a single aggregate score (B7 §e.5)"
                          % calibration_mod.N_CLAIM_MIN)}
     tests: Dict[str, Any] = {}
     mcnemar: Dict[str, Any] = {}
@@ -445,13 +445,13 @@ def paired_superiority(ran: Sequence[Dict[str, Any]], *,
                 entry["paired_loss_diff_bootstrap"] = None
             tests["%s_vs_%s" % (first, second)] = entry
             mcnemar["%s_vs_%s" % (first, second)] = entry["mcnemar_exact_p"]
-    status = ("CALCULÉ — Wilson, McNemar exact, bootstrap par blocs par paire "
-              "(aucun score agrégé unique)" if tests else
-              "NON CALCULÉ — contenu non calculable (aucune paire de configs avec pertes calculées)")
+    status = ("COMPUTED — Wilson, exact McNemar, block bootstrap per pair "
+              "(no single aggregate score)" if tests else
+              "NOT COMPUTED — non-computable content (no config pair with computed losses)")
     return {"n": n, "status": status,
             "mcnemar": mcnemar if tests else None, "tests": tests if tests else None,
-            "note": ("tests par paire sur les pertes appariées par fenêtre ; le statut reflète "
-                     "le contenu réellement calculé (B7 §e.5)")}
+            "note": ("pairwise tests on the per-window paired losses; the status reflects "
+                     "the content actually computed (B7 §e.5)")}
 
 
 def run_set(set_label: str, *, frozen_dir: str = DEFAULT_FROZEN_DIR,
@@ -527,8 +527,8 @@ def run_set(set_label: str, *, frozen_dir: str = DEFAULT_FROZEN_DIR,
             }
 
     n_display = len(ran)
-    validity = ("non conclusionnel : N < 100 (cascade B7 §b.3)" if n_display < 100
-                else "N ≥ 100 — revendication possible sous conditions")
+    validity = ("non-conclusive: N < 100 (B7 §b.3 cascade)" if n_display < 100
+                else "N ≥ 100 — claim possible under conditions")
     content = {
         "schema": "orvyren.evaluation-report/v1",
         "set": set_label,
@@ -543,7 +543,7 @@ def run_set(set_label: str, *, frozen_dir: str = DEFAULT_FROZEN_DIR,
         "validity": validity,
         "skipped": [{"window_id": detail["window_id"],
                      "reason": detail.get("reason")
-                               or "aucune perte calculée — contenu absent (jamais remplacé)"}
+                               or "no computed loss — content absent (never replaced)"}
                     for detail in skipped],
         "windows": [{"window_id": detail["window_id"], "status": detail.get("status"),
                      "notes": detail.get("notes", []),

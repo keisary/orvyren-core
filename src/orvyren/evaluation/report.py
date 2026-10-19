@@ -45,7 +45,7 @@ def require_banner(banner: object) -> str:
 # G5 §b.3 cascade applied to the CONTENT actually computed (B7 §b.3)
 # --------------------------------------------------------------------------- #
 
-#: G5 §b.3 row "30 ≤ N < 100 : + IC bootstrap, courbe de fiabilité + Wilson".
+#: G5 §b.3 row "30 ≤ N < 100: + bootstrap CI, reliability curve + Wilson".
 N_CI_MIN = 30
 
 CASCADE_TIER_NOT_COMPUTED = "NOT_COMPUTED"
@@ -56,10 +56,10 @@ CASCADE_TIER_CLAIM = "CLAIM"
 def cascade_gate(n: int) -> Dict[str, Any]:
     """G5 §b.3 cascade for ``n`` **evaluated** items (content, not label).
 
-    Decides what content may be published for the given effectif:
+    Decides what content may be published for a given ``N``:
 
     ============== ====================================================
-    ``N < 5``      nothing (seuil D11)
+    ``N < 5``      nothing (D11 threshold)
     ``5 ≤ N < 30`` BS, REL, RES, UNC, ȳ, list ; ECE **without** claim
     ``30 ≤ N``     + block-bootstrap CI, reliability curve + Wilson
     ``100 ≤ N``    + BSS (with lower bound), ECE claimable under the
@@ -70,9 +70,9 @@ def cascade_gate(n: int) -> Dict[str, Any]:
     *consequence* of the evaluated content, never its driver.
     """
     if isinstance(n, bool) or not isinstance(n, int):
-        raise ReportError("N must be an int (evaluated content) : %r" % (n,))
+        raise ReportError("N must be an int (evaluated content): %r" % (n,))
     if n < 0:
-        raise ReportError("negative N : %r" % (n,))
+        raise ReportError("negative N: %r" % (n,))
     if n < calibration_mod.N_MIN_PUBLISH:
         tier = CASCADE_TIER_NOT_COMPUTED
         label = calibration_mod.VERDICT_NOT_COMPUTED
@@ -100,7 +100,7 @@ def _claim_conditions(computed: Dict[str, Any], bss_ci: Optional[List[float]],
     """The five frozen conditions (B7 §b.3) — computed where derivable from the
     evaluated content, ``NOT COMPUTED`` / ``DECLARATION REQUIRED`` otherwise.
 
-    The controlled word « calibré » is never emitted by this code: only the
+    The controlled word "calibrated" is never emitted by this code: only the
     conditions and their status are published.
     """
     rows = [row for row in (computed.get("reliability") or []) if row.get("n_b")]
@@ -152,7 +152,7 @@ def apply_cascade(computed: Optional[Dict[str, Any]], n_content: int,
     gate = cascade_gate(n_content)
     if gate["tier"] == CASCADE_TIER_NOT_COMPUTED:
         return {"n": n_content, "verdict": gate["label"], "ece_claimable": False,
-                "note": "nothing published: N < %d (seuil D11)"
+                "note": "nothing published: N < %d (D11 threshold)"
                         % calibration_mod.N_MIN_PUBLISH}
     if not isinstance(computed, dict):
         raise ReportError("computed content missing for N = %d ≥ %d"
@@ -231,27 +231,27 @@ def render_evaluation_report(*, content: Dict[str, Any], out_dir: str) -> Dict[s
     _write_json(json_path, document)
 
     lines: List[str] = []
-    lines.append("> **%s** — rapport d'évaluation — jeu `%s` — N = %d — %s"
+    lines.append("> **%s** — evaluation report — set `%s` — N = %d — %s"
                  % (banner, content.get("set"), n_windows, validity))
     lines.append("")
-    lines.append("# Rapport d'évaluation ORVYREN — %s" % banner)
+    lines.append("# ORVYREN evaluation report — %s" % banner)
     lines.append("")
     if content.get("forced_mention"):
         lines.append("> ⚠ **%s**" % content["forced_mention"])
         lines.append("")
-    lines.append("*hash de contenu* : `%s` · *généré* : %s · *fenêtres sautées* : %d"
+    lines.append("*content hash*: `%s` · *generated*: %s · *skipped windows*: %d"
                  % (content_sha, generated_at, content.get("n_windows_skipped", 0)))
     lines.append("")
     params = content.get("params") or {}
-    lines.append("**Paramètres** : q = %s · p_ref = %s · k = %s · tirages B0 = %s"
+    lines.append("**Parameters**: q = %s · p_ref = %s · k = %s · B0 draws = %s"
                  % (params.get("q"), params.get("p_ref"), params.get("k"), params.get("b0_draws")))
     lines.append("")
     lines.append("> %s" % params.get("note", ""))
     lines.append("")
 
-    lines.append("## Fenêtres (N = %d)" % n_windows)
+    lines.append("## Windows (N = %d)" % n_windows)
     lines.append("")
-    lines.append("| Fenêtre | Statut | L(A0) | L(A1) | L(AX0) | L(A2) | R(A2) |")
+    lines.append("| Window | Status | L(A0) | L(A1) | L(AX0) | L(A2) | R(A2) |")
     lines.append("|---|---|---|---|---|---|---|")
 
     def _fmt(value: Any) -> str:
@@ -268,9 +268,9 @@ def render_evaluation_report(*, content: Dict[str, Any], out_dir: str) -> Dict[s
 
     aggregates = content.get("aggregates") or {}
     if aggregates:
-        lines.append("## Agrégats par config (N affiché par ligne ; R⁻ ≠ R⁺, jamais moyennés ensemble)")
+        lines.append("## Aggregates per config (N displayed per row; R⁻ ≠ R⁺, never averaged together)")
         lines.append("")
-        lines.append("| Config | N | L moyen | R⁺ moyen | R⁻ moyen |")
+        lines.append("| Config | N | mean L | mean R⁺ | mean R⁻ |")
         lines.append("|---|---|---|---|---|")
         for label in ("A0", "A1", "AX0", "A2", "B0"):
             entry = aggregates.get(label)
@@ -282,21 +282,21 @@ def render_evaluation_report(*, content: Dict[str, Any], out_dir: str) -> Dict[s
         lines.append("")
 
     superiority = content.get("superiority") or {}
-    lines.append("## Supériorité & placebo")
+    lines.append("## Superiority & placebo")
     lines.append("")
-    lines.append("- Statut des tests de supériorité : **%s** — %s"
+    lines.append("- Superiority tests status: **%s** — %s"
                  % (superiority.get("status"), superiority.get("note", "")))
     lines.append("")
 
-    lines.append("## Limites (écrites avant lecture)")
+    lines.append("## Limits (written before reading)")
     lines.append("")
-    lines.append("- Aucun score agrégé unique ; regrets R⁻/R⁺ publiés séparément (W2-D piège n°8).")
-    lines.append("- O = borne inférieure du regret (exécution au meilleur instant observé) — "
-                 "pas une vérité terrain.")
-    lines.append("- Substitutions DEV (P_exec = prix observé, k = 0, A2 = dossier déterministe) "
-                 "déclarées dans chaque fenêtre.")
+    lines.append("- No single aggregate score; R⁻/R⁺ regrets published separately (W2-D pitfall #8).")
+    lines.append("- O = lower bound of the regret (execution at the best observed instant) — "
+                 "not a ground truth.")
+    lines.append("- DEV substitutions (P_exec = observed price, k = 0, A2 = deterministic dossier) "
+                 "declared in every window.")
     lines.append("")
-    lines.append("*Rapport reproductible : hash de contenu `%s` (champs d'exécution réels exclus).*"
+    lines.append("*Reproducible report: content hash `%s` (real execution fields excluded).*"
                  % content_sha)
     _write_text(md_path, "\n".join(lines))
     return {"json_path": json_path, "md_path": md_path, "content_sha256": content_sha}
@@ -312,8 +312,8 @@ def write_side_files(*, content: Dict[str, Any], window_details: List[Dict[str, 
                      out_dir: str) -> Dict[str, str]:
     """``placebo_B0.json`` + ``superiority_tests.json`` (B7 §e.5 structure)."""
     placebo: Dict[str, Any] = {"schema": "orvyren.evaluation-placebo/v1",
-                               "note": "distribution complète des tirages B0 (graine fixée) + "
-                                       "percentile de la config appariée"}
+                               "note": "complete distribution of the B0 draws (fixed seed) + "
+                                       "percentile of the paired config"}
     for detail in window_details:
         config = (detail.get("configs") or {}).get("B0") or {}
         if config.get("status") == "DISTRIBUTION":

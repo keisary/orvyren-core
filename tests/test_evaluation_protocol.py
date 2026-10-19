@@ -190,7 +190,7 @@ class TestF1BisSuperiorityContent(unittest.TestCase):
         details = [_fake_window_detail("w%d" % i, {"A0": 1.0, "A2": 0.5})
                    for i in range(4)]
         block = harness.paired_superiority(details, bootstrap_reps=100)
-        self.assertIn("NON CALCULÉ", block["status"])
+        self.assertIn("NOT COMPUTED", block["status"])
         self.assertIsNone(block["tests"])
         self.assertIsNone(block["mcnemar"])
 
@@ -199,7 +199,7 @@ class TestF1BisSuperiorityContent(unittest.TestCase):
                                        {"A0": 1.0, "A2": 0.5 if i % 2 else 1.5})
                    for i in range(100)]
         block = harness.paired_superiority(details, bootstrap_reps=200)
-        self.assertTrue(block["status"].startswith("CALCULÉ"), block["status"])
+        self.assertTrue(block["status"].startswith("COMPUTED"), block["status"])
         self.assertIn("A0_vs_A2", block["tests"])
         entry = block["tests"]["A0_vs_A2"]
         self.assertEqual(entry["n_paired"], 100)
@@ -215,7 +215,7 @@ class TestF1BisSuperiorityContent(unittest.TestCase):
     def test_label_never_claims_calculated_without_content(self):
         details = [_fake_window_detail("w%d" % i, {}) for i in range(100)]
         block = harness.paired_superiority(details, bootstrap_reps=50)
-        self.assertFalse(block["status"].startswith("CALCULÉ"))
+        self.assertFalse(block["status"].startswith("COMPUTED"))
         self.assertIsNone(block["tests"])
 
     def test_run_set_label_follows_content_end_to_end(self):
@@ -226,10 +226,10 @@ class TestF1BisSuperiorityContent(unittest.TestCase):
             result = harness.run_set("dev", b0_draws=1, calibration_periods=DEV_PERIODS)
         superiority = result["content"]["superiority"]
         self.assertEqual(result["content"]["n_windows"], 100)
-        self.assertTrue(superiority["status"].startswith("CALCULÉ"))
+        self.assertTrue(superiority["status"].startswith("COMPUTED"))
         self.assertTrue(superiority["tests"])
         self.assertEqual(result["content"]["validity"],
-                         "N ≥ 100 — revendication possible sous conditions")
+                         "N ≥ 100 — claim possible under conditions")
 
 
 class TestF2FreezeGateCodeHashes(unittest.TestCase):

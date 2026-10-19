@@ -1,50 +1,50 @@
-# ORVYREN — politique v1 — PARAMÈTRES
-# Source de vérité des PARAMÈTRES ; la sémantique des règles vit dans le code
-# (src/orvyren/policy/__init__.py) — DOC2 §5.5.3. Toute modification suit la
-# procédure de changement à 6 étapes (docs/decisions/ADR-0002).
-# Aucune adresse de session ici : les destinataires sont des LABELS résolus
-# au montage (cf. scripts/demo/.env — jamais versionné).
+# ORVYREN — v1 policy — PARAMETERS
+# Source of truth for the PARAMETERS ; rule semantics live in the code
+# (src/orvyren/policy/__init__.py) — DOC2 §5.5.3. Any change follows the
+# 6-step change procedure (docs/decisions/ADR-0002).
+# No session address here: recipients are LABELS resolved
+# at assembly time (see scripts/demo/.env — never versioned).
 
 schema: orvyren-policy/v1
 policy_version: v1.0
 
-# --- chaîne et actif (démo : Base Sepolia, USDC de test Circle) ---
+# --- chain and asset (demo: Base Sepolia, Circle test USDC) ---
 chain_id: 84532
 asset: "0x036CbD53842c5426634e7929541eC2318f3dCF7e"
 asset_symbol: "USDC (test, Circle)"
 asset_decimals: 6
 
-# --- plafonds (unités décimales du jeton) ---
+# --- caps (token decimal units) ---
 max_per_tx: "100.0"
 max_cumulative_24h: "300.0"
 max_calls_24h: 10
 
-# --- destinataires autorisés (labels résolus au montage) ---
+# --- allowed recipients (labels resolved at assembly time) ---
 recipients:
   - B
   - C
 
-# --- fenêtres ---
+# --- windows ---
 ttl_intent_minutes: 15
 clock_skew_seconds: 60
 ttl_approval_hours: 2
 permission_ttl_hours: 24
 
-# --- enveloppe on-chain correspondante (second verrou) : limites d'accumulation ---
+# --- matching on-chain envelope (second lock): accumulation limits ---
 allowance_refill_base_units: 300000000
 allowance_max_refill_base_units: 300000000
 allowance_period_seconds: 86400
 role_key: "0x4147454e54000000000000000000000000000000000000000000000000000000"
 revocation_scheduled_at: "2026-11-15T23:59:59Z"
 
-# --- registre des fonctions (P4) : seule opération exécutable en v1 ---
+# --- function registry (P4): the only executable operation in v1 ---
 functions:
   - operation: transfer
     target: "0x036CbD53842c5426634e7929541eC2318f3dCF7e"
     selector: "0xa9059cbb"
 
-# --- budget de décision (P14) : plafond par décision, en USD ---
+# --- decision budget (P14): per-decision cap, in USD ---
 decision_budget_usd: "0.10"
 
-# --- fixture de conformité (test de dérive, L4.4) ---
+# --- compliance fixture (drift test, L4.4) ---
 envelope_fixture: "fixtures/roles_agent_config.json"

@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-"""Test bench: ``agents.prompts`` — the three versioned French skeletons (L2.5).
+"""Test bench: ``agents.prompts`` — the three versioned English skeletons (L2.5).
 
 Covers B1_AGENTS_ETUDE.md §5.2/§5.3/§5.4: the three system-prompt skeletons
 are present, non-empty, carry their closed JSON schema id and the key clauses
@@ -44,34 +44,34 @@ class SkeletonTest(unittest.TestCase):
 
     def test_every_skeleton_states_the_untrusted_clause(self):
         for role, text in prompts.SYSTEM_PROMPTS.items():
-            self.assertIn("NON FIABLE", text, role)
+            self.assertIn("UNTRUSTED", text, role)
 
     def test_orchestrator_carries_mission_context_rules_and_stop(self):
         text = prompts.system_prompt("orchestrator")
         self.assertIn("MISSION", text)
-        self.assertIn("CONTEXTE FOURNI", text)
-        self.assertIn("RÈGLES", text)
+        self.assertIn("CONTEXT PROVIDED", text)
+        self.assertIn("RULES", text)
         self.assertIn('"orvyren/orch/v1"', text)
         self.assertIn("stop=true", text)
-        self.assertIn("champ inconnu sera REJETÉ", text)
+        self.assertIn("unknown field is REJECTED", text)
         for rule in ("1.", "2.", "3.", "4.", "5."):
             self.assertIn(rule, text)
 
     def test_critic_searches_for_the_error_and_bans_rewrites(self):
         text = prompts.system_prompt("critic")
-        self.assertIn("chercher l'erreur", text)
-        self.assertIn("INTERDITS", text)
-        self.assertIn('Une objection sans ref est invalide', text)
-        self.assertIn("REJETÉ", text)
+        self.assertIn("hunt the error", text)
+        self.assertIn("FORBIDDEN", text)
+        self.assertIn('An objection without a ref is invalid', text)
+        self.assertIn("REJECTED", text)
         self.assertIn('"orvyren/crit/v1"', text)
 
     def test_canonicaliser_copies_never_computes(self):
         text = prompts.system_prompt("canonicalizer")
-        self.assertIn("recopier, jamais calculer", text)
-        self.assertIn("Ne convertit pas, ne calcule pas, n'arrondis pas", text)
+        self.assertIn("copy, never compute", text)
+        self.assertIn("Do not convert, do not compute, do not round", text)
         self.assertIn('"orvyren/canon/v1"', text)
         self.assertIn("OK | ABSENT | AMBIGU", text)
-        self.assertIn("QUARANTAINE", text)
+        self.assertIn("QUARANTINED", text)
 
 
 class VersionTest(unittest.TestCase):
