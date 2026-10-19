@@ -44,11 +44,13 @@ verdict. That run is the honest unit of work — it is shipped, byte-identical, 
 ## Try it
 
 ```bash
-python -m unittest discover -s tests          # 1515 tests, OK (skipped=3) — measured 2026-10-18
+python -m unittest discover -s tests          # 1546 tests, OK (skipped=3) — measured 2026-10-19
 python scripts/verify_frozen.py               # pre-registered evaluation protocol: COMPLIANT
 PYTHONPATH=src python -m orvyren.decide --case usdc-2023-03 --replay    # full decision, offline
 python run_verify.py evidence/audit_packets/audit_packet_rseth_20261016-2340_01M526YS.zip
-                                              # VERDICT: OFFLINE_PASS — 16 checks, 0 failed
+                                              # measured 2026-10-19T13:42Z: FAIL — 16 checks, 2 failed
+                                              # (A4 dossier re-render). Packet rebuild required before
+                                              # any OFFLINE_PASS claim — docs/CLOSURE_CHECKLIST.md item 8
 ```
 
 Dashboard (offline, real state, no external resource):
@@ -65,13 +67,24 @@ A single runbook, with the expected output of every step:
 
 | What | Command | Result |
 |---|---|---|
-| Test suite | `python -m unittest discover -s tests` | 1515 tests, OK (3 skipped) |
-| Third-party audit packet | `python run_verify.py <packet>.zip` | `OFFLINE_PASS`, 16 checks, 0 failed |
+| Test suite | `python -m unittest discover -s tests` | 1546 tests, OK (3 skipped) — measured 2026-10-19 |
+| Third-party audit packet | `python run_verify.py <packet>.zip` | **measured 2026-10-19T13:42Z: `FAIL` — 16 checks, 2 failed** (`A4.dossier.rerender.md/.html`, caused by `src/orvyren/audit/dossier.py` changing after the packet was built). The shipped 16/10 packet must be rebuilt before the `OFFLINE_PASS` claim is made — `docs/CLOSURE_CHECKLIST.md` item 8 |
 | Frozen evaluation protocol | `python scripts/verify_frozen.py` | `COMPLIANT` (byte-identical recalculation) |
 | Policy | `policy_v1.yaml` + `src/orvyren/policy/` | 14 deterministic rules, production mode fail-closed |
 | Execution preflight | `src/orvyren/execution/preflight.py` | 10 controls, stop at the first failure |
-| Demonstration graph | `GET /api/graph/info` | 16 174 nodes · 12 937 relations · 15 000 Aave v3 Base events (database **not** shipped) |
-| One agent run | shipped run summary | 0,0357 USD, 13 journal lines, abstention with 5 research leads |
+| Demonstration graph | `GET /api/graph/info` | 16 174 nodes · 12 937 relations · 15 000 Aave v3 Base events — **a local artifact, not in this repository**; the shipped scenario used the 520-observation `evidence/graph.sqlite` (schema v2) — see the note below the table |
+| One agent run | shipped run summary | 0.035731 USD, 5 LLM calls, 1 tool call, 34 s, 13 journal lines, abstention with 5 research leads |
+
+**Which graph the demo actually used — read this with the figure above.** The
+16 174-node / 12 937-relation base is a local artifact produced by the
+reconstruction pipeline and **is not shipped in the repository**. The agents
+scenario delivered in `evidence/` reasoned on `evidence/graph.sqlite`, the
+versioned 520-observation snapshot (schema v2, 4 relations). On that snapshot
+the honest answers are: **Q2 returns `NO_PATH`** (no `DEPENDS_ON`/`AFFECTS`
+edges are populated), **Q7 `debt_backed` has no asset filter — never read it as
+an exposure metric** (it sums every visible `OWES` row; the filtered measure is
+`api.concentration`), and **Q8 returns `NOT_INGESTED`** (no Safe/Zodiac data in
+the slice). The dashboard states which database it is reading.
 
 ## Architecture
 
@@ -94,8 +107,11 @@ the critic brakes. The critic never cancels a decision — it forces escalation.
 Deliberately, and written down in
 [`docs/SUBMISSION_SCOPE_AND_GAPS.md`](docs/SUBMISSION_SCOPE_AND_GAPS.md):
 
-- **No measured decision gain.** The evaluation has not run (`N=0`); no
-  superiority claim is made anywhere.
+- **No measured decision gain, and no superiority claim.** The first EVAL ran on
+  **2026-10-19** and scores **N=1** (`eval-usd0pp-2025-01`; `eval-rseth-2026-04`
+  is skipped for lack of an archived series) — far below the protocol's `N≥100`
+  threshold, superiority tests `NOT COMPUTED`. The 17/10 DEV artefacts are
+  historical: `evidence/evaluation/SUPERSEDED_NOTE.md`.
 - **The autonomous signing path has never been exercised end to end.** It is
   implemented, preflighted and unit-tested; the 13 demonstration transactions
   were signed by a human-held testnet key (1 success, 12 forced reverts — the
@@ -122,7 +138,7 @@ report — threats, exact tests, measured results, residual risks — is
 src/orvyren/     the system (data · quality · graph · branches · agents · decision ·
                  policy · execution · chain · audit · verify · replay · evaluation · ui · api)
 scripts/         episode reconstructions, Aave ingestion, testnet demo kit
-tests/           1515 offline tests
+tests/           1546 offline tests
 fixtures/        archived measurements used by tests and offline modes (+ their source notes)
 evidence/        proofs: reconstructed episodes, audit packets, sealed agent runs, snapshots
 corpus/          archived USDC/SVB March 2023 observations (offline replay)

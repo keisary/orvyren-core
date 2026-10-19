@@ -32,9 +32,9 @@ below 20 or no registry access; `frontend/node_modules/` is gitignored, so its a
 
 ```
 $ python -m unittest discover -s tests -q
-Ran 1515 tests in 114.235s
+Ran 1546 tests in 73.427s
 
-OK (skipped=3)                              (exit 0, wall 116 s)
+OK (skipped=3)                              (exit 0, wall 75 s)   [measured 2026-10-19T13:49Z]
 ```
 
 The three skips are environment gates, each printing its reason under `-v`: `eth-account present: the

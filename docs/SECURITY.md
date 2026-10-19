@@ -3,9 +3,10 @@
 **Submission artefact** — 2026 Shenzhen International FinTech Competition, Topic F (agent
 wallet / bounded autonomous on-chain execution). Repository `orvyren-core`.
 
-**Measured on** 2026-10-18, tree at commit `2085300`, Windows 11, CPython 3.11.15,
-from the repository root. Other documents were being rewritten in parallel; nothing
-under `src/`, `tests/` or `scripts/` was modified by this pass.
+**Measured on** 2026-10-19, tree at commit `1a422f4` (HEAD of `master`), Windows 11,
+CPython 3.11.15, from the repository root. The static-analysis figures below were re-run
+on this tree because the previous pass measured an earlier commit; nothing under `src/`,
+`tests/` or `scripts/` was modified by this documentation pass.
 
 **Measurement rule.** Every figure below comes from a command quoted beside it and run
 during this pass; what could not be exercised is written **not measured** or **not
@@ -218,11 +219,11 @@ inside the caps is still allowed.
 
 | Scan | Command | Measured result |
 |---|---|---|
-| Unit suite | `python -m unittest discover -s tests -q` | `Ran 1515 tests … OK (skipped=3)`, 95.5 s |
+| Unit suite | `python -m unittest discover -s tests -q` | `Ran 1546 tests … OK (skipped=3)`, 73.4 s — measured 2026-10-19T13:49Z |
 | Skipped tests | `… -v` | 2 × `set ORVYREN_LIVE_RPC=1 …` (`TestLiveRpc`), 1 × "eth-account present: the library-missing path is not testable" |
-| Bandit 1.9.4 | `python -m bandit -r src -f txt` | **40 findings, 0 High** (28 Medium, 12 Low) over 26 260 LOC, 0 `#nosec`: 22 × B608, 5 × B310, 5 × B110, 4 × B105, 2 × B311, 1 × B104, 1 × B101 |
-| Ruff 0.16.5 | `python -m ruff check src` | `All checks passed!` |
-| Mypy 2.4.0 | `python -m mypy src --ignore-missing-imports` | `Found 100 errors in 23 files (checked 91 source files)` — untriaged, this is G-11 |
+| Bandit 1.9.4 | `python -m bandit -r src -f txt` | **40 findings, 0 High** (28 Medium, 12 Low) over 26 774 LOC, 0 `#nosec`: 22 × B608, 5 × B310, 5 × B110, 4 × B105, 2 × B311, 1 × B104, 1 × B101 — same 40 as the previous pass, on 514 more lines |
+| Ruff 0.16.5 | `python -m ruff check src scripts run_*.py` | `All checks passed!` (wider scope than the previous `src`-only run) |
+| Mypy 2.4.0 | `python -m mypy src --ignore-missing-imports` | `Found 101 errors in 24 files (checked 91 source files)` — untriaged, this is G-11; **+1 error in +1 file** versus the previous pass |
 | Third-party verifier | `python run_verify.py <packet.zip> --mutate-test` | `OFFLINE_PASS — 16 checks, 0 failed, mutations 6/6` |
 | Chain re-check | `… --rpc https://sepolia.base.org` | `PASS — 29 checks, 0 failed` |
 | Secret hygiene | `python scripts/demo/check_env_hygiene.py` | `VERDICT: OK` (H4 skipped: Windows) |
@@ -253,7 +254,7 @@ entries:
 | Ref | Residual risk |
 |---|---|
 | G-12 | The system's own `--execute` path is preflighted but **never exercised end to end**; the 13 testnet transactions were signed by a human. |
-| G-11 | Mypy backlog (100 errors measured today) and 40 Bandit findings are accepted debt, not fixed. |
+| G-11 | Mypy backlog (101 errors measured on 2026-10-19) and 40 Bandit findings are accepted debt, not fixed. |
 | §3 #14 | The local API has **no authentication**; the only boundary is the `127.0.0.1` binding, which `ORVYREN_API_HOST` can override. |
 | G-6 | The sealed seed's recorded critic cites one reference absent from its packet; a strict critic-side gate needs a visible re-seed. |
 | G-14 | The live scenario ran on the 520-observation `evidence/graph.sqlite`, not the 16 174-node local database. |
@@ -268,7 +269,7 @@ No stronger claim is made elsewhere in the submission: the other documents cite 
 ```bash
 python -V                                   # 3.11.15 used for this report
 
-# 1. suite (1515 tests, 3 skips) and the per-control modules
+# 1. suite (1546 tests, 3 skips) and the per-control modules
 python -m unittest discover -s tests -q
 python -m unittest tests.test_execution_preflight tests.test_execution_wiring -q     # 43 + 12
 python -m unittest tests.test_policy tests.test_policy_yaml tests.test_policy_zodiac_conformance -q  # 52 + 17 + 8

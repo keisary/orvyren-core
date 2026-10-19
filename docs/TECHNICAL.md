@@ -96,7 +96,7 @@ selection, RDOF ordering and stops, abstention A1–A5, the 14 policy rules, the
 preflight, the ledger, the chain, the verifier. LLM: which hypotheses are formed,
 which test is proposed, the adversarial critique — their output enters the journal
 as **claims with refs** and an LLM number never enters a decision figure. Not
-measured: whether the LLM stage improves decision quality (`N=0`, §9.6).
+measured: whether the LLM stage improves decision quality (`N=1`, §9.6).
 
 **How to verify**
 
@@ -647,6 +647,12 @@ published sidecar (`sha256sum -c` → `OK`). The run prints every check
 `B1.chain.rpc` reported `SKIPPED` offline, and ends
 `VERDICT: OFFLINE_PASS — 16 checks, 0 failed, mutations n/a`.
 
+> **Re-measured 2026-10-19T13:42Z on the same packet: `VERDICT: FAIL — 16 checks,
+> 2 failed`** (`A4.dossier.rerender.md`, `A4.dossier.rerender.html`).
+> `src/orvyren/audit/dossier.py` changed after the packet was built, so its A4
+> re-render no longer matches. The packet must be rebuilt and §9.4/§9.5
+> re-measured before this transcript is quoted — `docs/CLOSURE_CHECKLIST.md` item 8.
+
 **9.5 Measured: the mutation self-test.** A verifier that always says "ok" is
 worthless, so the tool attacks its own packet — M1 one byte of the dossier body · M2
 one character in an `audit.jsonl` line · M3 one digit of an amount in
@@ -662,21 +668,23 @@ MUTATION M6 detected (A3.packet.sha256)
 VERDICT: OFFLINE_PASS — 16 checks, 0 failed, mutations 6/6
 ```
 
-**9.6 Evaluation — `N=0`.** The protocol is frozen (`frozen/G1..G6`, byte-identical
-recalculation, `verify_frozen.py` → `COMPLIANT`, 20 files, 1.10 s) and the harness
-enforces the gates that make a later number trustworthy: the freeze gate really
-checks the code hashes announced in the Gx documents, the calibration embargo is
-mandatory, and `eval_run.lock` is **burned** — a real EVAL pass requires `--force`
-and an explicit mention. Today **N = 0**: no evaluation run has produced a
-decision-gain sample (the first gate pass returned `N=0`, 2 windows skipped, series
-not assembled). **No superiority claim** is made anywhere, and the harness refuses
-the wording below `N ≥ 100`. The mini-benchmark that exists is diagnostic only: 12
-runs, A0 (deterministic engine) vs A2 (full agents), one real episode + one labelled
-synthetic placebo — `evidence/benchmark_ab/report.md` carries the banner *"no
-superiority claim (G1 threshold N>=100 not reached)"*. The published
-`evidence/evaluation/evaluation_report.*` predates the R−/R+ aggregation fix; it is
-**annotated** in `SUPERSEDED_NOTE.md` and left byte-identical because its hash is
-referenced by a signed embargo — no figure may be quoted from it.
+**9.6 Evaluation — `N=1`, non-conclusive.** The protocol is frozen (`frozen/G1..G6`,
+byte-identical recalculation, `verify_frozen.py` → `COMPLIANT`, 20 files, 1.10 s)
+and the harness enforces the gates that make a later number trustworthy: the
+freeze gate really checks the code hashes announced in the Gx documents, the
+calibration embargo is mandatory, and `eval_run.lock` is burned — an EVAL pass
+requires `--force` and an explicit mention. **N = 1**: the first EVAL ran on
+**2026-10-19**, after the G6 signature of the same day — one window scored
+(`eval-usd0pp-2025-01`), one skipped (`eval-rseth-2026-04`, no archived series),
+`A2` absent on the scored window (declared substitution). That is far below
+`N ≥ 100`, so **no superiority claim** is made anywhere and the harness refuses
+the wording below the threshold. The mini-benchmark that exists is diagnostic
+only: 12 runs, A0 (deterministic engine) vs A2 (full agents), one real episode +
+one labelled synthetic placebo that **was executed** — `evidence/benchmark_ab/report.md`
+carries the banner *"no superiority claim (G1 threshold N>=100 not reached)"*. The
+current report is `generated: 2026-10-19T03:00:46Z`, content hash `c143c243…`,
+superiority tests `NOT COMPUTED`; the 2026-10-17 DEV pair is history, documented
+in `SUPERSEDED_NOTE.md` — no figure may be quoted from it.
 
 **How to verify**
 
@@ -744,13 +752,14 @@ python -m unittest tests.test_ui_routes tests.test_ui_panels -q
 ## 11. Measured numbers
 
 Each row is a command someone else can run on this tree. Values were produced on
-2026-10-18 on this machine; different hardware may change timings, never counts.
+2026-10-18, except the test-suite row, measured 2026-10-19, on this machine;
+different hardware may change timings, never counts.
 
 | # | What | Command | Result |
 |---|---|---|---|
-| 1 | Test suite | `python -m unittest discover -s tests -q` | `Ran 1515 tests in 126.124s` — `OK (skipped=3)` |
+| 1 | Test suite | `python -m unittest discover -s tests -q` | `Ran 1546 tests in 73.427s` — `OK (skipped=3)` — measured 2026-10-19T13:49Z |
 | 2 | Frozen protocol | `python scripts/verify_frozen.py` | `COMPLIANT` (20 files, 1.10 s) |
-| 3 | Audit packet + tamper test | `run_verify.py …01M526YS.zip [--mutate-test]`; `sha256sum -c` on its sidecar | `OFFLINE_PASS — 16 checks, 0 failed` · `mutations 6/6` · zip `a0c4562050a6c4…` `OK` |
+| 3 | Audit packet + tamper test | `run_verify.py …01M526YS.zip [--mutate-test]`; `sha256sum -c` on its sidecar | **2026-10-18**: `OFFLINE_PASS — 16 checks, 0 failed` · `mutations 6/6` · zip `a0c4562050a6c4…` `OK`. **Re-measured 2026-10-19T13:42Z: `FAIL — 16 checks, 2 failed`** (`A4.dossier.rerender.md/.html` — `audit/dossier.py` changed after the packet was built); packet rebuild required |
 | 4 | Testnet receipts | count over `evidence/demo_chain/rseth/receipts/*.json`; `sha256sum -c MANIFEST.sha256` | 13 files (`0x1` ×1, `0x0` ×12); manifest 16 files `OK` |
 | 5 | Relation catalogue | `catalog.catalog_stats()` | 35 kinds — 8 / 16 / 3 / 8 |
 | 6 | Relation record | `len(RELATION_RECORD_FIELD_GROUPS)` | 17 groups / 30 fields |
@@ -784,7 +793,7 @@ G-18), with the per-finding ledger in [`ECARTS_REGISTRE.md`](ECARTS_REGISTRE.md)
 | Id | Limit | Consequence |
 |---|---|---|
 | **G-12** | `--execute` never exercised end to end; the 13 testnet transactions were signed by a human key | no claim of autonomous signing |
-| **G-1** | evaluation `N=0`, `eval_run.lock` burned | no measured decision gain, no superiority claim |
+| **G-1** | evaluation `N=1` (first EVAL, 2026-10-19; one window, far below N≥100) | no measured decision gain, no superiority claim |
 | **G-14** | the 16 174-node graph is a local artifact with a reconstruction pipeline | a clean clone shows the 520-observation snapshot; the UI says which |
 | **G-4** | Q2 `NO_PATH` on the Aave slice; Q8 `NOT_INGESTED` | dependency and permission questions answered "unknown", not fabricated |
 | **G-2 / G-7** | no archived rsETH market series; realisable value of frozen collateral unreadable | the −31 % divergence is a documented point, not a measured series — the critic raises it as blocking |
@@ -808,7 +817,7 @@ production" (the path exists, is tested, never signed by itself); **not** "embed
 optional, off by default); **not** "static HTML UI without JavaScript" (the product UI
 is a React SPA; the 12-screen HTML UI is the fallback); **not** "PostgreSQL" (SQLite);
 **not** "35 relations" (35 kinds defined, 13 in fixtures, 1 in the shipped graph);
-**not** "decision gain proven" (`N=0`).
+**not** "decision gain proven" (`N=1`, against an `N≥100` threshold).
 
 **How to verify** — `python run_verify.py <packet>.zip --mutate-test` (the audit claim)
 and `test -f evidence/eval_run.lock` (the evaluation claim) close everything above.
