@@ -5,6 +5,7 @@ import type { PolicyCase, Receipt } from "@/lib/types";
 import {
   fmtHash,
   fmtNumber,
+  fmtStamp,
   fmtTime,
   shortAddress,
   truncate,
@@ -270,7 +271,7 @@ export default function DecisionScreen() {
               ) : recordStale ? (
                 <div className="flex flex-wrap items-center justify-between gap-2 border border-line bg-surface2 px-4 py-2">
                   <span className="text-meta text-ink">
-                    Refresh failed — record loaded at {fmtTime(decisionQuery.dataUpdatedAt)}
+                    Refresh failed — record loaded at {fmtStamp(decisionQuery.dataUpdatedAt)}
                   </span>
                   <Button
                     variant="secondary"
@@ -757,7 +758,7 @@ export default function DecisionScreen() {
                 {receiptsQuery.isError && receiptsQuery.data ? (
                   <div className="flex flex-wrap items-center justify-between gap-2 border-b border-line bg-surface2 px-4 py-2">
                     <span className="text-meta text-ink">
-                      Refresh failed — receipts loaded at {fmtTime(receiptsQuery.dataUpdatedAt)}
+                      Refresh failed — receipts loaded at {fmtStamp(receiptsQuery.dataUpdatedAt)}
                     </span>
                     <Button
                       variant="secondary"

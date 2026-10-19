@@ -10,6 +10,7 @@ import {
   fmtHash,
   fmtNumber,
   fmtSeconds,
+  fmtStamp,
   fmtTime,
   hypothesisVariant,
   truncate,
@@ -373,7 +374,7 @@ export default function LiveScreen() {
             <div className="text-body text-ink">
               {runs.length === 0
                 ? "Runs unavailable — the API did not answer."
-                : `Refresh failed — showing runs loaded at ${fmtTime(runsQuery.dataUpdatedAt)}.`}
+                : `Refresh failed — showing runs loaded at ${fmtStamp(runsQuery.dataUpdatedAt)}.`}
             </div>
             <Button
               variant="secondary"
@@ -386,6 +387,17 @@ export default function LiveScreen() {
         ) : runsQuery.isFetching && runs.length === 0 ? (
           <div className="border border-line bg-surface px-4 py-3 text-center text-meta text-muted">
             Loading runs…
+          </div>
+        ) : runsQuery.data && runs.length === 0 ? (
+          <div className="border border-line bg-surface px-4 py-4 text-center">
+            <div className="text-body text-ink">No run is available in this view.</div>
+            <Button
+              variant="secondary"
+              className="mt-2"
+              onClick={() => runsQuery.refetch()}
+            >
+              Refresh runs
+            </Button>
           </div>
         ) : null}
         <SubstitutionBanner substitution={bundle?.substitution ?? run.substitution ?? null} />
@@ -476,10 +488,10 @@ export default function LiveScreen() {
                 </Button>
               </div>
             </CardHeader>
-            {eventsQuery.isError && timeline.length > 0 ? (
+            {eventsQuery.isError && eventsQuery.data ? (
               <div className="flex flex-wrap items-center justify-between gap-2 border-b border-line bg-surface2 px-4 py-2">
                 <span className="text-meta text-ink">
-                  Refresh failed — journal loaded at {fmtTime(eventsQuery.dataUpdatedAt)}
+                  Refresh failed — journal loaded at {fmtStamp(eventsQuery.dataUpdatedAt)}
                 </span>
                 <Button
                   variant="secondary"
@@ -490,9 +502,37 @@ export default function LiveScreen() {
                 </Button>
               </div>
             ) : null}
+            {!eventsQuery.data &&
+            (eventsQuery.isFetching || eventsQuery.isError) &&
+            timeline.length > 0 ? (
+              <div className="flex flex-wrap items-center justify-between gap-2 border-b border-line bg-surface2 px-4 py-2">
+                <span
+                  className={
+                    eventsQuery.isError ? "text-meta text-ink" : "text-meta text-muted"
+                  }
+                >
+                  {eventsQuery.isError
+                    ? "Journal unavailable — showing partial live events."
+                    : "Partial live events shown — the archived journal is still loading…"}
+                </span>
+                {eventsQuery.isError ? (
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    onClick={() => eventsQuery.refetch()}
+                  >
+                    Retry
+                  </Button>
+                ) : null}
+              </div>
+            ) : null}
             <div ref={journalRef} className="max-h-[560px] overflow-auto">
               {timeline.length === 0 ? (
-                eventsQuery.isError ? (
+                !runId ? (
+                  <div className="px-4 py-6 text-center text-meta text-muted">
+                    No run selected — its journal cannot be loaded.
+                  </div>
+                ) : eventsQuery.isError ? (
                   <div className="px-4 py-6 text-center">
                     <div className="text-body text-ink">
                       Journal unavailable — the API did not answer.
@@ -535,9 +575,19 @@ export default function LiveScreen() {
               </CardHeader>
               <CardContent className="space-y-2">
                 {bundleQuery.isError ? (
-                  <div className="text-meta text-ink">
-                    Refresh failed — run dossier loaded at{" "}
-                    {fmtTime(bundleQuery.dataUpdatedAt)}
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <span className="text-meta text-ink">
+                      {bundleQuery.data
+                        ? `Refresh failed — run dossier loaded at ${fmtStamp(bundleQuery.dataUpdatedAt)}`
+                        : "Run dossier unavailable — the API did not answer."}
+                    </span>
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      onClick={() => bundleQuery.refetch()}
+                    >
+                      Retry
+                    </Button>
                   </div>
                 ) : !bundleQuery.data && bundleQuery.isFetching ? (
                   <div className="text-meta text-muted">Loading run dossier…</div>
@@ -777,7 +827,7 @@ export default function LiveScreen() {
                     label="Tokens"
                     value={
                       budgetKnown
-                        ? `${fmtCompact(budget.tokens_in ?? 0)} in · ${fmtCompact(budget.tokens_out ?? 0)} out`
+                        ? `${budget.tokens_in !== undefined ? fmtCompact(budget.tokens_in) : "—"} in · ${budget.tokens_out !== undefined ? fmtCompact(budget.tokens_out) : "—"} out`
                         : ""
                     }
                   />

@@ -1,7 +1,7 @@
 import { useState, type ReactNode } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { api } from "@/lib/api";
-import { fmtCompact, fmtHash, fmtTime, truncate, verdictVariant } from "@/lib/format";
+import { fmtCompact, fmtHash, fmtStamp, fmtTime, truncate, verdictVariant } from "@/lib/format";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -179,6 +179,20 @@ export default function AuditScreen() {
       }
     >
       <div className="space-y-4">
+        {summaryQuery.isError && summary ? (
+          <div className="flex flex-wrap items-center justify-between gap-2 border border-line bg-surface2 px-4 py-2">
+            <span className="text-meta text-ink">
+              Refresh failed — summary loaded at {fmtStamp(summaryQuery.dataUpdatedAt)}
+            </span>
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={() => summaryQuery.refetch()}
+            >
+              Retry
+            </Button>
+          </div>
+        ) : null}
         {/* 1 — offline packet first: the self-contained proof (§4.9). */}
         <div className="grid grid-cols-1 gap-4 xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
           <Card>
@@ -379,7 +393,7 @@ export default function AuditScreen() {
           {streamQuery.isError && streamQuery.data ? (
             <div className="flex flex-wrap items-center justify-between gap-2 border-b border-line bg-surface2 px-4 py-2">
               <span className="text-meta text-ink">
-                Refresh failed — journal page loaded at {fmtTime(streamQuery.dataUpdatedAt)}
+                Refresh failed — journal page loaded at {fmtStamp(streamQuery.dataUpdatedAt)}
               </span>
               <Button
                 variant="secondary"
@@ -390,7 +404,20 @@ export default function AuditScreen() {
               </Button>
             </div>
           ) : null}
-          {!streamQuery.data && streamQuery.isFetching ? (
+          {streamQuery.isError && !streamQuery.data ? (
+            <div className="px-4 py-6 text-center">
+              <div className="text-body text-ink">
+                Journal page unavailable — the API did not answer.
+              </div>
+              <Button
+                variant="secondary"
+                className="mt-2"
+                onClick={() => streamQuery.refetch()}
+              >
+                Retry
+              </Button>
+            </div>
+          ) : !streamQuery.data && streamQuery.isFetching ? (
             <div className="px-4 py-6 text-center text-meta text-muted">
               Loading journal page…
             </div>

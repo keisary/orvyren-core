@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { api } from "@/lib/api";
 import type { SeriesLine } from "@/lib/types";
-import { fmtBps, fmtNumber, fmtTime, fmtUnix, truncate } from "@/lib/format";
+import { fmtBps, fmtNumber, fmtStamp, fmtTime, fmtUnix, truncate } from "@/lib/format";
 import { seriesStyle } from "@/lib/graph-theme";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -341,7 +341,7 @@ export default function MarketsScreen() {
           {episodesQuery.isError && episodesQuery.data ? (
             <>
               <span className="text-meta text-ink">
-                Refresh failed — list loaded at {fmtTime(episodesQuery.dataUpdatedAt)}
+                Refresh failed — list loaded at {fmtStamp(episodesQuery.dataUpdatedAt)}
               </span>
               <Button
                 variant="secondary"
@@ -355,7 +355,28 @@ export default function MarketsScreen() {
         </>
       }
     >
-      {seriesQuery.isError && !series ? (
+      {episodesQuery.isError && !episodesQuery.data ? (
+        <div className="border border-line bg-surface px-4 py-8 text-center">
+          <div className="text-body text-ink">
+            Episode list unavailable — the API did not answer.
+          </div>
+          <Button
+            variant="secondary"
+            className="mt-2"
+            onClick={() => episodesQuery.refetch()}
+          >
+            Retry
+          </Button>
+        </div>
+      ) : !episodesQuery.data && episodesQuery.isFetching ? (
+        <div className="border border-line bg-surface px-4 py-8 text-center text-meta text-muted">
+          Loading episodes…
+        </div>
+      ) : episodesQuery.data && episodes.length === 0 ? (
+        <div className="border border-line bg-surface px-4 py-8 text-center text-body text-muted">
+          No episode is available in this view.
+        </div>
+      ) : seriesQuery.isError && !series ? (
         <div className="border border-line bg-surface px-4 py-8 text-center">
           <div className="text-body text-ink">
             Series unavailable — the API did not answer.
@@ -372,6 +393,20 @@ export default function MarketsScreen() {
         <div className="p-8 text-center text-meta text-muted">Loading series…</div>
       ) : (
         <div className="space-y-4">
+          {seriesQuery.isError && series ? (
+            <div className="flex flex-wrap items-center justify-between gap-2 border border-line bg-surface2 px-4 py-2">
+              <span className="text-meta text-ink">
+                Refresh failed — series loaded at {fmtStamp(seriesQuery.dataUpdatedAt)}
+              </span>
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={() => seriesQuery.refetch()}
+              >
+                Retry
+              </Button>
+            </div>
+          ) : null}
           <Card>
             <CardHeader>
               <CardTitle>{series.title}</CardTitle>

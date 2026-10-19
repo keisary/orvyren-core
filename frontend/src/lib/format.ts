@@ -50,6 +50,14 @@ export function fmtTime(iso: unknown): string {
   return text.replace("T", " ").replace("+00:00", "Z").slice(0, 19);
 }
 
+/** Millisecond epoch (react-query `dataUpdatedAt`) → UTC date string;
+ *  0 / absent → "—" (there is no previous success to date) — Astra-6. */
+export function fmtStamp(ms: unknown): string {
+  const n = typeof ms === "number" ? ms : Number(ms);
+  if (!Number.isFinite(n) || n <= 0) return "—";
+  return `${new Date(n).toISOString().replace("T", " ").slice(0, 19)} UTC`;
+}
+
 export function fmtUnix(unix: unknown): string {
   const n = typeof unix === "number" ? unix : Number(unix);
   if (!Number.isFinite(n) || n <= 0) return "—";

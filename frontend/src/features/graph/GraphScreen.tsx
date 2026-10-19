@@ -2,7 +2,7 @@ import { useMemo, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { api } from "@/lib/api";
 import type { GraphQueryResult } from "@/lib/types";
-import { fmtCompact, fmtHash, fmtNumber, fmtTime, shortAddress, truncate } from "@/lib/format";
+import { fmtCompact, fmtHash, fmtNumber, fmtStamp, fmtTime, shortAddress, truncate } from "@/lib/format";
 import { toneForClass } from "@/lib/graph-theme";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -139,30 +139,32 @@ export default function GraphScreen() {
     data: GraphQueryResult;
   } | null>(null);
 
-  const runQuery = useQuery({
-    queryKey: ["graph-query", queryName, params],
-    queryFn: () => api.graphQuery(queryName, params),
-    enabled: false,
-  });
-
-  // One execution path for Run query AND Retry (Astra-5 correction 2):
-  // identity (query + params) is captured at invocation, the result is
-  // published ONLY on a success of THIS invocation — a failed retry keeps
-  // the previous result with its authentic date, and concurrent runs are
-  // discarded by invocation id.
+  // Run query AND Retry share ONE frozen call (Astra-6 correction 2):
+  // api.graphQuery runs against a SNAPSHOT of the identity — no observer,
+  // no queryKey swap under the flight (a Q1→Q7 switch can no longer publish
+  // Q7 data under the Q1 name). Success of THIS invocation (by id) publishes
+  // {name, sig, at, data}; failure keeps the previous result and its
+  // authentic date, reported by its own state.
   const invocationRef = useRef(0);
-  const runAndPublish = () => {
+  const [running, setRunning] = useState(false);
+  const [runErrorAt, setRunErrorAt] = useState<string | null>(null);
+  const runAndPublish = async () => {
     const invocation = (invocationRef.current += 1);
-    const sig = JSON.stringify(params);
     const name = queryName;
-    runQuery.refetch().then((result) => {
-      if (invocation !== invocationRef.current) return; // superseded
-      if (!result.error && result.data) {
-        setRan({ name, sig, at: new Date().toISOString(), data: result.data });
-      }
-      // error → keep the previous {name, sig, at, data} untouched; the
-      // failure note below carries the warning.
-    });
+    const captured = { ...params };
+    const sig = JSON.stringify(captured);
+    setRunning(true);
+    setRunErrorAt(null);
+    try {
+      const data = await api.graphQuery(name, captured);
+      if (invocation !== invocationRef.current) return;
+      setRan({ name, sig, at: new Date().toISOString(), data });
+    } catch {
+      if (invocation !== invocationRef.current) return;
+      setRunErrorAt(new Date().toISOString());
+    } finally {
+      if (invocation === invocationRef.current) setRunning(false);
+    }
   };
 
   const detailQuery = useQuery({
@@ -249,7 +251,7 @@ export default function GraphScreen() {
                 <div className="text-meta text-muted">
                   {graphQuery.isError
                     ? graphQuery.data
-                      ? `Refresh failed — showing the graph loaded at ${fmtTime(graphUpdatedAt)}`
+                      ? `Refresh failed — showing the graph loaded at ${fmtStamp(graphUpdatedAt)}`
                       : "Graph database unavailable."
                     : "Loading graph…"}
                 </div>
@@ -264,6 +266,20 @@ export default function GraphScreen() {
                 ) : null}
               </div>
             )}
+            {graphQuery.isError && payload ? (
+              <div className="absolute bottom-2 right-2 flex max-w-[440px] flex-wrap items-center justify-between gap-2 border border-line bg-surface px-2.5 py-1.5">
+                <span className="text-meta text-ink">
+                  Refresh failed — showing the graph loaded at {fmtStamp(graphUpdatedAt)}
+                </span>
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  onClick={() => graphQuery.refetch()}
+                >
+                  Retry
+                </Button>
+              </div>
+            ) : null}
             <div className="pointer-events-none absolute bottom-2 left-2 max-w-[440px] border border-line bg-surface px-2.5 py-1.5 text-meta text-muted">
               <div>Click a node for details · wheel to zoom · click empty space to deselect.</div>
               <div>
@@ -311,7 +327,7 @@ export default function GraphScreen() {
               <div className="flex flex-wrap items-center gap-2">
                 <Button
                   onClick={runAndPublish}
-                  disabled={runQuery.isFetching}
+                  disabled={running}
                 >
                   Run query
                 </Button>
@@ -326,20 +342,21 @@ export default function GraphScreen() {
               <div className="text-meta text-muted">
                 Example parameters from the archived Aave Base snapshot.
               </div>
-              {runQuery.isFetching ? <div className="text-meta text-muted">Running…</div> : null}
-              {runQuery.isError ? (
+              {running ? <div className="text-meta text-muted">Running…</div> : null}
+              {runErrorAt ? (
                 <div className="space-y-1.5">
                   <div className="text-meta text-ink">
                     Query failed — the API did not answer
                     {ran
                       ? ` · showing the previous result run at ${fmtTime(ran.at)}`
-                      : ""}.
+                      : ""}
+                    .
                   </div>
                   <Button
                     variant="secondary"
                     size="sm"
                     onClick={runAndPublish}
-                    disabled={runQuery.isFetching}
+                    disabled={running}
                   >
                     Retry
                   </Button>
