@@ -20,6 +20,8 @@
 
 ## 2. B — Graphe
 - **B1** — Catalogue **34 relations / 4 familles** (preuve & dérivation 8 · structure & exposition 15 · mécanisme économique 3 · contrainte & permission 8) + **record 17 champs**, enum machine-vérifiable + tests de conformité. **GELÉ**
+
+> **Note datée (2026-10-18)** — le catalogue compte désormais **35 relations** (famille *structure & exposition* : 16 au lieu de 15) : `LIQUIDATED_IN` a été ajouté pour le slice Aave v3. Le chiffre de 34 reste l'état **gelé du 15/10** ; `tests/test_graph_catalog.py` pin 35. Écart déclaré, pas de réécriture silencieuse.
 - **B2** — **SQLite pour le concours** → **PostgreSQL/Neon** cible post-concours ; `store.py` seul point d'accès. **GELÉ**
 - **B3** — **ML v1** : ML-1 embeddings (pgvector, recherche sémantique) ; ML-2 anomalies **hors chemin décisionnel** (MODEL-INFERRED) ; GNN post-concours ; **rien d'appris dans le confirmatoire**. **GELÉ**
 - **B4** — Techniques : anti-reorg 2 blocs (démo) / safe+finalized (prod) ; proxies = suivre l'implémentation ; **une source par quantité** ; conditions en **enum** ; export PROV-O en annexe ; un graphe + vues multi-chaînes ; local prioritaire. **GELÉ**
