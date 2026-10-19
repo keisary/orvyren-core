@@ -2,19 +2,29 @@ import * as React from "react";
 import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/cn";
 
+/**
+ * Badges state a domain fact in words (§4.4): the text is always there, color
+ * only reinforces it — never the only channel. Machine enums keep their own
+ * casing (ALLOW, ABORTED…); no uppercase transform, no mono default.
+ */
 const badgeVariants = cva(
-  "inline-flex items-center gap-1 rounded border px-1.5 py-0.5 text-[10.5px] " +
-    "font-semibold uppercase tracking-wider mono",
+  "inline-flex items-center gap-1 rounded-[2px] border px-1.5 py-0.5 " +
+    "text-meta font-semibold leading-4",
   {
     variants: {
       variant: {
+        /* a check that passed / a selected fact */
+        ok: "border-accent bg-accent-soft text-accent",
+        /* refusal (and stopped runs): anthracite inverted */
+        deny: "border-ink bg-ink text-on-accent",
+        /* indeterminate / human review required: outline, no hue */
+        warn: "border-line-strong bg-surface text-ink",
+        /* pointer to a fact (case id, catalog…) */
+        info: "border-line bg-surface text-ink",
         neutral: "border-line bg-surface2 text-muted",
-        info: "border-accent/40 bg-accent/10 text-accent",
-        ok: "border-up/40 bg-up/10 text-up",
-        deny: "border-down/40 bg-down/10 text-down",
-        warn: "border-warn/40 bg-warn/10 text-warn",
-        violet: "border-accent2/40 bg-accent2/10 text-accent2",
-        live: "border-up/50 bg-up/15 text-up animate-pulse",
+        violet: "border-line bg-surface2 text-muted",
+        /* transport state — no pulse; the label carries the meaning */
+        live: "border-accent bg-accent-soft text-accent",
       },
     },
     defaultVariants: { variant: "neutral" },

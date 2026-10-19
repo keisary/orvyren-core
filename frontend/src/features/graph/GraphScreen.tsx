@@ -3,10 +3,11 @@ import { useQuery } from "@tanstack/react-query";
 import { api } from "@/lib/api";
 import type { GraphQueryResult } from "@/lib/types";
 import { fmtCompact, fmtHash, fmtNumber, shortAddress, truncate } from "@/lib/format";
+import { toneForClass } from "@/lib/graph-theme";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input, Label, ScrollArea, Select } from "@/components/ui/input";
+import { Input, Label, Select } from "@/components/ui/input";
 import { Table, TBody, TD, TH, THead, TR } from "@/components/ui/table";
 import { ScreenShell } from "@/components/ScreenShell";
 import SigmaGraph from "./SigmaGraph";
@@ -43,6 +44,13 @@ const QUERIES: Record<string, QueryDef> = {
   snapshot: { label: "Snapshot — deterministic graph hash", fields: ["as_of", "as_of_block"] },
 };
 
+function formatCell(value: unknown): string {
+  if (value === null || value === undefined) return "—";
+  if (typeof value === "number") return fmtNumber(value, 4);
+  if (typeof value === "object") return truncate(JSON.stringify(value), 90);
+  return String(value);
+}
+
 function ResultTable({ result }: { result: GraphQueryResult }) {
   const rows = result.rows ?? [];
   const columns = useMemo(() => {
@@ -67,7 +75,12 @@ function ResultTable({ result }: { result: GraphQueryResult }) {
         {rows.slice(0, 25).map((row, index) => (
           <TR key={index}>
             {columns.map((column) => (
-              <TD key={column} className="mono max-w-[260px] break-all text-[10.5px]">
+              <TD
+                key={column}
+                className={`max-w-[260px] break-all ${
+                  typeof row[column] === "number" ? "text-right" : ""
+                }`}
+              >
                 {formatCell(row[column])}
               </TD>
             ))}
@@ -78,11 +91,30 @@ function ResultTable({ result }: { result: GraphQueryResult }) {
   );
 }
 
-function formatCell(value: unknown): string {
-  if (value === null || value === undefined) return "—";
-  if (typeof value === "number") return fmtNumber(value, 4);
-  if (typeof value === "object") return truncate(JSON.stringify(value), 90);
-  return String(value);
+/** Written meaning for non-OK statuses (§4.8): a status word alone is not an
+ *  explanation. */
+function StatusExplanation({ status }: { status: string }) {
+  if (status === "NO_PATH") {
+    return (
+      <div className="space-y-0.5 text-meta text-muted">
+        <div>NO_PATH — no dependency path was found in this dataset.</div>
+        <div>Dependency edges are not populated in the demonstrated slice.</div>
+      </div>
+    );
+  }
+  if (status === "NOT_INGESTED") {
+    return (
+      <div className="text-meta text-muted">
+        NOT_INGESTED — this id does not exist in the demonstrated dataset.
+      </div>
+    );
+  }
+  if (status === "OK") {
+    return (
+      <div className="text-meta text-muted">OK — the query returned no row for these parameters.</div>
+    );
+  }
+  return <div className="text-meta text-muted">{status} — see the runbook for this status.</div>;
 }
 
 export default function GraphScreen() {
@@ -92,6 +124,7 @@ export default function GraphScreen() {
   const [params, setParams] = useState<Record<string, string>>({ ...DEFAULTS });
   const [layoutState, setLayoutState] = useState<"cached" | "computing" | "done" | "">("");
   const [ran, setRan] = useState<GraphQueryResult | null>(null);
+  const [ranParams, setRanParams] = useState<string>("");
 
   const runQuery = useQuery({
     queryKey: ["graph-query", queryName, params],
@@ -107,43 +140,67 @@ export default function GraphScreen() {
 
   const payload = graphQuery.data;
   const def = QUERIES[queryName];
+  const paramsSignature = JSON.stringify(params);
+  const isPreviousResult = ran !== null && ranParams !== paramsSignature;
+  const legacy = payload?.schema === "legacy";
+  const dbShort = payload?.db ? (payload.db.split(/[\\/]/).pop() ?? payload.db) : "—";
+  const relations = ((detailQuery.data?.relations as Record<string, unknown>[]) ?? []).slice(0, 25);
+  const relationsTruncated =
+    detailQuery.data?.relations_truncated === true || relations.length >= 25;
 
   return (
     <ScreenShell
-      title="On-chain risk graph"
+      title="Risk graph"
       subtitle={
-        <span className="mono">
-          sigma.js v3 (WebGL) · {payload ? `${fmtCompact(payload.counts.nodes)} nodes / ${fmtCompact(payload.counts.edges)} edges · ${payload.db}` : "loading…"}
-          {layoutState === "computing" ? " · FA2 layout running…" : ""}
-          {layoutState === "done" ? " · FA2 layout computed and persisted ✓" : ""}
-          {layoutState === "cached" ? " · layout pre-computed ✓" : ""}
-        </span>
+        payload
+          ? `${payload.counts.nodes.toLocaleString("en-GB")} nodes · ${payload.counts.edges.toLocaleString("en-GB")} relations · read-only queries Q1–Q8`
+          : "Loading the graph dataset…"
       }
-      actions={
-        <>
-          <Badge variant="info">Q1–Q8 · read contract</Badge>
-          {payload ? <Badge variant="neutral">version {fmtHash(payload.graph_version, 8)}</Badge> : null}
-        </>
-      }
+      context={[
+        {
+          label: "Dataset",
+          value: payload ? (legacy ? "Repository snapshot" : "Aave v3 / Base") : "—",
+        },
+        {
+          label: "Nodes",
+          value: payload ? payload.counts.nodes.toLocaleString("en-GB") : "—",
+        },
+        {
+          label: "Edges",
+          value: payload ? payload.counts.edges.toLocaleString("en-GB") : "—",
+        },
+        { label: "Database", value: dbShort },
+        { label: "Schema", value: payload ? String(payload.schema) : "—" },
+        { label: "Version", value: payload ? String(payload.graph_version) : "—" },
+      ]}
+      actions={<Badge variant="info">Q1–Q8 · read contract</Badge>}
     >
-      <div className="grid h-full min-h-0 grid-cols-1 gap-3 xl:grid-cols-[minmax(0,1fr)_460px]">
+      <div className="grid h-full min-h-0 grid-cols-1 gap-4 xl:grid-cols-[minmax(0,1fr)_440px]">
         <Card className="flex min-h-[600px] flex-col overflow-hidden">
           <CardHeader>
-            <CardTitle>visualisation</CardTitle>
+            <CardTitle>Visualization</CardTitle>
             <div className="flex flex-wrap items-center gap-1.5">
               {payload
                 ? Object.entries(payload.classes)
                     .sort((a, b) => b[1] - a[1])
-                    .slice(0, 10)
+                    .slice(0, 8)
                     .map(([cls, count]) => (
-                      <Badge key={cls} variant="neutral">
-                        {cls}: {fmtCompact(count)}
-                      </Badge>
+                      <span key={cls} className="inline-flex items-center gap-1.5 border border-line bg-surface px-1.5 py-0.5 text-meta text-muted"
+                        title={legacy ? "Repository snapshot · legacy schema" : undefined}
+                      >
+                        <span
+                          aria-hidden
+                          className="inline-block h-2.5 w-2.5"
+                          style={{ background: toneForClass(cls) }}
+                        />
+                        <span className="text-ink">{cls}</span>
+                        <span className="tnum">{count.toLocaleString("en-GB")}</span>
+                      </span>
                     ))
                 : null}
             </div>
           </CardHeader>
-          <div className="relative min-h-0 flex-1 bg-background">
+          <div className="relative min-h-0 flex-1 bg-surface">
             {payload ? (
               <SigmaGraph
                 payload={payload}
@@ -152,19 +209,30 @@ export default function GraphScreen() {
                 onLayout={setLayoutState}
               />
             ) : (
-              <div className="flex h-full items-center justify-center text-muted">
-                {graphQuery.isError ? "graph database unavailable" : "loading graph…"}
+              <div className="flex h-full items-center justify-center text-meta text-muted">
+                {graphQuery.isError ? "Graph database unavailable." : "Loading graph…"}
               </div>
             )}
-            <div className="pointer-events-none absolute bottom-2 left-2 rounded border border-line bg-surface/90 px-2 py-1 mono text-[9.5px] text-muted">
-              click node = details · wheel = zoom · click empty = deselect
+            <div className="pointer-events-none absolute bottom-2 left-2 max-w-[440px] border border-line bg-surface px-2.5 py-1.5 text-meta text-muted">
+              <div>Click a node for details · wheel to zoom · click empty space to deselect.</div>
+              <div>
+                Dataset overview
+                {layoutState === "computing" ? " · layout computing…" : ""}
+                {layoutState === "done" ? " · layout computed and cached" : ""}
+                {layoutState === "cached" ? " · layout pre-computed" : ""}
+                . Point-in-time filters apply to query results.
+              </div>
             </div>
           </div>
         </Card>
-        <div className="flex min-h-0 flex-col gap-3">
+
+        <div className="flex min-h-0 flex-col gap-4">
           <Card>
             <CardHeader>
-              <CardTitle>queries Q1–Q8</CardTitle>
+              <CardTitle>Queries Q1–Q8</CardTitle>
+              {isPreviousResult ? (
+                <Badge variant="neutral">Previous query result</Badge>
+              ) : null}
             </CardHeader>
             <CardContent className="space-y-2.5">
               <Select value={queryName} onChange={(e) => setQueryName(e.target.value)}>
@@ -180,112 +248,132 @@ export default function GraphScreen() {
                     <Label>{field}</Label>
                     <Input
                       value={params[field] ?? ""}
-                      onChange={(e) =>
-                        setParams((prev) => ({ ...prev, [field]: e.target.value }))
-                      }
+                      onChange={(e) => setParams((prev) => ({ ...prev, [field]: e.target.value }))}
                       placeholder="(empty)"
                     />
                   </div>
                 ))}
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex flex-wrap items-center gap-2">
                 <Button
                   onClick={() => {
-                    runQuery.refetch().then(({ data }) => setRan(data ?? null));
+                    runQuery.refetch().then(({ data }) => {
+                      setRan(data ?? null);
+                      setRanParams(JSON.stringify(params));
+                    });
                   }}
                 >
-                  run query
+                  Run query
                 </Button>
                 <Button
-                  variant="ghost"
+                  variant="secondary"
                   size="sm"
                   onClick={() => setParams({ ...DEFAULTS })}
                 >
-                  snapshot values
+                  Load example parameters
                 </Button>
               </div>
-              {runQuery.isFetching ? <div className="text-muted">running…</div> : null}
+              <div className="text-meta text-muted">
+                Example parameters from the archived Aave Base snapshot.
+              </div>
+              {runQuery.isFetching ? <div className="text-meta text-muted">Running…</div> : null}
               {ran ? (
-                <div className="mono flex flex-wrap gap-1.5 text-[10px]">
-                  <Badge variant={ran.status && ran.status !== "OK" ? "warn" : "ok"}>
-                    {ran.status ?? "OK"}
-                  </Badge>
-                  {ran.count !== undefined ? <Badge variant="neutral">count {ran.count}</Badge> : null}
-                  {ran.latency_ms !== undefined ? (
-                    <Badge variant="neutral">{fmtNumber(ran.latency_ms, 1)} ms</Badge>
+                <div className="space-y-2">
+                  <div className="flex flex-wrap gap-1.5">
+                    <Badge variant={ran.status && ran.status !== "OK" ? "warn" : "ok"}>
+                      {ran.status ?? "OK"}
+                    </Badge>
+                    {ran.count !== undefined ? (
+                      <Badge variant="neutral">count {ran.count}</Badge>
+                    ) : null}
+                    {ran.latency_ms !== undefined ? (
+                      <Badge variant="neutral">{fmtNumber(ran.latency_ms, 1)} ms (this response)</Badge>
+                    ) : null}
+                    {typeof ran.hhi === "number" ? (
+                      <Badge variant="info">HHI {fmtNumber(ran.hhi, 4)}</Badge>
+                    ) : null}
+                    {typeof ran.counterparties === "number" ? (
+                      <Badge variant="neutral">{ran.counterparties} counterparties</Badge>
+                    ) : null}
+                    {ran.graph_hash ? (
+                      <Badge variant="neutral">hash {fmtHash(String(ran.graph_hash), 10)}</Badge>
+                    ) : null}
+                  </div>
+                  {ran.status && ran.status !== "OK" ? (
+                    <StatusExplanation status={String(ran.status)} />
                   ) : null}
-                  {typeof ran.hhi === "number" ? (
-                    <Badge variant="info">HHI {fmtNumber(ran.hhi, 4)}</Badge>
+                  {(ran.rows ?? []).length > 0 ? (
+                    <div className="text-meta text-muted">
+                      Showing {Math.min(25, (ran.rows ?? []).length)} of{" "}
+                      {ran.count ?? (ran.rows ?? []).length} rows
+                    </div>
                   ) : null}
-                  {typeof ran.counterparties === "number" ? (
-                    <Badge variant="neutral">{ran.counterparties} counterparties</Badge>
-                  ) : null}
-                  {ran.graph_hash ? (
-                    <Badge variant="violet">hash {fmtHash(String(ran.graph_hash), 10)}</Badge>
-                  ) : null}
+                  <div className="max-h-64 overflow-auto border border-line">
+                    <ResultTable result={ran} />
+                  </div>
                 </div>
-              ) : null}
-              {ran ? (
-                <ScrollArea className="max-h-64">
-                  <ResultTable result={ran} />
-                </ScrollArea>
               ) : null}
             </CardContent>
           </Card>
 
           <Card>
             <CardHeader>
-              <CardTitle>node details</CardTitle>
+              <CardTitle>Selected node</CardTitle>
               {selected ? <Badge variant="info">{shortAddress(selected)}</Badge> : null}
             </CardHeader>
             <CardContent>
               {!selected ? (
-                <div className="text-[11px] text-muted">
-                  select a node in the graph to see its identity, relations and
-                  degree.
+                <div className="text-body text-muted">
+                  Select a node to inspect its identity and relations.
                 </div>
               ) : detailQuery.data ? (
                 <div className="space-y-2">
-                  <div className="mono text-[10.5px] break-all text-ink/90">{selected}</div>
+                  <div className="break-all font-mono text-code text-ink">{selected}</div>
                   <div className="flex flex-wrap gap-1.5">
-                    <Badge variant="neutral">{String(detailQuery.data.kind ?? "?")}</Badge>
-                    <Badge variant="neutral">{String(detailQuery.data.node_class ?? detailQuery.data.kind ?? "?")}</Badge>
+                    <Badge variant="neutral">kind {String(detailQuery.data.kind ?? "?")}</Badge>
+                    <Badge variant="neutral">
+                      class {String(detailQuery.data.node_class ?? detailQuery.data.kind ?? "?")}
+                    </Badge>
                     <Badge variant="info">{String(detailQuery.data.relation_count ?? 0)} relations</Badge>
                   </div>
                   {detailQuery.data.address ? (
-                    <div className="mono text-[10px] text-muted">
+                    <div className="font-mono text-code text-muted">
                       address {String(detailQuery.data.address)}
                     </div>
                   ) : null}
-                  <ScrollArea className="max-h-52">
+                  <div className="max-h-52 overflow-auto border border-line">
                     <Table>
                       <THead>
                         <TR>
-                          <TH>relation</TH>
-                          <TH>kind</TH>
-                          <TH>src → dst</TH>
+                          <TH>Relation</TH>
+                          <TH>Kind</TH>
+                          <TH>Src → dst</TH>
                         </TR>
                       </THead>
                       <TBody>
-                        {((detailQuery.data.relations as Record<string, unknown>[]) ?? [])
-                          .slice(0, 25)
-                          .map((relation, index) => (
-                            <TR key={index}>
-                              <TD className="mono text-[10px]">{fmtHash(String(relation.relation_id), 10)}</TD>
-                              <TD>
-                                <Badge variant="neutral">{String(relation.kind)}</Badge>
-                              </TD>
-                              <TD className="mono max-w-[220px] break-all text-[9.5px] text-muted">
-                                {shortAddress(relation.src)} → {shortAddress(relation.dst)}
-                              </TD>
-                            </TR>
-                          ))}
+                        {relations.map((relation, index) => (
+                          <TR key={index}>
+                            <TD>{fmtHash(String(relation.relation_id), 10)}</TD>
+                            <TD>
+                              <Badge variant="neutral">{String(relation.kind)}</Badge>
+                            </TD>
+                            <TD className="max-w-[220px] text-muted">
+                              {shortAddress(relation.src)} → {shortAddress(relation.dst)}
+                            </TD>
+                          </TR>
+                        ))}
                       </TBody>
                     </Table>
-                  </ScrollArea>
+                  </div>
+                  {relationsTruncated ? (
+                    <div className="text-meta text-muted">
+                      Showing the first {relations.length} of{" "}
+                      {String(detailQuery.data.relation_count ?? relations.length)} relations.
+                    </div>
+                  ) : null}
                 </div>
               ) : (
-                <div className="text-muted">loading…</div>
+                <div className="text-meta text-muted">Loading…</div>
               )}
             </CardContent>
           </Card>

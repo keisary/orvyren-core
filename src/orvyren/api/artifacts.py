@@ -758,7 +758,10 @@ def _verify_hashed_jsonl(rows: Sequence[Mapping[str, Any]],
                     ok = False
                     break
                 head = digest(strip(row))
-            if ok:
+            # Astra P0 (18/10): the recomputed head must also equal the
+            # STORED hash of the last row — otherwise a tampered last line
+            # (payload changed, recorded hash kept) passes as "verified".
+            if ok and head == rows[-1].get(hash_field):
                 match_form = name
                 break
     return {

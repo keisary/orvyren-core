@@ -1,23 +1,63 @@
 @import "tailwindcss";
 
-/* ORVYREN — dark "trading terminal" theme. Offline: system fonts only. */
+/* ORVYREN — « control document » theme (spec Astra §4.2, 18/10/2026).
+   Ivory ground, anthracite ink, ONE deep-green accent. Refusals and warnings
+   read through contrast, outline and their label — never a second hue.
+   Offline: system fonts only. Canvas engines (Sigma, Lightweight Charts) read
+   the graph/plot tokens through getComputedStyle — see lib/graph-theme.ts. */
 @theme {
-  --color-background: #070b11;
-  --color-surface: #0d1420;
-  --color-surface2: #121d2e;
-  --color-line: #1e2c41;
-  --color-ink: #d8e4f2;
-  --color-muted: #7c92ad;
-  --color-accent: #22d3ee;
-  --color-accent2: #818cf8;
-  --color-up: #34d399;
-  --color-down: #f87171;
-  --color-warn: #fbbf24;
+  /* surfaces */
+  --color-background: #f4f4ef;
+  --color-surface: #fcfcf9;
+  --color-surface2: #eaede7;
+  --color-line: #cdd3cb;
+  --color-line-strong: #788379;
 
-  --font-sans: ui-sans-serif, system-ui, "Segoe UI", Roboto, "Helvetica Neue",
-    Arial, sans-serif;
-  --font-mono: ui-monospace, "Cascadia Mono", "Cascadia Code", Consolas,
-    "Courier New", monospace;
+  /* ink */
+  --color-ink: #202823;
+  --color-muted: #59635c;
+
+  /* the single accent */
+  --color-accent: #24543d;
+  --color-accent-hover: #193e2d;
+  --color-accent-soft: #e2ebe3;
+  --color-on-accent: #fcfcf9;
+
+  /* canvas tokens */
+  --color-graph-node: #7b867e;
+  --color-graph-dim: #cdd3cb;
+  --color-graph-edge: #d8ddd6;
+  --color-plot-secondary: #667269;
+
+  /* migration aliases (§4.2) — only so legacy utilities compile; new code
+     must not treat them as semantics. */
+  --color-up: #24543d;
+  --color-down: #202823;
+  --color-warn: #202823;
+  --color-accent2: #202823;
+
+  /* type: Arial stack; mono reserved for codes, addresses and hashes */
+  --font-sans: Arial, "Helvetica Neue", Helvetica, sans-serif;
+  --font-mono: "Cascadia Mono", Consolas, "Liberation Mono", monospace;
+
+  --text-page-title: 22px;
+  --text-page-title--line-height: 28px;
+  --text-section-title: 15px;
+  --text-section-title--line-height: 22px;
+  --text-body: 14px;
+  --text-body--line-height: 20px;
+  --text-table: 13px;
+  --text-table--line-height: 18px;
+  --text-meta: 12px;
+  --text-meta--line-height: 16px;
+  --text-kpi: 26px;
+  --text-kpi--line-height: 30px;
+  --text-verdict: 24px;
+  --text-verdict--line-height: 30px;
+  --text-code: 12px;
+  --text-code--line-height: 18px;
+
+  --ease-standard: cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
 html,
@@ -30,22 +70,23 @@ body {
   background-color: var(--color-background);
   color: var(--color-ink);
   font-family: var(--font-sans);
-  font-size: 13px;
+  font-size: 14px;
+  line-height: 20px;
   -webkit-font-smoothing: antialiased;
 }
 
-/* dense, terminal-like scrollbars */
+/* quiet scrollbars — thumb line-strong, no decorative rounding */
 * {
   scrollbar-width: thin;
-  scrollbar-color: #24405f transparent;
+  scrollbar-color: var(--color-line-strong) transparent;
 }
 *::-webkit-scrollbar {
   width: 8px;
   height: 8px;
 }
 *::-webkit-scrollbar-thumb {
-  background: #24405f;
-  border-radius: 4px;
+  background: var(--color-line-strong);
+  border-radius: 0;
 }
 *::-webkit-scrollbar-track {
   background: transparent;
@@ -54,7 +95,79 @@ body {
 .mono {
   font-family: var(--font-mono);
 }
-
 .tnum {
-  font-variant-numeric: tabular-nums;
+  font-variant-numeric: tabular-nums lining-nums;
+}
+
+/* ------------------------------------------------------------------ motion
+   Motion answers an action or reports a data change; it is never the only
+   channel (every state also changes a word or a color statically).
+   Transforming motion is gated on prefers-reduced-motion (opacity kept).   */
+@keyframes route-in {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@keyframes row-in {
+  from {
+    opacity: 0;
+    transform: translateY(-2px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@keyframes detail-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes value-flash {
+  from {
+    background-color: var(--color-accent-soft);
+  }
+  to {
+    background-color: transparent;
+  }
+}
+
+/* screen enter: one orchestrated moment per navigation */
+.route-in {
+  animation: route-in 160ms var(--ease-standard) both;
+}
+/* a journal row that arrived after first paint */
+.row-in {
+  animation: row-in 120ms ease-out both;
+}
+/* a value that changed: brief tint; the new number is the static cue */
+.value-flash {
+  animation: value-flash 600ms ease-out both;
+}
+/* details/summary content reveal (user-triggered) */
+details[open] > *:not(summary) {
+  animation: detail-in 120ms ease-out both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .route-in {
+    animation: detail-in 120ms ease-out both;
+  }
+  .row-in {
+    animation: detail-in 100ms ease-out both;
+  }
+  .value-flash {
+    animation: none;
+  }
+  details[open] > *:not(summary) {
+    animation: none;
+  }
 }

@@ -1,4 +1,9 @@
-/** Formatters — tabular numbers, hashes, times, statuses. */
+/** Formatters — tabular numbers, hashes, times, statuses.
+ *
+ * Domain badges map each vocabulary to one of ok / deny / warn / neutral so a
+ * verdict never changes meaning between screens (§4.4): "finished a run" and
+ * "authorized a transfer" are NOT the same green.
+ */
 
 export function fmtNumber(value: unknown, digits = 2): string {
   const n = typeof value === "number" ? value : Number(value);
@@ -59,12 +64,35 @@ export function verdictVariant(
   verdict: unknown,
 ): "ok" | "deny" | "warn" | "info" | "neutral" {
   const v = String(verdict ?? "").toUpperCase();
-  if (["ALLOW", "OK", "PASS", "VALIDATED", "CONFIRMED", "VERIFIED", "DONE", "CONCLUANT"].includes(v))
+  // An integrity/verification check that passed — nothing else.
+  if (
+    [
+      "ALLOW", "OK", "PASS", "VALIDATED", "CONFIRMED", "VERIFIED",
+      "SUPPORTED", "SUCCESS", "CONCLUANT", "LIVE",
+    ].includes(v)
+  )
     return "ok";
-  if (["DENY", "FAIL", "REFUTED", "REJECTED", "QUARANTINED", "ABORTED", "DRIFT"].includes(v))
+  // Refusal, drift, failed check, stopped run: anthracite inverted.
+  if (
+    ["DENY", "FAIL", "REFUTED", "REJECTED", "QUARANTINED", "ABORTED", "DRIFT", "FAILED"].includes(v)
+  )
     return "deny";
-  if (["REQUIRE_APPROVAL", "SKIPPED", "UNDER_TEST", "INCONCLUSIVE", "PENDING", "PROPOSED"].includes(v))
+  // Indeterminate, under review: outline, no hue.
+  if (
+    [
+      "REQUIRE_APPROVAL", "SKIPPED", "UNDER_TEST", "INCONCLUSIVE", "PENDING",
+      "PROPOSED", "FRAGILE", "INCOHERENTE", "DEGRADED",
+    ].includes(v)
+  )
     return "warn";
+  // Plain facts of the record: DONE, NO_ACTION, NOT_CHECKED, NOT_AVAILABLE…
+  if (
+    [
+      "DONE", "NO_ACTION", "NOT_CHECKED", "NOT_AVAILABLE", "NOT_INGESTED",
+      "NO_PATH", "INACTIVE", "OFFLINE",
+    ].includes(v)
+  )
+    return "neutral";
   if (v) return "info";
   return "neutral";
 }

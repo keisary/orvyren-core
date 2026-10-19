@@ -29,6 +29,7 @@ export function Tabs({
   );
 }
 
+/** Underlined view switch — a context change, not a pill kit (§4.7). */
 export function TabsList({
   children,
   className,
@@ -38,10 +39,9 @@ export function TabsList({
 }) {
   return (
     <div
-      className={cn(
-        "inline-flex flex-wrap items-center gap-1 rounded-md border border-line bg-surface p-1",
-        className,
-      )}
+      role="tablist"
+      aria-label="Views"
+      className={cn("flex flex-wrap items-center gap-1 border-b border-line", className)}
     >
       {children}
     </div>
@@ -63,12 +63,14 @@ export function TabsTrigger({
   return (
     <button
       type="button"
+      role="tab"
+      aria-selected={active}
       onClick={() => ctx.setValue(value)}
       className={cn(
-        "rounded px-2.5 py-1 text-[11.5px] font-medium transition-colors",
+        "relative -mb-px px-3 py-2 text-meta font-semibold transition-colors duration-100",
         active
-          ? "bg-accent/15 text-accent border border-accent/40"
-          : "text-muted border border-transparent hover:text-ink hover:bg-surface2",
+          ? "text-accent after:absolute after:inset-x-0 after:-bottom-px after:h-0.5 after:bg-accent after:content-['']"
+          : "text-muted hover:text-ink",
         className,
       )}
     >
@@ -89,5 +91,9 @@ export function TabsContent({
   const ctx = React.useContext(TabsContext);
   if (!ctx) throw new Error("TabsContent must be used inside <Tabs>");
   if (ctx.value !== value) return null;
-  return <div className={cn("mt-3", className)}>{children}</div>;
+  return (
+    <div role="tabpanel" className={cn("mt-3", className)}>
+      {children}
+    </div>
+  );
 }
