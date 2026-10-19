@@ -72,7 +72,12 @@ def build_manifest() -> dict:
     files = []
     for pattern in FILES_GLOBS:
         for path in sorted(glob.glob(os.path.join(REPO_ROOT, pattern), recursive=True)):
-            if os.path.sep + "tmp" + os.path.sep in path:
+            # Stay inside the repository (escape guard). The former "skip any
+            # path containing /tmp" rule silently emptied the manifest when
+            # the repo itself lived under /tmp — exactly CI's pristine
+            # clean-clone job, which materialises HEAD in /tmp/clone.
+            full = os.path.abspath(path)
+            if os.path.commonpath([full, os.path.abspath(REPO_ROOT)]) != os.path.abspath(REPO_ROOT):
                 continue
             rel = os.path.relpath(path, REPO_ROOT).replace("\\", "/")
             files.append({"path": rel, "sha256": _sha256(path),
