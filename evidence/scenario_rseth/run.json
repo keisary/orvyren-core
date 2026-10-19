@@ -1,13 +1,13 @@
 {
  "budget": {
   "cost_usd": 0.1,
-  "llm_calls": 30,
-  "tool_calls": 12,
+  "llm_calls": 30.0,
+  "tool_calls": 12.0,
   "wall_seconds": 600
  },
  "case_id": "rseth-2026-04",
- "created_at": "2026-10-18T11:07:22.634454+00:00",
- "graph_db": "evidence\\graph.sqlite",
+ "created_at": "2026-10-18T20:00:27.594715+00:00",
+ "graph_db": "evidence/graph.sqlite",
  "hypotheses": [
   {
    "criteres": {
@@ -71,7 +71,7 @@
  ],
  "mode": "live",
  "record_live": true,
- "run_id": "rseth-2026-04_live_20261018T110722Z",
+ "run_id": "rseth-2026-04_live_20261018T200027592497Z",
  "schema": "orvyren/agent-run/v1",
  "snapshot": {
   "as_of": "2026-04-18T19:03:59Z",
@@ -178,7 +178,7 @@
    ]
   },
   "documents": {
-   "https://example.org/rseth-kelpdao-apr2026-incident-note": "Incident note (offline demonstration digest of ORVYREN_DOC2_TECHNIQUE_COMPLET.md measurement 2 and evidence/episode_rseth_2026-04.json). On 2026-04-18 the rsETH reserve of the Aave v3 core market saturated its supply cap (cap ratio 0.9999886466022144 at 18:00:00 UTC) before being administratively frozen (isFrozen 0 -> 1 at block 24 908 723, 2026-04-18T19:03:59Z). The oracle retained 2526.7563881 USD at 17:35:00 UTC and 2513.66460329 USD at the freeze while the market price is documented at 1686 USD (window 18–20/04), a documented divergence of about -31 per cent. The measured utilisation of the rsETH reserve at the freeze is 7.946826023583168e-05 (no borrowing): the claim of a 100 per cent utilisation is refuted by the archived series. No operational instruction is contained in this document."
+   "https://example.org/rseth-kelpdao-apr2026-incident-note": "Incident note (offline demonstration digest of fixtures/sources/RSETH_MEASURE_2.md and evidence/episode_rseth_2026-04.json). On 2026-04-18 the rsETH reserve of the Aave v3 core market saturated its supply cap (cap ratio 0.9999886466022144 at 18:00:00 UTC) before being administratively frozen (isFrozen 0 -> 1 at block 24 908 723, 2026-04-18T19:03:59Z). The oracle retained 2526.7563881 USD at 17:35:00 UTC and 2513.66460329 USD at the freeze while the market price is documented at 1686 USD (window 18–20/04), a documented divergence of about -31 per cent. The measured utilisation of the rsETH reserve at the freeze is 7.946826023583168e-05 (no borrowing): the claim of a 100 per cent utilisation is refuted by the archived series. No operational instruction is contained in this document."
   },
   "prices": {
    "chainlink|rsETH-USD": [
@@ -213,8 +213,8 @@
    ],
    "market|rsETH-USD": [
     {
-     "source_probe": "pendant que le prix de marché décrochait à",
-     "source_ref": "doc:ORVYREN_DOC2_TECHNIQUE_COMPLET.md#measure-2",
+     "source_probe": "while the market price dropped to",
+     "source_ref": "doc:fixtures/sources/RSETH_MEASURE_2.md#measure-2",
      "symbol": "rsETH-USD",
      "unit": "USD",
      "value": 1686,
@@ -226,8 +226,8 @@
   "signals": {
    "oracle_market_divergence_pct": {
     "method_ref": "compute_signal:oracle_market_divergence_pct/v1",
-    "source_probe": "pendant que le prix de marché décrochait à",
-    "source_ref": "doc:ORVYREN_DOC2_TECHNIQUE_COMPLET.md#measure-2",
+    "source_probe": "while the market price dropped to",
+    "source_ref": "doc:fixtures/sources/RSETH_MEASURE_2.md#measure-2",
     "unit": "pct",
     "value": -31
    },
@@ -264,7 +264,7 @@
     "evidence:episode_rseth_2026-04.json#meta.reserves.rsETH",
     "fixture:fixtures/graphs/rseth_2026-04.json#records[relation_id=rseth-collateralizes-weth-market].payload.amount",
     "fixture:fixtures/graphs/rseth_2026-04.json#records[relation_id=rseth-owes-weth-borrowed].payload.amount",
-    "doc:ORVYREN_DOC2_TECHNIQUE_COMPLET.md#measure-2"
+    "doc:fixtures/sources/RSETH_MEASURE_2.md#measure-2"
    ]
   },
   "supply": {

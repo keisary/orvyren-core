@@ -237,6 +237,13 @@ SUBSTITUTION_BANNER = (
     "abstention"
 )
 
+#: Banner of a dossier whose execution leg consumes the agents DecisionRecord:
+#: there is nothing to disclose, and the legacy wording would now be false.
+NO_SUBSTITUTION_BANNER = (
+    "no substitution: the execution leg consumes the DecisionRecord built from "
+    "the sealed agents run (orvyren.decision.agents_source) — no pilot replay"
+)
+
 #: Case id of the rsETH / KelpDAO April 2026 scenario.
 RSETH_CASE_ID = "rseth-2026-04"
 
@@ -268,13 +275,21 @@ def scenario_substitution(settings: Optional[Settings] = None) -> Dict[str, Any]
     abstention = (read_json(abstention_path)
                   if _exists(abstention_path) else {})
     refusal = ""
+    probe_rows = []
     probe_path = os.path.join(base, "execution", "case_attempt", "journal.jsonl")
     if _exists(probe_path):
-        for row in read_jsonl(probe_path):
+        probe_rows = read_jsonl(probe_path)
+        for row in probe_rows:
             code = re.search(r"E_[A-Z0-9_]+", str(row.get("error", "")))
             if code:
                 refusal = code.group(0)
                 break
+    # A dossier built by the agents bridge declares NO substitution: the
+    # legacy pilot replay only exists when the manifest says so or when a case
+    # probe was actually run. The banner follows the artefact, never the
+    # reverse.
+    decision_source = str(scenario_run.get("decision_source") or "").strip()
+    substituted = bool(probe_rows) or decision_source not in ("agents",)
     escalade = (abstention.get("escalade", {}) or {}) if isinstance(abstention, dict) else {}
     sources = [settings.rel(os.path.join(base, name))
                for name in ("scenario_report.md", "run.json",
@@ -282,15 +297,19 @@ def scenario_substitution(settings: Optional[Settings] = None) -> Dict[str, Any]
                             os.path.join("execution", "case_attempt"))
                if _exists(base, name)]
     return {
-        "declared": bool(spec) or bool(outcome),
-        "banner": SUBSTITUTION_BANNER,
+        "declared": substituted,
+        "banner": SUBSTITUTION_BANNER if substituted else NO_SUBSTITUTION_BANNER,
+        "decision_source": decision_source or ("corpus" if probe_rows else ""),
         "case_id": str(spec.get("case_id")
                        or (abstention.get("case_id", "") if isinstance(abstention, dict) else "")
                        or RSETH_CASE_ID),
         "agents_run_id": str(scenario_run.get("agents_run_id", "")),
         "executor_run_id": str(scenario_run.get("executor_run_id", "")),
-        "execution_leg": ("the execution leg replays the pilot USDC decision "
-                          "(--case usdc-2023-03), chained under this scenario run id"),
+        "execution_leg": (("the execution leg replays the pilot USDC decision "
+                           "(--case usdc-2023-03), chained under this scenario run id")
+                          if substituted else
+                          ("the execution leg runs --case rseth-2026-04 "
+                           "--decision-source agents on the sealed run")),
         "execution_probe_refusal": refusal,
         "agents_abstention": str(escalade.get("sortie", "")),
         "epistemic_verdict": str(abstention.get("epistemic_verdict", "")

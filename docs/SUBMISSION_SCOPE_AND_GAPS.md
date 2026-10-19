@@ -55,10 +55,15 @@ commands below before quoting anywhere else.
    mandatory. Proof: `python -m unittest tests.test_evaluation_protocol`;
    `python scripts/verify_frozen.py` → `COMPLIANT`.
 9. **Live E2E scenario, rsETH/KelpDAO 2026-04.** Executed live (real LLM,
-   sealed store): agents abstain on ARRET-3, critic INCOHERENTE (12 objections)
-   → REQUIRE_APPROVAL, counter-intuitive hypothesis refuted by measured data,
-   honest abstention with `what_would_change`, dry-run execution chained to the
-   agents run_id, policy DENY fail-closed, zero signed.
+   sealed store): agents abstain on ARRET-3, critic INCOHERENTE (10 findings)
+   → REQUIRE_APPROVAL; the execution leg consumes **the DecisionRecord built
+   from that very run** (`orvyren.decision.agents_source`), which carries no
+   intent → `NO_ACTION`, no policy evaluation, zero signed. The
+   counter-intuitive competitor is refuted in the A1-A5 complement by the
+   measured utilisation; `what_would_change` is listed there (the run's own
+   `non_recherche` is empty at ARRET-3, declared as a gap). Chain verified end
+   to end (`chain_verification.json`, 9/9 checks, `PASS`), run_id
+   `scenario-rseth-2026-04-20261019T134804Z`.
    Proof: `evidence/scenario_rseth/scenario_report.md` (raw step outputs included).
 10. **Honest A0-vs-A2 benchmark.** Small-N banner mandatory, superiority
     wording refused below N≥100, failures as visible as successes, placebo
@@ -73,15 +78,15 @@ commands below before quoting anywhere else.
 12. **Measured performance work.** PIT indexes (Q1 −91 %, Q5 −90 % on the real
     DB), gzip + ETag/304, WS compression pinned, Sigma tuning, lazy chunks.
     Proof: `tests/test_graph_pit_fixes.py::PitIndexContractTest`.
-13. **Test suite.** `python -m unittest discover -s tests -q` → `Ran 1411
-    tests ... OK (skipped=3)` at `b8f8bd3`; the 3 skips are documented (testnet
-    RPC gate ×2, eth-account absent path ×1).
+13. **Test suite.** `python -m unittest discover -s tests -q` → `Ran 1546
+    tests ... OK (skipped=3)`, measured 2026-10-19T13:49Z on this tree; the 3
+    skips are documented (testnet RPC gate ×2, eth-account absent path ×1).
 
 ## Gap register (open — not claimed, not hidden)
 
 | # | Gap | Status | Where |
 |---|---|---|---|
-| G-1 | EVAL decision-gain sample N=0 (no superiority claim anywhere) | Open, by design until N≥100 | `evidence/evaluation/`, benchmark banner |
+| G-1 | EVAL decision-gain sample N=1 (first EVAL, 2026-10-19): one scored window `eval-usd0pp-2025-01`, `eval-rseth-2026-04` skipped (no archived series); superiority tests `NOT COMPUTED — N < 100`, no superiority claim anywhere | Open, by design until N≥100 | `evidence/evaluation/`, benchmark banner |
 | G-2 | Live corpus has no rsETH price series — live tools served other assets' rows on the scenario (critic BLOQUANT) | Open | `evidence/scenario_rseth/scenario_report.md` |
 | G-3 | No recorded response store for `rseth-2026-04` — offline journal replay of that case unavailable until one is recorded (never simulated) | Open | scenario report |
 | G-4 | Q2 dependency paths return `NO_PATH` on the Aave slice (no `DEPENDS_ON`/`AFFECTS` edges populated); Q8 permissions `NOT_INGESTED` (no Safe/Zodiac data in slice) | Open, honest outputs | `evidence/` run reports |
@@ -93,9 +98,9 @@ commands below before quoting anywhere else.
 | G-10 | Deferred optimizations (prompt prefix ordering, parallel tool-calls, journal block hashing, WS backpressure, LLM streaming) | Deliberately deferred | `research/optimization_scalability.md` |
 | G-11 | mypy backlog (inherited `Optional` annotations) and non-fatal Bandit findings | Accepted debt | review record |
 | G-12 | The `--execute` real path is preflighted but never exercised end to end by the system itself (dry-run everywhere; the T2 transactions were signed by a human key). Two readings are shown side by side: no env → DENY fail-closed (the safety proof) and `--demo-defaults` → policy mechanism, never safety | Open | `run_executor.py`, `docs/DEMO_KIT.md` |
-| G-13 | The scenario's execution leg replays the **pilot USDC decision** under the rsETH run_id (declared substitution). **Closed at code level (2026-10-18)**: `run_executor.py --decision-source agents --agents-run <rsETH run>` builds the DecisionRecord from the agents run itself and yields `NO_ACTION` / `INCONCLUSIVE` / `REQUIRE_APPROVAL`, 0 signed — measured on the live rsETH run. Remaining: `scripts/run_scenario_rseth.py` still drives the corpus leg, so the packaged scenario report must be regenerated with the agents source | Partial (code closed, report to regenerate) | `run_executor.py`, `src/orvyren/decision/agents_source.py` |
+| G-13 | ~~The scenario's execution leg replays the **pilot USDC decision** under the rsETH run_id (declared substitution).~~ **Closed (2026-10-19)**: `scripts/run_scenario_rseth.py` builds the case DecisionRecord with `build_decision_from_agents` (`decision/decision_agents_<case>.json`) and runs the executor with `--case rseth-2026-04 --decision-source agents --agents-run <sealed run>`; the agents record carries no intent, so the tick ends `NO_ACTION` / `NO_ACTIONABLE_INTENT` with **no policy evaluation, 0 signature, 0 transfer**. `chain_verification.json` compares the record's axes with the executor's per-tick `decision_summary` (9/9 checks, `PASS`). The packaged dossier was regenerated with a new run_id **`scenario-rseth-2026-04-20261019T134804Z`** (agents run `rseth-2026-04_live_20261018T200027592497Z`, 0 new LLM spend, 0.035731 USD realised in the sealed run); the previous dossier (`scenario-rseth-2026-04-20261018T110722Z`, which produced a USDC `intent-usdc-2023-03-…` under the rsETH run id) is archived in `D:/orvyren_internal_2026-10-18/scenario_rseth_superseded/` with a `SUPERSEDED_NOTE.md`. The legacy pilot leg remains selectable with an explicit `--decision-source corpus` and its report declares itself legacy | Closed | `scripts/run_scenario_rseth.py`, `run_executor.py`, `src/orvyren/decision/agents_source.py`, `evidence/scenario_rseth/chain_verification.json` |
 | G-14 | The live scenario agents interrogated `evidence/graph.sqlite` (520 obs, schema v2); the 16,174-node v3 database is a local artifact with a reconstruction pipeline, not in the repository | Open, declared | `docs/RUNBOOK.md` §4 |
 | G-15 | `queries.q7 debt_backed` sums all visible `OWES` rows without an asset filter (contract figure pinned by tests) — never present it as an exposure metric; the filtered measure is `graph/api.concentration` | Open | `review/graph_eval_bench.md` |
-| G-16 | Published `evidence/evaluation/` report predates the R−/R+ aggregation fix (it shows R− = 0.0000 from the old formula) — **annotated** in `evidence/evaluation/SUPERSEDED_NOTE.md`, artifacts left byte-identical (G6 signed embargo + `variants.log` hash) | Annotated, regeneration deferred | `evidence/evaluation/SUPERSEDED_NOTE.md` |
+| G-16 | The 2026-10-17 DEV report pair (`mean_R_minus = 0.0000`, pre-fix formula) has been **replaced** by the first EVAL of 2026-10-19 (`generated: 2026-10-19T03:00:46Z`, content hash `c143c243…`, N=1) — executed after the G6 signature of the same day; the earlier artefacts and the operation order are documented in a dated historical note, and no byte-identical claim is made any more | Closed (history documented) | `evidence/evaluation/SUPERSEDED_NOTE.md` |
 | G-18 | Live rsETH planners were stopped by **prompt conformance, not by evidence**: runs ended `ARRET-3` / `E_LOOP_OUTPUT_INVALID` (plan missing `$schema` after re-prompt; discriminant criterion containing a digit). **Fixed 2026-10-18**: every validation error now names the field and the rule (`tache.critere_discriminant: no digit allowed — state the criterion qualitatively, figures come from refs`), and an extra attempt (3 instead of 2) is granted only while the LLM budget allows it — otherwise `ARRET-2`, never an overspend. The success path is unchanged: a sealed journal replay still costs the same 5 LLM calls, and no prompt, scripted store or policy file was touched (`grep -c erreurs_validation fixtures/agents/store_usdc-2023-03/*.json` = 0) | Closed | `tests/test_agents_plan_recovery.py` |
 | G-17 | `dist/docs/*.docx` are dated builds (2026-10-17) of the `.md` sources, shipped in the submission bundle (gitignored, not tracked): their test counters were refreshed surgically on 2026-10-18 (3 replacements, layout preserved); other text may lag its `.md` — the `.md` files and the README counter are the live source | Declared | this register |

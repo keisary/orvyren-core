@@ -1,14 +1,15 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-"""Declared-substitution + run-budget API tests (real rsETH scenario artefacts).
+"""Substitution-state + run-budget API tests (real rsETH scenario artefacts).
 
 Locks the pre-submission UI/product additions:
 
 * ``artifacts.scenario_substitution()`` reads the rsETH scenario artefacts on
-  disk (``evidence/scenario_rseth/``) and exposes the exact banner wording of
-  the declared substitution — the execution leg replays the pilot USDC
-  decision (mechanism demo) and the rsETH conclusion is the agents'
-  abstention;
+  disk (``evidence/scenario_rseth/``) and reports the state the dossier really
+  declares: since the 2026-10-19 regeneration the execution leg consumes the
+  DecisionRecord built from the sealed agents run, so **no substitution is
+  declared** (``declared: False``, no probe refusal). The legacy wording is
+  kept for a dossier that still carries the pilot replay;
 * ``audit_summary()`` carries the declaration (added field only) so the Audit
   screen can display the banner whenever it replays the rsETH artefacts;
 * ``discover_runs()`` / ``load_run_bundle()`` carry an added ``substitution``
@@ -32,9 +33,8 @@ from orvyren.api import artifacts  # noqa: E402
 from orvyren.api.config import load_settings  # noqa: E402
 
 EXPECTED_BANNER = (
-    "declared substitution: the execution leg replays the pilot USDC "
-    "decision (mechanism demo) — the rsETH conclusion is the agents' "
-    "abstention"
+    "no substitution: the execution leg consumes the DecisionRecord built from "
+    "the sealed agents run (orvyren.decision.agents_source) — no pilot replay"
 )
 
 BUDGET_KEYS = {"cost_usd", "llm_calls", "tool_calls", "wall_seconds"}
@@ -47,18 +47,21 @@ class TestScenarioSubstitution(unittest.TestCase):
         cls.sub = artifacts.scenario_substitution(cls.settings)
 
     def test_declared_banner_exact_wording(self):
-        self.assertTrue(self.sub["declared"])
+        # The packaged dossier is the agents-source one: no substitution.
+        self.assertFalse(self.sub["declared"])
+        self.assertEqual(self.sub["decision_source"], "agents")
         self.assertEqual(self.sub["banner"], EXPECTED_BANNER)
-        self.assertEqual(artifacts.SUBSTITUTION_BANNER, EXPECTED_BANNER)
+        self.assertEqual(artifacts.NO_SUBSTITUTION_BANNER, EXPECTED_BANNER)
+        self.assertIn("declared substitution", artifacts.SUBSTITUTION_BANNER)
 
     def test_facts_are_read_from_real_artefacts(self):
         self.assertEqual(self.sub["case_id"], "rseth-2026-04")
         self.assertTrue(self.sub["agents_run_id"].startswith("rseth-2026-04_live_"))
         self.assertTrue(self.sub["executor_run_id"].startswith("scenario-rseth-2026-04"))
-        # Measured refusal of the executor case probe (kept under
-        # execution/case_attempt/), never a fabricated code.
-        self.assertEqual(self.sub["execution_probe_refusal"],
-                         "E_WHAT_WOULD_CHANGE_REQUIRED")
+        # No case probe exists in the agents leg: the refusal is empty, never
+        # a fabricated code (the legacy dossier keeps E_WHAT_WOULD_CHANGE_REQUIRED).
+        self.assertEqual(self.sub["execution_probe_refusal"], "")
+        self.assertIn("--decision-source agents", self.sub["execution_leg"])
         self.assertEqual(self.sub["agents_abstention"], "ESCALATE")
         self.assertEqual(self.sub["epistemic_verdict"], "INCONCLUSIVE")
         self.assertTrue(self.sub["sources"])
@@ -73,17 +76,18 @@ class TestScenarioSubstitution(unittest.TestCase):
         self.assertEqual(budget["llm_calls"], 30)
         self.assertEqual(budget["tool_calls"], 12)
         self.assertEqual(budget["wall_seconds"], 600)
-        # Real measured run of the scenario (≈ $0.04 per full run).
-        self.assertAlmostEqual(used["cost_usd"], 0.0397, places=3)
-        self.assertEqual(used["llm_calls"], 9)
-        self.assertEqual(used["tool_calls"], 7)
+        # Real measured cost of the sealed agents run the dossier consumes
+        # (run_outcome.json of rseth-2026-04_live_20261018T200027592497Z).
+        self.assertAlmostEqual(used["cost_usd"], 0.035731, places=6)
+        self.assertEqual(used["llm_calls"], 5)
+        self.assertEqual(used["tool_calls"], 1)
         self.assertGreater(used["wall_seconds"], 0)
 
     def test_audit_summary_carries_the_declaration(self):
         summary = artifacts.audit_summary(self.settings)
         self.assertIn("scenario_substitution", summary)
         sub = summary["scenario_substitution"]
-        self.assertTrue(sub["declared"])
+        self.assertEqual(sub["declared"], self.sub["declared"])
         self.assertEqual(sub["banner"], EXPECTED_BANNER)
 
     def test_run_entries_carry_the_added_substitution_field(self):
@@ -92,7 +96,7 @@ class TestScenarioSubstitution(unittest.TestCase):
         for run in runs:
             self.assertIn("substitution", run)
             if artifacts.is_rseth_scenario_run(run["run_id"], run.get("case_id", "")):
-                self.assertTrue(run["substitution"]["declared"])
+                self.assertIn("declared", run["substitution"])
             else:
                 self.assertIsNone(run["substitution"])
 

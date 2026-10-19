@@ -1,37 +1,22 @@
 {
  "claims": [
   {
-   "journal_id": "rseth-2026-04_live_20261018T110722Z-orchestrator-0001",
+   "journal_id": "rseth-2026-04_live_20261018T200027592497Z-orchestrator-0001",
    "refs": [],
    "text": "plan refused (schema): re-prompting once with the error injected"
   },
   {
-   "journal_id": "rseth-2026-04_live_20261018T110722Z-orchestrator-0003",
+   "journal_id": "rseth-2026-04_live_20261018T200027592497Z-orchestrator-0003",
    "refs": [],
    "text": "VOI_NOT_ESTIMABLE: no NetVoI estimator injected — fixed bounded order kept (documented fallback)"
   },
   {
-   "journal_id": "rseth-2026-04_live_20261018T110722Z-orchestrator-0006",
-   "refs": [],
-   "text": "Les rares valeurs non paritaires présentes (excursions autour de la parité USDC) concernent un autre actif que le collatéral de la tâche ; les mobiliser reviendrait à changer de sujet, pas à départager l'hypothèse."
-  },
-  {
-   "journal_id": "rseth-2026-04_live_20261018T110722Z-orchestrator-0008",
-   "refs": [],
-   "text": "plan refused (schema): re-prompting once with the error injected"
-  },
-  {
-   "journal_id": "rseth-2026-04_live_20261018T110722Z-orchestrator-0018",
-   "refs": [],
-   "text": "plan refused (schema): re-prompting once with the error injected"
-  },
-  {
-   "journal_id": "rseth-2026-04_live_20261018T110722Z-orchestrator-0028",
+   "journal_id": "rseth-2026-04_live_20261018T200027592497Z-orchestrator-0010",
    "refs": [],
    "text": "plan refused (schema): re-prompting once with the error injected"
   }
  ],
- "packet_id": "rseth-2026-04_live_20261018T110722Z-packet",
+ "packet_id": "rseth-2026-04_live_20261018T200027592497Z-packet",
  "refs": [
   "corpus:series/calm_windows.json:c9775393ae83d2d5",
   "corpus:series/calm_windows.json:a99c909e66669f94",
@@ -1959,5 +1944,5 @@
   "corpus:raw/defillama/usdc_prices_main.json:0a559e81181fe241"
  ],
  "snapshot_ref": "graph_snapshot:rseth-2026-04@2026-04-18T19:03:59Z",
- "summary": "evidence packet of the bounded run (6 reflections)"
+ "summary": "evidence packet of the bounded run (3 reflections)"
 }

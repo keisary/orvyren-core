@@ -1,6 +1,7 @@
 # Scenario report — rsETH / KelpDAO, April 2026 (E2E demonstration)
 
-Case `rseth-2026-04` · scenario run_id `scenario-rseth-2026-04-20261018T110722Z` · agents run_id `rseth-2026-04_live_20261018T110722Z` · executor run_id `scenario-rseth-2026-04-20261018T110722Z` (parent `rseth-2026-04_live_20261018T110722Z`).
+Case `rseth-2026-04` · scenario run_id `scenario-rseth-2026-04-20261019T134804Z` · agents run_id `rseth-2026-04_live_20261018T200027592497Z` · executor run_id `scenario-rseth-2026-04-20261019T134804Z` (parent `rseth-2026-04_live_20261018T200027592497Z`).
+Decision source of the execution leg: **`agents`** — the per-tick DecisionRecord is built from the sealed agents run by `src/orvyren/decision/agents_source.py` (no pilot replay).
 Every figure below is read from the sourced fixture (`fixtures/agents/rseth-2026-04/run_inputs.json`) at report time; each fixture figure points to its source and `tests/test_fixtures_rseth_inputs.py` crosses fixture against source at runtime.
 
 ## 1. Risk observed
@@ -17,12 +18,12 @@ Concurrent hypotheses (ACH-style, frozen before the run; one counter-intuitive c
 
 ## 3. Evidence
 
-The LIVE agents observed the tools of the run (real LLM calls). The sourced figures of the fixture and their sources:
+The agents of the run observed the tools of the case (real LLM calls at run time). The sourced figures of the fixture and their sources:
   - [prices|chainlink|rsETH-USD] 2026-04-18T17:35:00Z = 2526.7563881 (evidence:episode_rseth_2026-04.json#headline.rsETH_oracle_at_2026-04-18T17:35:00Z)
   - [prices|chainlink|rsETH-USD] 2026-04-18T19:03:59Z = 2513.66460329 (evidence:episode_rseth_2026-04.json#headline.rsETH_oracle_at_2026-04-18T19:03:59Z)
   - [prices|chainlink|rsETH-USD] 2026-04-20T00:00:00Z = 2419.21294349 (evidence:episode_rseth_2026-04.json#headline.rsETH_oracle_at_2026-04-20T00:00:00Z)
   - [prices|chainlink|rsETH-USD] 2026-04-17T17:00:00Z = 2631.56608381 (evidence:episode_rseth_2026-04.json#headline.rsETH_oracle_peak.price)
-  - [prices|market|rsETH-USD] 18–20/04 = 1686 (doc:ORVYREN_DOC2_TECHNIQUE_COMPLET.md#measure-2)
+  - [prices|market|rsETH-USD] 18–20/04 = 1686 (doc:fixtures/sources/RSETH_MEASURE_2.md#measure-2)
   - [supply|rseth] 2026-04-18T18:00:00Z = 529993.9826991736 (evidence:episode_rseth_2026-04.json#headline.a_token_supply_at_cap_max)
   - [supply|rseth] 2026-04-18T19:03:59Z = 529482.808951789 (evidence:episode_rseth_2026-04.json#series["2026-04-18T19:03:59Z"].rsETH.a_token_supply)
   - [chain|ethereum|0xA1290d69c65A6Fe4DF752f95823fae25cB99e5A7] isFrozen_first_frozen_block = 24908723 (evidence:episode_rseth_2026-04.json#headline.rsETH_frozen_transition_block)
@@ -35,7 +36,7 @@ The LIVE agents observed the tools of the run (real LLM calls). The sourced figu
   - [chain|ethereum|0xA1290d69c65A6Fe4DF752f95823fae25cB99e5A7] weth_utilisation_peak = 1.0000792945348582 (evidence:episode_rseth_2026-04.json#headline.weth_utilisation_peak)
   - [chain|ethereum|0xA1290d69c65A6Fe4DF752f95823fae25cB99e5A7] collateral_rseth_at_exploit = 89567 (fixture:fixtures/graphs/rseth_2026-04.json#records[relation_id=rseth-collateralizes-weth-market].payload.amount)
   - [chain|ethereum|0xA1290d69c65A6Fe4DF752f95823fae25cB99e5A7] weth_borrowed_usd_at_exploit = 190000000 (fixture:fixtures/graphs/rseth_2026-04.json#records[relation_id=rseth-owes-weth-borrowed].payload.amount)
-  - [signals|oracle_market_divergence_pct] compute_signal:oracle_market_divergence_pct/v1 = -31 (doc:ORVYREN_DOC2_TECHNIQUE_COMPLET.md#measure-2)
+  - [signals|oracle_market_divergence_pct] compute_signal:oracle_market_divergence_pct/v1 = -31 (doc:fixtures/sources/RSETH_MEASURE_2.md#measure-2)
   - [signals|rseth_utilisation_at_freeze] compute_signal:rseth_utilisation_at_freeze/v1 = 7.946826023583168e-05 (evidence:episode_rseth_2026-04.json#series["2026-04-18T19:03:59Z"].rsETH.utilisation)
   - [signals|supply_cap_saturation_ratio] compute_signal:supply_cap_saturation_ratio/v1 = 0.9999886466022144 (evidence:episode_rseth_2026-04.json#headline.cap_ratio_max)
 
@@ -43,9 +44,17 @@ Agent outcome (`run_outcome.json`): stop `ARRET-3`, inconclusive=True, critique 
 
 ## 4. Decision
 
-Case decision (LIVE agent chain): the run above — its outcome, evidence packet and critic verdict are the case-specific decision artifacts (`run_outcome.json`, `evidence_packet.json`, `critique_report.json`).
+Case decision = the **DecisionRecord built from the sealed agents run** by `src/orvyren/decision/agents_source.py` (`build_decision_from_agents`), written unchanged to `decision/decision_agents_rseth-2026-04.json` (schema `orvyren-decision-record/v1`). This is the exact record the executor consumes — nothing is re-derived from the pilot corpus.
 
-Case decision — abstention built through the documented A1-A5 path (`orvyren.decision.abstention`: detect_conditions -> what_would_change_entries -> escalate_vs_no_action -> build_inconclusive), never a forced decision:
+  - source run: `rseth-2026-04_live_20261018T200027592497Z` (mode `live`, 14 journal line(s); chain heads recomputed from the journals: critic `924d84dde64c86ecb3c24bc0a758d9d152a36428658b759b5905fc4123a2112a`, orchestrator `9d1372f5457434c7bf4faccaae6eb545a48f60e2a8982e6918de23a36220a2df`)
+  - epistemic verdict `INCONCLUSIVE` · economic action `null` · intent `null` · authorization `REQUIRE_APPROVAL`
+  - escalation `REQUIRE_APPROVAL`, outcome state `ABORTED`, stop condition `ARRET-3` — motif: E_LOOP_OUTPUT_INVALID: orchestrator plan invalid after re-prompt (critere_discriminant contains a digit)
+  - critic: `INCOHERENTE`, 10 finding(s), types ALTERNATIVE, CONTRADICTION, DEPENDANCE, MANQUE, OBSOLESCENCE, PIT, gravities BLOQUANT, MAJEUR, MINEUR
+  - hypotheses: HYP-001 (UNDER_TEST), HYP-002 (UNDER_TEST), HYP-003 (UNDER_TEST), HYP-004 (UNDER_TEST) — every agents state is `UNDER_TEST` and the record's decision slot stays `unavailable`: the bridge never upgrades an agents state into a REFUTED/SUPPORTED verdict.
+  - realised research cost: 0.035731 USD · 5 LLM call(s) · 1 tool call(s) · 34.42 s (declared caps: 0.1 USD / 30 calls / 600 s), read from `run_outcome.json`
+  - what_would_change: 0 entr(ies) — the bridge copies `outcome.non_recherche` verbatim; the sealed run stopped at `ARRET-3` before enumerating one, so the list is empty. Declared gap, never filled by hand.
+
+Case decision — A1-A5 abstention, **complement** (the research plan `decision/abstention_rseth-2026-04.json`, built from the case fixture and the critic findings through `orvyren.decision.abstention`, never a forced decision). It produces no intent and no economic action, and it is not the DecisionRecord:
   - epistemic verdict: INCONCLUSIVE (conditions: A1)
   - action: None — no autonomous transfer while the market is frozen and the evidence is inconclusive
   - escalation: ESCALATE — surviving hypotheses prescribe opposite actions and the wrong one is costly — fragile posterior
@@ -58,29 +67,56 @@ Case decision — abstention built through the documented A1-A5 path (`orvyren.d
     - [RSETH-P-RSETH-TOOL-OBS] a discriminating rsETH tool observation in the run refs (critic BLOQUANT: the packet carried USDC series) — cible: an rsETH series in the measured corpus (corpus/ not populated for rsETH) (1 request(s), < 0.7 s; affects HYP-001, HYP-002, HYP-003)
   - verdicts: HYP-001 INCONCLUSIVE; HYP-002 INCONCLUSIVE; HYP-003 INCONCLUSIVE; HYP-004 REFUTED
 
-Deterministic decision engine (`run_decision.py`, declared substitution): the v1 engine is wired to the frozen USDC pilot windows (FREEZE_V1 D1/D2) and peg hypotheses; on this case it records its own verdicts and missing inputs in `decision/decision_rseth-2026-04.json`:
+Cross-check only — deterministic decision engine (`run_decision.py --no-rdof`). The v1 engine is wired to the frozen USDC pilot windows (FREEZE_V1 D1/D2) and peg hypotheses; its record `decision/decision_rseth-2026-04.json` is kept as a pilot-scoped cross-check, **not** as the case conclusion:
   - H1 INCONCLUSIVE (local liquidity perturbation)
   - H2 INCONCLUSIVE (broad stress on asset or issuer)
   - H3 INCONCLUSIVE (data or market artifact)
 
 ## 5. Policy verdict
 
-Policy evaluated on the execution leg (real `policy_v1.yaml`, real state, fail-closed resolvers):
-  - tick 1: verdict `DENY` (policy `DENY`, reasons: BALANCE_UNREADABLE, AGENT_NOT_MEMBER) — chain run_id scenario-rseth-2026-04-20261018T110722Z verify_ok=True
+**No policy verdict was produced, and none is invented.** The DecisionRecord carries `economic_action: null` and `intent: null` with `authorization_verdict: REQUIRE_APPROVAL`, so the executor records `NO_ACTIONABLE_INTENT` and stops before `policy.evaluate`: the policy axis is *not evaluated* — not ALLOW, not DENY.
+
+`policy_v1.yaml` was loaded (version `v1.0`, hash `651535872228470403f5603982eaadd9c4143c700f0ce159813f9edc7164ad5d`) and no rule was applied, because there is nothing to authorise:
+  - tick 1: outcome `NO_ACTION`, verdict `DENY`, policy `not evaluated`, reasons: NO_ACTIONABLE_INTENT — chain run_id scenario-rseth-2026-04-20261019T134804Z verify_ok=True
+
+`REQUIRE_APPROVAL` is the record's own brake: an agents run never evaluates the policy, and with no intent there is no transition decision -> policy in the chain.
 
 ## 6. Execution
 
-Execution is always dry-run (no signature, no key read), chained under one run identity (`orvyren.chain`). The execution case probe (`rseth-2026-04` case, measured live in this run) ended `REFUSED_E_WHAT_WOULD_CHANGE_REQUIRED`: the v1 decision dossier is only constructible for the pilot case id and the executor CLI has no decision-provider override, so the policy/execution leg runs the pilot decision replay as a declared substitution (`--case usdc-2023-03`), chained under this scenario run id and parented to the agents run id:
-  - `keys` -> rc 0
-  - `agents` -> rc 0
-  - `decision` -> rc 0
-  - `decision_abstention` -> rc 0 (ESCALATE)
-  - `execution_case_probe` -> rc 5 (REFUSED_E_WHAT_WOULD_CHANGE_REQUIRED)
-  - `execution` -> rc 0
-  - chain events head: ffb4a2c8fbe239092be53122a60792857d3a08a5793af9bd2d52d6cffb48cbda
-  - tick journal: `execution/journal.jsonl` (chained JSONL, append-only; `policy_verdicts.json` extracts this run's ticks), chain root `execution/chain/scenario-rseth-2026-04-20261018T110722Z/`; the probe journal and chain are kept under `execution/case_attempt/`
+Dry-run only (no signature, no key read), on the case's **own** decision: `--case rseth-2026-04 --decision-source agents --agents-run <sealed run>`. The historical pilot replay (`--case usdc-2023-03`) is gone from this leg: it produced a USDC intent under the rsETH run id, which is exactly the substitution this dossier removes.
 
-## 7. Gaps and explicit lacunae
+  - `decision` -> rc 0
+  - `decision_agents_source` -> rc 0 (REQUIRE_APPROVAL)
+  - `decision_abstention` -> rc 0 (ESCALATE)
+  - `execution` -> rc 0
+
+  - chain events head: `39a7b7f94618ec902522259375149e14ce35aa9f858acff873f1769cf7794b3f`
+  - chain root `execution/chain/scenario-rseth-2026-04-20261019T134804Z/`; tick journal `execution/journal.jsonl` (append-only, chained; `policy_verdicts.json` extracts this run's ticks)
+  - outcome of the leg: 1 tick(s), 0 intent(s), 0 signature(s), 0 transfer — an abstention that stops before the policy is the expected result, not a failed execution.
+
+## 7. Chain verification
+
+`chain_verification.json` (status `PASS`) compares the DecisionRecord with what the executor actually recorded:
+
+  - decision record `decision/decision_agents_rseth-2026-04.json` sha256 `fdbe92f2e8cc8ee818484cb2ca5056e11a4aabadd41375a3dcf574e09fd6ecf7`
+  - agents run `rseth-2026-04_live_20261018T200027592497Z` (mode `live`), chain heads critic `924d84dde64c86ecb3c24bc0a758d9d152a36428658b759b5905fc4123a2112a`, orchestrator `9d1372f5457434c7bf4faccaae6eb545a48f60e2a8982e6918de23a36220a2df` — recomputed from the journals, declared replayable=False
+  - tick 1: outcome `NO_ACTION`, verdict `DENY`, policy `not evaluated`, reasons NO_ACTIONABLE_INTENT — 9/9 checks passed, chain run `scenario-rseth-2026-04-20261019T134804Z` parent `rseth-2026-04_live_20261018T200027592497Z`
+  - chain events (in order): `DECISION_REPLAYED` -> `NO_ACTIONABLE_INTENT`
+  - no `POLICY_DECIDED` and no execution event exists: with no intent the chain stops after `NO_ACTIONABLE_INTENT`
+
+Status `PASS`: the record the executor consumed is the record in the dossier — same epistemic verdict, same authorization verdict, same (null) economic action, same intent absence, chain ids chained to the agents run, chain verified, 0 executed.
+
+Chain of identifiers, each read from its artifact:
+  1. risk observed — `evidence/episode_rseth_2026-04.json` (§1; fixture `fixtures/agents/rseth-2026-04/run_inputs.json`)
+  2. hypotheses — `run.json` (HYP-001..HYP-004, state `UNDER_TEST`) (§2)
+  3. evidence — `evidence_packet.json` packet `rseth-2026-04_live_20261018T200027592497Z-packet`, snapshot `graph_snapshot:rseth-2026-04@2026-04-18T19:03:59Z`, 1924 ref(s) (§3)
+  4. critique — `critique_report.json` `INCOHERENTE`, 10 finding(s) (§3/§4)
+  5. decision — `decision/decision_agents_rseth-2026-04.json` (sha256 `fdbe92f2e8cc8ee8`), from run `rseth-2026-04_live_20261018T200027592497Z` (§4)
+  6. policy — not evaluated (no intent), tick outcome `NO_ACTION` (§5)
+  7. execution — `execution/journal.jsonl`, chain `scenario-rseth-2026-04-20261019T134804Z`, events head `39a7b7f94618ec90` (§6)
+  8. dossier — `scenario_run.json` + this report, run_id `scenario-rseth-2026-04-20261019T134804Z`
+
+## 8. Gaps and explicit lacunae
 
 Explicit lacunae of the case fixture:
   - L-1 — Can the documented market price (1 686 USD) be confirmed from an archived market series? The RPC data layer documents the retained price, not the exit price.
@@ -88,80 +124,30 @@ Explicit lacunae of the case fixture:
   - L-3 — What is the exact bad debt per account? The incident report gives 123.7 / 230.1 M USD, but the per-account debt ledger is out of this data layer.
   - L-4 — Was any realisable value left for the frozen collateral? No liquid venue is readable for a stolen/unbacked rsETH.
 
-Declared substitutions and limitations:
-  - the deterministic decision engine of v1 is wired to the USDC pilot (frozen windows + peg hypotheses, `python -m orvyren.decide` refuses other case ids): its record is chained evidence of the decision stage mechanics, not an rsETH conclusion;
-  - the v1 decision dossier (RDOF + A1-A5 abstention) is only constructible for the pilot case id: the execution case probe (`--case rseth-2026-04`) is kept under `execution/case_attempt/` with the measured refusal (`E_WHAT_WOULD_CHANGE_REQUIRED`); the executor tick decision therefore replays the pilot decision and the rsETH-specific conclusion is the agent chain's — with a frozen market the coherent action is no autonomous transfer;
-  - no recorded response store exists for this case yet: only the LIVE run is executed; an offline `--replay journal` replay needs a recorded store first (never simulated);
-  - the market price and the ~-31 % divergence are documentation figures (ORVYREN_DOC2_TECHNIQUE_COMPLET.md measurement 2), not archived market series (episode limitations).
+Declared gaps of this dossier (none of them is a conclusion):
+  - `what_would_change` is empty in the DecisionRecord: the bridge copies `outcome.non_recherche` verbatim and the sealed run stopped at `ARRET-3` before enumerating a research plan. The A1-A5 complement (`decision/abstention_rseth-2026-04.json`, 5 entr(ies)) lists the sourced next observations; it is a complement, not a second decision.
+  - the deterministic engine record `decision/decision_rseth-2026-04.json` is pilot-scoped (frozen USDC windows + peg hypotheses): it is a cross-check of the decision stage, never an rsETH conclusion.
+  - the live run is not bit-replayable (wall-time and realised cost enter its payloads): `source.replayable=false`, declared by the bridge. An offline replay needs a recorded response store, absent for this case — never simulated.
+  - the agents' hypotheses stayed `UNDER_TEST`: the record declares no hypothesis REFUTED or SUPPORTED. The critic's BLOQUANT finding (the packet carried no rsETH observation) is why the run stopped instead of concluding.
+  - the market price and the ~-31 % divergence remain documentation figures (ORVYREN_DOC2_TECHNIQUE_COMPLET.md, measurement 2), not an archived market series.
 
-## 8. Provenance and reproduction
+## 9. Provenance and reproduction
 
-Reproduce: `(set -a; source scripts/demo/.env; set +a; python scripts/run_scenario_rseth.py)` then inspect `evidence/scenario_rseth/`. Fixture: `fixtures/agents/rseth-2026-04/run_inputs.json`. Derived corpus: `fixtures/agents/rseth-2026-04/corpus_rseth.csv` (re-derived and compared by `tests/test_fixtures_rseth_inputs.py`). Targeted tests: `python -m unittest tests.test_fixtures_rseth_inputs tests.test_scenario_rseth`. No key or secret is stored in any artifact of this directory.
+Reproduce, sealed run (no LLM call, no new spend — the packaged mode):
+```
+python scripts/run_scenario_rseth.py --agents-run evidence/demo_runs/agents/rseth-2026-04/rseth-2026-04_live_20261018T200027592497Z \
+    --run-id scenario-rseth-2026-04-20261019T134804Z --out-dir evidence/scenario_rseth
+```
+Reproduce, live agents (real LLM calls, keys from `scripts/demo/.env`; a new agents run and a new scenario run id):
+```
+(set -a; source scripts/demo/.env; set +a)
+python scripts/run_scenario_rseth.py --out-dir evidence/scenario_rseth
+```
+Legacy leg (reproduce the superseded dossier only): add `--decision-source corpus`.
 
-## 9. Raw step outputs
+The bridge record `decision/decision_agents_rseth-2026-04.json` is the artifact to cite; `chain_verification.json` states whether the executor consumed it (and with which chain ids). Fixture: `fixtures/agents/rseth-2026-04/run_inputs.json`. Derived corpus: `fixtures/agents/rseth-2026-04/corpus_rseth.csv` (re-derived and compared by `tests/test_fixtures_rseth_inputs.py`). Targeted tests: `python -m unittest tests.test_fixtures_rseth_inputs tests.test_scenario_rseth`. No key or secret is stored in any artifact of this directory.
 
-### step `keys` (rc 0)
-stdout:
-```
-[file]    scripts/demo/.env  (git-ignored ✓)
-    ORVYREN_RPC_URL_BASE_SEPOLIA       present (len 24)
-    ORVYREN_CHAIN_ID                   present (len 5)
-    ORVYREN_RPC_TIMEOUT_SECONDS        present (len 2)
-    ORVYREN_SAFE_ADDRESS               present (len 42)
-    ORVYREN_AGENT_ADDRESS              present (len 42)
-    ORVYREN_MODULE_ADDRESS             present (len 42)
-    ORVYREN_USDC_ADDRESS               present (len 42)
-    ORVYREN_RECIPIENT_B                present (len 42)
-    ORVYREN_RECIPIENT_C                present (len 42)
-    ORVYREN_RECIPIENT_UNLISTED         present (len 42)
-    ORVYREN_PRIVATE_KEY                present (len 66) — never displayed
-    ORVYREN_K0_PAUSED                  empty
-    ORVYREN_DEEPSEEK_API_KEY           present (len 35) — never displayed
-    ORVYREN_MIMO_API_KEY               present (len 51) — never displayed
-
-[file]    scripts/demo/owners.env  (git-ignored ✓)
-    ORVYREN_OWNER1_ADDRESS             present (len 42)
-    ORVYREN_OWNER1_PRIVATE_KEY         present (len 66) — never displayed
-    ORVYREN_OWNER2_ADDRESS             present (len 42)
-    ORVYREN_OWNER2_PRIVATE_KEY         present (len 66) — never displayed
-    ORVYREN_OWNER3_ADDRESS             present (len 42)
-    ORVYREN_OWNER3_PRIVATE_KEY         present (len 66) — never displayed
-
-live-mode keys (agents):
-    ORVYREN_DEEPSEEK_API_KEY           present (len 35)
-    ORVYREN_MIMO_API_KEY               present (len 51)
-```
-stderr:
-```
-(empty)
-```
-
-### step `agents` (rc 0)
-stdout:
-```
-ORVYREN — run_agents · rseth-2026-04 · mode live
-  run       : evidence\scenario_rseth\agents_session\rseth-2026-04_live_20261018T110722Z
-  store live: evidence\scenario_rseth\agents_session\rseth-2026-04_live_20261018T110722Z\store_live
-  [orchestrator] process started…
-    [orchestrator] done — 31 journal lines, state ABORTED/ARRET-3
-  [critic] process started…
-    [critic] report written — verdict INCOHERENTE, 12 objection(s)
-
-  ==== run summary rseth-2026-04 (live) ====
-    orchestrator   31 lines — agent_id:orchestrator — chain OK
-    critic          1 lines — agent_id:critic — chain OK
-    stop           : ARRET-3 (abstention)
-    budget         : llm 9/30 · tools 7/12 · 60s/600s · $0.0397/$0.10
-    critique       : INCOHERENTE
-    escalation     : REQUIRE_APPROVAL (the critic never cancels — it brakes)
-    not searched   : Une série de marché archivée pour le rsETH, sur une place liquide, confirme-t-elle un cours de sortie nettement inférieur aux lectures du feed oracle retenues sur la même fenêtre ? · Does an archived secondary-market price series for the collateral asset print a last trade before the freeze instant matching the documented market price rather than the retained oracle reading over the same window?
-    cumulative LLM cost: $0.0397
-    artifacts      : evidence\scenario_rseth\agents_session\rseth-2026-04_live_20261018T110722Z
-```
-stderr:
-```
-(empty)
-```
+## 10. Raw step outputs
 
 ### step `decision` (rc 0)
 stdout:
@@ -185,6 +171,16 @@ stderr:
 (empty)
 ```
 
+### step `decision_agents_source` (rc 0)
+stdout:
+```
+DecisionRecord orvyren-decision-record/v1 · epistemic INCONCLUSIVE · economic_action None · intent None · authorization REQUIRE_APPROVAL · escalation REQUIRE_APPROVAL · evidence_refs agents_journal:critic=924d84dde64c, agents_journal:orchestrator=9d1372f54574
+```
+stderr:
+```
+(empty)
+```
+
 ### step `decision_abstention` (rc 0)
 stdout:
 ```
@@ -195,7 +191,7 @@ stderr:
 (empty)
 ```
 
-### step `execution_case_probe` (rc 5)
+### step `execution` (rc 0)
 stdout:
 ```
 {
@@ -205,195 +201,17 @@ stdout:
   "ticks": 1,
   "ticks_run": 1,
   "recipient": "0x37877f6ffb6656e752bf4807b9c3c7b761a953a3",
-  "run_id": "scenario-rseth-2026-04-20261018T110722Z-case-probe",
-  "parent_run_id": "rseth-2026-04_live_20261018T110722Z",
+  "run_id": "scenario-rseth-2026-04-20261019T134804Z",
+  "parent_run_id": "rseth-2026-04_live_20261018T200027592497Z",
   "chain": {
-    "run_id": "scenario-rseth-2026-04-20261018T110722Z-case-probe",
-    "parent_run_id": "rseth-2026-04_live_20261018T110722Z",
+    "run_id": "scenario-rseth-2026-04-20261019T134804Z",
+    "parent_run_id": "rseth-2026-04_live_20261018T200027592497Z",
     "case_id": "rseth-2026-04",
-    "root_dir": "D:\\orvyren_core\\evidence\\scenario_rseth\\execution\\case_attempt\\chain\\scenario-rseth-2026-04-20261018T110722Z-case-probe",
+    "root_dir": "D:\\orvyren_core\\evidence\\scenario_rseth\\execution\\chain\\scenario-rseth-2026-04-20261019T134804Z",
     "verify_ok": true,
     "verify_error": "",
-    "events_head": "427451a2bd3711050ca64061fb482a717089a0608422e72f650783adea953b1c",
+    "events_head": "39a7b7f94618ec902522259375149e14ce35aa9f858acff873f1769cf7794b3f",
     "artifacts": 0
-  },
-  "policy": {
-    "path": "D:\\orvyren_core\\policy_v1.yaml",
-    "version": "v1.0",
-    "policy_hash": "651535872228470403f5603982eaadd9c4143c700f0ce159813f9edc7164ad5d",
-    "yaml_sha256": "b99ad99bc2d32184fd4e1b45fb136f0424e972f40d71cafeab622ae11acc0c03"
-  },
-  "envelope": {
-    "status": "PASS",
-    "source": "fixture",
-    "fixture_path": "D:\\orvyren_core\\fixtures\\roles_agent_config.json",
-    "note": "",
-    "checks": [
-      {
-        "id": "D1",
-        "name": "chain",
-        "status": "PASS",
-        "detail": {
-          "chain_id": 84532
-        }
-      },
-      {
-        "id": "D3",
-        "name": "role key",
-        "status": "PASS",
-        "detail": {}
-      },
-      {
-        "id": "D4",
-        "name": "role targets",
-        "status": "PASS",
-        "detail": {
-          "targets": [
-            "0x036cbd53842c5426634e7929541ec2318f3dcf7e"
-          ]
-        }
-      },
-      {
-        "id": "D5",
-        "name": "role functions",
-        "status": "PASS",
-        "detail": {
-          "functions": [
-            [
-              "0x036cbd53842c5426634e7929541ec2318f3dcf7e",
-              "0xa9059cbb"
-            ]
-          ]
-        }
-      },
-      {
-        "id": "D7",
-        "name": "allowance",
-        "status": "PASS",
-        "detail": {
-          "mismatches": [],
-          "fixture": 300000000,
-          "policy": 300000000
-        }
-      },
-      {
-        "id": "D8",
-        "name": "call quota",
-        "status": "PASS",
-        "detail": {
-          "fixture": 10,
-          "policy": 10
-        }
-      },
-      {
-        "id": "D9",
-        "name": "scheduled revocation",
-        "status": "PASS",
-        "detail": {}
-      },
-      {
-        "id": "D10",
-        "name": "asset",
-        "status": "PASS",
-        "detail": {}
-      }
-    ]
-  },
-  "paused": false,
-  "stopped": "decision",
-  "journal": {
-    "path": "evidence\\scenario_rseth\\execution\\case_attempt\\journal.jsonl",
-    "records": 2,
-    "ok": true,
-    "error": ""
-  },
-  "ledger": {
-    "path": "evidence\\scenario_rseth\\execution\\case_attempt\\ledger.json",
-    "entries": 0,
-    "spent_24h_before": 0.0,
-    "spent_24h_after": 0.0
-  },
-  "counts": {
-    "allow": 0,
-    "deny": 0,
-    "require_approval": 0,
-    "dry_run": 0,
-    "signed": 0,
-    "no_action": 0,
-    "errors": 1
-  },
-  "records": [
-    {
-      "case": "rseth-2026-04",
-      "run_id": "scenario-rseth-2026-04-20261018T110722Z-case-probe",
-      "tick": 1,
-      "ts_utc": "2026-10-18T11:11:30.938975+00:00",
-      "mode": "dry-run",
-      "dry_run": true,
-      "verdict": "ERROR",
-      "policy_verdict": null,
-      "outcome": "ERROR",
-      "executed": false,
-      "intent": null,
-      "decision_summary": {},
-      "reasons": [],
-      "rules_evaluated": [],
-      "skipped_rules": [],
-      "policy_version": "v1.0",
-      "policy_hash": "651535872228470403f5603982eaadd9c4143c700f0ce159813f9edc7164ad5d",
-      "safe_mode": false,
-      "state": {
-        "paused": false,
-        "agent_member": null,
-        "envelope_status": "PASS",
-        "available_balance": null,
-        "cumulative_spent": 0.0,
-        "budget_spent": 0.0,
-        "budget_cap": 0.1
-      },
-      "tx_hash": null,
-      "receipt_verification": null,
-      "error": "decision unavailable: E_WHAT_WOULD_CHANGE_REQUIRED: INCONCLUSIVE must enumerate what would change the verdict (B3 §c.3)",
-      "ledger_spent_after": null,
-      "chain": {
-        "run_id": "scenario-rseth-2026-04-20261018T110722Z-case-probe",
-        "parent_run_id": "rseth-2026-04_live_20261018T110722Z",
-        "root_dir": "D:\\orvyren_core\\evidence\\scenario_rseth\\execution\\case_attempt\\chain\\scenario-rseth-2026-04-20261018T110722Z-case-probe",
-        "verify_ok": true,
-        "verify_error": "",
-        "events_head": "427451a2bd3711050ca64061fb482a717089a0608422e72f650783adea953b1c"
-      }
-    }
-  ],
-  "demo_defaults": false
-}
-```
-stderr:
-```
-NOTE: ORVYREN_AGENT_MEMBER, ORVYREN_AVAILABLE_BALANCE unset — P11/P7 fail closed (DENY). Pass --demo-defaults for the offline demo.
-```
-
-### step `execution` (rc 0)
-stdout:
-```
-{
-  "schema": "orvyren-executor-run/v1",
-  "case": "usdc-2023-03",
-  "mode": "dry-run",
-  "ticks": 1,
-  "ticks_run": 1,
-  "recipient": "0x37877f6ffb6656e752bf4807b9c3c7b761a953a3",
-  "run_id": "scenario-rseth-2026-04-20261018T110722Z",
-  "parent_run_id": "rseth-2026-04_live_20261018T110722Z",
-  "chain": {
-    "run_id": "scenario-rseth-2026-04-20261018T110722Z",
-    "parent_run_id": "rseth-2026-04_live_20261018T110722Z",
-    "case_id": "usdc-2023-03",
-    "root_dir": "D:\\orvyren_core\\evidence\\scenario_rseth\\execution\\chain\\scenario-rseth-2026-04-20261018T110722Z",
-    "verify_ok": true,
-    "verify_error": "",
-    "events_head": "ffb4a2c8fbe239092be53122a60792857d3a08a5793af9bd2d52d6cffb48cbda",
-    "artifacts": 2
   },
   "policy": {
     "path": "D:\\orvyren_core\\policy_v1.yaml",
@@ -480,13 +298,13 @@ stdout:
   "paused": false,
   "stopped": "",
   "journal": {
-    "path": "evidence\\scenario_rseth\\execution\\journal.jsonl",
-    "records": 3,
+    "path": "evidence/scenario_rseth\\execution\\journal.jsonl",
+    "records": 1,
     "ok": true,
     "error": ""
   },
   "ledger": {
-    "path": "evidence\\scenario_rseth\\execution\\ledger.json",
+    "path": "evidence/scenario_rseth\\execution\\ledger.json",
     "entries": 0,
     "spent_24h_before": 0.0,
     "spent_24h_after": 0.0
@@ -497,107 +315,31 @@ stdout:
     "require_approval": 0,
     "dry_run": 0,
     "signed": 0,
-    "no_action": 0,
+    "no_action": 1,
     "errors": 0
   },
   "records": [
     {
-      "case": "usdc-2023-03",
-      "run_id": "scenario-rseth-2026-04-20261018T110722Z",
+      "case": "rseth-2026-04",
+      "run_id": "scenario-rseth-2026-04-20261019T134804Z",
       "tick": 1,
-      "ts_utc": "2026-10-18T11:11:31.368970+00:00",
+      "ts_utc": "2026-10-19T13:48:05.784177+00:00",
       "mode": "dry-run",
       "dry_run": true,
       "verdict": "DENY",
-      "policy_verdict": "DENY",
-      "outcome": "DENIED_POLICY",
+      "policy_verdict": null,
+      "outcome": "NO_ACTION",
       "executed": false,
-      "intent": {
-        "intent_id": "intent-usdc-2023-03-a-d1-t001-scenario-rseth-2026-04-20261018T110722Z",
-        "action": "transfer",
-        "chain_id": 84532,
-        "asset": "0x036cbd53842c5426634e7929541eC2318f3dCF7e",
-        "amount": 100.0,
-        "recipient": "0x37877f6ffb6656e752bf4807b9c3c7b761a953a3",
-        "created_at": "2026-10-18T11:11:31.368970+00:00"
-      },
+      "intent": null,
       "decision_summary": {
-        "epistemic_verdict": "CONCLUANT",
-        "economic_action": "CONVERTIR/TRANSFÉRER",
-        "authorization_verdict": "ALLOW"
+        "epistemic_verdict": "INCONCLUSIVE",
+        "economic_action": null,
+        "authorization_verdict": "REQUIRE_APPROVAL"
       },
       "reasons": [
-        "BALANCE_UNREADABLE",
-        "AGENT_NOT_MEMBER"
+        "NO_ACTIONABLE_INTENT"
       ],
-      "rules_evaluated": [
-        {
-          "rule": "P1-chain",
-          "result": "OK",
-          "note": "84532"
-        },
-        {
-          "rule": "P2-asset",
-          "result": "OK",
-          "note": ""
-        },
-        {
-          "rule": "P3-recipient",
-          "result": "OK",
-          "note": ""
-        },
-        {
-          "rule": "P4-function",
-          "result": "OK",
-          "note": "transfer -> (0x036cbd53842c5426634e7929541ec2318f3dcf7e, 0xa9059cbb)"
-        },
-        {
-          "rule": "P5-amount",
-          "result": "OK",
-          "note": "100.0 <= 100.0"
-        },
-        {
-          "rule": "P6-cumulative",
-          "result": "OK",
-          "note": "100.0 <= 300.0"
-        },
-        {
-          "rule": "P7-exposure",
-          "result": "FAIL",
-          "code": "BALANCE_UNREADABLE"
-        },
-        {
-          "rule": "P8-permission",
-          "result": "OK",
-          "note": "2026-10-19T11:11:31.367974+00:00"
-        },
-        {
-          "rule": "P9-freshness",
-          "result": "OK",
-          "note": "age 0:00:00"
-        },
-        {
-          "rule": "P10-idempotency",
-          "result": "OK",
-          "note": ""
-        },
-        {
-          "rule": "P11-pause",
-          "result": "FAIL",
-          "code": "AGENT_NOT_MEMBER",
-          "note": "role membership unreadable — fail closed"
-        },
-        {
-          "rule": "P12-envelope",
-          "result": "OK",
-          "note": ""
-        },
-        {
-          "rule": "P14-budget",
-          "result": "OK",
-          "note": "0.0 < 0.1"
-        }
-      ],
+      "rules_evaluated": [],
       "skipped_rules": [],
       "policy_version": "v1.0",
       "policy_hash": "651535872228470403f5603982eaadd9c4143c700f0ce159813f9edc7164ad5d",
@@ -613,15 +355,15 @@ stdout:
       },
       "tx_hash": null,
       "receipt_verification": null,
-      "error": null,
+      "error": "the DecisionRecord carries no executable intent",
       "ledger_spent_after": null,
       "chain": {
-        "run_id": "scenario-rseth-2026-04-20261018T110722Z",
-        "parent_run_id": "rseth-2026-04_live_20261018T110722Z",
-        "root_dir": "D:\\orvyren_core\\evidence\\scenario_rseth\\execution\\chain\\scenario-rseth-2026-04-20261018T110722Z",
+        "run_id": "scenario-rseth-2026-04-20261019T134804Z",
+        "parent_run_id": "rseth-2026-04_live_20261018T200027592497Z",
+        "root_dir": "D:\\orvyren_core\\evidence\\scenario_rseth\\execution\\chain\\scenario-rseth-2026-04-20261019T134804Z",
         "verify_ok": true,
         "verify_error": "",
-        "events_head": "ffb4a2c8fbe239092be53122a60792857d3a08a5793af9bd2d52d6cffb48cbda"
+        "events_head": "39a7b7f94618ec902522259375149e14ce35aa9f858acff873f1769cf7794b3f"
       }
     }
   ],

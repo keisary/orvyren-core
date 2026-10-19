@@ -1,0 +1,193 @@
+{
+ "abstention": {
+  "action": null,
+  "epistemic_verdict": "INCONCLUSIVE",
+  "motif": "E_LOOP_OUTPUT_INVALID: orchestrator plan invalid after re-prompt (critere_discriminant contains a digit)",
+  "state": "ABORTED",
+  "stop_condition": "ARRET-3",
+  "triggers": [
+   "outcome.inconclusive=true",
+   "escalation=REQUIRE_APPROVAL"
+  ],
+  "what_would_change_the_verdict": []
+ },
+ "authorization_verdict": "REQUIRE_APPROVAL",
+ "axes": {
+  "authorization_note": "not evaluated: an agents run does not evaluate the policy (the orchestrator does)",
+  "authorization_verdict": "REQUIRE_APPROVAL",
+  "economic_action": null,
+  "epistemic_verdict": "INCONCLUSIVE"
+ },
+ "case": "rseth-2026-04",
+ "critique": {
+  "finding_types": [
+   "ALTERNATIVE",
+   "CONTRADICTION",
+   "DEPENDANCE",
+   "MANQUE",
+   "OBSOLESCENCE",
+   "PIT"
+  ],
+  "findings_count": 10,
+  "gravities": [
+   "BLOQUANT",
+   "MAJEUR",
+   "MINEUR"
+  ],
+  "note": "Le paquet est structurellement incohérent : le corpus cité porte sur USD0/USDC alors que toutes les hypothèses portent sur rsETH, et HYP-002 contient une contradiction numérique interne. Les claims de session sont non référencés et laissent une VOI non estimée.",
+  "preuves_manquantes": [
+   "Série isFrozen par bloc sur toute la fenêtre (état archivé, non estimation binaire)",
+   "Log d'événements ou hash de la transaction de gel administratif",
+   "Série cap_ratio de la réserve rsETH jusqu'à l'instant du gel",
+   "Série d'utilisation de la réserve rsETH autour du gel (critère R de HYP-004)",
+   "Source et horodatage du prix marché 1 686 et des relevés oracles 2 513-2 526",
+   "Estimateur NetVoI ou justification documentée de l'ordre fixe en secours",
+   "Toute ref corpus nommant rsETH, Aave v3 core ou l'adresse de la réserve"
+  ],
+  "schema": "orvyren/crit/v1",
+  "verdict": "INCOHERENTE"
+ },
+ "economic_action": null,
+ "epistemic_verdict": "INCONCLUSIVE",
+ "escalation": "REQUIRE_APPROVAL",
+ "evidence_refs": [
+  {
+   "source": "agents_journal:critic",
+   "value": "924d84dde64c86ecb3c24bc0a758d9d152a36428658b759b5905fc4123a2112a"
+  },
+  {
+   "source": "agents_journal:orchestrator",
+   "value": "9d1372f5457434c7bf4faccaae6eb545a48f60e2a8982e6918de23a36220a2df"
+  }
+ ],
+ "hypotheses": [
+  {
+   "agent_state": "UNDER_TEST",
+   "enonce": "The rsETH reserve of the Aave v3 core market was administratively frozen (isFrozen 0 -> 1 at block 24 908 723, 2026-04-18 19:03:59 UTC): withdrawals are blocked from that instant.",
+   "id": "HYP-001",
+   "probability_declared": "unavailable",
+   "refutation_criterion": "isFrozen never flips in the window, or the freeze lands elsewhere than the dated block",
+   "support_criterion": "an isFrozen transition measured at a dated block (binary search, 14 steps, 24 908 722 -> 24 908 723)"
+  },
+  {
+   "agent_state": "UNDER_TEST",
+   "enonce": "The value retained by the oracle diverges from the market price (about -31 %): valuing the position on the oracle overstates the realisable value of the collateral.",
+   "id": "HYP-002",
+   "probability_declared": "unavailable",
+   "refutation_criterion": "the market price tracks the oracle within the documented tolerance",
+   "support_criterion": "the documented market price (1 686 USD) sits far below the retained oracle readings (2 513-2 526 USD) over the same window"
+  },
+  {
+   "agent_state": "UNDER_TEST",
+   "enonce": "The supply cap saturation (99.999 % at 2026-04-18 18:00 UTC) preceded the freeze and constrained the market: no new supply could enter before the administrative freeze.",
+   "id": "HYP-003",
+   "probability_declared": "unavailable",
+   "refutation_criterion": "cap_ratio far below saturation, or the freeze strictly precedes the saturation",
+   "support_criterion": "cap_ratio_max measured at 2026-04-18T18:00:00Z, strictly before the freeze instant"
+  },
+  {
+   "agent_state": "UNDER_TEST",
+   "enonce": "Counter-intuitive competitor: the reserve is blocked by a full utilisation of the market (a 100 % utilisation leaves no cash to withdraw) - the freeze is only a symptom of a liquidity squeeze.",
+   "id": "HYP-004",
+   "probability_declared": "unavailable",
+   "refutation_criterion": "a measured utilisation of about 0.008 % (no borrowing on the reserve), as the archived series shows",
+   "support_criterion": "a measured utilisation of the rsETH reserve close to 100 % around the freeze"
+  }
+ ],
+ "intent": null,
+ "lacunes": [
+  {
+   "lacune_id": "L-1",
+   "question": "Can the documented market price (1 686 USD) be confirmed from an archived market series? The RPC data layer documents the retained price, not the exit price."
+  },
+  {
+   "lacune_id": "L-2",
+   "question": "What was the oracle freshness at the freeze? latestRoundData() reverts on the capped rsETH/ETH/USD feed, so no updatedAt is readable."
+  },
+  {
+   "lacune_id": "L-3",
+   "question": "What is the exact bad debt per account? The incident report gives 123.7 / 230.1 M USD, but the per-account debt ledger is out of this data layer."
+  },
+  {
+   "lacune_id": "L-4",
+   "question": "Was any realisable value left for the frozen collateral? No liquid venue is readable for a stolen/unbacked rsETH."
+  }
+ ],
+ "mode": "live",
+ "outcome_motif": "E_LOOP_OUTPUT_INVALID: orchestrator plan invalid after re-prompt (critere_discriminant contains a digit)",
+ "outcome_state": "ABORTED",
+ "rationale": "agents run rseth-2026-04_live_20261018T200027592497Z (live): state ABORTED, stop ARRET-3, inconclusive true, escalation REQUIRE_APPROVAL ; outcome motif: E_LOOP_OUTPUT_INVALID: orchestrator plan invalid after re-prompt (critere_discriminant contains a digit) ; critique INCOHERENTE (10 finding(s)) ; journals: critic 1 line(s), orchestrator 13 line(s) ; abstention: no economic action and no intent produced ; authorization REQUIRE_APPROVAL (no policy evaluation was possible without an action)",
+ "research_cost": {
+  "arret": "ARRET-3",
+  "arret_regle": "E_LOOP_OUTPUT_INVALID: orchestrator plan invalid after re-prompt (critere_discriminant contains a digit)",
+  "budget": {
+   "cost_usd": 0.035731098,
+   "llm_calls": 5.0,
+   "tool_calls": 1.0,
+   "wall_seconds": 34.42200000000594
+  },
+  "budget_declared": {
+   "cost_usd": 0.1,
+   "llm_calls": 30.0,
+   "tool_calls": 12.0,
+   "wall_seconds": 600
+  },
+  "state": "ABORTED"
+ },
+ "schema": "orvyren-decision-record/v1",
+ "source": {
+  "artefacts": {
+   "journals": [
+    "critic",
+    "orchestrator"
+   ],
+   "run_json": true,
+   "run_outcome_json": true
+  },
+  "case_id_source": "argument",
+  "chain_heads": {
+   "critic": "924d84dde64c86ecb3c24bc0a758d9d152a36428658b759b5905fc4123a2112a",
+   "orchestrator": "9d1372f5457434c7bf4faccaae6eb545a48f60e2a8982e6918de23a36220a2df"
+  },
+  "journal_lines": {
+   "critic": 1,
+   "orchestrator": 13
+  },
+  "journals_verified": {
+   "critic": true,
+   "orchestrator": true
+  },
+  "kind": "agents",
+  "mode": "live",
+  "outcome_schema": "orvyren/agent-run-outcome/v1",
+  "replayable": false,
+  "replayable_reason": "live run: payloads embed measured wall-time and realised cost, so bit-identical replay is not possible (use REPLAY-ARCHIVE recalculation)",
+  "run_dir": "evidence/demo_runs/agents/rseth-2026-04/rseth-2026-04_live_20261018T200027592497Z",
+  "run_id": "rseth-2026-04_live_20261018T200027592497Z",
+  "run_schema": "orvyren/agent-run/v1"
+ },
+ "stop_condition": "ARRET-3",
+ "verdicts": {
+  "HYP-001": {
+   "agent_state": "UNDER_TEST",
+   "source": "run.json:hypotheses[].etat",
+   "verdict": "unavailable"
+  },
+  "HYP-002": {
+   "agent_state": "UNDER_TEST",
+   "source": "run.json:hypotheses[].etat",
+   "verdict": "unavailable"
+  },
+  "HYP-003": {
+   "agent_state": "UNDER_TEST",
+   "source": "run.json:hypotheses[].etat",
+   "verdict": "unavailable"
+  },
+  "HYP-004": {
+   "agent_state": "UNDER_TEST",
+   "source": "run.json:hypotheses[].etat",
+   "verdict": "unavailable"
+  }
+ },
+ "what_would_change": []
+}

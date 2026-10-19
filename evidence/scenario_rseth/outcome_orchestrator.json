@@ -1,17 +1,14 @@
 {
  "budget_used": {
-  "cost_usd": 0.03968193,
-  "llm_calls": 9.0,
-  "tool_calls": 7.0,
-  "wall_seconds": 59.78100000000086
+  "cost_usd": 0.035731098,
+  "llm_calls": 5.0,
+  "tool_calls": 1.0,
+  "wall_seconds": 34.42200000000594
  },
  "critique_verdict": "",
  "inconclusive": true,
  "motif": "E_LOOP_OUTPUT_INVALID: orchestrator plan invalid after re-prompt (critere_discriminant contains a digit)",
- "non_recherche": [
-  "Une série de marché archivée pour le rsETH, sur une place liquide, confirme-t-elle un cours de sortie nettement inférieur aux lectures du feed oracle retenues sur la même fenêtre ?",
-  "Does an archived secondary-market price series for the collateral asset print a last trade before the freeze instant matching the documented market price rather than the retained oracle reading over the same window?"
- ],
+ "non_recherche": [],
  "reflexion": {
   "cells": [],
   "diagnosticity": {},

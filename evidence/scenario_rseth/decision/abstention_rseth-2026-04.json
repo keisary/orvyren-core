@@ -3,12 +3,12 @@
   "action": null,
   "budget": {
    "consomme": {
-    "appels": 9.0,
-    "cout_usd": 0.03968193,
-    "secondes": 59.78100000000086
+    "appels": 5.0,
+    "cout_usd": 0.035731098,
+    "secondes": 34.42200000000594
    },
    "limites": {
-    "appels": 30,
+    "appels": 30.0,
     "cout_usd": 0.1,
     "secondes": 600
    },
@@ -102,7 +102,7 @@
  "action": null,
  "agent_critique_verdict": "INCOHERENTE",
  "agent_escalation": "REQUIRE_APPROVAL",
- "agent_run_id": "rseth-2026-04_live_20261018T110722Z",
+ "agent_run_id": "rseth-2026-04_live_20261018T200027592497Z",
  "agent_stop_condition": "ARRET-3",
  "case_id": "rseth-2026-04",
  "engine_record": "decision/decision_rseth-2026-04.json",

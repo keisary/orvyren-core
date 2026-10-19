@@ -92,6 +92,13 @@ class FakeRunner(object):
                 "schema": "orvyren/agent-run/v1",
                 "run_id": FAKE_AGENT_RUN_ID, "case_id": CASE_ID,
                 "mode": "live", "tool_mode": "live",
+                "hypotheses": [
+                    {"id": "HYP-001", "etat": "UNDER_TEST",
+                     "enonce": "the rsETH reserve was frozen",
+                     "criteres": {"S": "isFrozen=1", "R": "isFrozen=0"}},
+                    {"id": "HYP-002", "etat": "UNDER_TEST",
+                     "enonce": "the oracle diverges from the market"}],
+                "lacunes": [{"lacune_id": "L-1", "question": "exit series"}],
                 "budget": {"llm_calls": 30, "tool_calls": 12,
                            "wall_seconds": 600, "cost_usd": 0.10}})
             self._write_json(os.path.join(run_dir, "outcome_orchestrator.json"),
@@ -101,11 +108,17 @@ class FakeRunner(object):
             self._write_json(os.path.join(run_dir, "run_outcome.json"), {
                 "schema": "orvyren/agent-run-outcome/v1", "case_id": CASE_ID,
                 "mode": "live", "run_dir": run_dir,
-                "outcome": {"stop_condition": "ARRET-2", "inconclusive": True},
+                "outcome": {
+                    "stop_condition": "ARRET-2", "inconclusive": True,
+                    "state": "ABORTED", "motif": "test double",
+                    "non_recherche": ["on-chain exit venue"],
+                    "budget_used": {"llm_calls": 6, "total_calls": 7,
+                                    "cost_usd": 0.02,
+                                    "wall_seconds": 12.5}},
                 "critique": {"verdict_lecture": "FRAGILE", "findings": []},
                 "escalation": "REQUIRE_APPROVAL",
-                "journals": {"orchestrator": {"lines": 4},
-                             "critic": {"lines": 2}}})
+                "journals": {"orchestrator": {"lines": 1},
+                             "critic": {"lines": 1}}})
             self._write_json(
                 os.path.join(run_dir, "exchanges", "001_evidence_packet.json"),
                 {"packet_id": "packet-test", "snapshot_ref":
@@ -114,10 +127,21 @@ class FakeRunner(object):
             self._write_json(
                 os.path.join(run_dir, "exchanges", "002_critique_report.json"),
                 {"verdict_lecture": "FRAGILE", "findings": [], "$status": ""})
-            for role in ("orchestrator", "critic"):
+            # Hash-chained journals with the real 21-column schema: the bridge
+            # recomputes every chain head, so a fake line that does not parse is
+            # a refused run (never a silently accepted one).
+            for role, step_index in (("orchestrator", 0), ("critic", 1)):
+                line = {
+                    "journal_id": "j-%s-1" % role, "run_id": FAKE_AGENT_RUN_ID,
+                    "episode_id": CASE_ID, "agent_id": role,
+                    "role_version": "test", "step_index": step_index,
+                    "ts_utc": "2026-01-01T00:00:00Z", "kind": "STOP",
+                    "content": "test double", "refs": [], "status": "ACCEPTED",
+                    "prev_hash": "0" * 64,
+                }
                 self._write_text(
                     os.path.join(run_dir, "journal_%s.jsonl" % role),
-                    json.dumps({"journal_id": "j-%s-1" % role}) + "\n")
+                    json.dumps(line) + "\n")
             return {"rc": 0, "stdout": "run summary\n", "stderr": ""}
         if name == "run_decision.py":
             out_dir = flag_value(argv, "--out-dir")
@@ -166,10 +190,16 @@ class FakeRunner(object):
                 "case": CASE_ID, "run_id": run_id, "tick": 1,
                 "ts_utc": "2026-01-01T00:00:00Z", "mode": "dry-run",
                 "dry_run": True, "verdict": "DENY",
-                "policy_verdict": "DENY", "outcome": "DRY-RUN",
-                "executed": False, "reasons": ["AGENT_NOT_MEMBER"],
-                "rules_evaluated": ["P1", "P7", "P11"],
-                "skipped_rules": [], "policy_version": "v1",
+                # the agents leg abstains: no intent, no policy evaluation
+                "policy_verdict": None, "outcome": "NO_ACTION",
+                "executed": False, "reasons": ["E_NO_INTENT"],
+                "intent": None,
+                "decision_summary": {
+                    "epistemic_verdict": "INCONCLUSIVE",
+                    "economic_action": None,
+                    "authorization_verdict": "REQUIRE_APPROVAL"},
+                "rules_evaluated": [], "skipped_rules": [],
+                "policy_version": "v1",
                 "policy_hash": "0" * 16,
                 "chain": {"run_id": run_id, "parent_run_id": parent,
                           "root_dir": chain_dir, "verify_ok": True,
@@ -209,14 +239,13 @@ class FixtureLoadingTest(unittest.TestCase):
 
 
 class PipelineShapeTest(unittest.TestCase):
-    def test_commands_chain_the_existing_clis(self):
-        steps = scenario.build_steps(case_id=CASE_ID, out_dir="out",
-                                    run_id="run-1", ticks=2,
-                                    parent_run_id="parent-1")
+    def test_agents_leg_consumes_the_sealed_run_through_the_bridge(self):
+        steps = scenario.build_steps(
+            case_id=CASE_ID, out_dir="out", run_id="run-1", ticks=2,
+            parent_run_id="parent-1", decision_source="agents")
         by_name = {step["name"]: step["argv"] for step in steps}
         self.assertEqual(sorted(by_name),
-                         ["agents", "decision", "execution",
-                          "execution_case_probe", "keys"])
+                         ["agents", "decision", "execution", "keys"])
         agents = by_name["agents"]
         self.assertEqual(os.path.basename(agents[1]), "run_agents.py")
         self.assertIn("--replay", agents)
@@ -225,27 +254,56 @@ class PipelineShapeTest(unittest.TestCase):
         decision = by_name["decision"]
         self.assertEqual(os.path.basename(decision[1]), "run_decision.py")
         self.assertIn("--no-rdof", decision)
-        probe = by_name["execution_case_probe"]
-        self.assertEqual(os.path.basename(probe[1]), "run_executor.py")
-        self.assertEqual(flag_value(probe, "--case"), CASE_ID)
-        self.assertEqual(flag_value(probe, "--run-id"), "run-1-case-probe")
         execution = by_name["execution"]
         self.assertEqual(os.path.basename(execution[1]), "run_executor.py")
         self.assertIn("--dry-run", execution)
         self.assertNotIn("--execute", execution)
-        self.assertEqual(flag_value(execution, "--case"),
-                         scenario.EXECUTION_CASE_ID)
+        self.assertEqual(flag_value(execution, "--case"), CASE_ID,
+                         "the execution leg runs the case's own decision")
+        self.assertEqual(flag_value(execution, "--decision-source"), "agents")
+        self.assertEqual(flag_value(execution, "--agents-run"),
+                         scenario.AGENTS_RUN_PLACEHOLDER,
+                         "replaced by the real directory before execution")
         self.assertEqual(flag_value(execution, "--run-id"), "run-1")
         self.assertEqual(flag_value(execution, "--parent-run-id"), "parent-1")
         self.assertEqual(flag_value(execution, "--ticks"), "2")
+        self.assertNotIn("execution_case_probe", by_name,
+                         "the agents leg needs no pilot-replay probe")
+
+    def test_reused_sealed_run_skips_the_live_agents_stage(self):
+        steps = scenario.build_steps(
+            case_id=CASE_ID, out_dir="out", run_id="run-1", ticks=1,
+            parent_run_id="parent-1", decision_source="agents",
+            agents_run_dir="/sealed/run")
+        names = [step["name"] for step in steps]
+        self.assertEqual(names, ["decision", "execution"],
+                         "no key gate and no LLM call when a run is reused")
+
+    def test_legacy_corpus_leg_is_still_selectable_and_declared(self):
+        steps = scenario.build_steps(
+            case_id=CASE_ID, out_dir="out", run_id="run-1", ticks=2,
+            parent_run_id="parent-1", decision_source="corpus")
+        by_name = {step["name"]: step["argv"] for step in steps}
+        self.assertEqual(sorted(by_name),
+                         ["agents", "decision", "execution",
+                          "execution_case_probe", "keys"])
+        probe = by_name["execution_case_probe"]
+        self.assertEqual(flag_value(probe, "--case"), CASE_ID)
+        self.assertEqual(flag_value(probe, "--run-id"), "run-1-case-probe")
+        execution = by_name["execution"]
+        self.assertEqual(flag_value(execution, "--case"),
+                         scenario.EXECUTION_CASE_ID)
+        self.assertNotIn("--decision-source", execution)
 
     def test_executor_leg_is_never_an_execute_leg(self):
-        steps = scenario.build_steps(case_id=CASE_ID, out_dir="out",
-                                    run_id="run-1", ticks=1,
-                                    parent_run_id="parent-1")
-        for step in steps:
-            self.assertNotIn("--execute", step["argv"],
-                             "the scenario is dry-run only")
+        for mode in ("agents", "corpus"):
+            steps = scenario.build_steps(
+                case_id=CASE_ID, out_dir="out", run_id="run-1", ticks=1,
+                parent_run_id="parent-1", decision_source=mode,
+                agents_run_dir="/sealed/run")
+            for step in steps:
+                self.assertNotIn("--execute", step["argv"],
+                                 "the scenario is dry-run only")
 
     def test_corpus_materialization_derives_rows_from_the_episode(self):
         tmp = tempfile.mkdtemp(prefix="orvyren-scenario-")
@@ -288,22 +346,95 @@ class OfflineDryRunTest(unittest.TestCase):
                      "evidence_packet.json", "critique_report.json",
                      "journal_orchestrator.jsonl", "journal_critic.jsonl",
                      "policy_verdicts.json", "scenario_run.json",
-                     "scenario_report.md"):
+                     "chain_verification.json", "scenario_report.md"):
             self.assertTrue(os.path.isfile(os.path.join(self.tmp, name)), name)
         self.assertTrue(os.path.isfile(
             os.path.join(self.tmp, "decision", "decision_%s.json" % CASE_ID)))
+        self.assertTrue(os.path.isfile(
+            os.path.join(self.tmp, "decision",
+                         "decision_agents_%s.json" % CASE_ID)))
         self.assertTrue(os.path.isfile(
             os.path.join(self.tmp, "decision", "abstention_%s.json" % CASE_ID)))
         self.assertTrue(os.path.isfile(
             os.path.join(self.tmp, "execution", "journal.jsonl")))
         self.assertTrue(os.path.isfile(
-            os.path.join(self.tmp, "execution", "case_attempt", "journal.jsonl")))
-        self.assertTrue(os.path.isfile(
             os.path.join(self.tmp, "execution", "chain",
                          "scenario-test-rseth-1", "events.jsonl")))
-        self.assertTrue(os.path.isfile(
-            os.path.join(self.tmp, "execution", "case_attempt", "chain",
-                         "scenario-test-rseth-1-case-probe", "events.jsonl")))
+        self.assertFalse(os.path.exists(
+            os.path.join(self.tmp, "execution", "case_attempt")),
+            "the agents leg runs no pilot-replay probe")
+
+    def test_sealed_run_reuse_makes_no_llm_call(self):
+        """--agents-run consumes a sealed run: no key gate, no agents CLI."""
+        self.assertEqual(self.run_pipeline(), scenario.EXIT_OK)
+        sealed = os.path.join(self.tmp, "agents_session", FAKE_AGENT_RUN_ID)
+        self.assertTrue(os.path.isdir(sealed))
+        runner = FakeRunner()
+        rc = self.run_pipeline(
+            runner=runner,
+            extra=["--agents-run", sealed, "--run-id", "scenario-reuse-1"])
+        self.assertEqual(rc, scenario.EXIT_OK)
+        names = [os.path.basename(str(argv[1])) for argv in runner.calls]
+        self.assertNotIn("run_agents.py", names)
+        self.assertNotIn("inspect_env_masked.py", names)
+        self.assertIn("run_executor.py", names)
+        executor_argv = [argv for argv in runner.calls
+                         if os.path.basename(str(argv[1])) == "run_executor.py"][0]
+        self.assertEqual(flag_value(executor_argv, "--agents-run"), sealed)
+        self.assertEqual(flag_value(executor_argv, "--parent-run-id"),
+                         FAKE_AGENT_RUN_ID)
+        manifest = scenario._read_json(
+            os.path.join(self.tmp, "scenario_run.json"))
+        self.assertEqual(manifest["run_id"], "scenario-reuse-1")
+        self.assertEqual(manifest["agents_run_id"], FAKE_AGENT_RUN_ID)
+        self.assertTrue(manifest["agents_run_reused"])
+        self.assertEqual(manifest["decision_source"], "agents")
+
+    def test_the_executor_consumes_the_bridge_record(self):
+        """The chain verification compares the record with the tick journal."""
+        self.assertEqual(self.run_pipeline(), scenario.EXIT_OK)
+        with open(os.path.join(self.tmp, "chain_verification.json"),
+                  encoding="utf-8") as handle:
+            verification = json.load(handle)
+        self.assertEqual(verification["status"], "PASS", verification["failures"])
+        record = verification["checks"]["decision_axes"]
+        self.assertEqual(record["epistemic_verdict"], "INCONCLUSIVE")
+        self.assertEqual(record["authorization_verdict"], "REQUIRE_APPROVAL")
+        self.assertIsNone(record["economic_action"])
+        self.assertFalse(record["intent_present"])
+        tick = verification["ticks"][0]
+        self.assertEqual(tick["outcome"], "NO_ACTION")
+        self.assertIsNone(tick["policy_verdict"])
+        self.assertTrue(all(tick["checks"].values()), tick["checks"])
+        self.assertEqual(verification["citations"]["agents_run"]["run_id"],
+                         FAKE_AGENT_RUN_ID)
+
+    def test_a_record_the_executor_did_not_consume_fails_the_verification(self):
+        base = FakeRunner()
+
+        def runner(argv, env, cwd, timeout_s):
+            if (os.path.basename(str(argv[1])) == "run_executor.py"
+                    and "--decision-source" in argv):
+                # an executor that ignored the bridge (no decision_summary)
+                result = base(argv, env, cwd, timeout_s)
+                journal = flag_value(argv, "--journal")
+                with open(journal, "w", encoding="utf-8", newline="\n") as handle:
+                    handle.write(json.dumps({
+                        "case": CASE_ID, "run_id": flag_value(argv, "--run-id"),
+                        "tick": 1, "verdict": "DENY", "executed": False,
+                        "policy_verdict": None, "outcome": "NO_ACTION"}) + "\n")
+                return result
+            return base(argv, env, cwd, timeout_s)
+
+        rc = self.run_pipeline(runner=runner)
+        self.assertEqual(rc, scenario.EXIT_STEP_FAILED)
+        manifest = scenario._read_json(
+            os.path.join(self.tmp, "scenario_run.json"))
+        self.assertEqual(manifest["status"], "FAILED")
+        self.assertEqual(manifest["failed_step"], "chain_verification")
+        self.assertFalse(os.path.isfile(
+            os.path.join(self.tmp, "scenario_report.md")),
+            "a dossier whose chain does not hold is never published")
 
     def test_run_ids_are_chained(self):
         self.assertEqual(self.run_pipeline(), scenario.EXIT_OK)
@@ -330,9 +461,14 @@ class OfflineDryRunTest(unittest.TestCase):
         self.assertEqual(len(verdicts["ticks"]), 1)
         tick = verdicts["ticks"][0]
         self.assertEqual(tick["verdict"], "DENY")
-        self.assertEqual(tick["policy_verdict"], "DENY")
+        self.assertEqual(tick["outcome"], "NO_ACTION")
+        self.assertIsNone(tick["policy_verdict"],
+                          "no intent -> the policy is not evaluated")
+        self.assertIsNone(tick["intent"])
         self.assertTrue(tick["chain"]["verify_ok"])
         self.assertEqual(tick["chain"]["run_id"], "scenario-test-rseth-1")
+        self.assertEqual(tick["decision_summary"]["authorization_verdict"],
+                         "REQUIRE_APPROVAL")
         with open(os.path.join(self.tmp, "execution", "journal.jsonl"),
                   encoding="utf-8") as handle:
             lines = [json.loads(line) for line in handle if line.strip()]
@@ -349,10 +485,14 @@ class OfflineDryRunTest(unittest.TestCase):
         self.assertIn("Observed risk", report)
         self.assertIn("HYP-004", report)
         self.assertIn("counter-intuitive", report)
-        self.assertIn("Declared substitutions", report)
+        self.assertIn("Decision source of the execution leg", report)
+        self.assertIn("**`agents`**", report)
+        self.assertIn("Declared gaps", report)
         self.assertIn("L-1", report)
         self.assertIn("what_would_change", report)
         self.assertIn("never a forced decision", report)
+        self.assertIn("Status `PASS`", report)
+        self.assertIn("decision_agents_%s.json" % CASE_ID, report)
         # raw step outputs are part of the report (stdout AND stderr)
         self.assertIn("### step `agents` (rc 0)", report)
         self.assertIn("run summary", report)
@@ -399,7 +539,8 @@ class OfflineDryRunTest(unittest.TestCase):
 
     def test_measured_case_refusal_is_kept_and_the_pipeline_continues(self):
         runner = FakeRunner(refuse_case_probe=True)
-        rc = self.run_pipeline(runner=runner)
+        rc = self.run_pipeline(runner=runner,
+                               extra=["--decision-source", "corpus"])
         self.assertEqual(rc, scenario.EXIT_OK)
         with open(os.path.join(self.tmp, "scenario_run.json"),
                   encoding="utf-8") as handle:
@@ -424,7 +565,8 @@ class OfflineDryRunTest(unittest.TestCase):
                 return {"rc": 5, "stdout": "some other failure", "stderr": ""}
             return base(argv, env, cwd, timeout_s)
 
-        rc = self.run_pipeline(runner=runner)
+        rc = self.run_pipeline(runner=runner,
+                               extra=["--decision-source", "corpus"])
         self.assertEqual(rc, scenario.EXIT_STEP_FAILED)
         with open(os.path.join(self.tmp, "scenario_run.json"),
                   encoding="utf-8") as handle:

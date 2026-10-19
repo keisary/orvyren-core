@@ -3,30 +3,51 @@
 """ORVYREN — E2E demonstration scenario: rsETH / KelpDAO, April 2026.
 
 One command chains the existing CLIs (never modified) under one run identity,
-from the observed risk to a verified dry-run execution:
+from the observed risk to a bounded dry-run execution. The case decision is the
+one the reasoning agents actually produced — consumed through the
+``orvyren.decision.agents_source`` bridge, never through a pilot replay:
 
   0. live-key gate   python scripts/inspect_env_masked.py --require-live-keys
-                     (a missing LLM key stops the run honestly — rc 2, never a
-                     simulated run);
+                     (only when this invocation runs the agents live; a missing
+                     LLM key stops the run honestly — rc 2, never a simulated
+                     run);
   1. agents LIVE     python run_agents.py --case rseth-2026-04 --replay live
                      --record-live  (real LLM calls, keys read from the process
-                     environment loaded from the git-ignored scripts/demo/.env);
-  2. decision        python run_decision.py --case rseth-2026-04 --corpus
-                     fixtures/agents/rseth-2026-04/corpus_rseth.csv --out-dir
-                     evidence/scenario_rseth/decision --no-rdof
-                     (declared substitution: the v1 deterministic decision
-                     engine is wired to the frozen USDC pilot windows/peg
-                     hypotheses — see the report gaps; the case decision is the
-                     LIVE agent outcome);
+                     environment loaded from the git-ignored scripts/demo/.env).
+                     Skipped when ``--agents-run <sealed dir>`` is given: the
+                     sealed run is consumed as-is, no LLM call, no new spend;
+  2. decision        ``build_decision_from_agents(<agents run>)`` reads run.json,
+                     run_outcome.json and the hash-chained journals and writes a
+                     DecisionRecord (schema ``orvyren-decision-record/v1``) to
+                     ``decision/decision_agents_<case>.json``: hypotheses with
+                     their agents state, critique verdict and findings, journal
+                     chain heads, realised cost, and either a *declared* bounded
+                     intent or an honest abstention (INCONCLUSIVE /
+                     REQUIRE_APPROVAL / no economic action, no intent).
+                     ``run_decision.py --no-rdof`` still runs, but only as a
+                     pilot-scoped engine cross-check — never the case decision;
   3. execution       python run_executor.py --case rseth-2026-04 --ticks N
-                     --dry-run --run-id <scenario id> --parent-run-id <agent
-                     run id> --json --journal ... --ledger ...
-                     (dry-run only: no signature, no key read; the run chain
-                     `orvyren.chain` carries the explicit run_id);
-  4. collect         evidence/scenario_rseth/: run.json, run_outcome.json,
+                     --dry-run --decision-source agents --agents-run <dir>
+                     --run-id <scenario id> --parent-run-id <agent run id>
+                     --json --journal ... --ledger ...
+                     (the executor consumes the same bridge; an abstaining
+                     record carries no intent, so the tick ends NO_ACTION with
+                     no policy evaluation, no signature and no key read);
+  4. verify+dossier  ``chain_verification.json`` compares the DecisionRecord's
+                     axes (epistemic verdict, authorization verdict, economic
+                     action, intent presence) with the executor's per-tick
+                     ``decision_summary``, checks the chain run/parent ids and
+                     records the journal chain heads recomputed by the bridge;
+                     then evidence/scenario_rseth/: run.json, run_outcome.json,
                      evidence_packet.json, critique_report.json, decision/,
-                     policy_verdicts.json, execution/ (tick journal + chain),
-                     scenario_run.json, scenario_report.md.
+                     policy_verdicts.json, chain_verification.json, execution/
+                     (tick journal + chain), scenario_run.json,
+                     scenario_report.md.
+
+``--decision-source corpus`` restores the LEGACY leg (the frozen USDC pilot
+decision replayed under the rsETH run id, a declared substitution, with the
+``E_WHAT_WOULD_CHANGE_REQUIRED`` case probe kept as evidence). It exists to
+reproduce the superseded report; it is never the default and its report says so.
 
 Also: ``--materialize-corpus`` writes fixtures/agents/rseth-2026-04/corpus_rseth.csv
 (hourly rsETH oracle readings, each row carrying its source_ref) derived from
@@ -52,13 +73,29 @@ from datetime import datetime, timezone
 REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 CASE_ID = "rseth-2026-04"
+#: Decision sources of the execution leg. ``agents`` (default) consumes the
+#: DecisionRecord built by ``orvyren.decision.agents_source`` from a sealed
+#: agents run; ``corpus`` is the LEGACY pilot replay (declared substitution,
+#: kept only to reproduce the superseded report).
+DECISION_SOURCES = ("agents", "corpus")
+#: The sealed run of this case (the one the packaged evidence cites).
+AGENTS_RUN_ROOT = os.path.join("evidence", "demo_runs", "agents", CASE_ID)
+SEALED_AGENTS_RUN = os.path.join(
+    AGENTS_RUN_ROOT, "rseth-2026-04_live_20261018T200027592497Z")
+#: Placeholder written by ``build_steps`` when the agents run of *this*
+#: invocation is not known yet; ``run_pipeline`` rebuilds the step with the real
+#: directory before executing it (never run as-is).
+AGENTS_RUN_PLACEHOLDER = "<agents-run-dir>"
+#: The DecisionRecord built from the agents run (schema-compatible with the
+#: deterministic engine's record, so every consumer parses it the same way).
+AGENTS_DECISION_FILENAME = "decision_agents_%s.json"
+#: End-to-end verification artifact (decision -> policy -> execution chain).
+VERIFICATION_FILENAME = "chain_verification.json"
 #: The v1 decision dossier (RDOF + A1-A5 abstention) is only constructible for
 #: the frozen pilot case: any other case id fails closed with
 #: ``E_WHAT_WOULD_CHANGE_REQUIRED`` (measured, see the execution case probe of
-#: the scenario). The executor CLI replays ``build_decision_record`` per tick
-#: with no provider override, so the policy/execution leg runs on the pilot
-#: decision as a **declared substitution** (the rsETH case decision is the
-#: LIVE agent chain outcome, and the probe keeps the refusal as evidence).
+#: the LEGACY corpus leg). The ``agents`` leg needs none of that: the executor
+#: receives the DecisionRecord itself (``--decision-source agents``).
 EXECUTION_CASE_ID = "usdc-2023-03"
 EXECUTION_REFUSAL_SIGNATURE = "decision unavailable"
 DEFAULT_OUT_DIR = os.path.join("evidence", "scenario_rseth")
@@ -68,7 +105,8 @@ CORPUS_PATH = os.path.join("fixtures", "agents", CASE_ID, "corpus_rseth.csv")
 FIXTURE_PATH = os.path.join("fixtures", "agents", CASE_ID, "run_inputs.json")
 
 #: Report sections the audit narrative requires (risk -> hypotheses -> evidence
-#: -> decision -> policy verdict -> execution, plus explicit gaps).
+#: -> decision -> policy verdict -> execution -> chain verification, plus
+#: explicit gaps and provenance).
 REPORT_SECTIONS = (
     "## 1. Risk observed",
     "## 2. Hypotheses",
@@ -76,9 +114,10 @@ REPORT_SECTIONS = (
     "## 4. Decision",
     "## 5. Policy verdict",
     "## 6. Execution",
-    "## 7. Gaps and explicit lacunae",
-    "## 8. Provenance and reproduction",
-    "## 9. Raw step outputs",
+    "## 7. Chain verification",
+    "## 8. Gaps and explicit lacunae",
+    "## 9. Provenance and reproduction",
+    "## 10. Raw step outputs",
 )
 
 EXIT_OK = 0
@@ -107,6 +146,25 @@ def _utc_stamp() -> str:
 
 def _now_iso() -> str:
     return datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+
+
+def _display_path(path: str) -> str:
+    """Repo-relative POSIX path when possible, absolute POSIX otherwise.
+
+    ``os.path.relpath`` raises on Windows when the two paths sit on different
+    drives (a temporary out-dir on C:, the repository on D:), so the fallback is
+    explicit instead of a crash in the middle of a run.
+    """
+    if not path:
+        return ""
+    absolute = os.path.abspath(path)
+    try:
+        relative = os.path.relpath(absolute, REPO_ROOT)
+    except ValueError:
+        return absolute.replace("\\", "/")
+    if relative == os.pardir or relative.startswith(os.pardir + os.sep):
+        return absolute.replace("\\", "/")
+    return relative.replace("\\", "/")
 
 
 def _write_json(path: str, payload) -> None:
@@ -227,49 +285,80 @@ def materialize_corpus(episode_path: str = None, out_path: str = None) -> int:
 # Pipeline
 # ---------------------------------------------------------------------------
 def build_steps(*, case_id: str, out_dir: str, run_id: str, ticks: int,
-                parent_run_id: str = "") -> list:
-    """The four CLI steps of the scenario (argv lists, repo-root relative)."""
+                parent_run_id: str = "", decision_source: str = "agents",
+                agents_run_dir: str = "") -> list:
+    """The CLI steps of the scenario (argv lists, repo-root relative).
+
+    ``agents_run_dir`` empty means "run the agents live in this invocation":
+    the key gate and the live agents step are then part of the chain and the
+    execution step carries a placeholder agents directory that
+    ``run_pipeline`` replaces once the run is sealed. Non-empty means the sealed
+    run is consumed as-is (no LLM call at all).
+
+    ``decision_source="corpus"`` is the LEGACY leg: it replays the frozen USDC
+    pilot decision after a measured ``E_WHAT_WOULD_CHANGE_REQUIRED`` case probe
+    — kept for reproducing the superseded report, never the default.
+    """
     session_dir = os.path.join(out_dir, "agents_session")
     decision_dir = os.path.join(out_dir, "decision")
     execution_dir = os.path.join(out_dir, "execution")
     python = sys.executable
-    steps = [
-        {"name": "keys",
-         "argv": [python, os.path.join("scripts", "inspect_env_masked.py"),
-                  "--require-live-keys"],
-         "timeout_s": 60},
-        {"name": "agents",
-         "argv": [python, "run_agents.py", "--case", case_id,
-                  "--replay", "live", "--record-live",
-                  "--session", session_dir,
-                  # the live critic can outgrow the default 300 s per worker
-                  "--timeout-s", "900"],
-         "timeout_s": 1800},
-        {"name": "decision",
-         "argv": [python, "run_decision.py", "--case", case_id,
-                  "--corpus", CORPUS_PATH, "--out-dir", decision_dir,
-                  "--no-rdof"],
-         "timeout_s": 300},
-        {"name": "execution_case_probe",
-         "argv": [python, "run_executor.py", "--case", case_id,
-                  "--ticks", str(ticks), "--dry-run",
-                  "--run-id", "%s-case-probe" % run_id,
-                  "--parent-run-id", parent_run_id,
-                  "--json",
-                  "--journal", os.path.join(execution_dir, "case_attempt",
-                                            "journal.jsonl"),
-                  "--ledger", os.path.join(execution_dir, "case_attempt",
-                                           "ledger.json")],
-         "timeout_s": 300},
-        {"name": "execution",
-         "argv": [python, "run_executor.py", "--case", EXECUTION_CASE_ID,
-                  "--ticks", str(ticks), "--dry-run",
-                  "--run-id", run_id, "--parent-run-id", parent_run_id,
-                  "--json",
-                  "--journal", os.path.join(execution_dir, "journal.jsonl"),
-                  "--ledger", os.path.join(execution_dir, "ledger.json")],
-         "timeout_s": 300},
-    ]
+    steps = []
+    if not agents_run_dir:
+        steps.extend([
+            {"name": "keys",
+             "argv": [python, os.path.join("scripts", "inspect_env_masked.py"),
+                      "--require-live-keys"],
+             "timeout_s": 60},
+            {"name": "agents",
+             "argv": [python, "run_agents.py", "--case", case_id,
+                      "--replay", "live", "--record-live",
+                      "--session", session_dir,
+                      # the live critic can outgrow the default 300 s per worker
+                      "--timeout-s", "900"],
+             "timeout_s": 1800},
+        ])
+    # The deterministic engine record: a pilot-scoped cross-check of the same
+    # case, kept in the dossier but never the case decision.
+    steps.append({"name": "decision",
+                  "argv": [python, "run_decision.py", "--case", case_id,
+                           "--corpus", CORPUS_PATH, "--out-dir", decision_dir,
+                           "--no-rdof"],
+                  "timeout_s": 300})
+    if decision_source == "corpus":
+        steps.extend([
+            {"name": "execution_case_probe",
+             "argv": [python, "run_executor.py", "--case", case_id,
+                      "--ticks", str(ticks), "--dry-run",
+                      "--run-id", "%s-case-probe" % run_id,
+                      "--parent-run-id", parent_run_id,
+                      "--json",
+                      "--journal", os.path.join(execution_dir, "case_attempt",
+                                                "journal.jsonl"),
+                      "--ledger", os.path.join(execution_dir, "case_attempt",
+                                               "ledger.json")],
+             "timeout_s": 300},
+            {"name": "execution",
+             "argv": [python, "run_executor.py", "--case", EXECUTION_CASE_ID,
+                      "--ticks", str(ticks), "--dry-run",
+                      "--run-id", run_id, "--parent-run-id", parent_run_id,
+                      "--json",
+                      "--journal", os.path.join(execution_dir, "journal.jsonl"),
+                      "--ledger", os.path.join(execution_dir, "ledger.json")],
+             "timeout_s": 300},
+        ])
+    else:
+        steps.append({
+            "name": "execution",
+            "argv": [python, "run_executor.py", "--case", case_id,
+                     "--ticks", str(ticks), "--dry-run",
+                     "--decision-source", "agents",
+                     "--agents-run", agents_run_dir or AGENTS_RUN_PLACEHOLDER,
+                     "--run-id", run_id, "--parent-run-id", parent_run_id,
+                     "--json",
+                     "--journal", os.path.join(execution_dir, "journal.jsonl"),
+                     "--ledger", os.path.join(execution_dir, "ledger.json")],
+            "timeout_s": 300})
     return steps
 
 
@@ -364,6 +453,9 @@ def collect_artifacts(*, out_dir: str, agents_run_dir: str, run_id: str,
                     "verdict": record.get("verdict"),
                     "policy_verdict": record.get("policy_verdict"),
                     "outcome": record.get("outcome"),
+                    "executed": record.get("executed"),
+                    "intent": record.get("intent"),
+                    "decision_summary": record.get("decision_summary"),
                     "reasons": record.get("reasons"),
                     "rules_evaluated": record.get("rules_evaluated"),
                     "skipped_rules": record.get("skipped_rules"),
@@ -546,6 +638,243 @@ def build_case_abstention(*, out_dir: str, agents_run_dir: str,
     return record
 
 
+class AgentsDecisionUnavailable(Exception):
+    """The sealed agents run cannot yield a DecisionRecord (fail closed)."""
+
+
+def _abs(path: str) -> str:
+    """Repository-root relative path -> absolute (absolute paths untouched)."""
+    text = str(path or "").strip()
+    if not text:
+        return text
+    return os.path.normpath(text if os.path.isabs(text)
+                            else os.path.join(REPO_ROOT, text))
+
+
+def build_agents_decision(*, out_dir: str, agents_run_dir: str,
+                          case_id: str) -> dict:
+    """Build the case DecisionRecord from the sealed agents run (the bridge).
+
+    ``orvyren.decision.agents_source`` reads only ``run.json``,
+    ``run_outcome.json`` and the hash-chained journals, recomputes every chain
+    head and never invents a figure. The record is written as-is to
+    ``decision/decision_agents_<case>.json``: it *is* what the executor
+    consumes, so the dossier and the execution leg cannot diverge.
+    """
+    if os.path.join(REPO_ROOT, "src") not in sys.path:
+        sys.path.insert(0, os.path.join(REPO_ROOT, "src"))
+    from orvyren.decision.agents_source import (AgentsSourceError,
+                                                build_decision_from_agents)
+
+    run_dir = _abs(agents_run_dir)
+    try:
+        record = build_decision_from_agents(run_dir, case_id=case_id)
+    except AgentsSourceError as exc:
+        raise AgentsDecisionUnavailable(str(exc))
+    decision_dir = os.path.join(out_dir, "decision")
+    os.makedirs(decision_dir, exist_ok=True)
+    _write_json(os.path.join(decision_dir, AGENTS_DECISION_FILENAME % case_id),
+                record)
+    return record
+
+
+def verify_chain(*, out_dir: str, run_id: str, agents_run_id: str,
+                 agents_run_dir: str, decision_source: str,
+                 case_id: str = CASE_ID) -> dict:
+    """Prove the chain decision -> policy -> execution from the artifacts.
+
+    Compares the axes of the DecisionRecord built by the bridge with the
+    executor's per-tick ``decision_summary``, checks the chain run/parent ids and
+    the chain verification flag, and records the identifiers of every stage.
+    A mismatch is a FAILURE (the dossier must not ship a chain that does not
+    hold) — never smoothed over.
+    """
+    payload = {
+        "schema": "orvyren/scenario-chain-verification/v1",
+        "case_id": case_id,
+        "run_id": run_id,
+        "agents_run_id": agents_run_id,
+        "agents_run_dir": str(agents_run_dir or "").replace("\\", "/"),
+        "decision_source": decision_source,
+        "status": "UNVERIFIED",
+        "failures": [],
+        "checks": {},
+        "citations": {},
+        "ticks": [],
+    }
+    path = os.path.join(out_dir, VERIFICATION_FILENAME)
+
+    def fail(message):
+        payload["failures"].append(message)
+
+    if decision_source != "agents":
+        payload["status"] = "NOT_APPLICABLE"
+        payload["reason"] = (
+            "legacy corpus leg: the per-tick decision is the frozen USDC pilot "
+            "replay (declared substitution), not an agents DecisionRecord — "
+            "nothing to verify against an agents run")
+        _write_json(path, payload)
+        return payload
+
+    record_path = os.path.join(out_dir, "decision",
+                               AGENTS_DECISION_FILENAME % case_id)
+    record = {}
+    if not os.path.isfile(record_path):
+        fail("decision record missing: %s" % record_path)
+    else:
+        record = _read_json(record_path)
+        payload["citations"]["decision_record"] = {
+            "path": os.path.relpath(record_path, out_dir).replace("\\", "/"),
+            "sha256": _sha256(record_path),
+            "schema": record.get("schema"),
+        }
+    if record.get("schema") != "orvyren-decision-record/v1":
+        fail("decision record schema is %r, expected "
+             "'orvyren-decision-record/v1'" % record.get("schema"))
+
+    source = record.get("source") or {}
+    payload["citations"]["agents_run"] = {
+        "run_dir": source.get("run_dir"),
+        "run_id": source.get("run_id"),
+        "mode": source.get("mode"),
+        "chain_heads": source.get("chain_heads") or {},
+        "journal_lines": source.get("journal_lines") or {},
+        "journals_verified": source.get("journals_verified") or {},
+        "replayable": source.get("replayable"),
+    }
+    if source.get("run_id") != agents_run_id:
+        fail("the decision record cites run %r, the scenario chains %r"
+             % (source.get("run_id"), agents_run_id))
+    if source.get("chain_heads") and not all(
+            (source.get("journals_verified") or {}).values()):
+        fail("at least one journal chain head was not verified by the bridge")
+
+    payload["checks"]["decision_axes"] = {
+        "epistemic_verdict": record.get("epistemic_verdict"),
+        "economic_action": record.get("economic_action"),
+        "authorization_verdict": record.get("authorization_verdict"),
+        "intent_present": record.get("intent") is not None,
+        "escalation": record.get("escalation"),
+        "stop_condition": record.get("stop_condition"),
+        "what_would_change_entries": len(record.get("what_would_change") or []),
+    }
+
+    # Stages before the decision: the collected evidence packet + critique.
+    packet_path = os.path.join(out_dir, "evidence_packet.json")
+    if os.path.isfile(packet_path):
+        packet = _read_json(packet_path)
+        payload["citations"]["evidence_packet"] = {
+            "path": "evidence_packet.json",
+            "packet_id": packet.get("packet_id"),
+            "snapshot_ref": packet.get("snapshot_ref"),
+            "refs_count": len(packet.get("refs") or []),
+            "claims_count": len(packet.get("claims") or []),
+        }
+    critique_path = os.path.join(out_dir, "critique_report.json")
+    if os.path.isfile(critique_path):
+        critique = _read_json(critique_path)
+        payload["citations"]["critique"] = {
+            "path": "critique_report.json",
+            "verdict": critique.get("verdict_lecture")
+                       or (record.get("critique") or {}).get("verdict"),
+            "findings_count": len(critique.get("findings") or []),
+        }
+
+    policy_path = os.path.join(out_dir, "policy_verdicts.json")
+    policy = {}
+    if not os.path.isfile(policy_path):
+        fail("policy_verdicts.json missing: no tick journal was collected")
+    else:
+        policy = _read_json(policy_path)
+        payload["citations"]["execution"] = {
+            "journal": "execution/journal.jsonl",
+            "journal_records_total": policy.get("journal_records_total"),
+            "chain_root": "",
+            "events_head": "",
+            "verify_ok": None,
+        }
+    ticks = policy.get("ticks") or []
+    if not ticks:
+        fail("the execution leg recorded no tick for run_id %r "
+             "(the scenario produced no policy/execution evidence)" % run_id)
+    for tick in ticks:
+        summary = tick.get("decision_summary") or {}
+        chain = tick.get("chain") or {}
+        checks = {
+            "decision_summary_present": bool(summary),
+            "epistemic_verdict_matches":
+                summary.get("epistemic_verdict") == record.get("epistemic_verdict"),
+            "authorization_verdict_matches":
+                summary.get("authorization_verdict")
+                == record.get("authorization_verdict"),
+            "economic_action_matches":
+                summary.get("economic_action") == record.get("economic_action"),
+            "intent_absence_consistent":
+                (tick.get("intent") is None) == (record.get("intent") is None),
+            "chain_run_id_matches": chain.get("run_id") == run_id,
+            "chain_parent_matches": chain.get("parent_run_id") == agents_run_id,
+            "chain_verified": chain.get("verify_ok") is True,
+            "not_executed": tick.get("executed") is False,
+        }
+        failed = sorted(name for name, ok in checks.items() if not ok)
+        if failed:
+            fail("tick %s: %s" % (tick.get("tick"), ", ".join(failed)))
+        payload["ticks"].append({
+            "tick": tick.get("tick"),
+            "outcome": tick.get("outcome"),
+            "verdict": tick.get("verdict"),
+            "policy_verdict": tick.get("policy_verdict"),
+            "reasons": tick.get("reasons") or [],
+            "chain_run_id": chain.get("run_id"),
+            "chain_parent_run_id": chain.get("parent_run_id"),
+            "chain_events_head": chain.get("events_head"),
+            "checks": checks,
+        })
+        if payload["citations"].get("execution") is not None:
+            payload["citations"]["execution"]["chain_root"] = chain.get("root_dir")
+            payload["citations"]["execution"]["events_head"] = chain.get("events_head")
+            payload["citations"]["execution"]["verify_ok"] = chain.get("verify_ok")
+
+    # -- the event chain itself: what the executor really recorded ----------
+    chain_events = []
+    chain_root = (payload["citations"].get("execution") or {}).get("chain_root") or ""
+    events_path = os.path.join(str(chain_root), "events.jsonl") if chain_root else ""
+    if events_path and os.path.isfile(events_path):
+        with open(events_path, "r", encoding="utf-8") as handle:
+            for line in handle:
+                if not line.strip():
+                    continue
+                try:
+                    event = json.loads(line)
+                except ValueError:
+                    fail("unreadable line in the chain events")
+                    continue
+                chain_events.append(str(event.get("event") or ""))
+        payload["citations"]["execution"]["events"] = chain_events
+        named = [event for event in chain_events if event]
+        if named and record.get("intent") is None:
+            if "NO_ACTIONABLE_INTENT" not in named:
+                fail("the chain never recorded NO_ACTIONABLE_INTENT although "
+                     "the DecisionRecord carries no intent")
+            forbidden = [event for event in named
+                         if event.startswith("POLICY_") or event in
+                         ("EXECUTED", "SIGNED", "DRY_RUN_EXECUTED")]
+            if forbidden:
+                fail("the chain recorded %s although the DecisionRecord carries "
+                     "no intent" % ", ".join(sorted(set(forbidden))))
+    elif chain_root:
+        fail("chain events.jsonl not found under %s" % chain_root)
+
+    payload["citations"]["dossier"] = {
+        "manifest": "scenario_run.json",
+        "report": "scenario_report.md",
+        "verification": VERIFICATION_FILENAME,
+    }
+    payload["status"] = "FAIL" if payload["failures"] else "PASS"
+    _write_json(path, payload)
+    return payload
+
+
 def _fixture_figures() -> dict:
     """Figures of the fixture, measured from the fixture at runtime."""
     fixture = _read_json(os.path.join(REPO_ROOT, FIXTURE_PATH))
@@ -577,9 +906,15 @@ def figure_index(fixture: dict) -> dict:
 
 
 def render_report(*, out_dir: str, run_id: str, parent_run_id: str,
-                  collected: dict, steps: list) -> str:
+                  collected: dict, steps: list,
+                  decision_source: str = "agents") -> str:
     """The audit narrative: risk -> hypotheses -> evidence -> decision ->
-    policy verdict -> execution, with the explicit gaps."""
+    policy verdict -> execution -> chain verification, with the explicit gaps.
+
+    ``decision_source`` selects the narrative of the decision leg: ``agents``
+    reads the DecisionRecord written by the bridge, ``corpus`` describes the
+    legacy pilot substitution (kept to reproduce the superseded dossier).
+    """
 
     def rel(path):
         return str(path).replace("\\", "/")
@@ -615,9 +950,10 @@ def render_report(*, out_dir: str, run_id: str, parent_run_id: str,
     probe = [step for step in steps if step.get("name") == "execution_case_probe"]
     probe_verdict = (probe[0].get("verdict") or "not run") if probe else "not run"
     ticks_line = "\n".join(
-        "  - tick %s: verdict `%s` (policy `%s`, reasons: %s) — chain run_id "
-        "%s verify_ok=%s" % (
-            tick.get("tick"), tick.get("verdict"), tick.get("policy_verdict"),
+        "  - tick %s: outcome `%s`, verdict `%s`, policy `%s`, reasons: %s — "
+        "chain run_id %s verify_ok=%s" % (
+            tick.get("tick"), tick.get("outcome"), tick.get("verdict"),
+            tick.get("policy_verdict") or "not evaluated",
             ", ".join(str(r) for r in (tick.get("reasons") or [])) or "-",
             (tick.get("chain") or {}).get("run_id"),
             (tick.get("chain") or {}).get("verify_ok"))
@@ -642,6 +978,387 @@ def render_report(*, out_dir: str, run_id: str, parent_run_id: str,
         if chain:
             chain_rows.append(chain)
     chain_head = chain_rows[-1].get("events_head") if chain_rows else "-"
+    abstention_block = "  - (abstention record not found)"
+    if abstention:
+        payload = abstention.get("abstention") or {}
+        entries = abstention.get("what_would_change") or []
+        escalade = abstention.get("escalade") or {}
+        lines = [
+            "  - epistemic verdict: %s (conditions: %s)" % (
+                abstention.get("epistemic_verdict"),
+                ", ".join(payload.get("conditions_declenchees", []) or []) or "-"),
+            "  - action: %s — no autonomous transfer while the market is "
+            "frozen and the evidence is inconclusive" % abstention.get("action"),
+            "  - escalation: %s — %s" % (escalade.get("sortie"),
+                                         escalade.get("motif")),
+            "  - decision_delta: %s" % "; ".join(
+                "%s -> %s" % item for item in
+                sorted((payload.get("decision_delta") or {}).items())),
+            "  - what_would_change (%d research entries):" % len(entries),
+        ]
+        for entry in entries:
+            lines.append(
+                "    - [%s] %s — cible: %s (%s; affects %s)" % (
+                    entry.get("predicat"), entry.get("fait"),
+                    entry.get("cible"), entry.get("cout_estime"),
+                    ", ".join(entry.get("hypotheses_affectees") or [])))
+        lines.append("  - verdicts: %s" % "; ".join(
+            "%s %s" % (key, value.get("verdict"))
+            for key, value in sorted((abstention.get("verdicts") or {}).items())))
+        abstention_block = "\n".join(lines)
+
+    decision_source = decision_source or "agents"
+    agents_record = {}
+    record_path = os.path.join(out_dir, "decision",
+                               AGENTS_DECISION_FILENAME % CASE_ID)
+    if os.path.isfile(record_path):
+        agents_record = _read_json(record_path)
+    verification = {}
+    verification_path = os.path.join(out_dir, VERIFICATION_FILENAME)
+    if os.path.isfile(verification_path):
+        verification = _read_json(verification_path)
+
+    def _clean(value):
+        if isinstance(value, float) and value.is_integer():
+            return "%d" % int(value)
+        return "%s" % value
+
+    def _money(value):
+        try:
+            return "%.6f" % float(value)
+        except (TypeError, ValueError):
+            return "unavailable"
+
+    def _seconds(value):
+        try:
+            return "%.2f" % float(value)
+        except (TypeError, ValueError):
+            return "unavailable"
+
+    ticks = policy.get("ticks") or []
+    intents = [tick for tick in ticks if tick.get("intent")]
+    signatures = sum(1 for tick in ticks if tick.get("executed") is True)
+
+    # -- section 4: the case decision (mode aware) --------------------------
+    if decision_source == "agents" and agents_record:
+        src = agents_record.get("source") or {}
+        crit = agents_record.get("critique") or {}
+        cost = (agents_record.get("research_cost") or {}).get("budget") or {}
+        caps = (agents_record.get("research_cost") or {}).get("budget_declared") or {}
+        hyps = agents_record.get("hypotheses") or []
+        decision_lines = [
+            "Case decision = the **DecisionRecord built from the sealed agents "
+            "run** by `src/orvyren/decision/agents_source.py` "
+            "(`build_decision_from_agents`), written unchanged to "
+            "`decision/decision_agents_%s.json` (schema `%s`). This is the exact "
+            "record the executor consumes — nothing is re-derived from the pilot "
+            "corpus." % (CASE_ID, agents_record.get("schema")),
+            "",
+            "  - source run: `%s` (mode `%s`, %s journal line(s); chain heads "
+            "recomputed from the journals: %s)" % (
+                src.get("run_id"), src.get("mode"),
+                _clean(sum((src.get("journal_lines") or {}).values())),
+                ", ".join("%s `%s`" % (role, head) for role, head in
+                          sorted((src.get("chain_heads") or {}).items()))),
+            "  - epistemic verdict `%s` · economic action `%s` · intent `%s` · "
+            "authorization `%s`" % (
+                agents_record.get("epistemic_verdict"),
+                _clean(agents_record.get("economic_action") or "null"),
+                "null" if agents_record.get("intent") is None else "declared",
+                agents_record.get("authorization_verdict")),
+            "  - escalation `%s`, outcome state `%s`, stop condition `%s` — "
+            "motif: %s" % (
+                agents_record.get("escalation"),
+                agents_record.get("outcome_state"),
+                agents_record.get("stop_condition"),
+                agents_record.get("outcome_motif")),
+            "  - critic: `%s`, %s finding(s), types %s, gravities %s" % (
+                crit.get("verdict"), _clean(crit.get("findings_count")),
+                ", ".join(crit.get("finding_types") or []) or "-",
+                ", ".join(crit.get("gravities") or []) or "-"),
+            "  - hypotheses: %s — every agents state is `%s` and the record's "
+            "decision slot stays `%s`: the bridge never upgrades an agents state "
+            "into a REFUTED/SUPPORTED verdict." % (
+                ", ".join("%s (%s)" % (h.get("id"), h.get("agent_state"))
+                          for h in hyps) or "-",
+                ", ".join(sorted({str(h.get("agent_state")) for h in hyps})) or "-",
+                ", ".join(sorted({str((agents_record.get("verdicts") or {}).get(
+                    h.get("id"), {}).get("verdict")) for h in hyps})) or "-"),
+            "  - realised research cost: %s USD · %s LLM call(s) · %s tool "
+            "call(s) · %s s (declared caps: %s USD / %s calls / %s s), read from "
+            "`run_outcome.json`" % (
+                _money(cost.get("cost_usd")), _clean(cost.get("llm_calls")),
+                _clean(cost.get("tool_calls")), _seconds(cost.get("wall_seconds")),
+                _clean(caps.get("cost_usd")), _clean(caps.get("llm_calls")),
+                _clean(caps.get("wall_seconds"))),
+            "  - what_would_change: %s entr(ies) — the bridge copies "
+            "`outcome.non_recherche` verbatim; the sealed run stopped at `%s` "
+            "before enumerating one, so the list is empty. Declared gap, never "
+            "filled by hand." % (
+                _clean(len(agents_record.get("what_would_change") or [])),
+                agents_record.get("stop_condition")),
+            "",
+            "Case decision — A1-A5 abstention, **complement** (the research plan "
+            "`decision/abstention_%s.json`, built from the case fixture and the "
+            "critic findings through `orvyren.decision.abstention`, never a "
+            "forced decision). It produces no intent and no economic action, and "
+            "it is not the DecisionRecord:" % CASE_ID,
+            abstention_block,
+            "",
+            "Cross-check only — deterministic decision engine "
+            "(`run_decision.py --no-rdof`). The v1 engine is wired to the frozen "
+            "USDC pilot windows (FREEZE_V1 D1/D2) and peg hypotheses; its record "
+            "`decision/decision_%s.json` is kept as a pilot-scoped cross-check, "
+            "**not** as the case conclusion:" % CASE_ID,
+            verdict_lines,
+            "",
+        ]
+    else:
+        decision_lines = [
+            "Case decision (LIVE agent chain): the run above — its outcome, "
+            "evidence packet and critic verdict are the case-specific decision "
+            "artifacts (`run_outcome.json`, `evidence_packet.json`, "
+            "`critique_report.json`).",
+            "",
+            "Case decision — abstention built through the documented A1-A5 path "
+            "(`orvyren.decision.abstention`: detect_conditions -> "
+            "what_would_change_entries -> escalate_vs_no_action -> "
+            "build_inconclusive), never a forced decision:",
+            abstention_block,
+            "",
+            "Deterministic decision engine (`run_decision.py`, declared "
+            "substitution): the v1 engine is wired to the frozen USDC pilot "
+            "windows (FREEZE_V1 D1/D2) and peg hypotheses; on this case it "
+            "records its own verdicts and missing inputs in "
+            "`decision/decision_%s.json`:" % CASE_ID,
+            verdict_lines,
+            "",
+        ]
+
+    # -- section 5: policy verdict (mode aware) ----------------------------
+    if decision_source == "agents":
+        first = ticks[0] if ticks else {}
+        policy_lines = [
+            "**No policy verdict was produced, and none is invented.** The "
+            "DecisionRecord carries `economic_action: null` and `intent: null` "
+            "with `authorization_verdict: REQUIRE_APPROVAL`, so the executor "
+            "records `NO_ACTIONABLE_INTENT` and stops before `policy.evaluate`: "
+            "the policy axis is *not evaluated* — not ALLOW, not DENY.",
+            "",
+            "`policy_v1.yaml` was loaded (version `%s`, hash `%s`) and no rule "
+            "was applied, because there is nothing to authorise:" % (
+                first.get("policy_version") or "unavailable",
+                str(first.get("policy_hash") or "unavailable")),
+            ticks_line,
+            "",
+            "`REQUIRE_APPROVAL` is the record's own brake: an agents run never "
+            "evaluates the policy, and with no intent there is no transition "
+            "decision -> policy in the chain.",
+            "",
+        ]
+    else:
+        policy_lines = [
+            "Policy evaluated on the execution leg (real `policy_v1.yaml`, real "
+            "state, fail-closed resolvers):",
+            ticks_line,
+            "",
+        ]
+
+    # -- section 6: execution (mode aware) ---------------------------------
+    if decision_source == "agents":
+        execution_lines = [
+            "Dry-run only (no signature, no key read), on the case's **own** "
+            "decision: `--case %s --decision-source agents --agents-run <sealed "
+            "run>`. The historical pilot replay (`--case %s`) is gone from this "
+            "leg: it produced a USDC intent under the rsETH run id, which is "
+            "exactly the substitution this dossier removes." % (
+                CASE_ID, EXECUTION_CASE_ID),
+            "",
+            steps_line,
+            "",
+            "  - chain events head: `%s`" % chain_head,
+            "  - chain root `execution/chain/%s/`; tick journal "
+            "`execution/journal.jsonl` (append-only, chained; "
+            "`policy_verdicts.json` extracts this run's ticks)" % run_id,
+            "  - outcome of the leg: %s tick(s), %s intent(s), %s signature(s), "
+            "0 transfer — an abstention that stops before the policy is the "
+            "expected result, not a failed execution." % (
+                _clean(len(ticks)), _clean(len(intents)), _clean(signatures)),
+            "",
+        ]
+    else:
+        execution_lines = [
+            "Execution is always dry-run (no signature, no key read), chained "
+            "under one run identity (`orvyren.chain`). The execution case probe "
+            "(`%s` case, measured live in this run) ended `%s`: the v1 decision "
+            "dossier is only constructible for the pilot case id and the "
+            "executor CLI has no decision-provider override, so the "
+            "policy/execution leg runs the pilot decision replay as a declared "
+            "substitution (`--case %s`), chained under this scenario run id and "
+            "parented to the agents run id:" % (
+                CASE_ID, probe_verdict, EXECUTION_CASE_ID),
+            steps_line,
+            "  - chain events head: %s" % chain_head,
+            "  - tick journal: `execution/journal.jsonl` (chained JSONL, "
+            "append-only; `policy_verdicts.json` extracts this run's ticks), "
+            "chain root `execution/chain/%s/`; the probe journal and chain are "
+            "kept under `execution/case_attempt/`" % run_id,
+            "",
+        ]
+
+    # -- section 7: chain verification -------------------------------------
+    verification_lines = []
+    if verification:
+        status = verification.get("status")
+        citations = verification.get("citations") or {}
+        rec = citations.get("decision_record") or {}
+        agents_cite = citations.get("agents_run") or {}
+        packet = citations.get("evidence_packet") or {}
+        crit_cite = citations.get("critique") or {}
+        exec_cite = citations.get("execution") or {}
+        verification_lines.append(
+            "`%s` (status `%s`) compares the DecisionRecord with what the "
+            "executor actually recorded:" % (VERIFICATION_FILENAME, status))
+        verification_lines.append("")
+        if rec:
+            verification_lines.append(
+                "  - decision record `%s` sha256 `%s`" % (
+                    rec.get("path"), rec.get("sha256")))
+        if agents_cite:
+            verification_lines.append(
+                "  - agents run `%s` (mode `%s`), chain heads %s — recomputed "
+                "from the journals, declared replayable=%s" % (
+                    agents_cite.get("run_id"), agents_cite.get("mode"),
+                    ", ".join("%s `%s`" % (role, head) for role, head in
+                              sorted((agents_cite.get("chain_heads") or {}).items()))
+                    or "-",
+                    agents_cite.get("replayable")))
+        for tick in verification.get("ticks") or []:
+            checks = tick.get("checks") or {}
+            passed = sum(1 for ok in checks.values() if ok)
+            verification_lines.append(
+                "  - tick %s: outcome `%s`, verdict `%s`, policy `%s`, reasons "
+                "%s — %s/%s checks passed, chain run `%s` parent `%s`" % (
+                    tick.get("tick"), tick.get("outcome"), tick.get("verdict"),
+                    tick.get("policy_verdict") or "not evaluated",
+                    ", ".join(str(r) for r in (tick.get("reasons") or [])) or "-",
+                    passed, len(checks), tick.get("chain_run_id"),
+                    tick.get("chain_parent_run_id")))
+        events = exec_cite.get("events") or []
+        if events:
+            verification_lines.append(
+                "  - chain events (in order): %s" % " -> ".join(
+                    "`%s`" % event if event else "(unnamed)"
+                    for event in events))
+            if not any((tick.get("checks") or {}).get("intent_absence_consistent")
+                       is False for tick in verification.get("ticks") or []):
+                verification_lines.append(
+                    "  - no `POLICY_DECIDED` and no execution event exists: with "
+                    "no intent the chain stops after `NO_ACTIONABLE_INTENT`")
+        if status == "PASS":
+            verification_lines.extend([
+                "",
+                "Status `PASS`: the record the executor consumed is the record "
+                "in the dossier — same epistemic verdict, same authorization "
+                "verdict, same (null) economic action, same intent absence, "
+                "chain ids chained to the agents run, chain verified, 0 "
+                "executed.",
+            ])
+        elif status == "FAIL":
+            verification_lines.append("")
+            for failure in verification.get("failures") or []:
+                verification_lines.append("  - FAILURE: %s" % failure)
+        elif verification.get("reason"):
+            verification_lines.append("")
+            verification_lines.append("  - %s" % verification.get("reason"))
+        if decision_source == "agents":
+            verification_lines.extend([
+                "",
+                "Chain of identifiers, each read from its artifact:",
+                "  1. risk observed — `evidence/episode_rseth_2026-04.json` "
+                "(§1; fixture `%s`)" % rel(FIXTURE_PATH),
+                "  2. hypotheses — `run.json` (HYP-001..HYP-004, state "
+                "`UNDER_TEST`) (§2)",
+                "  3. evidence — `evidence_packet.json` packet `%s`, snapshot "
+                "`%s`, %s ref(s) (§3)" % (
+                    packet.get("packet_id"), packet.get("snapshot_ref"),
+                    packet.get("refs_count")),
+                "  4. critique — `critique_report.json` `%s`, %s finding(s) "
+                "(§3/§4)" % (crit_cite.get("verdict"),
+                             crit_cite.get("findings_count")),
+                "  5. decision — `decision/decision_agents_%s.json` (sha256 "
+                "`%s`), from run `%s` (§4)" % (
+                    CASE_ID, str(rec.get("sha256") or "")[:16],
+                    agents_cite.get("run_id")),
+                "  6. policy — not evaluated (no intent), tick outcome "
+                "`%s` (§5)" % ((ticks[0].get("outcome") if ticks else "-")),
+                "  7. execution — `execution/journal.jsonl`, chain `%s`, "
+                "events head `%s` (§6)" % (
+                    run_id, str(exec_cite.get("events_head") or chain_head)[:16]),
+                "  8. dossier — `scenario_run.json` + this report, run_id `%s`" %
+                run_id,
+            ])
+    else:
+        verification_lines.append(
+            "`%s` was not produced for this run." % VERIFICATION_FILENAME)
+
+    # -- section 8: gaps ----------------------------------------------------
+    if decision_source == "agents":
+        gaps_lines = [
+            "Explicit lacunae of the case fixture:",
+            lacunes_line,
+            "",
+            "Declared gaps of this dossier (none of them is a conclusion):",
+            "  - `what_would_change` is empty in the DecisionRecord: the bridge "
+            "copies `outcome.non_recherche` verbatim and the sealed run stopped "
+            "at `%s` before enumerating a research plan. The A1-A5 complement "
+            "(`decision/abstention_%s.json`, %s entr(ies)) lists the sourced "
+            "next observations; it is a complement, not a second decision." % (
+                (agents_record.get("stop_condition") or "an early stop"),
+                CASE_ID, _clean(len(abstention.get("what_would_change") or []))),
+            "  - the deterministic engine record `decision/decision_%s.json` is "
+            "pilot-scoped (frozen USDC windows + peg hypotheses): it is a "
+            "cross-check of the decision stage, never an rsETH conclusion." %
+            CASE_ID,
+            "  - the live run is not bit-replayable (wall-time and realised cost "
+            "enter its payloads): `source.replayable=false`, declared by the "
+            "bridge. An offline replay needs a recorded response store, absent "
+            "for this case — never simulated.",
+            "  - the agents' hypotheses stayed `UNDER_TEST`: the record declares "
+            "no hypothesis REFUTED or SUPPORTED. The critic's BLOQUANT finding "
+            "(the packet carried no rsETH observation) is why the run stopped "
+            "instead of concluding.",
+            "  - the market price and the ~-31 % divergence remain documentation "
+            "figures (ORVYREN_DOC2_TECHNIQUE_COMPLET.md, measurement 2), not an "
+            "archived market series.",
+            "",
+        ]
+    else:
+        gaps_lines = [
+            "Explicit lacunae of the case fixture:",
+            lacunes_line,
+            "",
+            "Declared substitutions and limitations:",
+            "  - the deterministic decision engine of v1 is wired to the USDC "
+            "pilot (frozen windows + peg hypotheses, `python -m orvyren.decide` "
+            "refuses other case ids): its record is chained evidence of the "
+            "decision stage mechanics, not an rsETH conclusion;",
+            "  - the v1 decision dossier (RDOF + A1-A5 abstention) is only "
+            "constructible for the pilot case id: the execution case probe "
+            "(`--case %s`) is kept under `execution/case_attempt/` with the "
+            "measured refusal (`E_WHAT_WOULD_CHANGE_REQUIRED`); the executor tick "
+            "decision therefore replays the pilot decision and the rsETH-specific "
+            "conclusion is the agent chain's — with a frozen market the coherent "
+            "action is no autonomous transfer;" % CASE_ID,
+            "  - no recorded response store exists for this case yet: only the "
+            "LIVE run is executed; an offline `--replay journal` replay needs a "
+            "recorded store first (never simulated);",
+            "  - the market price and the ~-31 % divergence are documentation "
+            "figures (ORVYREN_DOC2_TECHNIQUE_COMPLET.md measurement 2), not "
+            "archived market series (episode limitations).",
+            "",
+        ]
+
 
     text = "\n".join([
         "# Scenario report — rsETH / KelpDAO, April 2026 (E2E demonstration)",
@@ -649,6 +1366,13 @@ def render_report(*, out_dir: str, run_id: str, parent_run_id: str,
         "Case `%s` · scenario run_id `%s` · agents run_id `%s` · executor "
         "run_id `%s` (parent `%s`)." % (CASE_ID, run_id, parent_run_id or "-",
                                         run_id, parent_run_id or "-"),
+        "Decision source of the execution leg: **`%s`** — %s" % (
+            decision_source,
+            "the per-tick DecisionRecord is built from the sealed agents run by "
+            "`src/orvyren/decision/agents_source.py` (no pilot replay)."
+            if decision_source == "agents" else
+            "LEGACY path: the per-tick decision is the frozen USDC pilot replay "
+            "(declared substitution, reproduce-only)."),
         "Every figure below is read from the sourced fixture "
         "(`%s`) at report time; each fixture figure points to its source and "
         "`tests/test_fixtures_rseth_inputs.py` crosses fixture against source "
@@ -688,8 +1412,8 @@ def render_report(*, out_dir: str, run_id: str, parent_run_id: str,
         "",
         REPORT_SECTIONS[2],
         "",
-        "The LIVE agents observed the tools of the run (real LLM calls). The "
-        "sourced figures of the fixture and their sources:",
+        "The agents of the run observed the tools of the case (real LLM calls at "
+        "run time). The sourced figures of the fixture and their sources:",
     ])
 
     rows = []
@@ -708,34 +1432,6 @@ def render_report(*, out_dir: str, run_id: str, parent_run_id: str,
                     entry.get("value"), entry.get("source_ref")))
     text += "\n" + "\n".join(rows)
 
-    abstention_block = "  - (abstention record not found)"
-    if abstention:
-        payload = abstention.get("abstention") or {}
-        entries = abstention.get("what_would_change") or []
-        escalade = abstention.get("escalade") or {}
-        lines = [
-            "  - epistemic verdict: %s (conditions: %s)" % (
-                abstention.get("epistemic_verdict"),
-                ", ".join(payload.get("conditions_declenchees", []) or []) or "-"),
-            "  - action: %s — no autonomous transfer while the market is "
-            "frozen and the evidence is inconclusive" % abstention.get("action"),
-            "  - escalation: %s — %s" % (escalade.get("sortie"),
-                                         escalade.get("motif")),
-            "  - decision_delta: %s" % "; ".join(
-                "%s -> %s" % item for item in
-                sorted((payload.get("decision_delta") or {}).items())),
-            "  - what_would_change (%d research entries):" % len(entries),
-        ]
-        for entry in entries:
-            lines.append(
-                "    - [%s] %s — cible: %s (%s; affects %s)" % (
-                    entry.get("predicat"), entry.get("fait"),
-                    entry.get("cible"), entry.get("cout_estime"),
-                    ", ".join(entry.get("hypotheses_affectees") or [])))
-        lines.append("  - verdicts: %s" % "; ".join(
-            "%s %s" % (key, value.get("verdict"))
-            for key, value in sorted((abstention.get("verdicts") or {}).items())))
-        abstention_block = "\n".join(lines)
 
     raw_blocks = []
     for step in steps:
@@ -761,84 +1457,49 @@ def render_report(*, out_dir: str, run_id: str, parent_run_id: str,
         "",
         REPORT_SECTIONS[3],
         "",
-        "Case decision (LIVE agent chain): the run above — its outcome, "
-        "evidence packet and critic verdict are the case-specific decision "
-        "artifacts (`run_outcome.json`, `evidence_packet.json`, "
-        "`critique_report.json`).",
-        "",
-        "Case decision — abstention built through the documented A1-A5 path "
-        "(`orvyren.decision.abstention`: detect_conditions -> "
-        "what_would_change_entries -> escalate_vs_no_action -> "
-        "build_inconclusive), never a forced decision:",
-        abstention_block,
-        "",
-        "Deterministic decision engine (`run_decision.py`, declared "
-        "substitution): the v1 engine is wired to the frozen USDC pilot "
-        "windows (FREEZE_V1 D1/D2) and peg hypotheses; on this case it "
-        "records its own verdicts and missing inputs in "
-        "`decision/decision_%s.json`:" % CASE_ID,
-        verdict_lines,
-        "",
+    ] + decision_lines + [
         REPORT_SECTIONS[4],
         "",
-        "Policy evaluated on the execution leg (real `policy_v1.yaml`, real "
-        "state, fail-closed resolvers):",
-        ticks_line,
-        "",
+    ] + policy_lines + [
         REPORT_SECTIONS[5],
         "",
-        "Execution is always dry-run (no signature, no key read), chained "
-        "under one run identity (`orvyren.chain`). The execution case probe "
-        "(`%s` case, measured live in this run) ended `%s`: the v1 decision "
-        "dossier is only constructible for the pilot case id and the executor "
-        "CLI has no decision-provider override, so the policy/execution leg "
-        "runs the pilot decision replay as a declared substitution "
-        "(`--case %s`), chained under this scenario run id and parented to "
-        "the agents run id:" % (CASE_ID, probe_verdict, EXECUTION_CASE_ID),
-        steps_line,
-        "  - chain events head: %s" % chain_head,
-        "  - tick journal: `execution/journal.jsonl` (chained JSONL, "
-        "append-only; `policy_verdicts.json` extracts this run's ticks), "
-        "chain root `execution/chain/%s/`; the probe journal and chain are "
-        "kept under `execution/case_attempt/`" % run_id,
-        "",
+    ] + execution_lines + [
         REPORT_SECTIONS[6],
         "",
-        "Explicit lacunae of the case fixture:",
-        lacunes_line,
-        "",
-        "Declared substitutions and limitations:",
-        "  - the deterministic decision engine of v1 is wired to the USDC "
-        "pilot (frozen windows + peg hypotheses, `python -m orvyren.decide` "
-        "refuses other case ids): its record is chained evidence of the "
-        "decision stage mechanics, not an rsETH conclusion;",
-        "  - the v1 decision dossier (RDOF + A1-A5 abstention) is only "
-        "constructible for the pilot case id: the execution case probe "
-        "(`--case %s`) is kept under `execution/case_attempt/` with the "
-        "measured refusal (`E_WHAT_WOULD_CHANGE_REQUIRED`); the executor tick "
-        "decision therefore replays the pilot decision and the rsETH-specific "
-        "conclusion is the agent chain's — with a frozen market the coherent "
-        "action is no autonomous transfer;" % CASE_ID,
-        "  - no recorded response store exists for this case yet: only the "
-        "LIVE run is executed; an offline `--replay journal` replay needs a "
-        "recorded store first (never simulated);",
-        "  - the market price and the ~-31 % divergence are documentation "
-        "figures (ORVYREN_DOC2_TECHNIQUE_COMPLET.md measurement 2), not "
-        "archived market series (episode limitations).",
+    ] + verification_lines + [
         "",
         REPORT_SECTIONS[7],
         "",
-        "Reproduce: `(set -a; source %s; set +a; python %s)` then inspect "
-        "`%s/`. Fixture: `%s`. Derived corpus: `%s` (re-derived and compared "
-        "by `tests/test_fixtures_rseth_inputs.py`). Targeted tests: "
+    ] + gaps_lines + [
+        REPORT_SECTIONS[8],
+        "",
+        "Reproduce, sealed run (no LLM call, no new spend — the packaged mode):",
+        "```",
+        "python scripts/run_scenario_rseth.py --agents-run %s \\"
+        % rel(SEALED_AGENTS_RUN),
+        "    --run-id %s --out-dir evidence/scenario_rseth" % run_id,
+        "```",
+        "Reproduce, live agents (real LLM calls, keys from `%s`; a new agents "
+        "run and a new scenario run id):" % rel(ENV_FILE),
+        "```",
+        "(set -a; source %s; set +a)" % rel(ENV_FILE),
+        "python %s --out-dir evidence/scenario_rseth"
+        % rel(os.path.join("scripts", "run_scenario_rseth.py")),
+        "```",
+        "Legacy leg (reproduce the superseded dossier only): add "
+        "`--decision-source corpus`.",
+        "",
+        "The bridge record `decision/decision_agents_%s.json` is the artifact to "
+        "cite; `%s` states whether the executor consumed it (and with which "
+        "chain ids). Fixture: `%s`. Derived corpus: `%s` (re-derived and "
+        "compared by `tests/test_fixtures_rseth_inputs.py`). Targeted tests: "
         "`python -m unittest tests.test_fixtures_rseth_inputs "
-        "tests.test_scenario_rseth`. No key or secret is stored in any "
-        "artifact of this directory." % (
-            rel(ENV_FILE), rel(os.path.join("scripts", "run_scenario_rseth.py")),
-            rel(DEFAULT_OUT_DIR), rel(FIXTURE_PATH), rel(CORPUS_PATH)),
+        "tests.test_scenario_rseth`. No key or secret is stored in any artifact "
+        "of this directory." % (
+            CASE_ID, VERIFICATION_FILENAME, rel(FIXTURE_PATH), rel(CORPUS_PATH)),
         "",
     ])
-    text += "\n" + "\n".join([REPORT_SECTIONS[8], ""] + raw_blocks)
+    text += "\n" + "\n".join([REPORT_SECTIONS[9], ""] + raw_blocks)
     return text
 
 
@@ -857,20 +1518,41 @@ def _collect_only(args, out_dir: str) -> int:
         return EXIT_STEP_FAILED
     agent_run_id = str(previous.get("agents_run_id")
                        or previous.get("executor_parent_run_id") or "")
-    agents_run_dir = _find_agents_run_dir(
-        os.path.join(out_dir, "agents_session"))
+    decision_source = str(previous.get("decision_source")
+                          or args.decision_source or "agents")
+    agents_run_dir = ""
+    previous_run_dir = str(previous.get("agents_run_dir") or "").strip()
+    if previous_run_dir and os.path.isdir(_abs(previous_run_dir)):
+        agents_run_dir = _abs(previous_run_dir)
     if not agents_run_dir:
-        print("E_SCENARIO_COLLECT: no agents run directory under %s/agents_session"
-              % out_dir)
+        agents_run_dir = _find_agents_run_dir(
+            os.path.join(out_dir, "agents_session"))
+    if not agents_run_dir:
+        print("E_SCENARIO_COLLECT: no agents run directory recorded in "
+              "scenario_run.json nor found under %s/agents_session" % out_dir)
         return EXIT_STEP_FAILED
+    if decision_source == "agents":
+        try:
+            build_agents_decision(out_dir=out_dir, agents_run_dir=agents_run_dir,
+                                  case_id=args.case)
+        except AgentsDecisionUnavailable as exc:
+            print("E_SCENARIO_COLLECT: the agents run cannot yield a "
+                  "DecisionRecord — %s" % exc)
+            return EXIT_STEP_FAILED
     build_case_abstention(out_dir=out_dir, agents_run_dir=agents_run_dir,
                           case_id=args.case)
     collected = collect_artifacts(out_dir=out_dir, agents_run_dir=agents_run_dir,
                                   run_id=run_id, parent_run_id=agent_run_id)
+    verification = verify_chain(out_dir=out_dir, run_id=run_id,
+                                agents_run_id=agent_run_id,
+                                agents_run_dir=agents_run_dir,
+                                decision_source=decision_source,
+                                case_id=args.case)
+    collected[VERIFICATION_FILENAME] = os.path.join(out_dir, VERIFICATION_FILENAME)
     steps = previous.get("steps") or []
     report = render_report(out_dir=out_dir, run_id=run_id,
                            parent_run_id=agent_run_id, collected=collected,
-                           steps=steps)
+                           steps=steps, decision_source=decision_source)
     _write_text(os.path.join(out_dir, "scenario_report.md"), report)
     artifacts = {name: {"sha256": _sha256(path),
                         "bytes": os.path.getsize(path)}
@@ -881,9 +1563,12 @@ def _collect_only(args, out_dir: str) -> int:
         "case_id": args.case,
         "run_id": run_id,
         "status": previous.get("status") or "OK",
+        "decision_source": decision_source,
         "agents_run_id": agent_run_id,
+        "agents_run_dir": _display_path(agents_run_dir),
         "executor_run_id": run_id,
         "executor_parent_run_id": agent_run_id,
+        "verification_status": verification.get("status"),
         "generated_utc": _now_iso(),
         "steps": steps,
         "artifacts": artifacts,
@@ -911,6 +1596,18 @@ def run_pipeline(argv=None, *, runner=None, env=None) -> int:
                         help="explicit scenario run id (default: generated)")
     parser.add_argument("--ticks", type=int, default=1,
                         help="executor dry-run ticks (default: %(default)s)")
+    parser.add_argument("--decision-source", choices=DECISION_SOURCES,
+                        default="agents",
+                        help="per-tick DecisionRecord of the execution leg: "
+                             "`agents` (default) builds it from the sealed "
+                             "agents run via orvyren.decision.agents_source; "
+                             "`corpus` is the LEGACY pilot replay (declared "
+                             "substitution, reproduce-only)")
+    parser.add_argument("--agents-run", default=None,
+                        help="directory of a sealed agents run to consume "
+                             "(run.json + run_outcome.json + journals). Skips "
+                             "the live agents stage entirely: no LLM call, no "
+                             "new spend")
     parser.add_argument("--materialize-corpus", action="store_true",
                         help="only write the derived corpus CSV and exit")
     parser.add_argument("--collect-only", action="store_true",
@@ -931,6 +1628,24 @@ def run_pipeline(argv=None, *, runner=None, env=None) -> int:
         out_dir = os.path.join(REPO_ROOT, out_dir)
     os.makedirs(out_dir, exist_ok=True)
 
+    # A sealed agents run given on the command line is consumed as-is: the key
+    # gate and the live agents stage are skipped (no LLM call, no new spend).
+    sealed_run_dir = ""
+    if args.agents_run:
+        sealed_run_dir = _abs(args.agents_run)
+        if not os.path.isdir(sealed_run_dir):
+            print("E_SCENARIO_AGENTS_RUN: --agents-run is not a directory: %s"
+                  % sealed_run_dir)
+            return EXIT_STEP_FAILED
+        if not os.path.isfile(os.path.join(sealed_run_dir, "run_outcome.json")):
+            print("E_SCENARIO_AGENTS_RUN: run_outcome.json missing in %s"
+                  % sealed_run_dir)
+            return EXIT_STEP_FAILED
+        if args.decision_source != "agents":
+            print("E_SCENARIO_AGENTS_RUN: --agents-run is only meaningful with "
+                  "--decision-source agents (got %r)" % args.decision_source)
+            return EXIT_STEP_FAILED
+
     if args.collect_only:
         return _collect_only(args, out_dir)
 
@@ -943,22 +1658,48 @@ def run_pipeline(argv=None, *, runner=None, env=None) -> int:
         materialize_corpus()
 
     agent_run_id = ""
-    agents_run_dir = ""
+    agents_run_dir = sealed_run_dir
+    if sealed_run_dir:
+        spec = {}
+        for name in ("run.json", "run_outcome.json"):
+            candidate = os.path.join(sealed_run_dir, name)
+            if os.path.isfile(candidate):
+                spec = _read_json(candidate)
+                if str(spec.get("run_id") or "").strip():
+                    break
+        agent_run_id = str(spec.get("run_id") or "").strip()
+        if not agent_run_id:
+            print("E_SCENARIO_AGENTS_RUN: no run_id in the sealed run %s"
+                  % sealed_run_dir)
+            return EXIT_STEP_FAILED
+        if agent_run_id == run_id:
+            print("E_SCENARIO_AGENTS_RUN: the scenario run_id must differ from "
+                  "the agents run_id (identifiers are never reused)")
+            return EXIT_STEP_FAILED
     steps = build_steps(case_id=args.case, out_dir=args.out_dir,
                         run_id=run_id, ticks=args.ticks,
-                        parent_run_id="PENDING_AGENT_RUN_ID")
+                        parent_run_id=(agent_run_id or "PENDING_AGENT_RUN_ID"),
+                        decision_source=args.decision_source,
+                        agents_run_dir=sealed_run_dir)
     results = []
     exec_runner = runner or _run_command
-    print("ORVYREN — E2E scenario %s · run_id %s" % (args.case, run_id))
+    print("ORVYREN — E2E scenario %s · run_id %s · decision source %s"
+          % (args.case, run_id, args.decision_source))
+    if sealed_run_dir:
+        print("  agents run   : %s (sealed, reused — no LLM call)"
+              % _display_path(sealed_run_dir))
     print("  env file     : %s (%d variable(s) loaded into child processes, "
           "values never printed)" % (ENV_FILE, loaded))
 
     for index, step in enumerate(steps):
         if step["name"] in ("execution_case_probe", "execution") and agent_run_id:
-            # Rebuild the step with the real agents run id as chain parent.
+            # Rebuild the step with the real agents run id as chain parent
+            # (and the real agents directory once the live run is sealed).
             rebuilt = {row["name"]: row for row in build_steps(
                 case_id=args.case, out_dir=args.out_dir, run_id=run_id,
-                ticks=args.ticks, parent_run_id=agent_run_id)}
+                ticks=args.ticks, parent_run_id=agent_run_id,
+                decision_source=args.decision_source,
+                agents_run_dir=(agents_run_dir or sealed_run_dir))}
             steps[index] = rebuilt[step["name"]]
             step = steps[index]
         print("  [%s] %s" % (step["name"], " ".join(step["argv"][1:])))
@@ -1061,9 +1802,60 @@ def run_pipeline(argv=None, *, runner=None, env=None) -> int:
             print("    agents run_id: %s" % agent_run_id)
 
         if step["name"] == "decision":
-            # The case decision is an abstention built through the documented
-            # A1-A5 path (never a forced decision): what_would_change is
-            # mandatory for an INCONCLUSIVE outcome (B3 §c.3).
+            if args.decision_source == "agents":
+                # The case decision IS the bridge record: built from the sealed
+                # run, written as-is, and consumed by the executor below.
+                try:
+                    record = build_agents_decision(
+                        out_dir=out_dir, agents_run_dir=agents_run_dir,
+                        case_id=args.case)
+                except AgentsDecisionUnavailable as exc:
+                    print("  E_SCENARIO_DECISION: the agents run cannot yield a "
+                          "DecisionRecord — %s" % exc)
+                    _write_json(os.path.join(out_dir, "scenario_run.json"), {
+                        "schema": "orvyren/scenario-run/v1",
+                        "case_id": args.case,
+                        "run_id": run_id,
+                        "status": "FAILED",
+                        "failed_step": "decision_agents_source",
+                        "error": str(exc),
+                        "generated_utc": _now_iso(),
+                        "steps": [{k: s.get(k) for k in
+                                   ("name", "argv", "rc", "verdict",
+                                    "stdout_tail", "stderr_tail")}
+                                  for s in results],
+                    })
+                    return EXIT_STEP_FAILED
+                refs = record.get("evidence_refs") or []
+                results.append({
+                    "name": "decision_agents_source",
+                    "argv": ["<in-process>",
+                             "orvyren.decision.agents_source."
+                             "build_decision_from_agents %s"
+                             % _display_path(agents_run_dir)],
+                    "rc": 0,
+                    "verdict": str(record.get("authorization_verdict") or "-"),
+                    "stdout_tail": (
+                        "DecisionRecord %s · epistemic %s · economic_action %s "
+                        "· intent %s · authorization %s · escalation %s · "
+                        "evidence_refs %s" % (
+                            record.get("schema"),
+                            record.get("epistemic_verdict"),
+                            record.get("economic_action"), record.get("intent"),
+                            record.get("authorization_verdict"),
+                            record.get("escalation"),
+                            ", ".join("%s=%s" % (ref.get("source"),
+                                                 str(ref.get("value"))[:12])
+                                      for ref in refs) or "-")),
+                    "stderr_tail": "",
+                })
+                print("    DecisionRecord: %s · %s · %s (intent %s)"
+                      % (record.get("schema"), record.get("epistemic_verdict"),
+                         record.get("authorization_verdict"),
+                         "null" if record.get("intent") is None else "declared"))
+            # The A1-A5 abstention is the research-plan complement (never a
+            # forced decision): what_would_change is mandatory for an
+            # INCONCLUSIVE outcome (B3 §c.3).
             abstention = build_case_abstention(
                 out_dir=out_dir, agents_run_dir=agents_run_dir,
                 case_id=args.case)
@@ -1091,15 +1883,43 @@ def run_pipeline(argv=None, *, runner=None, env=None) -> int:
     if not agents_run_dir:
         agents_run_dir = _find_agents_run_dir(
             os.path.join(out_dir, "agents_session"))
+    if not agent_run_id and agents_run_dir:
+        spec = _read_json(os.path.join(agents_run_dir, "run.json"))
+        agent_run_id = str(spec.get("run_id") or "")
     build_case_abstention(out_dir=out_dir, agents_run_dir=agents_run_dir,
                           case_id=args.case)
     collected = collect_artifacts(out_dir=out_dir,
                                   agents_run_dir=agents_run_dir,
                                   run_id=run_id,
                                   parent_run_id=agent_run_id)
+    verification = verify_chain(out_dir=out_dir, run_id=run_id,
+                                agents_run_id=agent_run_id,
+                                agents_run_dir=agents_run_dir,
+                                decision_source=args.decision_source,
+                                case_id=args.case)
+    if verification.get("status") == "FAIL":
+        print("  E_SCENARIO_VERIFY: the decision -> policy -> execution chain "
+              "does not hold — no dossier is published:")
+        for failure in verification.get("failures") or []:
+            print("    - %s" % failure)
+        _write_json(os.path.join(out_dir, "scenario_run.json"), {
+            "schema": "orvyren/scenario-run/v1",
+            "case_id": args.case,
+            "run_id": run_id,
+            "status": "FAILED",
+            "failed_step": "chain_verification",
+            "verification_status": verification.get("status"),
+            "verification_failures": verification.get("failures") or [],
+            "generated_utc": _now_iso(),
+            "steps": [{k: s.get(k) for k in
+                       ("name", "argv", "rc", "verdict", "stdout_tail",
+                        "stderr_tail")} for s in results],
+        })
+        return EXIT_STEP_FAILED
+    collected[VERIFICATION_FILENAME] = os.path.join(out_dir, VERIFICATION_FILENAME)
     report = render_report(out_dir=out_dir, run_id=run_id,
                            parent_run_id=agent_run_id, collected=collected,
-                           steps=results)
+                           steps=results, decision_source=args.decision_source)
     _write_text(os.path.join(out_dir, "scenario_report.md"), report)
 
     artifacts = {}
@@ -1111,15 +1931,20 @@ def run_pipeline(argv=None, *, runner=None, env=None) -> int:
         "case_id": args.case,
         "run_id": run_id,
         "status": "OK",
+        "decision_source": args.decision_source,
         "agents_run_id": agent_run_id,
+        "agents_run_dir": _display_path(agents_run_dir),
+        "agents_run_reused": bool(sealed_run_dir),
         "executor_run_id": run_id,
         "executor_parent_run_id": agent_run_id,
+        "verification_status": verification.get("status"),
         "generated_utc": _now_iso(),
         "steps": [{k: s.get(k) for k in
                    ("name", "argv", "rc", "verdict", "stdout_tail", "stderr_tail")}
                   for s in results],
         "artifacts": artifacts,
     })
+    print("  verification : %s" % verification.get("status"))
     print("  artifacts    : %s (%d file(s))" % (out_dir, len(artifacts) + 2))
     print("  report       : %s" % os.path.join(out_dir, "scenario_report.md"))
     return EXIT_OK

@@ -1,0 +1,99 @@
+{
+ "agents_run_dir": "D:/orvyren_core/evidence/demo_runs/agents/rseth-2026-04/rseth-2026-04_live_20261018T200027592497Z",
+ "agents_run_id": "rseth-2026-04_live_20261018T200027592497Z",
+ "case_id": "rseth-2026-04",
+ "checks": {
+  "decision_axes": {
+   "authorization_verdict": "REQUIRE_APPROVAL",
+   "economic_action": null,
+   "epistemic_verdict": "INCONCLUSIVE",
+   "escalation": "REQUIRE_APPROVAL",
+   "intent_present": false,
+   "stop_condition": "ARRET-3",
+   "what_would_change_entries": 0
+  }
+ },
+ "citations": {
+  "agents_run": {
+   "chain_heads": {
+    "critic": "924d84dde64c86ecb3c24bc0a758d9d152a36428658b759b5905fc4123a2112a",
+    "orchestrator": "9d1372f5457434c7bf4faccaae6eb545a48f60e2a8982e6918de23a36220a2df"
+   },
+   "journal_lines": {
+    "critic": 1,
+    "orchestrator": 13
+   },
+   "journals_verified": {
+    "critic": true,
+    "orchestrator": true
+   },
+   "mode": "live",
+   "replayable": false,
+   "run_dir": "evidence/demo_runs/agents/rseth-2026-04/rseth-2026-04_live_20261018T200027592497Z",
+   "run_id": "rseth-2026-04_live_20261018T200027592497Z"
+  },
+  "critique": {
+   "findings_count": 10,
+   "path": "critique_report.json",
+   "verdict": "INCOHERENTE"
+  },
+  "decision_record": {
+   "path": "decision/decision_agents_rseth-2026-04.json",
+   "schema": "orvyren-decision-record/v1",
+   "sha256": "fdbe92f2e8cc8ee818484cb2ca5056e11a4aabadd41375a3dcf574e09fd6ecf7"
+  },
+  "dossier": {
+   "manifest": "scenario_run.json",
+   "report": "scenario_report.md",
+   "verification": "chain_verification.json"
+  },
+  "evidence_packet": {
+   "claims_count": 3,
+   "packet_id": "rseth-2026-04_live_20261018T200027592497Z-packet",
+   "path": "evidence_packet.json",
+   "refs_count": 1924,
+   "snapshot_ref": "graph_snapshot:rseth-2026-04@2026-04-18T19:03:59Z"
+  },
+  "execution": {
+   "chain_root": "D:\\orvyren_core\\evidence\\scenario_rseth\\execution\\chain\\scenario-rseth-2026-04-20261019T134804Z",
+   "events": [
+    "DECISION_REPLAYED",
+    "NO_ACTIONABLE_INTENT"
+   ],
+   "events_head": "39a7b7f94618ec902522259375149e14ce35aa9f858acff873f1769cf7794b3f",
+   "journal": "execution/journal.jsonl",
+   "journal_records_total": 1,
+   "verify_ok": true
+  }
+ },
+ "decision_source": "agents",
+ "failures": [],
+ "run_id": "scenario-rseth-2026-04-20261019T134804Z",
+ "schema": "orvyren/scenario-chain-verification/v1",
+ "status": "PASS",
+ "ticks": [
+  {
+   "chain_events_head": "39a7b7f94618ec902522259375149e14ce35aa9f858acff873f1769cf7794b3f",
+   "chain_parent_run_id": "rseth-2026-04_live_20261018T200027592497Z",
+   "chain_run_id": "scenario-rseth-2026-04-20261019T134804Z",
+   "checks": {
+    "authorization_verdict_matches": true,
+    "chain_parent_matches": true,
+    "chain_run_id_matches": true,
+    "chain_verified": true,
+    "decision_summary_present": true,
+    "economic_action_matches": true,
+    "epistemic_verdict_matches": true,
+    "intent_absence_consistent": true,
+    "not_executed": true
+   },
+   "outcome": "NO_ACTION",
+   "policy_verdict": null,
+   "reasons": [
+    "NO_ACTIONABLE_INTENT"
+   ],
+   "tick": 1,
+   "verdict": "DENY"
+  }
+ ]
+}
