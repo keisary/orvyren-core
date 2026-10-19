@@ -7,7 +7,12 @@ artefacts:
   hypothesis verdicts (H1/H2/H3), decision block (verdict, action, rationale,
   conditions, limits, provenance) and calibration;
 * optional extras: ``baseline_report.json`` (A0 baseline comparison),
-  ``policy_execution_demo.json``, ``quality_report.json``.
+  ``policy_execution_demo.json``, ``quality_report.json``;
+* a G6 §3 **sensitivity** section: break-even ``P*``, the sign of
+  ``E[avoided loss]`` over a ``P(obligation)`` sweep, and the 0 / 5 / 10 %
+  ``r_capital`` funding variants. Every published number is computed by
+  ``orvyren.evaluation.loss`` from fields of the dossier — none is copied by
+  hand, and a missing term is reported instead of inferred.
 
 Guarantees
 ----------
@@ -35,6 +40,32 @@ ENGINE_VERSION = "0.1"
 PRODUCED_CLAUSE = "produced by ORVYREN-Core v0.1 — deterministic engine, no human edit"
 MISSING = "(not provided in source JSON)"
 SELF_HASH_ZERO = "0" * 64
+
+# The sensitivity section reuses the frozen loss function itself instead of
+# re-deriving the formula (one arithmetic source). In frozen audit-packet mode
+# the evaluation package is not importable, so the packet builder ships the
+# same module next to this file (``evaluation_loss.py``).
+try:  # repository mode
+    from orvyren.evaluation import loss as _loss  # type: ignore
+except ImportError:  # frozen audit-packet mode
+    try:
+        from . import evaluation_loss as _loss  # type: ignore
+    except ImportError:  # pragma: no cover - incomplete packet
+        _loss = None
+
+# --- G6 §3 sensitivity parameters (declared and sourced) ---------------------
+
+#: P(obligation) signed in G6 §1 — an explicitly *unsourced* working assumption;
+#: published with P* precisely because it is not measured.
+P_OBLIGATION_SIGNED = 0.20
+
+#: Illustrative round-trip cost, 20 bp (G6 §1, W2-D §E.3 — "hypothetical, to be
+#: measured for real"). Applied to the protected notional, never to the whole
+#: exposure.
+ROUNDTRIP_COST_BP = 20.0
+
+#: Published P(obligation) sweep: 0 % to 60 % in 5-point steps.
+SENSITIVITY_P_VALUES = tuple(round(0.05 * step, 2) for step in range(0, 13))
 
 # Bounded previews keep the dossier readable ("one page"); the exact counts are
 # always reported and the complete lists stay in the hashed source JSON.
@@ -322,6 +353,148 @@ def _baseline_view(record):
     }
 
 
+def _iso_instant(value):
+    """Parse an ISO-8601 date or instant into an aware UTC datetime, or None."""
+    if not isinstance(value, str) or not value.strip():
+        return None
+    text = value.strip()
+    if text.endswith("Z"):
+        text = text[:-1] + "+00:00"
+    try:
+        parsed = datetime.fromisoformat(text)
+    except ValueError:
+        return None
+    if parsed.tzinfo is None:
+        parsed = parsed.replace(tzinfo=timezone.utc)
+    return parsed.astimezone(timezone.utc)
+
+
+def _window_days(window):
+    """Window length in days for the funding horizon, or None when unusable."""
+    if not isinstance(window, dict):
+        return None
+    start = _iso_instant(window.get("start"))
+    end = _iso_instant(window.get("end"))
+    if start is None or end is None or end < start:
+        return None
+    return (end - start).total_seconds() / 86400.0
+
+
+def _deepest_price_print(sources):
+    """Deepest measured price print among the dossier's price series.
+
+    Only series that carry a price are considered (``close*`` / ``*price*``):
+    supply series also expose ``min_value`` but are not prices.
+    """
+    deepest = None
+    for entry in _as_list(sources):
+        if not isinstance(entry, dict):
+            continue
+        metric = str(entry.get("metric") or "")
+        if "price" not in metric and not metric.startswith("close"):
+            continue
+        value = entry.get("min_value")
+        if not isinstance(value, (int, float)) or isinstance(value, bool):
+            continue
+        if deepest is None or float(value) < deepest[0]:
+            venue = str(entry.get("venue") or "unknown venue")
+            deepest = (float(value), venue, metric)
+    return deepest
+
+
+def sensitivity_view(data):
+    """Compute the G6 §3 break-even sensitivity from the decision JSON.
+
+    Every displayed number is computed here from fields of the dossier: the
+    protected notional (``axes.x_star_usdc``, else the exposure parameter
+    ``action_usdc``), the peg, the deepest measured print of the price series
+    in ``inputs_summary.sources``, the signed ``P(obligation)`` and the signed
+    20 bp round-trip cost (G6 §1). The avoided loss given obligation is valued
+    through ``loss.evaluate_action`` (sell-at-peg versus forced sale at the
+    stressed print) — the formula is never re-implemented here.
+
+    Returns a dict with ``available`` True/False. When a required field is
+    absent the reason is returned verbatim and nothing is inferred: a
+    sensitivity without its two terms would be an unsourced number.
+    """
+    unavailable = {"available": False, "reason": None}
+    if _loss is None:
+        unavailable["reason"] = "the frozen loss module is not available in this build"
+        return unavailable
+    if not isinstance(data, dict) or not data:
+        unavailable["reason"] = "the decision JSON is missing or empty"
+        return unavailable
+
+    summary = data.get("inputs_summary")
+    summary = summary if isinstance(summary, dict) else {}
+    axes = data.get("axes")
+    axes = axes if isinstance(axes, dict) else {}
+    exposure = summary.get("exposure_parameters")
+    exposure = exposure if isinstance(exposure, dict) else {}
+
+    notional = axes.get("x_star_usdc")
+    if not isinstance(notional, (int, float)) or isinstance(notional, bool) or notional <= 0.0:
+        notional = exposure.get("action_usdc")
+    if not isinstance(notional, (int, float)) or isinstance(notional, bool) or notional <= 0.0:
+        unavailable["reason"] = "no protected notional (axes.x_star_usdc / exposure_parameters.action_usdc)"
+        return unavailable
+
+    peg = summary.get("peg_reference_usd")
+    if not isinstance(peg, (int, float)) or isinstance(peg, bool) or peg <= 0.0:
+        unavailable["reason"] = "no peg reference (inputs_summary.peg_reference_usd)"
+        return unavailable
+
+    deepest = _deepest_price_print(summary.get("sources"))
+    if deepest is None:
+        unavailable["reason"] = "no measured price print (inputs_summary.sources[*].min_value)"
+        return unavailable
+
+    stress_price, stress_venue, stress_metric = deepest
+    numeraire, quantity = 0.0, float(notional)
+    keep = _loss.evaluate_action(numeraire, quantity, 0.0, float(peg), stress_price)
+    protected = _loss.evaluate_action(
+        numeraire, quantity, quantity, float(peg), stress_price, p_exec=float(peg), cost=0.0
+    )
+    avoided_loss = keep["loss_usd"] - protected["loss_usd"]
+
+    roundtrip_cost = quantity * ROUNDTRIP_COST_BP / 10_000.0
+    days = _window_days(data.get("window"))
+    funding_note = None
+    if days is None:
+        days = 0.0
+        funding_note = "the window is not comparable, so the funding horizon is 0 days"
+
+    sweep = _loss.sensitivity_sweep(
+        avoided_loss,
+        roundtrip_cost,
+        SENSITIVITY_P_VALUES,
+        _loss.R_CAPITAL_VALUES,
+        funding_notional_usd=quantity,
+        funding_days=days,
+    )
+    base = sweep["variants"][0]
+    at_signed = _loss.dao_expected_avoided_loss(P_OBLIGATION_SIGNED, avoided_loss, base["total_cost_usd"])
+    expected_signed = at_signed["expected_avoided_loss_usd"]
+    return {
+        "available": True,
+        "reason": None,
+        "notional_usd": quantity,
+        "peg_reference_usd": float(peg),
+        "stress_price_usd": stress_price,
+        "stress_source": f"{stress_venue} {stress_metric}",
+        "avoided_loss_usd": avoided_loss,
+        "roundtrip_cost_bp": ROUNDTRIP_COST_BP,
+        "roundtrip_cost_usd": roundtrip_cost,
+        "p_obligation": P_OBLIGATION_SIGNED,
+        "p_star": base["break_even_probability"],
+        "funding_days": days,
+        "funding_note": funding_note,
+        "sweep": sweep,
+        "expected_at_signed_p_usd": expected_signed,
+        "expected_at_signed_p_sign": "+" if expected_signed > 0.0 else ("-" if expected_signed < 0.0 else "0"),
+    }
+
+
 def _problem_inputs(ctx):
     return [r for r in ([ctx["decision_rec"]] + ctx["extras"]) if r["status"] != "ok"]
 
@@ -357,6 +530,91 @@ def _extra_title(label):
 # --------------------------------------------------------------------------- #
 # Markdown rendering
 # --------------------------------------------------------------------------- #
+
+def _fmt_pct(value, digits=4):
+    """Percentage with a fixed number of decimals (``None`` stays explicit)."""
+    if value is None:
+        return MISSING
+    return f"{value * 100:.{digits}f} %"
+
+
+def _sensitivity_markdown(ctx):
+    """Markdown lines of the G6 §3 sensitivity section (always present)."""
+    lines = []
+    add = lines.append
+    add("## Sensitivity — break-even P* (G6 §3)")
+    add("")
+    view = ctx.get("sensitivity") or {"available": False, "reason": "not computed"}
+    if not view.get("available"):
+        add(f"- Sensitivity unavailable: {_md_cell(view.get('reason'))}. No value is inferred.")
+        add("")
+        return lines
+
+    sweep = view["sweep"]
+    p_star = view["p_star"]
+    add(
+        "- **Formula:** P\\* = roundtrip_cost / (avoided_loss|obligation + roundtrip_cost) — "
+        "the exact root of E[avoided loss] = 0 (source: `loss.break_even_probability`)."
+    )
+    add(
+        f"- **Avoided loss given obligation:** {view['avoided_loss_usd']:.4f} USD — protected notional "
+        f"{view['notional_usd']:.4f} USDC × (peg {view['peg_reference_usd']:.6f} − deepest measured print "
+        f"{view['stress_price_usd']:.6f}, {view['stress_source']}, field `inputs_summary.sources`); "
+        "valued with `loss.evaluate_action`."
+    )
+    add(
+        f"- **Round-trip cost:** {view['roundtrip_cost_usd']:.4f} USD — {view['roundtrip_cost_bp']:.0f} bp "
+        f"(G6 §1, illustrative) × {view['notional_usd']:.4f} USDC."
+    )
+    add(
+        f"- **Break-even probability (`P*`):** {_fmt_pct(p_star)} — signed P(obligation) = "
+        f"{_fmt_pct(view['p_obligation'])} (G6 §1); E[avoided loss] at the signed value = "
+        f"{view['expected_at_signed_p_usd']:.4f} USD (sign {view['expected_at_signed_p_sign']})."
+    )
+    funding = (
+        f"- **Funding:** I_avg · r_capital · Δt with I_avg = {view['notional_usd']:.4f} USDC and "
+        f"Δt = {view['funding_days']:.4f} days / {sweep['day_basis']:.0f}."
+    )
+    if view.get("funding_note"):
+        funding += f" Note: {_md_cell(view['funding_note'])}."
+    add(funding)
+    add("")
+    add("Funding variants (source: `loss.sensitivity_sweep`, funding through `loss.funding_cost`):")
+    add("")
+    add("| r_capital | Funding cost (USD) | Total cost (USD) | P* |")
+    add("| --- | --- | --- | --- |")
+    for variant in sweep["variants"]:
+        add(
+            f"| {_fmt_pct(variant['r_capital'])} | {variant['funding_cost_usd']:.4f} | "
+            f"{variant['total_cost_usd']:.4f} | {_fmt_pct(variant['break_even_probability'])} |"
+        )
+    add("")
+    add(
+        "Sign of E[avoided loss] by P(obligation) and funding variant "
+        "(source: `loss.sensitivity_sweep`; recomputed with `loss.dao_expected_avoided_loss`):"
+    )
+    add("")
+    add("| P(obligation) | " + " | ".join(f"r_capital {_fmt_pct(v['r_capital'])}" for v in sweep["variants"]) + " |")
+    add("| --- | " + " | ".join("---" for _ in sweep["variants"]) + " |")
+    for line in _sensitivity_matrix(sweep):
+        add("| " + " | ".join(line) + " |")
+    add("")
+    return lines
+
+
+def _sensitivity_matrix(sweep):
+    """Rows ``[P, sign@r1, sign@r2, …]`` of the published sign matrix."""
+    rates = [variant["r_capital"] for variant in sweep["variants"]]
+    cells = {}
+    order = []
+    for row in sweep["rows"]:
+        key = row["p_obligation"]
+        if key not in cells:
+            cells[key] = {}
+            order.append(key)
+        cells[key][row["r_capital"]] = row["sign_text"]
+    return [[f"{p:.2f}"] + [cells[p].get(rate, MISSING) for rate in rates] for p in order]
+
 
 def render_markdown(ctx):
     """Render the dossier as Markdown; the self-hash field still holds the
@@ -422,6 +680,8 @@ def render_markdown(ctx):
     for key, verdict, count, refs_text in _hypothesis_rows(ctx["hypotheses"]):
         add(f"| {_md_cell(key)} | {_md_cell(verdict)} | {count} — {_md_cell(refs_text)} |")
     add("")
+
+    lines.extend(_sensitivity_markdown(ctx))
 
     add("## Baseline A0 — main window vs control")
     add("")
@@ -525,6 +785,80 @@ def _verdict_class(verdict):
     return "neutral"
 
 
+def _sensitivity_html(ctx):
+    """HTML block of the G6 §3 sensitivity section (always present)."""
+    parts = []
+    add = parts.append
+    add("<section>")
+    add("<h2>Sensitivity — break-even P* (G6 §3)</h2>")
+    view = ctx.get("sensitivity") or {"available": False, "reason": "not computed"}
+    if not view.get("available"):
+        add(f'<p>Sensitivity unavailable: {_h(view.get("reason"))}. No value is inferred.</p>')
+        add("</section>")
+        return parts
+
+    sweep = view["sweep"]
+    add("<ul>")
+    add(
+        "<li><strong>Formula:</strong> P* = roundtrip_cost / (avoided_loss|obligation + roundtrip_cost) — "
+        "the exact root of E[avoided loss] = 0 (source: <code>loss.break_even_probability</code>).</li>"
+    )
+    add(
+        f"<li><strong>Avoided loss given obligation:</strong> {view['avoided_loss_usd']:.4f} USD — protected "
+        f"notional {view['notional_usd']:.4f} USDC × (peg {view['peg_reference_usd']:.6f} − deepest measured "
+        f"print {view['stress_price_usd']:.6f}, {_h(view['stress_source'])}, field "
+        "<code>inputs_summary.sources</code>); valued with <code>loss.evaluate_action</code>.</li>"
+    )
+    add(
+        f"<li><strong>Round-trip cost:</strong> {view['roundtrip_cost_usd']:.4f} USD — "
+        f"{view['roundtrip_cost_bp']:.0f} bp (G6 §1, illustrative) × {view['notional_usd']:.4f} USDC.</li>"
+    )
+    add(
+        f"<li><strong>Break-even probability (<code>P*</code>):</strong> {_fmt_pct(view['p_star'])} — signed "
+        f"P(obligation) = {_fmt_pct(view['p_obligation'])} (G6 §1); E[avoided loss] at the signed value = "
+        f"{view['expected_at_signed_p_usd']:.4f} USD (sign {_h(view['expected_at_signed_p_sign'])}).</li>"
+    )
+    funding = (
+        f"<li><strong>Funding:</strong> I_avg · r_capital · Δt with I_avg = {view['notional_usd']:.4f} USDC "
+        f"and Δt = {view['funding_days']:.4f} days / {sweep['day_basis']:.0f}."
+    )
+    if view.get("funding_note"):
+        funding += f" Note: {_h(view['funding_note'])}."
+    add(funding + "</li>")
+    add("</ul>")
+
+    add("<h3>Funding variants</h3>")
+    add("<table>")
+    add("<thead><tr><th>r_capital</th><th>Funding cost (USD)</th><th>Total cost (USD)</th><th>P*</th></tr></thead>")
+    add("<tbody>")
+    for variant in sweep["variants"]:
+        add(
+            f"<tr><td>{_h(_fmt_pct(variant['r_capital']))}</td><td>{variant['funding_cost_usd']:.4f}</td>"
+            f"<td>{variant['total_cost_usd']:.4f}</td><td>{_h(_fmt_pct(variant['break_even_probability']))}</td></tr>"
+        )
+    add("</tbody>")
+    add("</table>")
+
+    add("<h3>Sign of E[avoided loss] by P(obligation) and funding variant</h3>")
+    add(
+        '<p class="note">Source: <code>loss.sensitivity_sweep</code>, recomputed with '
+        "<code>loss.dao_expected_avoided_loss</code>.</p>"
+    )
+    add("<table>")
+    add(
+        "<thead><tr><th>P(obligation)</th>"
+        + "".join(f"<th>r_capital {_h(_fmt_pct(v['r_capital']))}</th>" for v in sweep["variants"])
+        + "</tr></thead>"
+    )
+    add("<tbody>")
+    for line in _sensitivity_matrix(sweep):
+        add("<tr>" + "".join(f"<td>{_h(cell)}</td>" for cell in line) + "</tr>")
+    add("</tbody>")
+    add("</table>")
+    add("</section>")
+    return parts
+
+
 def render_html(ctx):
     """Render the dossier as standalone HTML; the self-hash field still holds
     the zeroed token, substituted by :func:`build` before the file is written."""
@@ -620,6 +954,8 @@ def render_html(ctx):
     add("</tbody>")
     add("</table>")
     add("</section>")
+
+    parts.extend(_sensitivity_html(ctx))
 
     add("<section>")
     add("<h2>Baseline A0 — main window vs control</h2>")
@@ -814,6 +1150,7 @@ def build(decision_path, out_dir, extra_paths=None, generated_at=None):
         "hypotheses": data.get("hypothesis_verdicts"),
         "decision": decision,
         "calibration": data.get("calibration"),
+        "sensitivity": sensitivity_view(data),
         "decision_rec": decision_record,
         "extras": extras,
         "baseline": next((r for r in extras if r["label"] == "baseline_report"), None),

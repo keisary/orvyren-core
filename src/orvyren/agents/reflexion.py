@@ -24,7 +24,7 @@ Invariants (pinned by ``tests/test_agents_reflexion.py``):
 
 - deterministic: no randomness, no clock, no network, no LLM call anywhere;
 - a hypothesis is never ``REFUTEE`` without at least one ``INCOHERENT`` cell;
-- an empty matrix stays honest: ``to_dict`` carries the note ``"aucune preuve"``
+- an empty matrix stays honest: ``to_dict`` carries the note ``"no evidence"``
   and :meth:`EvidenceMatrix.most_discriminating_gap` answers ``found=False``
   instead of inventing a test;
 - :meth:`EvidenceMatrix.to_dict` / :meth:`EvidenceMatrix.from_dict` are
@@ -299,17 +299,17 @@ class EvidenceMatrix:
         the cells of the dominant hypothesis or of its best rival come first,
         then the highest potential diagnosticity, then the identifiers — always
         deterministic. The justification text is deterministic too. An empty
-        matrix answers honestly (``found=False`` and the note "aucune preuve").
+        matrix answers honestly (``found=False`` and the note "no evidence").
         """
         empty = {"found": False, "hyp_id": "", "evidence_id": "", "refs": [],
                  "diagnosticity": 0.0, "kind": "", "justification": ""}
         if not self._evidence:
-            empty["justification"] = ("aucune preuve — aucun test discriminant "
-                                     "a acquerir")
+            empty["justification"] = ("no evidence — no discriminating test "
+                                     "to acquire")
             return empty
         if not self._hypotheses:
-            empty["justification"] = ("aucune hypothese concurrente — la matrice "
-                                     "n'a rien a departager")
+            empty["justification"] = ("no competing hypothesis — the matrix "
+                                     "has nothing to separate")
             return empty
         unscored = [(hyp, evidence) for hyp in self._hypotheses
                     for evidence in self._evidence
@@ -322,8 +322,8 @@ class EvidenceMatrix:
                           if self._cells[(hyp, evidence)] == NEUTRE]
             kind = "neutre"
         if not candidates:
-            empty["justification"] = ("aucune cellule incertaine — la matrice "
-                                     "est entierement renseignee")
+            empty["justification"] = ("no uncertain cell — the matrix is "
+                                     "fully populated")
             return empty
         ranking = self.rank_hypotheses()
         dominant = ranking[0]["hyp_id"]
@@ -336,9 +336,9 @@ class EvidenceMatrix:
 
         hyp_id, evidence_id = sorted(candidates, key=order)[0]
         refs = list(self._evidence[evidence_id]["refs"])
-        word = "sans verdict" if kind == "sans_verdict" else "verdict neutre"
-        justification = ("cellule %s x %s %s — prochain test discriminant a "
-                         "acquerir (diagnosticite %.2f, refs: %s)"
+        word = "no verdict" if kind == "sans_verdict" else "neutral verdict"
+        justification = ("cell %s x %s %s — next discriminating test to "
+                         "acquire (diagnosticity %.2f, refs: %s)"
                          % (hyp_id, evidence_id, word,
                             self.diagnosticity(evidence_id),
                             ", ".join(refs) or "-"))
@@ -377,24 +377,24 @@ class EvidenceMatrix:
                    and hyp == dominant_before)
         if flipped:
             action = ESCALADE
-            motif = ("bascule de l'hypothese dominante — escalade, jamais de "
-                     "bascule silencieuse")
+            motif = ("flip of the dominant hypothesis — escalation, never a "
+                     "silent flip")
         elif trigger and etat_after == REFUTEE:
             action = ESCALADE
-            motif = ("une preuve devient incoherente pour l'hypothese dominante "
-                     "— elle est réfutée par la preuve, escalade")
+            motif = ("an evidence becomes incoherent for the dominant hypothesis "
+                     "— it is refuted by the evidence, escalation")
         elif trigger and etat_after == FRAGILE and self.diagnosticity(evidence) > 0.0:
             action = REVISER
-            motif = ("une preuve devient incoherente pour l'hypothese dominante "
-                     "— reviser la lecture")
+            motif = ("an evidence becomes incoherent for the dominant hypothesis "
+                     "— revise the reading")
         elif trigger:
             action = RETESTER
-            motif = ("incoherence non discriminante (diagnosticite nulle) sur "
-                     "l'hypothese dominante — retester la preuve avant toute revision")
+            motif = ("non-discriminating incoherence (zero diagnosticity) on "
+                     "the dominant hypothesis — retest the evidence before any revision")
         else:
             action = AUCUNE
-            motif = ("aucune reaction: la lecture dominante n'est pas menacee "
-                     "par ce changement")
+            motif = ("no reaction: the dominant reading is not threatened "
+                     "by this change")
         return {"action": action, "hyp_id": hyp, "evidence_id": evidence,
                 "new_verdict": value, "refs": list(self._evidence[evidence]["refs"]),
                 "dominant_before": dominant_before,
@@ -407,7 +407,7 @@ class EvidenceMatrix:
         """Canonical dict (``schema_version``, stable sorts, recomputed views)."""
         return {
             "schema_version": SCHEMA_VERSION,
-            "note": "" if self._evidence else "aucune preuve",
+            "note": "" if self._evidence else "no evidence",
             "hypotheses": [dict(self._hypotheses[hyp])
                            for hyp in sorted(self._hypotheses)],
             "evidence": [{"evidence_id": self._evidence[evidence]["evidence_id"],

@@ -40,7 +40,7 @@ pre{background:var(--soft);border:1px solid var(--line);padding:8px;overflow:aut
 <tbody>
 <tr><td>Case</td><td>usdc-2023-03</td></tr>
 <tr><td>Window</td><td>2023-03-09T00:00:00+00:00 → 2023-03-15T00:00:00+00:00</td></tr>
-<tr><td>Generated (UTC)</td><td>2026-10-17T04:34:02Z</td></tr>
+<tr><td>Generated (UTC)</td><td>2026-10-19T01:13:52Z</td></tr>
 <tr><td>Engine</td><td>ORVYREN-Core 0.1</td></tr>
 </tbody>
 </table>
@@ -87,6 +87,45 @@ pre{background:var(--soft);border:1px solid var(--line);padding:8px;overflow:aut
 <tr><td>H1</td><td>REFUTED</td><td>8 — {&quot;timestamp_utc&quot;: &quot;2023-03-11T04:00:00+00:00&quot;, &quot;value&quot;: 0.98622, &quot;venue&quot;: &quot;bitstamp&quot;}; {&quot;timestamp_utc&quot;: &quot;2023-03-11T07:00:00+00:00&quot;, &quot;value&quot;: 0.86267, &quot;venue&quot;: &quot;bitstamp&quot;}; {&quot;timestamp_utc&quot;: &quot;2023-03-11T08:00:00+00:00&quot;, &quot;value&quot;: 0.876675, &quot;venue&quot;: &quot;defillama&quot;}; {&quot;timestamp_utc&quot;: &quot;2023-03-11T14:00:00+00:00&quot;, &quot;value&quot;: 0.9129, &quot;venue&quot;: &quot;binance&quot;}; … +4 more (full list in the hashed decision JSON)</td></tr>
 <tr><td>H2</td><td>SUPPORTED</td><td>72 — {&quot;timestamp_utc&quot;: &quot;2023-03-11T00:00:00+00:00&quot;, &quot;value&quot;: 42097257578.0, &quot;venue&quot;: &quot;defillama_supply_aggregate&quot;}; {&quot;timestamp_utc&quot;: &quot;2023-03-11T07:00:00+00:00&quot;, &quot;value&quot;: 0.86267, &quot;venue&quot;: &quot;bitstamp&quot;}; {&quot;timestamp_utc&quot;: &quot;2023-03-11T14:00:00+00:00&quot;, &quot;value&quot;: 0.9129, &quot;venue&quot;: &quot;binance&quot;}; {&quot;timestamp_utc&quot;: &quot;2023-03-11T14:00:00+00:00&quot;, &quot;value&quot;: 0.915, &quot;venue&quot;: &quot;bitstamp&quot;}; … +68 more (full list in the hashed decision JSON)</td></tr>
 <tr><td>H3</td><td>REFUTED</td><td>4 — {&quot;timestamp_utc&quot;: &quot;2023-03-11T14:00:00+00:00&quot;, &quot;value&quot;: 0.9129, &quot;venue&quot;: &quot;binance&quot;}; {&quot;timestamp_utc&quot;: &quot;2023-03-11T14:00:00+00:00&quot;, &quot;value&quot;: 0.915, &quot;venue&quot;: &quot;bitstamp&quot;}; {&quot;timestamp_utc&quot;: &quot;2023-03-13T08:00:00+00:00&quot;, &quot;value&quot;: 0.9879, &quot;venue&quot;: &quot;binance&quot;}; {&quot;timestamp_utc&quot;: &quot;2023-03-13T08:00:00+00:00&quot;, &quot;value&quot;: 0.98843, &quot;venue&quot;: &quot;bitstamp&quot;}</td></tr>
+</tbody>
+</table>
+</section>
+<section>
+<h2>Sensitivity — break-even P* (G6 §3)</h2>
+<ul>
+<li><strong>Formula:</strong> P* = roundtrip_cost / (avoided_loss|obligation + roundtrip_cost) — the exact root of E[avoided loss] = 0 (source: <code>loss.break_even_probability</code>).</li>
+<li><strong>Avoided loss given obligation:</strong> 13.7330 USD — protected notional 100.0000 USDC × (peg 1.000000 − deepest measured print 0.862670, bitstamp close_usd, field <code>inputs_summary.sources</code>); valued with <code>loss.evaluate_action</code>.</li>
+<li><strong>Round-trip cost:</strong> 0.2000 USD — 20 bp (G6 §1, illustrative) × 100.0000 USDC.</li>
+<li><strong>Break-even probability (<code>P*</code>):</strong> 1.4354 % — signed P(obligation) = 20.0000 % (G6 §1); E[avoided loss] at the signed value = 2.5866 USD (sign +).</li>
+<li><strong>Funding:</strong> I_avg · r_capital · Δt with I_avg = 100.0000 USDC and Δt = 6.0000 days / 365.</li>
+</ul>
+<h3>Funding variants</h3>
+<table>
+<thead><tr><th>r_capital</th><th>Funding cost (USD)</th><th>Total cost (USD)</th><th>P*</th></tr></thead>
+<tbody>
+<tr><td>0.0000 %</td><td>0.0000</td><td>0.2000</td><td>1.4354 %</td></tr>
+<tr><td>5.0000 %</td><td>0.0822</td><td>0.2822</td><td>2.0135 %</td></tr>
+<tr><td>10.0000 %</td><td>0.1644</td><td>0.3644</td><td>2.5848 %</td></tr>
+</tbody>
+</table>
+<h3>Sign of E[avoided loss] by P(obligation) and funding variant</h3>
+<p class="note">Source: <code>loss.sensitivity_sweep</code>, recomputed with <code>loss.dao_expected_avoided_loss</code>.</p>
+<table>
+<thead><tr><th>P(obligation)</th><th>r_capital 0.0000 %</th><th>r_capital 5.0000 %</th><th>r_capital 10.0000 %</th></tr></thead>
+<tbody>
+<tr><td>0.00</td><td>-</td><td>-</td><td>-</td></tr>
+<tr><td>0.05</td><td>+</td><td>+</td><td>+</td></tr>
+<tr><td>0.10</td><td>+</td><td>+</td><td>+</td></tr>
+<tr><td>0.15</td><td>+</td><td>+</td><td>+</td></tr>
+<tr><td>0.20</td><td>+</td><td>+</td><td>+</td></tr>
+<tr><td>0.25</td><td>+</td><td>+</td><td>+</td></tr>
+<tr><td>0.30</td><td>+</td><td>+</td><td>+</td></tr>
+<tr><td>0.35</td><td>+</td><td>+</td><td>+</td></tr>
+<tr><td>0.40</td><td>+</td><td>+</td><td>+</td></tr>
+<tr><td>0.45</td><td>+</td><td>+</td><td>+</td></tr>
+<tr><td>0.50</td><td>+</td><td>+</td><td>+</td></tr>
+<tr><td>0.55</td><td>+</td><td>+</td><td>+</td></tr>
+<tr><td>0.60</td><td>+</td><td>+</td><td>+</td></tr>
 </tbody>
 </table>
 </section>
@@ -881,12 +920,12 @@ pre{background:var(--soft);border:1px solid var(--line);padding:8px;overflow:aut
 <tr><td>baseline_report</td><td><code>evidence/baseline_report.json</code></td><td><code>fa68d11f36232719f5400b5aab1d1cfab19b7808aaeb3e01297bd7bf4f868ae8</code></td></tr>
 <tr><td>policy_execution_demo</td><td><code>evidence/policy_execution_demo.json</code></td><td><code>5d6b64e04a04056acdb8dd7ab1f57368328677b82b73f8bd6b55e29bda14ffae</code></td></tr>
 <tr><td>quality_report</td><td><code>evidence/quality_report.json</code></td><td><code>3422567ea2de3ee1ac54fa7a72b84c3f7fbd94eca76b72fb11b7ba19bff82730</code></td></tr>
-<tr><td>dossier (self, html)</td><td><code>evidence/dossier_usdc-2023-03.html</code></td><td><code>442950ee3be51aa7cd5bf875a82c184bf1d22ee9767c97d05b46d83dbdcd4111</code></td></tr>
+<tr><td>dossier (self, html)</td><td><code>evidence/dossier_usdc-2023-03.html</code></td><td><code>a6af054e6e78cf05bd8e470c0dd6ec5c7c0d750f85d0ba39c116c79064ed2eb3</code></td></tr>
 </tbody>
 </table>
 <p class="note">Self-hash rule: the <code>dossier (self, html)</code> row is the SHA-256 of this HTML file computed with its own 64-hex-character self-hash field zeroed (64 <code>0</code> characters). It is reproducible with any SHA-256 tool: replace that field with zeros and hash the file. With identical inputs and build time this dossier is byte-identical.</p>
 </section>
-<footer class="foot">produced by ORVYREN-Core v0.1 — deterministic engine, no human edit · ORVYREN-Core v0.1 · generated 2026-10-17T04:34:02Z (UTC)</footer>
+<footer class="foot">produced by ORVYREN-Core v0.1 — deterministic engine, no human edit · ORVYREN-Core v0.1 · generated 2026-10-19T01:13:52Z (UTC)</footer>
 </main>
 </body>
 </html>

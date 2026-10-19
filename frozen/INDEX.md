@@ -1,84 +1,84 @@
-# `frozen/INDEX.md` — index du périmètre gelé (G1–G6)
+# `frozen/INDEX.md` — frozen-perimeter index (G1–G6)
 
-**Rôle.** Inventaire exact des fichiers de code couverts par les empreintes
-sha256 annoncées dans les documents G1–G6 : pour chacun, le hash déclaré, le
-document qui l'annonce et son rôle. Avant de modifier l'un de ces 9 fichiers,
-lire sa ligne ci-dessous — son hash est un tripwire : `scripts/verify_frozen.py`
-(recalcul octet à octet du paquet),
-`orvyren.evaluation.harness.verify_code_hashes` (porte de gel de l'EVAL) et
+**Role.** Exact inventory of the code files covered by the sha256 fingerprints
+announced in documents G1–G6: for each one, the declared hash, the document
+that announces it and its role. Before modifying any of these 9 files, read
+its row below — its hash is a tripwire: `scripts/verify_frozen.py`
+(byte-for-byte recomputation of the package),
+`orvyren.evaluation.harness.verify_code_hashes` (the EVAL freeze gate) and
 `tests/test_evaluation_forecasts.py::test_recalcul_hors_ligne_identique`
-passent au rouge. La seule procédure est le **re-scellement visible** (§3) ;
-jamais un patch silencieux.
+turn red. The only procedure is the **visible re-sealing** (§3); never a
+silent patch.
 
-`G4_seuils.md` (seuils persona) et `G6_hypotheses_economiques.md` (hypothèses
-économiques signées) n'annoncent **aucun** hash de code ;
-`G6_FEUILLE_DE_SIGNATURE.md` est la feuille de signature. Les autres fichiers
-de `frozen/` (README.md, FORECASTS_DEV.md, `forecasts_dev.jsonl`,
-`outcomes_dev.jsonl`, manifestes `Gx.sha256`) sont couverts par le recalcul
-octet à octet, pas par une empreinte annoncée dans un document Gx.
+`G4_seuils.md` (persona thresholds) and `G6_hypotheses_economiques.md` (signed
+economic hypotheses) announce **no** code hash;
+`G6_FEUILLE_DE_SIGNATURE.md` is the signature sheet. The other files in
+`frozen/` (README.md, FORECASTS_DEV.md, `forecasts_dev.jsonl`,
+`outcomes_dev.jsonl`, `Gx.sha256` manifests) are covered by the byte-for-byte
+recomputation, not by a fingerprint announced in a Gx document.
 
-## 1. Fichiers gelés par hash (9)
+## 1. Files frozen by hash (9)
 
-| fichier | sha256 déclaré | annoncé dans | rôle |
+| file | declared sha256 | announced in | role |
 |---|---|---|---|
-| `src/orvyren/evaluation/loss.py` | `8c93911fa4c56690e94f1dd8838ae48d3aa098a0c9a128b54228c7d55fce1db1` | `G1_fonction_de_perte.md` | fonction de perte G1 (W_T, L(a), R(a), regrets) |
-| `tests/test_evaluation_loss.py` | `90b705d0b47551b8deea80c1ab58772746c1599f673d4631888a828fc9b7ba88` | `G1_fonction_de_perte.md` | preuve exécutable G1 (KAT de perte) |
-| `src/orvyren/evaluation/comparators.py` | `23ac4438bdbeacfefe689a2bbdf144d4cf4b06ad2b778e59d8d212a8d5d345b3` | `G2_comparateurs.md` | comparateurs G2 (A0/A1/A2/B0/AX0/O, regret_pair) |
-| `tests/test_evaluation_comparators.py` | `0c4c9e3d4203b82d0950ca37f55b1bb8293466544be00e065a6d07e132653a05` | `G2_comparateurs.md` | preuve exécutable G2 |
-| `src/orvyren/evaluation/windows.py` | `d3e80aa3cd64a481eebf1c08ec34b43a5e563b0bd418344785a9693ac004c04a` | `G3_fenetres.md` | fenêtres G3 (registre DEV/EVAL, verify_frozen_package) |
-| `src/orvyren/evaluation/calibration.py` | `51f42db1dcfff81dd5fe81e5115c7344f52c84f5c3880d5340a9a48d2a536722` | `G5_plan_analyse.md` | calibration G5 (verdict_for_n, Mcnemar exact, BSS) |
-| `src/orvyren/evaluation/forecasts.py` | `8a519087d7c29aa1289d80e59e3d0da886a403d7a581273624ab301f72d19d33` | `G5_plan_analyse.md` | prévisions G5 (build_forecast, chaîne prev_hash) |
-| `src/orvyren/evaluation/outcomes.py` | `4ad4db541badefdd6efba6749ad2b71ebf657a66bc35aadd9c0c19a2ac2cfb94` | `G5_plan_analyse.md` | résolutions G5 (règles de résolution, outcomes chaînés) |
-| `tests/test_evaluation_calibration.py` | `2e1b00644b7e9a60485ad1564d5af52829b703c0ad96d50dc8b66a1262af940d` | `G5_plan_analyse.md` | preuve exécutable G5 (KAT de calibration) |
+| `src/orvyren/evaluation/loss.py` | `98ee9bc0a3f9f3ab6023ff4bb75cb19c5131f27e7a76c07fa4548023f9ecda70` | `G1_fonction_de_perte.md` | G1 loss function (W_T, L(a), R(a), regrets) |
+| `tests/test_evaluation_loss.py` | `90b705d0b47551b8deea80c1ab58772746c1599f673d4631888a828fc9b7ba88` | `G1_fonction_de_perte.md` | G1 executable proof (loss KAT) |
+| `src/orvyren/evaluation/comparators.py` | `23ac4438bdbeacfefe689a2bbdf144d4cf4b06ad2b778e59d8d212a8d5d345b3` | `G2_comparateurs.md` | G2 comparators (A0/A1/A2/B0/AX0/O, regret_pair) |
+| `tests/test_evaluation_comparators.py` | `0c4c9e3d4203b82d0950ca37f55b1bb8293466544be00e065a6d07e132653a05` | `G2_comparateurs.md` | G2 executable proof |
+| `src/orvyren/evaluation/windows.py` | `d3e80aa3cd64a481eebf1c08ec34b43a5e563b0bd418344785a9693ac004c04a` | `G3_fenetres.md` | G3 windows (DEV/EVAL registry, verify_frozen_package) |
+| `src/orvyren/evaluation/calibration.py` | `51f42db1dcfff81dd5fe81e5115c7344f52c84f5c3880d5340a9a48d2a536722` | `G5_plan_analyse.md` | G5 calibration (verdict_for_n, exact Mcnemar, BSS) |
+| `src/orvyren/evaluation/forecasts.py` | `8a519087d7c29aa1289d80e59e3d0da886a403d7a581273624ab301f72d19d33` | `G5_plan_analyse.md` | G5 forecasts (build_forecast, prev_hash chain) |
+| `src/orvyren/evaluation/outcomes.py` | `4ad4db541badefdd6efba6749ad2b71ebf657a66bc35aadd9c0c19a2ac2cfb94` | `G5_plan_analyse.md` | G5 outcomes (resolution rules, chained outcomes) |
+| `tests/test_evaluation_calibration.py` | `2e1b00644b7e9a60485ad1564d5af52829b703c0ad96d50dc8b66a1262af940d` | `G5_plan_analyse.md` | G5 executable proof (calibration KAT) |
 
-## 2. Bloc machine (JSON canonique)
+## 2. Machine block (canonical JSON)
 
 ```json
 {
  "files": {
   "src/orvyren/evaluation/calibration.py": {
    "announced_in": "G5_plan_analyse.md",
-   "role": "calibration G5 (verdict_for_n, Mcnemar exact, BSS)",
+   "role": "G5 calibration (verdict_for_n, exact Mcnemar, BSS)",
    "sha256": "51f42db1dcfff81dd5fe81e5115c7344f52c84f5c3880d5340a9a48d2a536722"
   },
   "src/orvyren/evaluation/comparators.py": {
    "announced_in": "G2_comparateurs.md",
-   "role": "comparateurs G2 (A0/A1/A2/B0/AX0/O, regret_pair)",
+   "role": "G2 comparators (A0/A1/A2/B0/AX0/O, regret_pair)",
    "sha256": "23ac4438bdbeacfefe689a2bbdf144d4cf4b06ad2b778e59d8d212a8d5d345b3"
   },
   "src/orvyren/evaluation/forecasts.py": {
    "announced_in": "G5_plan_analyse.md",
-   "role": "prévisions G5 (build_forecast, chaîne prev_hash)",
+   "role": "G5 forecasts (build_forecast, prev_hash chain)",
    "sha256": "8a519087d7c29aa1289d80e59e3d0da886a403d7a581273624ab301f72d19d33"
   },
   "src/orvyren/evaluation/loss.py": {
    "announced_in": "G1_fonction_de_perte.md",
-   "role": "fonction de perte G1 (W_T, L(a), R(a), regrets)",
-   "sha256": "8c93911fa4c56690e94f1dd8838ae48d3aa098a0c9a128b54228c7d55fce1db1"
+   "role": "G1 loss function (W_T, L(a), R(a), regrets)",
+   "sha256": "98ee9bc0a3f9f3ab6023ff4bb75cb19c5131f27e7a76c07fa4548023f9ecda70"
   },
   "src/orvyren/evaluation/outcomes.py": {
    "announced_in": "G5_plan_analyse.md",
-   "role": "résolutions G5 (règles de résolution, outcomes chaînés)",
+   "role": "G5 outcomes (resolution rules, chained outcomes)",
    "sha256": "4ad4db541badefdd6efba6749ad2b71ebf657a66bc35aadd9c0c19a2ac2cfb94"
   },
   "src/orvyren/evaluation/windows.py": {
    "announced_in": "G3_fenetres.md",
-   "role": "fenêtres G3 (registre DEV/EVAL, verify_frozen_package)",
+   "role": "G3 windows (DEV/EVAL registry, verify_frozen_package)",
    "sha256": "d3e80aa3cd64a481eebf1c08ec34b43a5e563b0bd418344785a9693ac004c04a"
   },
   "tests/test_evaluation_calibration.py": {
    "announced_in": "G5_plan_analyse.md",
-   "role": "preuve exécutable G5 (KAT de calibration)",
+   "role": "G5 executable proof (calibration KAT)",
    "sha256": "2e1b00644b7e9a60485ad1564d5af52829b703c0ad96d50dc8b66a1262af940d"
   },
   "tests/test_evaluation_comparators.py": {
    "announced_in": "G2_comparateurs.md",
-   "role": "preuve exécutable G2",
+   "role": "G2 executable proof",
    "sha256": "0c4c9e3d4203b82d0950ca37f55b1bb8293466544be00e065a6d07e132653a05"
   },
   "tests/test_evaluation_loss.py": {
    "announced_in": "G1_fonction_de_perte.md",
-   "role": "preuve exécutable G1 (KAT de perte)",
+   "role": "G1 executable proof (loss KAT)",
    "sha256": "90b705d0b47551b8deea80c1ab58772746c1599f673d4631888a828fc9b7ba88"
   }
  },
@@ -87,39 +87,39 @@ octet à octet, pas par une empreinte annoncée dans un document Gx.
 }
 ```
 
-## 3. Recette de re-scellement (4 commandes)
+## 3. Re-sealing recipe (4 commands)
 
-À suivre APRÈS tout correctif volontaire d'un des 9 fichiers ci-dessus ; le
-recalcul doit redevenir byte-identical, c'est la preuve que le gel suit le
-code (le correctif n'est jamais perdu contre le tripwire) :
+Follow this AFTER any deliberate correction of one of the 9 files above; the
+recomputation must become byte-identical again, which is the proof that the
+freeze follows the code (the correction is never lost against the tripwire):
 
 ```bash
-# 1. régénérer tout le paquet dans un répertoire NEUF (chemin natif C:/...,
-#    jamais un /c/... MSYS qui serait créé au mauvais endroit)
+# 1. regenerate the whole package in a NEW directory (native path C:/...,
+#    never a /c/... MSYS path that would be created in the wrong place)
 python scripts/freeze_sprint0.py --out C:/Users/User/AppData/Local/Temp/frozen_check
-# 2. copier VISIBLEMENT le paquet régénéré vers frozen/ (Gx*.md + Gx*.sha256 +
+# 2. visibly copy the regenerated package into frozen/ (Gx*.md + Gx*.sha256 +
 #    README.md + INDEX.md + FORECASTS_DEV.md + forecasts_dev.jsonl(.sha256) +
-#    outcomes_dev.jsonl(.sha256)) — un hash périmé se corrige dans le même commit
+#    outcomes_dev.jsonl(.sha256)) — a stale hash is fixed in the same commit
 cp C:/Users/User/AppData/Local/Temp/frozen_check/* frozen/
-# 3. la vérification doit finir COMPLIANT (empreintes + chaînes + recalcul)
+# 3. the verification must end COMPLIANT (fingerprints + chains + recomputation)
 python scripts/verify_frozen.py
-# 4. la suite doit rester verte (dont le recalcul du paquet)
+# 4. the suite must stay green (including the package recomputation)
 python -m unittest discover -s tests
 ```
 
-## 4. Attention — un fichier étranger dans `frozen/` casse le tripwire
+## 4. Warning — a foreign file inside `frozen/` breaks the tripwire
 
-Le recalcul compare l'**inventaire complet** de `frozen/` à la sortie de
-`scripts/freeze_sprint0.build_all` : tout fichier ajouté à la main est signalé
-(mesuré : `[KO] recalc: mismatches ['INDEX.md']` avant que cet index soit
-généré par le constructeur lui-même), et `tests/test_evaluation_forecasts.py`
-échoue sur `not rebuilt`. Un document nouveau dans `frozen/` doit donc être
-**produit par `build_all`** (contenu déterministe, sans horloge) ou vivre
-hors de `frozen/` — jamais déposé à la place.
+The recomputation compares the **complete inventory** of `frozen/` with the
+output of `scripts/freeze_sprint0.build_all`: any file added by hand is
+reported (measured: `[KO] recalc: mismatches ['INDEX.md']` before this index
+was generated by the builder itself), and `tests/test_evaluation_forecasts.py`
+fails on `not rebuilt`. A new document in `frozen/` must therefore be
+**produced by `build_all`** (deterministic content, no clock) or live outside
+`frozen/` — never dropped in its place.
 
-## 5. Périmètre connexe
+## 5. Related scope
 
-* Registre de périmètre (autorité) : `docs/SUBMISSION_SCOPE_AND_GAPS.md`.
-* Écarts techniques détaillés : `docs/ECARTS_REGISTRE.md` (dont les deux
-  tautologies de tests gelés en attente d'un re-scellement G1/G5 visible).
-* Contrat des références du critique : `docs/decisions/ADR-0004-references-critique-namespaces.md`.
+* Scope registry (authority): `docs/SUBMISSION_SCOPE_AND_GAPS.md`.
+* Detailed technical deviations: `docs/ECARTS_REGISTRE.md` (including the two
+  frozen-test tautologies awaiting a visible G1/G5 re-seal).
+* Critic-reference contract: `docs/decisions/ADR-0004-references-critique-namespaces.md`.

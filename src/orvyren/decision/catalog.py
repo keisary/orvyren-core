@@ -36,8 +36,8 @@ DESK_PERSONA = "desk"
 
 APPLICABILITY_ON_CHAIN = "on-chain"
 APPLICABILITY_SIMULATED = "simulated"
-APPLICABILITY_ESCALATE = "escalate (pas une action de l'agent)"
-APPLICABILITY_DEFAULT = "default (état par défaut)"
+APPLICABILITY_ESCALATE = "escalate (not an agent action)"
+APPLICABILITY_DEFAULT = "default (baseline state)"
 
 #: The closed applicability enum — never a free string.
 APPLICABILITY_LABELS = (APPLICABILITY_ON_CHAIN, APPLICABILITY_SIMULATED,

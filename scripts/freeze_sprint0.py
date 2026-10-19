@@ -190,7 +190,7 @@ def _calm_event(series, tolerance_pct):
 
 def _origin(label: str, counts: Dict, extra: str = "") -> str:
     text = (
-        f"estimateur explicite — {label} : p = {counts['k_events']}/{counts['n_windows']} = "
+        f"explicit estimator — {label}: p = {counts['k_events']}/{counts['n_windows']} = "
         f"{counts['p']:.6f}"
     )
     return text + (f" ; {extra}" if extra else "")
@@ -202,7 +202,7 @@ def _origin(label: str, counts: Dict, extra: str = "") -> str:
 
 
 def _forecast_specs(usdc: Sequence[Tuple[str, float]], steth: Sequence[Tuple[str, float]]) -> List[Dict]:
-    """Les 8 prévisions DEV, dans l'ordre d'écriture (chaînage déterministe)."""
+    """The 8 DEV forecasts, in write order (deterministic chaining)."""
 
     def usdc_h6(t_frozen, ident, cas, counts, sous_ensemble="depeg"):
         return {
@@ -212,8 +212,9 @@ def _forecast_specs(usdc: Sequence[Tuple[str, float]], steth: Sequence[Tuple[str
             "persona": "dao",
             "sous_ensemble": sous_ensemble,
             "statement": (
-                "Un dépeg soutenu de l'USDC (écart > 1 % du pair sur ≥ 2 observations horaires "
-                "consécutives de la série agrégée DeFiLlama) est observé dans les 6 h suivant t_frozen."
+                "A sustained USDC depeg (deviation > 1 % from the peg on ≥ 2 consecutive "
+                "hourly observations of the aggregated DeFiLlama series) is observed "
+                "within 6 h after t_frozen."
             ),
             "t_frozen": t_frozen,
             "resolve_not_before": _iso(windows_mod.parse_utc(t_frozen) + 6 * HOUR),
@@ -235,19 +236,19 @@ def _forecast_specs(usdc: Sequence[Tuple[str, float]], steth: Sequence[Tuple[str
     specs: List[Dict] = []
 
     counts = base_rate_loo(usdc, 6.0, _depeg_event(usdc, 1.0, 2, 90), "2023-02-16T00:00:00Z", "2023-02-16T06:00:00Z", 90.0)
-    specs.append(usdc_h6("2023-02-16T00:00:00Z", "dev-usdc-2023-03.h-calme-1", "Fenêtre témoin USDC, 16/02/2023 00:00Z (calme dans le sens « aucun dépeg soutenu »)", counts, sous_ensemble="absence_attendue"))
+    specs.append(usdc_h6("2023-02-16T00:00:00Z", "dev-usdc-2023-03.h-calme-1", "USDC control window, 2023-02-16 00:00Z (calm in the \"no sustained depeg\" sense)", counts, sous_ensemble="absence_attendue"))
 
     counts = base_rate_loo(usdc, 6.0, _depeg_event(usdc, 1.0, 2, 90), "2023-02-17T00:00:00Z", "2023-02-17T06:00:00Z", 90.0)
-    specs.append(usdc_h6("2023-02-17T00:00:00Z", "dev-usdc-2023-03.h-calme-2", "Fenêtre témoin USDC, 17/02/2023 00:00Z", counts, sous_ensemble="absence_attendue"))
+    specs.append(usdc_h6("2023-02-17T00:00:00Z", "dev-usdc-2023-03.h-calme-2", "USDC control window, 2023-02-17 00:00Z", counts, sous_ensemble="absence_attendue"))
 
     counts = base_rate_loo(usdc, 6.0, _depeg_event(usdc, 1.0, 2, 90), "2023-03-10T12:00:00Z", "2023-03-10T18:00:00Z", 90.0)
-    specs.append(usdc_h6("2023-03-10T12:00:00Z", "dev-usdc-2023-03.h-pre-crise", "USDC, veille du dépeg (10/03/2023 12:00Z)", counts, sous_ensemble="absence_attendue"))
+    specs.append(usdc_h6("2023-03-10T12:00:00Z", "dev-usdc-2023-03.h-pre-crise", "USDC, eve of the depeg (2023-03-10 12:00Z)", counts, sous_ensemble="absence_attendue"))
 
     counts = base_rate_loo(usdc, 6.0, _depeg_event(usdc, 1.0, 2, 90), "2023-03-11T04:00:00Z", "2023-03-11T10:00:00Z", 90.0)
-    specs.append(usdc_h6("2023-03-11T04:00:00Z", "dev-usdc-2023-03.h-crise", "USDC, cœur de crise (11/03/2023 04:00Z)", counts))
+    specs.append(usdc_h6("2023-03-11T04:00:00Z", "dev-usdc-2023-03.h-crise", "USDC, core of the crisis (2023-03-11 04:00Z)", counts))
 
     counts = base_rate_loo(usdc, 6.0, _depeg_event(usdc, 1.0, 2, 90), "2023-03-13T12:00:00Z", "2023-03-13T18:00:00Z", 90.0)
-    specs.append(usdc_h6("2023-03-13T12:00:00Z", "dev-usdc-2023-03.h-post-crise", "USDC, retour vers la parité (13/03/2023 12:00Z)", counts, sous_ensemble="absence_attendue"))
+    specs.append(usdc_h6("2023-03-13T12:00:00Z", "dev-usdc-2023-03.h-post-crise", "USDC, return to parity (2023-03-13 12:00Z)", counts, sous_ensemble="absence_attendue"))
 
     # NOTE (honnêteté du comptage, LOO) : un forecast d'horizon T portant sur la
     # totalité d'un segment (fenêtre = segment) n'a AUCUNE fenêtre de calibration
@@ -263,8 +264,8 @@ def _forecast_specs(usdc: Sequence[Tuple[str, float]], steth: Sequence[Tuple[str
             "set": "dev",
             "persona": "dao",
             "statement": (
-                "La fenêtre 05/05 → 08/05/2022 tient le critère CALME gelé (max |1 − prix réalisable "
-                "stETH| < 0,5 %) sur la série get_dy 1 stETH."
+                "The 05/05 → 08/05/2022 window holds the frozen CALM criterion (max |1 − realizable "
+                "stETH price| < 0.5 %) on the get_dy 1 stETH series."
             ),
             "t_frozen": "2022-05-05T00:00:00Z",
             "resolve_not_before": "2022-05-08T00:00:00Z",
@@ -274,7 +275,7 @@ def _forecast_specs(usdc: Sequence[Tuple[str, float]], steth: Sequence[Tuple[str
             "series_key": "steth",
             "y_definition": {"tolerance_pct": 0.5, "venues": ["curve_get_dy_1steth"], "convention": "realisable", "peg": 1.0},
             "counts": counts,
-            "cas": "stETH, fenêtre calme (critère CALME gelé)",
+            "cas": "stETH, calm window (frozen CALM criterion)",
             "sous_ensemble": "calme_critere",
         }
     )
@@ -287,8 +288,8 @@ def _forecast_specs(usdc: Sequence[Tuple[str, float]], steth: Sequence[Tuple[str
             "set": "dev",
             "persona": "dao",
             "statement": (
-                "La décote réalisable stETH (get_dy pour 1 stETH) dépasse 1 % sur ≥ 2 observations "
-                "consécutives de la grille pendant les 7 jours suivant t_frozen."
+                "The realizable stETH discount (get_dy for 1 stETH) exceeds 1 % on ≥ 2 consecutive "
+                "grid observations during the 7 days following t_frozen."
             ),
             "t_frozen": "2022-05-12T00:00:00Z",
             "resolve_not_before": "2022-05-19T00:00:00Z",
@@ -298,7 +299,7 @@ def _forecast_specs(usdc: Sequence[Tuple[str, float]], steth: Sequence[Tuple[str
             "series_key": "steth",
             "y_definition": {"ecart_pct": 1.0, "persistance_obs": 2, "max_gap_minutes": 1500, "venues": ["curve_get_dy_1steth"], "convention": "realisable", "peg": 1.0},
             "counts": counts,
-            "cas": "stETH, ouverture de la décote (13–21/05/2022)",
+            "cas": "stETH, onset of the discount (13–21/05/2022)",
             "sous_ensemble": "depeg",
         }
     )
@@ -311,8 +312,8 @@ def _forecast_specs(usdc: Sequence[Tuple[str, float]], steth: Sequence[Tuple[str
             "set": "dev",
             "persona": "dao",
             "statement": (
-                "La décote réalisable stETH reste au-dessus de 1 % sur ≥ 2 observations horaires "
-                "consécutives dans les 6 h suivant t_frozen."
+                "The realizable stETH discount stays above 1 % on ≥ 2 consecutive hourly "
+                "observations within 6 h after t_frozen."
             ),
             "t_frozen": "2022-06-13T00:00:00Z",
             "resolve_not_before": "2022-06-13T06:00:00Z",
@@ -321,7 +322,7 @@ def _forecast_specs(usdc: Sequence[Tuple[str, float]], steth: Sequence[Tuple[str
             "series_key": "steth",
             "y_definition": {"ecart_pct": 1.0, "persistance_obs": 2, "max_gap_minutes": 90, "venues": ["curve_get_dy_1steth"], "convention": "realisable", "peg": 1.0},
             "counts": counts,
-            "cas": "stETH, fenêtre horaire 10→17/06/2022 (gel des retraits Celsius)",
+            "cas": "stETH, hourly window 10→17/06/2022 (Celsius withdrawals freeze)",
             "sous_ensemble": "depeg",
         }
     )
@@ -340,11 +341,11 @@ def _hash(repo_root: str, relpath: str) -> str:
 
 def doc_g1(repo_root: str) -> str:
     formulas = (
-        "W_T(conserver)   = C + q · P_T\n"
-        "W_T(céder x)     = C + x · P_exec(x, t_action) − k + (q − x) · P_T\n"
-        "L(a)             = W_t0 − W_T(a)                    [USD, ou bp de W_t0]\n"
+        "W_T(keep)        = C + q · P_T\n"
+        "W_T(sell x)      = C + x · P_exec(x, t_action) − k + (q − x) · P_T\n"
+        "L(a)             = W_t0 − W_T(a)                    [USD, or bp of W_t0]\n"
         "R(a)             = L(a) − min_{b ∈ F} L(b) ≥ 0     [USD]\n"
-        "R⁻ / R⁺          = coûts du faux positif / du faux négatif vs A0 (publiés séparément)"
+        "R⁻ / R⁺          = cost of the false positive / of the false negative vs A0 (published separately)"
     )
     return f"""# G1 — Loss function (freeze v1)
 
@@ -391,7 +392,7 @@ provided depth ladder: no unmeasured conversion is passed off as a measurement.
 | T1 | Neutrality (P_exec = P_T, k = 0 ⇒ R = 0) | 0 exact (detects the double counting of §B.2) |
 | T2 | Translation invariance | R unchanged to 1e-12 |
 | T3 | Monotonicity in cost | L and R increasing |
-| T4 | Sign consistency (P_exec > P_T) | R(agir) = 0, R(ne rien faire) > 0 |
+| T4 | Sign consistency (P_exec > P_T) | R(act) = 0, R(do nothing) > 0 |
 | T5 | Inventory additivity | linear in q and in x |
 | T6 | Degenerate reference (P_t = 1) | all regrets 0 ; useless action = k |
 
@@ -816,31 +817,31 @@ the code is no longer a freeze). After the first EVAL run, modifying anything in
 #: qu'il décrit.
 FROZEN_CODE_FILES: Tuple[Tuple[str, str, str], ...] = (
     ("src/orvyren/evaluation/loss.py", "G1_fonction_de_perte.md",
-     "fonction de perte G1 (W_T, L(a), R(a), regrets)"),
+     "G1 loss function (W_T, L(a), R(a), regrets)"),
     ("tests/test_evaluation_loss.py", "G1_fonction_de_perte.md",
-     "preuve exécutable G1 (KAT de perte)"),
+     "G1 executable proof (loss KAT)"),
     ("src/orvyren/evaluation/comparators.py", "G2_comparateurs.md",
-     "comparateurs G2 (A0/A1/A2/B0/AX0/O, regret_pair)"),
+     "G2 comparators (A0/A1/A2/B0/AX0/O, regret_pair)"),
     ("tests/test_evaluation_comparators.py", "G2_comparateurs.md",
-     "preuve exécutable G2"),
+     "G2 executable proof"),
     ("src/orvyren/evaluation/windows.py", "G3_fenetres.md",
-     "fenêtres G3 (registre DEV/EVAL, verify_frozen_package)"),
+     "G3 windows (DEV/EVAL registry, verify_frozen_package)"),
     ("src/orvyren/evaluation/calibration.py", "G5_plan_analyse.md",
-     "calibration G5 (verdict_for_n, Mcnemar exact, BSS)"),
+     "G5 calibration (verdict_for_n, exact Mcnemar, BSS)"),
     ("src/orvyren/evaluation/forecasts.py", "G5_plan_analyse.md",
-     "prévisions G5 (build_forecast, chaîne prev_hash)"),
+     "G5 forecasts (build_forecast, prev_hash chain)"),
     ("src/orvyren/evaluation/outcomes.py", "G5_plan_analyse.md",
-     "résolutions G5 (règles de résolution, outcomes chaînés)"),
+     "G5 outcomes (resolution rules, chained outcomes)"),
     ("tests/test_evaluation_calibration.py", "G5_plan_analyse.md",
-     "preuve exécutable G5 (KAT de calibration)"),
+     "G5 executable proof (calibration KAT)"),
 )
 
 
 def doc_index(repo_root: str) -> str:
-    """``INDEX.md`` — index machine-readable du périmètre gelé (9 fichiers).
+    """``INDEX.md`` — machine-readable index of the frozen perimeter (9 files).
 
-    Recalculé octet à octet par ``scripts/verify_frozen.py`` avec le reste du
-    paquet : cet index ne peut donc pas dériver du gel qu'il décrit.
+    Recomputed byte for byte by ``scripts/verify_frozen.py`` with the rest of the
+    package: this index therefore cannot drift from the freeze it describes.
     """
     rows = []
     machine: Dict[str, object] = {
@@ -853,73 +854,73 @@ def doc_index(repo_root: str) -> str:
         rows.append("| `%s` | `%s` | `%s` | %s |" % (relpath, digest, doc, role))
         machine["files"][relpath] = {"sha256": digest, "announced_in": doc, "role": role}
     block = json.dumps(machine, sort_keys=True, indent=1, ensure_ascii=False)
-    return """# `frozen/INDEX.md` — index du périmètre gelé (G1–G6)
+    return """# `frozen/INDEX.md` — frozen-perimeter index (G1–G6)
 
-**Rôle.** Inventaire exact des fichiers de code couverts par les empreintes
-sha256 annoncées dans les documents G1–G6 : pour chacun, le hash déclaré, le
-document qui l'annonce et son rôle. Avant de modifier l'un de ces 9 fichiers,
-lire sa ligne ci-dessous — son hash est un tripwire : `scripts/verify_frozen.py`
-(recalcul octet à octet du paquet),
-`orvyren.evaluation.harness.verify_code_hashes` (porte de gel de l'EVAL) et
+**Role.** Exact inventory of the code files covered by the sha256 fingerprints
+announced in documents G1–G6: for each one, the declared hash, the document
+that announces it and its role. Before modifying any of these 9 files, read
+its row below — its hash is a tripwire: `scripts/verify_frozen.py`
+(byte-for-byte recomputation of the package),
+`orvyren.evaluation.harness.verify_code_hashes` (the EVAL freeze gate) and
 `tests/test_evaluation_forecasts.py::test_recalcul_hors_ligne_identique`
-passent au rouge. La seule procédure est le **re-scellement visible** (§3) ;
-jamais un patch silencieux.
+turn red. The only procedure is the **visible re-sealing** (§3); never a
+silent patch.
 
-`G4_seuils.md` (seuils persona) et `G6_hypotheses_economiques.md` (hypothèses
-économiques signées) n'annoncent **aucun** hash de code ;
-`G6_FEUILLE_DE_SIGNATURE.md` est la feuille de signature. Les autres fichiers
-de `frozen/` (README.md, FORECASTS_DEV.md, `forecasts_dev.jsonl`,
-`outcomes_dev.jsonl`, manifestes `Gx.sha256`) sont couverts par le recalcul
-octet à octet, pas par une empreinte annoncée dans un document Gx.
+`G4_seuils.md` (persona thresholds) and `G6_hypotheses_economiques.md` (signed
+economic hypotheses) announce **no** code hash;
+`G6_FEUILLE_DE_SIGNATURE.md` is the signature sheet. The other files in
+`frozen/` (README.md, FORECASTS_DEV.md, `forecasts_dev.jsonl`,
+`outcomes_dev.jsonl`, `Gx.sha256` manifests) are covered by the byte-for-byte
+recomputation, not by a fingerprint announced in a Gx document.
 
-## 1. Fichiers gelés par hash (9)
+## 1. Files frozen by hash (9)
 
-| fichier | sha256 déclaré | annoncé dans | rôle |
+| file | declared sha256 | announced in | role |
 |---|---|---|---|
 """ + "\n".join(rows) + """
 
-## 2. Bloc machine (JSON canonique)
+## 2. Machine block (canonical JSON)
 
 ```json
 """ + block + """
 ```
 
-## 3. Recette de re-scellement (4 commandes)
+## 3. Re-sealing recipe (4 commands)
 
-À suivre APRÈS tout correctif volontaire d'un des 9 fichiers ci-dessus ; le
-recalcul doit redevenir byte-identical, c'est la preuve que le gel suit le
-code (le correctif n'est jamais perdu contre le tripwire) :
+Follow this AFTER any deliberate correction of one of the 9 files above; the
+recomputation must become byte-identical again, which is the proof that the
+freeze follows the code (the correction is never lost against the tripwire):
 
 ```bash
-# 1. régénérer tout le paquet dans un répertoire NEUF (chemin natif C:/...,
-#    jamais un /c/... MSYS qui serait créé au mauvais endroit)
+# 1. regenerate the whole package in a NEW directory (native path C:/...,
+#    never a /c/... MSYS path that would be created in the wrong place)
 python scripts/freeze_sprint0.py --out C:/Users/User/AppData/Local/Temp/frozen_check
-# 2. copier VISIBLEMENT le paquet régénéré vers frozen/ (Gx*.md + Gx*.sha256 +
+# 2. visibly copy the regenerated package into frozen/ (Gx*.md + Gx*.sha256 +
 #    README.md + INDEX.md + FORECASTS_DEV.md + forecasts_dev.jsonl(.sha256) +
-#    outcomes_dev.jsonl(.sha256)) — un hash périmé se corrige dans le même commit
+#    outcomes_dev.jsonl(.sha256)) — a stale hash is fixed in the same commit
 cp C:/Users/User/AppData/Local/Temp/frozen_check/* frozen/
-# 3. la vérification doit finir COMPLIANT (empreintes + chaînes + recalcul)
+# 3. the verification must end COMPLIANT (fingerprints + chains + recomputation)
 python scripts/verify_frozen.py
-# 4. la suite doit rester verte (dont le recalcul du paquet)
+# 4. the suite must stay green (including the package recomputation)
 python -m unittest discover -s tests
 ```
 
-## 4. Attention — un fichier étranger dans `frozen/` casse le tripwire
+## 4. Warning — a foreign file inside `frozen/` breaks the tripwire
 
-Le recalcul compare l'**inventaire complet** de `frozen/` à la sortie de
-`scripts/freeze_sprint0.build_all` : tout fichier ajouté à la main est signalé
-(mesuré : `[KO] recalc: mismatches ['INDEX.md']` avant que cet index soit
-généré par le constructeur lui-même), et `tests/test_evaluation_forecasts.py`
-échoue sur `not rebuilt`. Un document nouveau dans `frozen/` doit donc être
-**produit par `build_all`** (contenu déterministe, sans horloge) ou vivre
-hors de `frozen/` — jamais déposé à la place.
+The recomputation compares the **complete inventory** of `frozen/` with the
+output of `scripts/freeze_sprint0.build_all`: any file added by hand is
+reported (measured: `[KO] recalc: mismatches ['INDEX.md']` before this index
+was generated by the builder itself), and `tests/test_evaluation_forecasts.py`
+fails on `not rebuilt`. A new document in `frozen/` must therefore be
+**produced by `build_all`** (deterministic content, no clock) or live outside
+`frozen/` — never dropped in its place.
 
-## 5. Périmètre connexe
+## 5. Related scope
 
-* Registre de périmètre (autorité) : `docs/SUBMISSION_SCOPE_AND_GAPS.md`.
-* Écarts techniques détaillés : `docs/ECARTS_REGISTRE.md` (dont les deux
-  tautologies de tests gelés en attente d'un re-scellement G1/G5 visible).
-* Contrat des références du critique : `docs/decisions/ADR-0004-references-critique-namespaces.md`.
+* Scope registry (authority): `docs/SUBMISSION_SCOPE_AND_GAPS.md`.
+* Detailed technical deviations: `docs/ECARTS_REGISTRE.md` (including the two
+  frozen-test tautologies awaiting a visible G1/G5 re-seal).
+* Critic-reference contract: `docs/decisions/ADR-0004-references-critique-namespaces.md`.
 """
 
 
@@ -1005,17 +1006,17 @@ def build_all(target_dir: str, repo_root: Optional[str] = None) -> Dict:
             resolve_not_before_utc=spec["resolve_not_before"],
             p=spec["counts"]["p"],
             p_origin=_origin(
-                "comptage empirique des fenêtres de calibration DEV de même durée/grille, "
-                "fenêtre cible exclue (LOO) — B7 §a.4",
+                "empirical count of the DEV calibration windows with the same duration/grid, "
+                "target window excluded (LOO) — B7 §a.4",
                 spec["counts"],
             ),
             y_definition=spec["y_definition"],
             observation_state_at_freeze={
                 "last_values": [],
                 "notes": (
-                    "Prévision DEV pré-enregistrée sur données déjà archivées (démonstration de méthode ; "
-                    "contamination assumée, B7 §d.1). L'état d'observation à t_frozen est porté par le corpus figé ; "
-                    "aucune valeur postérieure à t_frozen n'est utilisée par la règle de résolution."
+                    "DEV forecast pre-registered on already archived data (method demonstration; "
+                    "contamination acknowledged, B7 §d.1). The observation state at t_frozen is carried "
+                    "by the frozen corpus; no value after t_frozen is used by the resolution rule."
                 ),
             },
             refs={"hypothesis_ids": [], "branch_ids": [], "observation_ids": []},

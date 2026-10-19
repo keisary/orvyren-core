@@ -44,7 +44,7 @@ python scripts/freeze_sprint0.py --out /tmp/frozen_recalc
 
 | Manifest | sha256 |
 |---|---|
-| `G1.sha256` | `bf5866e2d0fdb66086ab0610110a9f9675621819c675081573f1d59d3706944c` |
+| `G1.sha256` | `712f4f81d505f436c6b76c54816a324e6bdde6cb7fbb13918f6dc24fed56205e` |
 | `G2.sha256` | `feecba6c7011143d7972e2bdb2dd9c9c74ad4c5ad950d444e303b3f43fd64bf7` |
 | `G3.sha256` | `cc7d6ec166a18e176078357764a5cd946c0a873723c5ec7ce1a4cfa3076be263` |
 | `G4.sha256` | `4ad8d81035f7a8e12e7140f991b48689d158f6d5c7784ced473ee6f669b31d57` |

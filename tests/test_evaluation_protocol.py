@@ -395,7 +395,7 @@ class TestF1CalibrationCliCascade(unittest.TestCase):
         self.assertEqual(global_table["verdict"], calibration_mod.VERDICT_NON_CONCLUSIVE)
         with open(out + ".md", "r", encoding="utf-8") as handle:
             markdown = handle.read()
-        self.assertIn("non conclusionnel", markdown)
+        self.assertIn(calibration_mod.VERDICT_NON_CONCLUSIVE, markdown)
         self.assertIn("§b.3 cascade: N < 30", markdown)
 
     @unittest.skipUnless(os.path.isfile(FORECASTS) and os.path.isfile(OUTCOMES),

@@ -7,7 +7,7 @@
 # may refuse (P13). No action opens new exposure under stress.
 #
 # Applicability is an ENUM enforced by the code (catalog.APPLICABILITY_*):
-#   on-chain / simulated / escalate (pas une action de l'agent) / default (état par défaut).
+#   on-chain / simulated / escalate (not an agent action) / default (baseline state).
 #   Those four literals are contract values (code constants) and stay word-for-word as-is.
 #
 # The catalogue is versioned and execution cites its version (INV-AUTH). Loaded by
@@ -84,7 +84,7 @@ persona_dao:
     bounds: "governance matter — not an agent action"
     cost: "—"
     expected_effect: "protects the treasury ; long cadence"
-    applicability: "escalate (pas une action de l'agent)"
+    applicability: "escalate (not an agent action)"
     precedent: "Lido : EGG utilization 22% then cuts ; Aave : buyback 50->30 M$"
 
   - action_id: "A-D7"
@@ -95,7 +95,7 @@ persona_dao:
     bounds: "x = 0"
     cost: "0 (opportunity cost if the alert repeats)"
     expected_effect: "avoids the systematic premium ; keeps the risk (on record)"
-    applicability: "default (état par défaut)"
+    applicability: "default (baseline state)"
     precedent: "W2-D §B.4.1 ; v0 engine rule 2"
 
   - action_id: "A-D8"
@@ -106,7 +106,7 @@ persona_dao:
     bounds: "—"
     cost: "human latency"
     expected_effect: "traceable and accountable decision ; no silent blocking"
-    applicability: "escalate (pas une action de l'agent)"
+    applicability: "escalate (not an agent action)"
     precedent: "W2-C (REQUIRE_APPROVAL flow) ; Chaos Labs"
 
 # ---------------------------------------------------------------------------
@@ -154,5 +154,5 @@ persona_desk:
     bounds: "x = 0"
     cost: "0"
     expected_effect: "avoids churn (Miller/DSR — Bailey & López de Prado 2014)"
-    applicability: "default (état par défaut)"
+    applicability: "default (baseline state)"
     precedent: "W2-D §B.4"

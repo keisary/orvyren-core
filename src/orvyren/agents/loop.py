@@ -810,7 +810,7 @@ class BoundedLoop:
         reaction of ``reflexion.reaction_to_change``.
         """
         if not self._ach.scored_cells():
-            return  # no scored cell: "aucune preuve" — nothing to reflect on
+            return  # no scored cell: "no evidence" — nothing to reflect on
         ranking = self._ach.rank_hypotheses()
         dominant = ranking[0]
         gap = self._ach.most_discriminating_gap()
@@ -818,15 +818,15 @@ class BoundedLoop:
         refs = tuple(discriminating.get("refs") or ()) if discriminating else ()
         self._journal.append_dict(
             self._line(kind="REFLECTION", refs=refs,
-                       content="ACH matrix: %s reste %s, prochain test discriminant: %s"
+                       content="ACH matrix: %s remains %s, next discriminating test: %s"
                                % (dominant["hyp_id"], dominant["etat"],
                                   gap["justification"])),
             reject_reason=_ACH_DERIVED_REASON)
         for reaction in self._ach_revisions:
             self._journal.append_dict(self._line(
                 kind="BRANCH_UPDATE", refs=tuple(reaction.get("refs") or ()),
-                content="revision ACH: %s — action %s" % (reaction.get("motif", ""),
-                                                          reaction.get("action", ""))))
+                content="ACH revision: %s — action %s" % (reaction.get("motif", ""),
+                                                         reaction.get("action", ""))))
 
     # -- LLM call + journal lines -----------------------------------------
     def _complete(self, *, schema_id: str, payload: Mapping[str, Any]

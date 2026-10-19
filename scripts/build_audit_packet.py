@@ -420,6 +420,11 @@ def build_packet(*, session_dir: str, case: str, evidence_dir: str,
                     os.path.join(frozen_pkg, "verify_engine.py"))
     shutil.copyfile(os.path.join(REPO_ROOT, "src", "orvyren", "audit", "dossier.py"),
                     os.path.join(frozen_pkg, "audit_dossier.py"))
+    # The dossier's G6 §3 sensitivity section calls the frozen loss module; the
+    # packet ships the very same file so the third-party re-render stays
+    # byte-identical without the repository (imported as ``evaluation_loss``).
+    shutil.copyfile(os.path.join(REPO_ROOT, "src", "orvyren", "evaluation", "loss.py"),
+                    os.path.join(frozen_pkg, "evaluation_loss.py"))
     shutil.copyfile(os.path.join(REPO_ROOT, "src", "orvyren", "policy", "__init__.py"),
                     os.path.join(frozen_pkg, "policy", "__init__.py"))
     shutil.copyfile(os.path.join(REPO_ROOT, "src", "orvyren", "policy", "miniyaml.py"),

@@ -321,6 +321,206 @@ def dao_expected_avoided_loss(
     }
 
 
+#: Funding-rate variants published with the P&L (G6 §1: base 0 %, sensitivities
+#: at 5 % and 10 % — the signed value stays 0 %, the other two are readings).
+R_CAPITAL_VALUES = (0.0, 0.05, 0.10)
+
+#: Day-count used by the funding formula (``Δt`` in years); declared, never
+#: left implicit, because the choice changes every published funding figure.
+DAYS_PER_YEAR = 365.0
+
+
+def _require_finite(value: float, name: str) -> float:
+    """Reject NaN/inf: a non-finite parameter cannot be published as a reading."""
+    if not isinstance(value, (int, float)) or isinstance(value, bool):
+        raise ValuationError(f"{name} must be a number: {value!r}")
+    as_float = float(value)
+    if not math.isfinite(as_float):
+        raise ValuationError(f"{name} is not finite: {value!r}")
+    return as_float
+
+
+def break_even_probability(
+    avoided_loss_given_obligation: float,
+    roundtrip_cost: float,
+) -> Optional[float]:
+    """Break-even probability of the DAO protection (G6 §3).
+
+    Solved exactly from the frozen expected-avoided-loss formula
+    (``dao_expected_avoided_loss``)::
+
+        E(p) = p · L − (1 − p) · c = p · (L + c) − c
+        E(p*) = 0  ⇒  p* = c / (L + c)
+
+    with ``L = avoided_loss_given_obligation`` and ``c = roundtrip_cost``.
+    The value is published with both terms, never alone: a switch probability
+    without its numerator and denominator is an unsourced number.
+
+    Degenerate conventions (documented, tested — not silently repaired)
+    -------------------------------------------------------------------
+    The reading is "the smallest probability in [0, 1] from which the
+    protection has a non-negative expected value and stays non-negative
+    above it". Each corner is therefore resolved by the sign of ``E``:
+
+    * ``c > 0, L > 0``  → ``c / (L + c)``, inside ``(0, 1)``.
+    * ``c == 0, L > 0`` → ``0.0``: ``E(p) = p·L`` is strictly positive for any
+      ``p > 0`` and zero only at ``p = 0`` — the protection pays as soon as the
+      obligation is possible at all.
+    * ``c > 0, L == 0`` → ``1.0``: ``E(p) = −(1 − p)·c`` is negative for every
+      ``p < 1`` and zero only at certainty — the protection pays only if the
+      obligation is certain.
+    * ``c == 0, L == 0`` → ``None``: ``E ≡ 0``; every probability is a
+      break-even, so no single switch value exists.
+    * ``c >= 0, L < 0`` → ``None``: the "avoided" loss is a loss, ``E < 0``
+      over ``[0, 1]`` (at ``p = 1`` it is ``L`` itself). No break-even exists
+      and returning ``0.0`` would falsely read as "always profitable".
+
+    Rejections (``ValuationError``): negative ``roundtrip_cost`` (a negative
+    cost is not a cost) and non-finite arguments.
+
+    Returns ``None`` when the switch value does not exist, never ``0.0`` or
+    ``1.0`` as a substitute.
+    """
+    loss_given = _require_finite(avoided_loss_given_obligation, "avoided_loss_given_obligation")
+    cost = _require_finite(roundtrip_cost, "roundtrip_cost")
+    if cost < 0.0:
+        raise ValuationError(f"roundtrip_cost must be >= 0: {roundtrip_cost!r}")
+    if loss_given == 0.0:
+        return None if cost == 0.0 else 1.0
+    if loss_given < 0.0:
+        return None
+    if cost == 0.0:
+        return 0.0
+    return cost / (loss_given + cost)
+
+
+def funding_cost(
+    notional_usd: float,
+    r_capital: float,
+    days: float,
+    day_basis: float = DAYS_PER_YEAR,
+) -> float:
+    """``funding = I_avg · r_capital · Δt`` with ``Δt = days / day_basis``.
+
+    W2-D §B.4 (``funding`` argument of ``delta_pnl_net``); G6 §1 signs
+    ``r_capital = 0 %`` and requires the 5 % / 10 % readings to be published
+    next to the P&L. ``I_avg`` is the average capital tied up over the window
+    (the protected notional here): it is supplied, never guessed.
+    """
+    notional = _require_finite(notional_usd, "notional_usd")
+    rate = _require_finite(r_capital, "r_capital")
+    horizon = _require_finite(days, "days")
+    basis = _require_finite(day_basis, "day_basis")
+    if notional < 0.0:
+        raise ValuationError(f"notional_usd must be >= 0: {notional_usd!r}")
+    if rate < 0.0:
+        raise ValuationError(f"r_capital must be >= 0: {r_capital!r}")
+    if horizon < 0.0:
+        raise ValuationError(f"days must be >= 0: {days!r}")
+    if basis <= 0.0:
+        raise ValuationError(f"day_basis must be > 0: {day_basis!r}")
+    return notional * rate * (horizon / basis)
+
+
+def sensitivity_sweep(
+    avoided_loss_given_obligation: float,
+    roundtrip_cost: float,
+    p_values: Sequence[float],
+    r_capital_values: Sequence[float] = R_CAPITAL_VALUES,
+    *,
+    funding_notional_usd: Optional[float] = None,
+    funding_days: float = 0.0,
+    day_basis: float = DAYS_PER_YEAR,
+) -> dict:
+    """Sign of ``E[avoided loss]`` over (P(obligation), r_capital) couples.
+
+    For every ``r_capital`` the cost of protection is
+    ``c(r) = roundtrip_cost + funding_cost(I_avg, r, Δt)`` and the expected
+    avoided loss is the **frozen** formula, called through
+    ``dao_expected_avoided_loss`` (one valuation function, no duplicated
+    arithmetic)::
+
+        E(p, r) = p · L − (1 − p) · c(r)
+
+    ``r_capital = 0`` therefore reproduces G6's signed E exactly; the 5 % and
+    10 % variants only add the declared funding cost.
+
+    ``funding_notional_usd`` (``I_avg``) is **required** as soon as a non-zero
+    ``r_capital`` is requested: without it the funding term would silently be
+    zero, which is exactly the "signed value reported as a measured one"
+    failure this module refuses. ``funding_days`` is the window length Δt.
+
+    Returns
+    -------
+    dict
+        ``avoided_loss_given_obligation_usd``, ``roundtrip_cost_usd``,
+        ``funding_notional_usd``, ``funding_days``, ``day_basis``,
+        ``variants`` (one entry per ``r_capital``: funding cost, total cost,
+        break-even probability) and ``rows`` (one entry per couple: ``p``,
+        ``r_capital``, ``expected_avoided_loss_usd``, ``sign`` in
+        ``{-1, 0, 1}`` and ``sign_text`` in ``{"-", "0", "+"}``).
+    """
+    loss_given = _require_finite(avoided_loss_given_obligation, "avoided_loss_given_obligation")
+    cost_base = _require_finite(roundtrip_cost, "roundtrip_cost")
+    if cost_base < 0.0:
+        raise ValuationError(f"roundtrip_cost must be >= 0: {roundtrip_cost!r}")
+    probabilities = [_require_finite(p, "p_obligation") for p in p_values]
+    if not probabilities:
+        raise ValuationError("empty sensitivity sweep: at least one P(obligation) is required")
+    for p in probabilities:
+        if not 0.0 <= p <= 1.0:
+            raise ValuationError(f"P(obligation) outside [0, 1]: {p!r}")
+    rates = [_require_finite(r, "r_capital") for r in r_capital_values]
+    if not rates:
+        raise ValuationError("empty sensitivity sweep: at least one r_capital is required")
+    for rate in rates:
+        if rate < 0.0:
+            raise ValuationError(f"r_capital must be >= 0: {rate!r}")
+    if any(rate > 0.0 for rate in rates) and funding_notional_usd is None:
+        raise ValuationError(
+            "funding_notional_usd is required for a non-zero r_capital "
+            "(the funding term is I_avg · r_capital · Δt, never assumed)"
+        )
+
+    variants = []
+    rows = []
+    for rate in rates:
+        funding = 0.0
+        if funding_notional_usd is not None:
+            funding = funding_cost(funding_notional_usd, rate, funding_days, day_basis)
+        total_cost = cost_base + funding
+        variants.append(
+            {
+                "r_capital": rate,
+                "funding_cost_usd": funding,
+                "total_cost_usd": total_cost,
+                "break_even_probability": break_even_probability(loss_given, total_cost),
+            }
+        )
+        for p in probabilities:
+            reading = dao_expected_avoided_loss(p, loss_given, total_cost)
+            expected = reading["expected_avoided_loss_usd"]
+            sign = 1 if expected > 0.0 else (-1 if expected < 0.0 else 0)
+            rows.append(
+                {
+                    "p_obligation": p,
+                    "r_capital": rate,
+                    "expected_avoided_loss_usd": expected,
+                    "sign": sign,
+                    "sign_text": "+" if sign > 0 else ("-" if sign < 0 else "0"),
+                }
+            )
+    return {
+        "avoided_loss_given_obligation_usd": loss_given,
+        "roundtrip_cost_usd": cost_base,
+        "funding_notional_usd": funding_notional_usd,
+        "funding_days": funding_days,
+        "day_basis": day_basis,
+        "variants": variants,
+        "rows": rows,
+    }
+
+
 def runway_days(amount_usd: float, opex_per_day: float = OPEX_REF_USD_PER_DAY) -> float:
     """``runway days = USD / opex_per_day`` (W2-D §B.3, §E.1: 44 932 $/day)."""
     if opex_per_day <= 0.0:

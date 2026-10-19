@@ -6,7 +6,7 @@
 | --- | --- |
 | Case | usdc-2023-03 |
 | Window | 2023-03-09T00:00:00+00:00 → 2023-03-15T00:00:00+00:00 |
-| Generated (UTC) | 2026-10-17T04:34:02Z |
+| Generated (UTC) | 2026-10-19T01:13:52Z |
 | Engine | ORVYREN-Core 0.1 |
 
 ## Decision
@@ -49,6 +49,40 @@
 | H1 | REFUTED | 8 — {"timestamp_utc": "2023-03-11T04:00:00+00:00", "value": 0.98622, "venue": "bitstamp"}; {"timestamp_utc": "2023-03-11T07:00:00+00:00", "value": 0.86267, "venue": "bitstamp"}; {"timestamp_utc": "2023-03-11T08:00:00+00:00", "value": 0.876675, "venue": "defillama"}; {"timestamp_utc": "2023-03-11T14:00:00+00:00", "value": 0.9129, "venue": "binance"}; … +4 more (full list in the hashed decision JSON) |
 | H2 | SUPPORTED | 72 — {"timestamp_utc": "2023-03-11T00:00:00+00:00", "value": 42097257578.0, "venue": "defillama_supply_aggregate"}; {"timestamp_utc": "2023-03-11T07:00:00+00:00", "value": 0.86267, "venue": "bitstamp"}; {"timestamp_utc": "2023-03-11T14:00:00+00:00", "value": 0.9129, "venue": "binance"}; {"timestamp_utc": "2023-03-11T14:00:00+00:00", "value": 0.915, "venue": "bitstamp"}; … +68 more (full list in the hashed decision JSON) |
 | H3 | REFUTED | 4 — {"timestamp_utc": "2023-03-11T14:00:00+00:00", "value": 0.9129, "venue": "binance"}; {"timestamp_utc": "2023-03-11T14:00:00+00:00", "value": 0.915, "venue": "bitstamp"}; {"timestamp_utc": "2023-03-13T08:00:00+00:00", "value": 0.9879, "venue": "binance"}; {"timestamp_utc": "2023-03-13T08:00:00+00:00", "value": 0.98843, "venue": "bitstamp"} |
+
+## Sensitivity — break-even P* (G6 §3)
+
+- **Formula:** P\* = roundtrip_cost / (avoided_loss|obligation + roundtrip_cost) — the exact root of E[avoided loss] = 0 (source: `loss.break_even_probability`).
+- **Avoided loss given obligation:** 13.7330 USD — protected notional 100.0000 USDC × (peg 1.000000 − deepest measured print 0.862670, bitstamp close_usd, field `inputs_summary.sources`); valued with `loss.evaluate_action`.
+- **Round-trip cost:** 0.2000 USD — 20 bp (G6 §1, illustrative) × 100.0000 USDC.
+- **Break-even probability (`P*`):** 1.4354 % — signed P(obligation) = 20.0000 % (G6 §1); E[avoided loss] at the signed value = 2.5866 USD (sign +).
+- **Funding:** I_avg · r_capital · Δt with I_avg = 100.0000 USDC and Δt = 6.0000 days / 365.
+
+Funding variants (source: `loss.sensitivity_sweep`, funding through `loss.funding_cost`):
+
+| r_capital | Funding cost (USD) | Total cost (USD) | P* |
+| --- | --- | --- | --- |
+| 0.0000 % | 0.0000 | 0.2000 | 1.4354 % |
+| 5.0000 % | 0.0822 | 0.2822 | 2.0135 % |
+| 10.0000 % | 0.1644 | 0.3644 | 2.5848 % |
+
+Sign of E[avoided loss] by P(obligation) and funding variant (source: `loss.sensitivity_sweep`; recomputed with `loss.dao_expected_avoided_loss`):
+
+| P(obligation) | r_capital 0.0000 % | r_capital 5.0000 % | r_capital 10.0000 % |
+| --- | --- | --- | --- |
+| 0.00 | - | - | - |
+| 0.05 | + | + | + |
+| 0.10 | + | + | + |
+| 0.15 | + | + | + |
+| 0.20 | + | + | + |
+| 0.25 | + | + | + |
+| 0.30 | + | + | + |
+| 0.35 | + | + | + |
+| 0.40 | + | + | + |
+| 0.45 | + | + | + |
+| 0.50 | + | + | + |
+| 0.55 | + | + | + |
+| 0.60 | + | + | + |
 
 ## Baseline A0 — main window vs control
 
@@ -838,10 +872,10 @@ Control signals (0):
 | baseline_report | evidence/baseline_report.json | `fa68d11f36232719f5400b5aab1d1cfab19b7808aaeb3e01297bd7bf4f868ae8` |
 | policy_execution_demo | evidence/policy_execution_demo.json | `5d6b64e04a04056acdb8dd7ab1f57368328677b82b73f8bd6b55e29bda14ffae` |
 | quality_report | evidence/quality_report.json | `3422567ea2de3ee1ac54fa7a72b84c3f7fbd94eca76b72fb11b7ba19bff82730` |
-| dossier (self, md) | evidence/dossier_usdc-2023-03.md | `6959bd3197c13803c0486fe417e2c17bc3daf8a751c3f9e56a7383a998e86443` |
+| dossier (self, md) | evidence/dossier_usdc-2023-03.md | `9f784c3b642dff2f0c9f7d26ca96464305dcddcd06aff7b454347d48b718ae3d` |
 
 Self-hash rule: the `dossier (self, md)` row is the SHA-256 of this Markdown file computed with its own 64-hex-character self-hash field zeroed (64 `0` characters). It is reproducible with any SHA-256 tool: replace that field with zeros and hash the file. With identical inputs and build time this dossier is byte-identical.
 
 ---
 
-produced by ORVYREN-Core v0.1 — deterministic engine, no human edit · ORVYREN-Core v0.1 · generated 2026-10-17T04:34:02Z (UTC)
+produced by ORVYREN-Core v0.1 — deterministic engine, no human edit · ORVYREN-Core v0.1 · generated 2026-10-19T01:13:52Z (UTC)

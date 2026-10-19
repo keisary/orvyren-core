@@ -357,8 +357,8 @@ def _critique_payload(packet: contracts.EvidencePacket, spec: Dict[str, Any]) ->
         "claims": [dict(claim) for claim in packet.claims],
         "refs": list(packet.refs),
         "hypotheses": list(spec["hypotheses"]),
-        "consigne": "attaque la lecture : cherche contradictions, unités, "
-                    "obsolescence, PIT, dépendances, alternatives, preuves manquantes",
+        "consigne": "attack the reading: look for contradictions, units, "
+                    "staleness, PIT, dependencies, alternatives, missing evidence",
     }
 
 

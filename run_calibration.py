@@ -91,7 +91,7 @@ def main(argv=None) -> int:
             linked = by_id.get(outcome.get("forecast_id"))
             if linked is None:  # an outcome naming an unknown forecast is a refusal, not a crash
                 raise outcomes_mod.OutcomeError(
-                    "outcome %s : prévision inconnue %r (absente du fichier de prévisions)"
+                    "outcome %s: unknown forecast %r (absent from the forecasts file)"
                     % (outcome.get("outcome_id"), outcome.get("forecast_id")))
             outcomes_mod.check_link(linked, outcome)
     except (forecasts_mod.ForecastError, outcomes_mod.OutcomeError) as exc:
@@ -156,8 +156,9 @@ def main(argv=None) -> int:
         "reliability_curve": reliability,
         "by_episode": by_episode,
         "annex": annex,
-        "cascade_note": ("§b.3 cascade: N < 5 nothing; 5 ≤ N < 30 \"non conclusionnel\" "
-                         "(non-conclusive); ECE not claimable before N ≥ 100 and the 5 conditions"),
+        "cascade_note": ("§b.3 cascade: N < 5 nothing; 5 ≤ N < 30 \"%s\" "
+                         "(not conclusive); ECE not claimable before N ≥ 100 and the 5 conditions"
+                         % calibration_mod.VERDICT_NON_CONCLUSIVE),
         "generated_at_utc": _dt.datetime.now(_dt.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
     }
 

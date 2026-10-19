@@ -2,16 +2,16 @@
 
 **Status: FROZEN v1** — 2026-10-16T00:00:00Z. Normative source: W2-D §B.1 (corrected
 formulation), §B.6 (six tests), B7 §e.1/e.3 (persona metrics). Frozen code:
-`src/orvyren/evaluation/loss.py` — sha256 `8c93911fa4c56690e94f1dd8838ae48d3aa098a0c9a128b54228c7d55fce1db1`.
+`src/orvyren/evaluation/loss.py` — sha256 `98ee9bc0a3f9f3ab6023ff4bb75cb19c5131f27e7a76c07fa4548023f9ecda70`.
 
 ## 1. Frozen formulas
 
 ```
-W_T(conserver)   = C + q · P_T
-W_T(céder x)     = C + x · P_exec(x, t_action) − k + (q − x) · P_T
-L(a)             = W_t0 − W_T(a)                    [USD, ou bp de W_t0]
+W_T(keep)        = C + q · P_T
+W_T(sell x)      = C + x · P_exec(x, t_action) − k + (q − x) · P_T
+L(a)             = W_t0 − W_T(a)                    [USD, or bp of W_t0]
 R(a)             = L(a) − min_{b ∈ F} L(b) ≥ 0     [USD]
-R⁻ / R⁺          = coûts du faux positif / du faux négatif vs A0 (publiés séparément)
+R⁻ / R⁺          = cost of the false positive / of the false negative vs A0 (published separately)
 ```
 
 ## 2. Valuation conventions (never mixed)
@@ -47,7 +47,7 @@ provided depth ladder: no unmeasured conversion is passed off as a measurement.
 | T1 | Neutrality (P_exec = P_T, k = 0 ⇒ R = 0) | 0 exact (detects the double counting of §B.2) |
 | T2 | Translation invariance | R unchanged to 1e-12 |
 | T3 | Monotonicity in cost | L and R increasing |
-| T4 | Sign consistency (P_exec > P_T) | R(agir) = 0, R(ne rien faire) > 0 |
+| T4 | Sign consistency (P_exec > P_T) | R(act) = 0, R(do nothing) > 0 |
 | T5 | Inventory additivity | linear in q and in x |
 | T6 | Degenerate reference (P_t = 1) | all regrets 0 ; useless action = k |
 

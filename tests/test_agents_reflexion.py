@@ -15,7 +15,7 @@ Coverage (Heuer / EMR-ACH 2026 method, all code-side — no LLM anywhere):
 - reaction to change: dominant flip -> ``escalade`` (never silent), degraded
   dominant -> ``reviser``, weak incoherence -> ``retester``, otherwise ``aucune``;
 - canonical serialisation round-trip (``schema_version``, stable sorts) and an
-  empty matrix that stays honest ("aucune preuve");
+  empty matrix that stays honest ("no evidence");
 - loop integration: claims (``branches_concernees`` x ``sens``) build the
   matrix, the outcome carries it, ONE ACH ``REFLECTION`` line and one
   ``BRANCH_UPDATE`` per revision are journaled — and the ACH line NEVER enters
@@ -243,7 +243,7 @@ class DiscriminatingGapTest(unittest.TestCase):
         self.assertEqual((gap["hyp_id"], gap["evidence_id"]), ("HYP-C", "EV-2"))
         self.assertEqual(gap["kind"], "sans_verdict")
         self.assertEqual(gap["refs"], ["r:2"])
-        self.assertIn("prochain test discriminant", gap["justification"])
+        self.assertIn("next discriminating test", gap["justification"])
         self.assertEqual(gap, matrix.most_discriminating_gap())  # deterministic
 
     def test_an_unscored_cell_is_more_uncertain_than_a_neutre_one(self):
@@ -273,7 +273,7 @@ class DiscriminatingGapTest(unittest.TestCase):
         matrix.score("HYP-B", "EV-1", INCOHERENT)
         gap = matrix.most_discriminating_gap()
         self.assertFalse(gap["found"])
-        self.assertIn("aucune cellule incertaine", gap["justification"])
+        self.assertIn("no uncertain cell", gap["justification"])
 
     def test_most_discriminating_evidence_is_the_claim_with_most_weight(self):
         matrix = build(("HYP-A", "a"), ("HYP-B", "b"), ("HYP-C", "c"))
@@ -304,7 +304,7 @@ class ReactionToChangeTest(unittest.TestCase):
         self.assertTrue(reaction["revision"])
         self.assertEqual(reaction["dominant_before"], "HYP-A")
         self.assertEqual(reaction["dominant_after"], "HYP-B")
-        self.assertIn("jamais de bascule silencieuse", reaction["motif"])
+        self.assertIn("never a silent flip", reaction["motif"])
 
     def test_a_degraded_dominant_asks_for_a_revision(self):
         matrix = build(("HYP-A", "dominant"), ("HYP-B", "rival"))
@@ -409,18 +409,18 @@ class CanonicalSerializationTest(unittest.TestCase):
 
 
 class EmptyMatrixTest(unittest.TestCase):
-    """An empty matrix stays honest: "aucune preuve", never an invented test."""
+    """An empty matrix stays honest: "no evidence", never an invented test."""
 
     def test_no_hypothesis_no_evidence(self):
         matrix = EvidenceMatrix()
         self.assertEqual(matrix.rank_hypotheses(), [])
         self.assertEqual(matrix.scored_cells(), ())
         data = matrix.to_dict()
-        self.assertEqual(data["note"], "aucune preuve")
+        self.assertEqual(data["note"], "no evidence")
         self.assertEqual(data["cells"], [])
         gap = matrix.most_discriminating_gap()
         self.assertFalse(gap["found"])
-        self.assertIn("aucune preuve", gap["justification"])
+        self.assertIn("no evidence", gap["justification"])
 
     def test_hypotheses_without_evidence(self):
         matrix = build(("HYP-A", "a"), ("HYP-B", "b"))
@@ -429,8 +429,8 @@ class EmptyMatrixTest(unittest.TestCase):
         self.assertEqual([row["nb_preuves"] for row in rows], [0, 0])
         gap = matrix.most_discriminating_gap()
         self.assertFalse(gap["found"])
-        self.assertIn("aucune preuve", gap["justification"])
-        self.assertEqual(matrix.to_dict()["note"], "aucune preuve")
+        self.assertIn("no evidence", gap["justification"])
+        self.assertEqual(matrix.to_dict()["note"], "no evidence")
 
 
 class SensMappingTest(unittest.TestCase):
@@ -619,7 +619,7 @@ class LoopIntegrationTest(unittest.TestCase):
         self.assertEqual(len(ach_lines), 1)
         line = ach_lines[0]
         self.assertEqual(line.kind, "REFLECTION")
-        self.assertIn("ACH matrix: HYP-002 reste SOLIDE, prochain test discriminant:",
+        self.assertIn("ACH matrix: HYP-002 remains SOLIDE, next discriminating test:",
                       line.content)
         self.assertEqual(line.refs, (REF_PRICES,))
         self.assertEqual(line.ts_utc[:10], "2023-03-11")  # injected clock
@@ -647,7 +647,7 @@ class LoopIntegrationTest(unittest.TestCase):
             "la profondeur d'execution realisee contredit la lecture"])
         self.assertEqual(packet.refs, (REF_PRICES,))
         self.assertTrue(all("ACH matrix:" not in text for text in texts))
-        self.assertTrue(all("revision ACH:" not in text for text in texts))
+        self.assertTrue(all("ACH revision:" not in text for text in texts))
 
     def test_the_llm_payloads_are_untouched(self):
         loop, journal, backend, outcome = self._run(
@@ -678,9 +678,9 @@ class LoopIntegrationTest(unittest.TestCase):
             [llm_ok(plan_task_data(), n=1),
              llm_ok({"claims": [], "insuffisance": "rien d'exploitable"}, n=2),
              llm_ok(plan_stop_data(), n=3)])
-        self.assertEqual(outcome.reflexion["note"], "aucune preuve")
+        self.assertEqual(outcome.reflexion["note"], "no evidence")
         self.assertFalse(outcome.reflexion["gap"]["found"])
-        self.assertIn("aucune preuve", outcome.reflexion["gap"]["justification"])
+        self.assertIn("no evidence", outcome.reflexion["gap"]["justification"])
         self.assertFalse(any("ACH matrix:" in entry.content
                              for entry in journal.entries()))
 
