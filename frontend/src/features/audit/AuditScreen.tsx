@@ -8,7 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { CopyButton } from "@/components/ui/bits";
 import { Table, TBody, TD, TH, THead, TR } from "@/components/ui/table";
 import { ScreenShell } from "@/components/ScreenShell";
-import { SubstitutionBanner } from "@/components/SubstitutionBanner";
+import { DisclosureBlock } from "@/components/SubstitutionBanner";
 
 function ScopeRow({
   label,
@@ -49,7 +49,6 @@ export default function AuditScreen() {
   const summary = summaryQuery.data;
   const effective = (policyQuery.data?.effective ?? {}) as Record<string, unknown>;
   const chain = summary?.chains?.[0];
-  const substitution = summary?.scenario_substitution ?? null;
   const packets = summary?.packets ?? [];
   // Reference packet (§4.9): the sealed packet of the demo, else the first.
   const reference =
@@ -150,8 +149,6 @@ export default function AuditScreen() {
       }
     >
       <div className="space-y-4">
-        <SubstitutionBanner substitution={substitution} />
-
         {/* 1 — offline packet first: the self-contained proof (§4.9). */}
         <div className="grid grid-cols-1 gap-4 xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
           <Card>
@@ -182,6 +179,11 @@ export default function AuditScreen() {
                     <CopyButton text={verifyCommand} label="Copy verification command" />
                     <span className="text-meta text-muted">Repository command</span>
                   </div>
+                  {verifyCommand ? (
+                    <div className="break-all font-mono text-code text-ink select-text">
+                      {verifyCommand}
+                    </div>
+                  ) : null}
                   <details>
                     <summary className="cursor-pointer text-meta font-medium text-muted hover:text-ink">
                       Verify without the repository
@@ -225,24 +227,20 @@ export default function AuditScreen() {
                     : "No recorded run in this view"
                 }
                 badge={
-                  <Badge
-                    variant={
-                      journalChains.length > 0 && journalVerified === journalChains.length
-                        ? "ok"
-                        : "neutral"
-                    }
-                  >
-                    {journalChains.length > 0 && journalVerified === journalChains.length
-                      ? "VERIFIED"
-                      : "NOT RUN"}
-                  </Badge>
+                  journalChains.length === 0 ? (
+                    <Badge variant="neutral">NOT RUN</Badge>
+                  ) : journalVerified === journalChains.length ? (
+                    <Badge variant="ok">VERIFIED</Badge>
+                  ) : (
+                    <Badge variant="deny">FAILED</Badge>
+                  )
                 }
               />
               <ScopeRow
                 label="Execution journal hash chain"
                 value={
                   chain
-                    ? `${chain.records} records · head ${fmtHash(chain.head, 12)} · form ${chain.hash_form}`
+                    ? `${chain.name} · ${chain.records} records · head ${fmtHash(chain.head, 12)} · form ${chain.hash_form}`
                     : "No execution chain recorded"
                 }
                 badge={
@@ -301,7 +299,20 @@ export default function AuditScreen() {
           </div>
         </Card>
 
-        {/* 3 — execution journal, declared substitution up front. */}
+        {/* 3 — execution journal, declared context right before ITS stream. */}
+        <DisclosureBlock
+          title="Separate testnet demonstration"
+          body="This execution journal is the historical Base Sepolia testnet stream. It belongs to the earlier testnet demonstration, not to the current scenario run."
+          facts={[
+            "evidence/demo_chain/rseth/audit.jsonl",
+            (streamQuery.data?.records ?? [])[0]
+              ? `first record ${String(
+                  ((streamQuery.data?.records ?? [])[0] as Record<string, unknown>).ts_utc ?? "",
+                )}`
+              : "",
+            chain ? `chain run ${chain.run_id}` : "",
+          ].filter(Boolean)}
+        />
         <Card>
           <CardHeader>
             <CardTitle>Execution journal (audit.jsonl)</CardTitle>

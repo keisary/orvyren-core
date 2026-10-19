@@ -89,11 +89,15 @@ class TestScenarioSubstitution(unittest.TestCase):
     def test_run_entries_carry_the_added_substitution_field(self):
         runs = artifacts.discover_runs(self.settings)
         self.assertTrue(runs)
+        linked = artifacts.scenario_linked_run_ids(self.settings)
+        self.assertTrue(linked)  # manifest ids really exist on disk
         for run in runs:
             self.assertIn("substitution", run)
-            if artifacts.is_rseth_scenario_run(run["run_id"], run.get("case_id", "")):
+            if run["run_id"] in linked:
+                # Declared only for the identities linked by the manifest.
                 self.assertTrue(run["substitution"]["declared"])
             else:
+                # Same case is not same execution: no phantom disclosure.
                 self.assertIsNone(run["substitution"])
 
     def test_run_detection_on_scenario_identifiers(self):

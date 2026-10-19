@@ -2,7 +2,7 @@ import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { api } from "@/lib/api";
 import type { GraphQueryResult } from "@/lib/types";
-import { fmtCompact, fmtHash, fmtNumber, shortAddress, truncate } from "@/lib/format";
+import { fmtCompact, fmtHash, fmtNumber, fmtTime, shortAddress, truncate } from "@/lib/format";
 import { toneForClass } from "@/lib/graph-theme";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -93,7 +93,7 @@ function ResultTable({ result }: { result: GraphQueryResult }) {
 
 /** Written meaning for non-OK statuses (§4.8): a status word alone is not an
  *  explanation. */
-function StatusExplanation({ status }: { status: string }) {
+function StatusExplanation({ status, query }: { status: string; query?: string }) {
   if (status === "NO_PATH") {
     return (
       <div className="space-y-0.5 text-meta text-muted">
@@ -103,6 +103,15 @@ function StatusExplanation({ status }: { status: string }) {
     );
   }
   if (status === "NOT_INGESTED") {
+    // Q8 uses the same status when the permissions view has no rows: never
+    // conclude "this id does not exist" from a permission-shaped answer.
+    if ((query ?? "").startsWith("q8")) {
+      return (
+        <div className="text-meta text-muted">
+          NOT_INGESTED — permission data is not available in this dataset.
+        </div>
+      );
+    }
     return (
       <div className="text-meta text-muted">
         NOT_INGESTED — this id does not exist in the demonstrated dataset.
@@ -110,9 +119,7 @@ function StatusExplanation({ status }: { status: string }) {
     );
   }
   if (status === "OK") {
-    return (
-      <div className="text-meta text-muted">OK — the query returned no row for these parameters.</div>
-    );
+    return <div className="text-meta text-muted">No rows match these parameters.</div>;
   }
   return <div className="text-meta text-muted">{status} — see the runbook for this status.</div>;
 }
@@ -122,9 +129,15 @@ export default function GraphScreen() {
   const [selected, setSelected] = useState<string | null>(null);
   const [queryName, setQueryName] = useState("q1");
   const [params, setParams] = useState<Record<string, string>>({ ...DEFAULTS });
-  const [layoutState, setLayoutState] = useState<"cached" | "computing" | "done" | "">("");
-  const [ran, setRan] = useState<GraphQueryResult | null>(null);
-  const [ranParams, setRanParams] = useState<string>("");
+  const [layoutState, setLayoutState] = useState<
+    "cached" | "computing" | "done" | "served" | "failed" | ""
+  >("");
+  const [ran, setRan] = useState<{
+    name: string;
+    sig: string;
+    at: string;
+    data: GraphQueryResult;
+  } | null>(null);
 
   const runQuery = useQuery({
     queryKey: ["graph-query", queryName, params],
@@ -140,8 +153,10 @@ export default function GraphScreen() {
 
   const payload = graphQuery.data;
   const def = QUERIES[queryName];
-  const paramsSignature = JSON.stringify(params);
-  const isPreviousResult = ran !== null && ranParams !== paramsSignature;
+  // A result remembers WHICH query produced it (Astra-4 P1-3): switching Q
+  // without touching fields must still flag the old result as previous.
+  const isPreviousResult =
+    ran !== null && (ran.sig !== JSON.stringify(params) || ran.name !== queryName);
   const legacy = payload?.schema === "legacy";
   const dbShort = payload?.db ? (payload.db.split(/[\\/]/).pop() ?? payload.db) : "—";
   const relations = ((detailQuery.data?.relations as Record<string, unknown>[]) ?? []).slice(0, 25);
@@ -220,6 +235,8 @@ export default function GraphScreen() {
                 {layoutState === "computing" ? " · layout computing…" : ""}
                 {layoutState === "done" ? " · layout computed and cached" : ""}
                 {layoutState === "cached" ? " · layout pre-computed" : ""}
+                {layoutState === "served" ? " · using served coordinates" : ""}
+                {layoutState === "failed" ? " · canvas unavailable" : ""}
                 . Point-in-time filters apply to query results.
               </div>
             </div>
@@ -245,8 +262,9 @@ export default function GraphScreen() {
               <div className="grid grid-cols-2 gap-2">
                 {def.fields.map((field) => (
                   <div key={field} className={field === "as_of" || field === "kinds" ? "col-span-2" : ""}>
-                    <Label>{field}</Label>
+                    <Label htmlFor={`q-${field}`}>{field}</Label>
                     <Input
+                      id={`q-${field}`}
                       value={params[field] ?? ""}
                       onChange={(e) => setParams((prev) => ({ ...prev, [field]: e.target.value }))}
                       placeholder="(empty)"
@@ -257,9 +275,12 @@ export default function GraphScreen() {
               <div className="flex flex-wrap items-center gap-2">
                 <Button
                   onClick={() => {
+                    const sig = JSON.stringify(params);
+                    const name = queryName;
                     runQuery.refetch().then(({ data }) => {
-                      setRan(data ?? null);
-                      setRanParams(JSON.stringify(params));
+                      if (data) {
+                        setRan({ name, sig, at: new Date().toISOString(), data });
+                      }
                     });
                   }}
                 >
@@ -277,39 +298,66 @@ export default function GraphScreen() {
                 Example parameters from the archived Aave Base snapshot.
               </div>
               {runQuery.isFetching ? <div className="text-meta text-muted">Running…</div> : null}
+              {runQuery.isError ? (
+                <div className="space-y-1.5">
+                  <div className="text-meta text-ink">
+                    Query failed — the API did not answer.
+                  </div>
+                  <Button variant="secondary" size="sm" onClick={() => runQuery.refetch()}>
+                    Retry
+                  </Button>
+                </div>
+              ) : null}
               {ran ? (
                 <div className="space-y-2">
+                  <div className="text-meta text-muted">
+                    Result of {QUERIES[ran.name]?.label ?? ran.name} · run{" "}
+                    {fmtTime(ran.at)}
+                  </div>
                   <div className="flex flex-wrap gap-1.5">
-                    <Badge variant={ran.status && ran.status !== "OK" ? "warn" : "ok"}>
-                      {ran.status ?? "OK"}
+                    <Badge variant={ran.data.status && ran.data.status !== "OK" ? "warn" : "ok"}>
+                      {ran.data.status ?? "OK"}
                     </Badge>
-                    {ran.count !== undefined ? (
-                      <Badge variant="neutral">count {ran.count}</Badge>
+                    {isPreviousResult ? (
+                      <Badge variant="neutral">
+                        Previous query result ({ran.name.toUpperCase()})
+                      </Badge>
                     ) : null}
-                    {ran.latency_ms !== undefined ? (
-                      <Badge variant="neutral">{fmtNumber(ran.latency_ms, 1)} ms (this response)</Badge>
+                    {ran.data.count !== undefined ? (
+                      <Badge variant="neutral">count {ran.data.count}</Badge>
                     ) : null}
-                    {typeof ran.hhi === "number" ? (
-                      <Badge variant="info">HHI {fmtNumber(ran.hhi, 4)}</Badge>
+                    {ran.data.latency_ms !== undefined ? (
+                      <Badge variant="neutral">
+                        {fmtNumber(ran.data.latency_ms, 1)} ms (this response)
+                      </Badge>
                     ) : null}
-                    {typeof ran.counterparties === "number" ? (
-                      <Badge variant="neutral">{ran.counterparties} counterparties</Badge>
+                    {typeof ran.data.hhi === "number" ? (
+                      <Badge variant="info">HHI {fmtNumber(ran.data.hhi, 4)}</Badge>
                     ) : null}
-                    {ran.graph_hash ? (
-                      <Badge variant="neutral">hash {fmtHash(String(ran.graph_hash), 10)}</Badge>
+                    {typeof ran.data.counterparties === "number" ? (
+                      <Badge variant="neutral">{ran.data.counterparties} counterparties</Badge>
+                    ) : null}
+                    {ran.data.graph_hash ? (
+                      <Badge variant="neutral">
+                        hash {fmtHash(String(ran.data.graph_hash), 10)}
+                      </Badge>
                     ) : null}
                   </div>
-                  {ran.status && ran.status !== "OK" ? (
-                    <StatusExplanation status={String(ran.status)} />
+                  {String(ran.data.status ?? "OK") !== "OK" ||
+                  (ran.data.rows ?? []).length === 0 ? (
+                    <StatusExplanation
+                      status={String(ran.data.status ?? "OK")}
+                      query={ran.name}
+                    />
                   ) : null}
-                  {(ran.rows ?? []).length > 0 ? (
+                  {(ran.data.rows ?? []).length > 0 ? (
                     <div className="text-meta text-muted">
-                      Showing {Math.min(25, (ran.rows ?? []).length)} of{" "}
-                      {ran.count ?? (ran.rows ?? []).length} rows
+                      Showing {Math.min(25, (ran.data.rows ?? []).length)} of{" "}
+                      {ran.data.count ?? (ran.data.rows ?? []).length} rows
                     </div>
                   ) : null}
                   <div className="max-h-64 overflow-auto border border-line">
-                    <ResultTable result={ran} />
+                    <ResultTable result={ran.data} />
                   </div>
                 </div>
               ) : null}

@@ -98,6 +98,7 @@ def _run_roots(settings: Settings) -> List[str]:
         os.path.join(settings.demo_runs_dir, "agents_smoke"),
         os.path.join(settings.demo_runs_dir, "agents_smoke2"),
         os.path.join(settings.evidence_dir, "agents_live"),
+        os.path.join(settings.evidence_dir, "scenario_rseth", "agents_session"),
     ):
         if os.path.isdir(base):
             roots.append(base)
@@ -137,6 +138,10 @@ def _journal_summary(path: str) -> Dict[str, Any]:
 def discover_runs(settings: Optional[Settings] = None) -> List[Dict[str, Any]]:
     """Every recorded agent run, with real counts and real outcomes."""
     settings = settings or load_settings()
+    # Same case is NOT same execution (Astra-4 P0-3): the declared
+    # substitution attaches only to the identities linked by the scenario
+    # manifest, never to every run that shares the case id.
+    linked_ids = scenario_linked_run_ids(settings)
     runs: List[Dict[str, Any]] = []
     for run_id, path in _find_run_dirs(settings):
         spec = read_json(os.path.join(path, "run.json")) if _exists(path, "run.json") else {}
@@ -172,8 +177,7 @@ def discover_runs(settings: Optional[Settings] = None) -> List[Dict[str, Any]]:
             "chain_heads": {k: v.get("chain_head", "")
                             for k, v in (run_outcome.get("journals", {}) or {}).items()},
             "substitution": (scenario_substitution(settings)
-                             if is_rseth_scenario_run(run_id, spec.get("case_id", ""))
-                             else None),
+                             if run_id in linked_ids else None),
         })
     return runs
 
@@ -206,9 +210,7 @@ def load_run_bundle(run_id: str, settings: Optional[Settings] = None) -> Dict[st
                             if os.path.exists(store_calls) else [])
     bundle["substitution"] = (
         scenario_substitution(settings)
-        if is_rseth_scenario_run(run_id,
-                                 (bundle.get("spec") or {}).get("case_id", ""))
-        else None)
+        if run_id in scenario_linked_run_ids(settings) else None)
     return bundle
 
 
@@ -239,6 +241,22 @@ SUBSTITUTION_BANNER = (
 
 #: Case id of the rsETH / KelpDAO April 2026 scenario.
 RSETH_CASE_ID = "rseth-2026-04"
+
+
+def scenario_linked_run_ids(settings: Optional[Settings] = None) -> set:
+    """Run identities genuinely linked to the scenario by its manifest.
+
+    Same case is not same execution (Astra-4 P0-3): only the ids recorded in
+    ``scenario_rseth/scenario_run.json`` carry the declared substitution —
+    a later live run of the same case is a different execution.
+    """
+    settings = settings or load_settings()
+    base = os.path.join(settings.evidence_dir, "scenario_rseth")
+    run = (read_json(os.path.join(base, "scenario_run.json"))
+           if _exists(base, "scenario_run.json") else {})
+    return {str(run.get(key, "")) for key in
+            ("agents_run_id", "executor_run_id", "executor_parent_run_id", "run_id")
+            if run.get(key)}
 
 
 def is_rseth_scenario_run(run_id: str, case_id: str = "") -> bool:
@@ -592,14 +610,17 @@ def episode_series(episode_id: str, settings: Optional[Settings] = None) -> Dict
                           "kind": "exposure", "points": ratios})
         else:  # rsETH: Aave V3 reserve metrics per asset
             assets = [k for k in first.keys() if isinstance(first[k], dict)]
-            metrics = (("cash", "liquidité (cash)", "exposure"),
-                       ("variable_debt_supply", "dette variable", "exposure"),
-                       ("a_token_supply", "supply aToken", "exposure"),
-                       ("utilisation", "utilisation", "signal"),
-                       ("cap_ratio", "remplissage du cap", "signal"),
-                       ("oracle_price", "prix oracle", "price"))
+            # unit = PHYSICAL unit (§4.6, Astra-4 P0-1): quantities are in
+            # the reserve asset itself, ratios in %, oracle in USD — never
+            # the metric name (that made multi-asset axes look comparable).
+            metrics = (("cash", "liquidité (cash)", "exposure", None),
+                       ("variable_debt_supply", "dette variable", "exposure", None),
+                       ("a_token_supply", "supply aToken", "exposure", None),
+                       ("utilisation", "utilisation", "signal", "%"),
+                       ("cap_ratio", "remplissage du cap", "signal", "%"),
+                       ("oracle_price", "prix oracle", "price", "USD"))
             for asset in assets:
-                for metric, label, kind in metrics:
+                for metric, label, kind, unit in metrics:
                     points = []
                     for key in keys:
                         entry = data["series"][key].get(asset) or {}
@@ -609,7 +630,9 @@ def episode_series(episode_id: str, settings: Optional[Settings] = None) -> Dict
                     if points:
                         lines.append({"id": "%s:%s" % (asset, metric),
                                       "label": "%s — %s" % (asset, label),
-                                      "unit": metric, "kind": kind, "points": points})
+                                      "asset": asset, "metric": metric,
+                                      "unit": unit or asset, "kind": kind,
+                                      "points": points})
     return {
         "id": episode_id,
         "title": (data.get("meta", {}).get("episode") or

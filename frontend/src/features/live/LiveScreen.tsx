@@ -10,6 +10,7 @@ import {
   fmtNumber,
   fmtSeconds,
   fmtTime,
+  hypothesisVariant,
   truncate,
   verdictVariant,
 } from "@/lib/format";
@@ -28,7 +29,7 @@ function Row({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex gap-2">
       <dt className="w-28 shrink-0 text-code text-muted">{label}</dt>
-      <dd className="min-w-0 break-all text-code text-ink">{value}</dd>
+      <dd className="min-w-0 break-words text-code text-ink">{value}</dd>
     </div>
   );
 }
@@ -141,7 +142,18 @@ function EventRow({ event, fresh }: { event: RunEvent; fresh: boolean }) {
 export default function LiveScreen() {
   const runsQuery = useQuery({ queryKey: ["runs"], queryFn: api.runs });
   const runs = useMemo(() => runsQuery.data?.runs ?? [], [runsQuery.data]);
-  const [runId, setRunId] = useState<string>("");
+  // Selection lives in the URL (?run=), independent of the WS transport:
+  // a reload or a shared link keeps the same run (Astra-4 P0-3).
+  const [runId, setRunIdState] = useState<string>(
+    () => new URLSearchParams(window.location.search).get("run") ?? "",
+  );
+  const setRunId = (next: string) => {
+    setRunIdState(next);
+    const url = new URL(window.location.href);
+    if (next) url.searchParams.set("run", next);
+    else url.searchParams.delete("run");
+    window.history.replaceState(null, "", url);
+  };
   const liveStatus = useLiveStore((s) => s.status);
   const liveEvents = useLiveStore((s) => s.events);
   const journalRef = useRef<HTMLDivElement | null>(null);
@@ -150,7 +162,12 @@ export default function LiveScreen() {
 
   useEffect(() => {
     if (!runId && runs.length > 0) {
-      const preferred = runs.find((r) => r.journals.orchestrator.present) ?? runs[0];
+      // The scenario-linked run first (its disclosure is the declared one),
+      // then any run with an orchestrator journal.
+      const preferred =
+        runs.find((r) => r.substitution?.declared) ??
+        runs.find((r) => r.journals.orchestrator.present) ??
+        runs[0];
       setRunId(preferred.run_id);
     }
   }, [runs, runId]);
@@ -271,6 +288,9 @@ export default function LiveScreen() {
   const budgetLimits = (
     run.budget && Object.keys(run.budget).length > 0 ? run.budget : (spec?.budget ?? {})
   ) as Record<string, number>;
+  // Before any source has spoken, show "—" — a fabricated 0/0 is a lie
+  // about the run (Astra-4 P1-1).
+  const budgetKnown = hasOutcome || wsEvents.length > 0;
   const evidence = bundle?.exchanges?.find((x) => x.name.includes("evidence"));
   const critique = bundle?.exchanges?.find((x) => x.name.includes("critique"));
   const claims = (evidence?.data?.claims as Record<string, unknown>[] | undefined) ?? [];
@@ -286,6 +306,16 @@ export default function LiveScreen() {
     (criticReport.errors as unknown[] | undefined) ??
     [];
   const escalation = String(runOutcome.escalation ?? outcome.escalation ?? "");
+  type FindingShape = {
+    enonce?: string;
+    gravite?: string;
+    refs?: string[];
+    test_discriminant?: string;
+    type?: string;
+  };
+  const blockingFindings = rawFindings
+    .map((item) => (typeof item === "object" && item !== null ? (item as FindingShape) : {}))
+    .filter((item) => item.gravite === "BLOQUANT" && item.enonce);
   const criticVerdict = String(
     critiqueBlock.verdict_lecture ??
       outcome.critique_verdict ??
@@ -335,6 +365,20 @@ export default function LiveScreen() {
       }
     >
       <div className="space-y-4">
+        {runsQuery.isError && runs.length === 0 ? (
+          <div className="border border-line bg-surface px-4 py-4 text-center">
+            <div className="text-body text-ink">
+              Runs unavailable — the API did not answer.
+            </div>
+            <Button
+              variant="secondary"
+              className="mt-2"
+              onClick={() => runsQuery.refetch()}
+            >
+              Retry
+            </Button>
+          </div>
+        ) : null}
         <SubstitutionBanner substitution={bundle?.substitution ?? run.substitution ?? null} />
 
         {/* Run budget: ONE band, four cells, used / ceiling (§4.5). */}
@@ -342,48 +386,42 @@ export default function LiveScreen() {
           <div className="flex flex-wrap items-center justify-between gap-2 border-b border-line px-4 py-2">
             <span className="text-section-title font-semibold">Run budget</span>
             <span className="text-meta text-muted">
-              {hasOutcome ? "Recorded run totals" : "Live stream totals"} · single
-              source: {hasOutcome ? "run outcome" : "event stream"}
+              {hasOutcome ? "Recorded run totals" : "Live stream totals"}
             </span>
           </div>
           <div className="grid grid-cols-2 gap-px bg-line min-[1100px]:grid-cols-4">
             <BudgetCell
               label="LLM calls"
               flashValue={budget.llm_calls}
-              value={fmtNumber(budget.llm_calls ?? 0, 0)}
+              value={budgetKnown ? fmtNumber(budget.llm_calls ?? 0, 0) : "—"}
               ceiling={`/ ${fmtNumber(budgetLimits.llm_calls ?? 0, 0)}`}
             />
             <BudgetCell
               label="Tool calls"
               flashValue={budget.tool_calls}
-              value={fmtNumber(budget.tool_calls ?? 0, 0)}
+              value={budgetKnown ? fmtNumber(budget.tool_calls ?? 0, 0) : "—"}
               ceiling={`/ ${fmtNumber(budgetLimits.tool_calls ?? 0, 0)}`}
             />
             <BudgetCell
               label="Elapsed time"
               flashValue={budget.wall_seconds}
-              value={fmtNumber(budget.wall_seconds ?? 0, 1)}
+              value={budgetKnown ? fmtNumber(budget.wall_seconds ?? 0, 1) : "—"}
               ceiling={`/ ${fmtNumber(budgetLimits.wall_seconds ?? 0, 0)} s`}
             />
             <BudgetCell
               label="Recorded cost"
               flashValue={budget.cost_usd}
-              value={`$${fmtNumber(budget.cost_usd ?? 0, 4)}`}
+              value={budgetKnown ? `$${fmtNumber(budget.cost_usd ?? 0, 4)}` : "—"}
               ceiling={`/ $${fmtNumber(budgetLimits.cost_usd ?? 0, 2)}`}
             />
           </div>
         </div>
 
-        <div className="grid grid-cols-1 gap-4 xl:grid-cols-[minmax(0,1fr)_360px]">
+        <div className="grid grid-cols-1 gap-4 min-[1100px]:grid-cols-[minmax(0,1fr)_320px]">
           <Card>
             <CardHeader>
               <CardTitle>Agent journal</CardTitle>
               <div className="flex flex-wrap items-center gap-1.5">
-                {Object.entries(kinds).map(([kind, count]) => (
-                  <Badge key={kind} variant="neutral">
-                    {kind}: {count}
-                  </Badge>
-                ))}
                 <Badge variant="neutral">
                   Showing {timeline.length}
                   {typeof eventsQuery.data?.total === "number" &&
@@ -399,9 +437,24 @@ export default function LiveScreen() {
             </CardHeader>
             <div ref={journalRef} className="max-h-[560px] overflow-auto">
               {timeline.length === 0 ? (
-                <div className="px-4 py-6 text-center text-meta text-muted">
-                  No journal event for this run yet.
-                </div>
+                eventsQuery.isError ? (
+                  <div className="px-4 py-6 text-center">
+                    <div className="text-body text-ink">
+                      Journal unavailable — the API did not answer.
+                    </div>
+                    <Button
+                      variant="secondary"
+                      className="mt-2"
+                      onClick={() => eventsQuery.refetch()}
+                    >
+                      Retry
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="px-4 py-6 text-center text-meta text-muted">
+                    No journal event for this run yet.
+                  </div>
+                )
               ) : (
                 timeline.map((event, index) => (
                   <EventRow
@@ -434,6 +487,19 @@ export default function LiveScreen() {
                   <Row label="Critic verdict" value={criticVerdict} />
                   <Row label="Escalation" value={escalation} />
                 </dl>
+                {blockingFindings.length > 0 ? (
+                  <div>
+                    <div className="text-meta text-muted">Blocking objections</div>
+                    {blockingFindings.map((finding, index) => (
+                      <div key={index} className="mt-1 break-words text-body leading-5 text-ink">
+                        {finding.enonce}
+                      </div>
+                    ))}
+                    <div className="mt-1 text-meta text-muted">
+                      Full findings in Critique report · original record in French (FR).
+                    </div>
+                  </div>
+                ) : null}
                 {(outcome.non_recherche as string[] | undefined)?.length ? (
                   <div>
                     <div className="text-meta text-muted">Not searched</div>
@@ -457,7 +523,7 @@ export default function LiveScreen() {
                   <div key={hypothesis.id} className="border border-line px-3 py-2">
                     <div className="flex items-center gap-2">
                       <Badge variant="info">{hypothesis.id}</Badge>
-                      <Badge variant={verdictVariant(hypothesis.etat)}>
+                      <Badge variant={hypothesisVariant(hypothesis.etat)}>
                         {hypothesisLabel(hypothesis.etat)}
                       </Badge>
                     </div>
@@ -509,19 +575,26 @@ export default function LiveScreen() {
                       {String(evidence.data.packet_id ?? "")} · snapshot{" "}
                       {String(evidence.data.snapshot_ref ?? "")}
                     </div>
-                    {claims.map((claim, index) => (
-                      <div key={index} className="border border-line px-3 py-2">
-                        <div className="text-body leading-5 text-ink">
-                          {String(claim.text)}
-                        </div>
-                        <div className="mt-1 font-mono text-code text-muted">
-                          {String(claim.journal_id)}
-                          {((claim.refs as string[]) ?? []).length > 0
-                            ? ` · refs: ${((claim.refs as string[]).join(", "))}`
-                            : " · no refs (unusable)"}
-                        </div>
+                    <details>
+                      <summary className="cursor-pointer text-meta font-medium text-muted hover:text-ink">
+                        Show claims ({claims.length})
+                      </summary>
+                      <div className="mt-2 space-y-2">
+                        {claims.map((claim, index) => (
+                          <div key={index} className="border border-line px-3 py-2">
+                            <div className="text-body leading-5 text-ink">
+                              {String(claim.text)}
+                            </div>
+                            <div className="mt-1 font-mono text-code text-muted">
+                              {String(claim.journal_id)}
+                              {((claim.refs as string[]) ?? []).length > 0
+                                ? ` · refs: ${((claim.refs as string[]).join(", "))}`
+                                : " · no refs (unusable)"}
+                            </div>
+                          </div>
+                        ))}
                       </div>
-                    ))}
+                    </details>
                     {evidence.data.summary ? (
                       <div className="font-mono text-code text-muted">
                         {String(evidence.data.summary)}
@@ -618,8 +691,21 @@ export default function LiveScreen() {
                 <CardTitle>Run details</CardTitle>
                 <Badge variant="neutral">{String(run.mode || "replay")}</Badge>
               </CardHeader>
-              <CardContent>
+              <CardContent className="space-y-2">
+                {Object.keys(kinds).length > 0 ? (
+                  <div className="flex flex-wrap gap-1.5">
+                    {Object.entries(kinds).map(([kind, count]) => (
+                      <Badge key={kind} variant="neutral">
+                        {kind}: {count}
+                      </Badge>
+                    ))}
+                  </div>
+                ) : null}
                 <dl className="space-y-1">
+                  <Row
+                    label="Source"
+                    value={hasOutcome ? "run outcome (recorded)" : "live event stream"}
+                  />
                   <Row
                     label="Tokens"
                     value={`${fmtCompact(budget.tokens_in ?? 0)} in · ${fmtCompact(budget.tokens_out ?? 0)} out`}

@@ -57,7 +57,7 @@ export default function App() {
 
   return (
     <div className="flex h-full w-full overflow-hidden">
-      <aside className="flex w-48 shrink-0 flex-col border-r border-line bg-surface">
+      <aside className="flex w-44 shrink-0 flex-col border-r border-line bg-surface min-[1280px]:w-48">
         <div className="border-b border-line px-4 py-4">
           <div className="text-[16px] font-semibold leading-[22px] tracking-[-0.02em] text-ink">
             ORVYREN

@@ -6,6 +6,7 @@
  */
 
 export function fmtNumber(value: unknown, digits = 2): string {
+  if (value === null || value === undefined || value === "") return "—";
   const n = typeof value === "number" ? value : Number(value);
   if (!Number.isFinite(n)) return "—";
   return n.toLocaleString("en-GB", {
@@ -15,6 +16,7 @@ export function fmtNumber(value: unknown, digits = 2): string {
 }
 
 export function fmtCompact(value: unknown): string {
+  if (value === null || value === undefined || value === "") return "—";
   const n = typeof value === "number" ? value : Number(value);
   if (!Number.isFinite(n)) return "—";
   const abs = Math.abs(n);
@@ -93,6 +95,19 @@ export function verdictVariant(
     ].includes(v)
   )
     return "neutral";
+  if (v) return "info";
+  return "neutral";
+}
+
+/** Hypothesis states are RESULTS, not authorisations (Astra-3 §2.3H):
+ *  a refuted hypothesis is a useful outcome (neutral), never a refusal. */
+export function hypothesisVariant(
+  state: unknown,
+): "ok" | "deny" | "warn" | "info" | "neutral" {
+  const v = String(state ?? "").toUpperCase();
+  if (["SUPPORTED", "CONFIRMED"].includes(v)) return "ok";
+  if (["REFUTED", "DISPUTED"].includes(v)) return "neutral";
+  if (["UNDER_TEST", "INCONCLUSIVE", "FRAGILE"].includes(v)) return "warn";
   if (v) return "info";
   return "neutral";
 }

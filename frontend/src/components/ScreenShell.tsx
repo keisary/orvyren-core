@@ -31,11 +31,13 @@ export function ScreenShell({
         : status === "connecting"
           ? "Connection CONNECTING"
           : "Connection OFFLINE";
+  const connectionHintDegraded =
+    "Stream interrupted. Views keep recorded artefacts; some refresh periodically.";
   const connectionHint =
     status === "live"
       ? "Connected to the local event stream."
       : status === "degraded"
-        ? "Stream interrupted. Showing recorded events via polling."
+        ? connectionHintDegraded
         : status === "connecting"
           ? "Connecting to the local event stream."
           : "No live connection. The views show recorded artefacts only.";
@@ -79,7 +81,7 @@ export function ScreenShell({
         </span>
       </div>
 
-      <div className="min-h-0 flex-1 overflow-auto p-6">{children}</div>
+      <div className="min-h-0 flex-1 overflow-auto p-4 min-[1280px]:p-6">{children}</div>
     </div>
   );
 }

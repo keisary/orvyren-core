@@ -22,7 +22,7 @@ interface Props {
   payload: GraphPayload;
   selected: string | null;
   onSelect: (id: string | null) => void;
-  onLayout?: (state: "cached" | "computing" | "done") => void;
+  onLayout?: (state: "cached" | "computing" | "done" | "served" | "failed") => void;
 }
 
 export default function SigmaGraph({ payload, selected, onSelect, onLayout }: Props) {
@@ -30,6 +30,7 @@ export default function SigmaGraph({ payload, selected, onSelect, onLayout }: Pr
   const sigmaRef = useRef<Sigma | null>(null);
   const workerRef = useRef<Worker | null>(null);
   const [hovered, setHovered] = useState<string | null>(null);
+  const [failed, setFailed] = useState(false);
   // Reducers are built ONCE per payload: they must read the focus through a
   // ref, otherwise they keep the ``selected``/``hovered`` of the build render
   // and the dim/highlight never reacts to clicks and hovers.
@@ -142,7 +143,15 @@ export default function SigmaGraph({ payload, selected, onSelect, onLayout }: Pr
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } as any;
 
-    const sigma = new Sigma(graph, container, settings);
+    let sigma: Sigma;
+    try {
+      sigma = new Sigma(graph, container, settings);
+    } catch {
+      // WebGL unavailable: say so honestly, the REST queries stay usable.
+      setFailed(true);
+      onLayout?.("failed");
+      return;
+    }
     sigmaRef.current = sigma;
 
     sigma.on("clickNode", ({ node }) => onSelect(node));
@@ -180,7 +189,7 @@ export default function SigmaGraph({ payload, selected, onSelect, onLayout }: Pr
       // If the worker fails, fall back to the served coordinates — never get
       // stuck on "computing" (the hint must keep telling the truth).
       worker.onerror = () => {
-        onLayout?.("done");
+        onLayout?.("served");
         worker.terminate();
         workerRef.current = null;
       };
@@ -237,24 +246,33 @@ export default function SigmaGraph({ payload, selected, onSelect, onLayout }: Pr
 
   return (
     <div className="relative h-full w-full">
-      <div ref={containerRef} className="h-full w-full" />
-      <div className="absolute right-2 top-2 flex flex-col gap-1">
-        <button type="button" className={controlClass} onClick={() => zoom(0.8)} aria-label="Zoom in" title="Zoom in">
-          +
-        </button>
-        <button type="button" className={controlClass} onClick={() => zoom(1.25)} aria-label="Zoom out" title="Zoom out">
-          −
-        </button>
-        <button
-          type="button"
-          className={controlClass}
-          onClick={resetView}
-          aria-label="Reset view"
-          title="Reset view"
-        >
-          ⤾
-        </button>
-      </div>
+      {failed ? (
+        <div className="flex h-full items-center justify-center px-6 text-center text-meta text-muted">
+          Canvas unavailable (WebGL failed) — the queries and tables remain
+          available.
+        </div>
+      ) : (
+        <div ref={containerRef} className="h-full w-full" />
+      )}
+      {failed ? null : (
+        <div className="absolute right-2 top-2 flex flex-col gap-1">
+          <button type="button" className={controlClass} onClick={() => zoom(0.8)} aria-label="Zoom in" title="Zoom in">
+            +
+          </button>
+          <button type="button" className={controlClass} onClick={() => zoom(1.25)} aria-label="Zoom out" title="Zoom out">
+            −
+          </button>
+          <button
+            type="button"
+            className={controlClass}
+            onClick={resetView}
+            aria-label="Reset view"
+            title="Reset view"
+          >
+            ⤾
+          </button>
+        </div>
+      )}
     </div>
   );
 }

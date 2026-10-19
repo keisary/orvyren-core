@@ -39,7 +39,6 @@ export function TabsList({
 }) {
   return (
     <div
-      role="tablist"
       aria-label="Views"
       className={cn("flex flex-wrap items-center gap-1 border-b border-line", className)}
     >
@@ -63,8 +62,7 @@ export function TabsTrigger({
   return (
     <button
       type="button"
-      role="tab"
-      aria-selected={active}
+      aria-pressed={active}
       onClick={() => ctx.setValue(value)}
       className={cn(
         "relative -mb-px px-3 py-2 text-meta font-semibold transition-colors duration-100",
@@ -92,8 +90,6 @@ export function TabsContent({
   if (!ctx) throw new Error("TabsContent must be used inside <Tabs>");
   if (ctx.value !== value) return null;
   return (
-    <div role="tabpanel" className={cn("mt-3", className)}>
-      {children}
-    </div>
+    <div className={cn("mt-3", className)}>{children}</div>
   );
 }

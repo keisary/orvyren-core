@@ -189,6 +189,10 @@ export interface SeriesLine {
   label: string;
   unit: string;
   kind: string;
+  /** rsETH reserve series only: which reserve asset and which metric this
+   *  line is (Astra-4 P0-1: unit is physical, asset/metric carry meaning). */
+  asset?: string;
+  metric?: string;
   points: [number, number][];
 }
 

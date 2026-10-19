@@ -1,17 +1,128 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { api } from "@/lib/api";
 import type { SeriesLine } from "@/lib/types";
-import { fmtBps, fmtCompact, fmtNumber, fmtUnix, truncate } from "@/lib/format";
+import { fmtBps, fmtNumber, fmtUnix, truncate } from "@/lib/format";
 import { seriesStyle } from "@/lib/graph-theme";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label, Select } from "@/components/ui/input";
 import { ScreenShell } from "@/components/ScreenShell";
+import { DisclosureBlock } from "@/components/SubstitutionBanner";
 import PriceChart, { type SeriesChartStyle } from "./PriceChart";
 
-/** Toggles carry the stable per-line style (assigned before any filtering):
- *  switching series can never reassign colors or line styles (§4.8). */
+/* ------------------------------------------------------------------ groups
+ * One chart per PHYSICAL semantic (Astra-4 P0-1): market prices in USD,
+ * each % ratio alone, quantities per reserve asset — rsETH, WETH and USDC
+ * quantities never share an axis, and no axis is named after a metric. */
+
+const METRIC_EN: Record<string, string> = {
+  cash: "balance",
+  variable_debt_supply: "variable debt",
+  a_token_supply: "aToken supply",
+  utilisation: "utilisation",
+  cap_ratio: "supply-cap usage",
+  oracle_price: "oracle price",
+};
+const METRIC_RANK: Record<string, number> = {
+  oracle_price: 0,
+  cap_ratio: 1,
+  utilisation: 2,
+  cash: 3,
+  variable_debt_supply: 4,
+  a_token_supply: 5,
+};
+const KIND_EN: Record<string, string> = {
+  price: "Price",
+  discount: "Discount",
+  exposure: "Exposure",
+  signal: "Signal",
+};
+const ASSET_RANK: Record<string, number> = { rsETH: 0, WETH: 1, USDC: 2 };
+
+interface ChartGroup {
+  key: string;
+  title: string;
+  unit: string;
+  rank: number;
+  lines: SeriesLine[];
+}
+
+function groupKeyOf(line: SeriesLine): string {
+  if (line.unit === "%" && line.metric) return `%|${line.metric}`;
+  if (line.kind === "price" && line.unit === "USD") return "price|USD";
+  if (line.asset && line.unit === line.asset) return `qty|${line.asset}`;
+  return `${line.kind}|${line.unit}`;
+}
+
+function buildGroups(lines: SeriesLine[]): ChartGroup[] {
+  const map = new Map<string, SeriesLine[]>();
+  for (const line of lines) {
+    const key = groupKeyOf(line);
+    if (!map.has(key)) map.set(key, []);
+    map.get(key)!.push(line);
+  }
+  const groups: ChartGroup[] = [];
+  for (const [key, groupLines] of map.entries()) {
+    const first = groupLines[0];
+    const metric = first.metric ?? "";
+    const asset = first.asset ?? "";
+    let title: string;
+    let rank: number;
+    if (key === "price|USD") {
+      title = groupLines.some((line) => line.asset === "rsETH")
+        ? "rsETH oracle price · USD"
+        : "Price · USD";
+      rank = 0;
+    } else if (key.startsWith("%|")) {
+      const en = METRIC_EN[metric] ?? metric;
+      title = `${en.charAt(0).toUpperCase()}${en.slice(1)} · %`;
+      rank = 10 + (METRIC_RANK[metric] ?? 9);
+    } else if (key.startsWith("qty|")) {
+      title = `${asset} reserve balances (${first.unit})`;
+      rank = 20 + (ASSET_RANK[asset] ?? 3);
+    } else if (first.kind === "price") {
+      title = `${KIND_EN.price} · ${first.unit}`;
+      rank = 1;
+    } else if (first.kind === "discount") {
+      title = `${KIND_EN.discount} · ${first.unit}`;
+      rank = 30;
+    } else {
+      title = `${KIND_EN[first.kind] ?? "Series"} · ${first.unit}`;
+      rank = 31 + (METRIC_RANK[metric] ?? 0);
+    }
+    groupLines.sort(
+      (a, b) => (METRIC_RANK[a.metric ?? ""] ?? 9) - (METRIC_RANK[b.metric ?? ""] ?? 9),
+    );
+    groups.push({ key, title, unit: first.unit, rank, lines: groupLines });
+  }
+  groups.sort((a, b) => a.rank - b.rank);
+  return groups;
+}
+
+/** Explicit default selection, at most three per chart: the documented
+ *  median/min pair for USDC, rsETH alone when several reserves share USD,
+ *  otherwise the first three (§4.6). */
+function defaultVisibleFor(groups: ChartGroup[]): Record<string, boolean> {
+  const visible: Record<string, boolean> = {};
+  for (const group of groups) {
+    const ids = group.lines.map((line) => line.id);
+    const preferred = ["price:median", "price:min"].filter((id) => ids.includes(id));
+    let on: string[];
+    if (preferred.length > 0) {
+      on = preferred;
+    } else {
+      const rseth = group.lines.filter((line) => line.asset === "rsETH").map((l) => l.id);
+      on = rseth.length > 0 ? rseth : ids.slice(0, 3);
+    }
+    for (const id of ids) visible[id] = on.includes(id);
+  }
+  return visible;
+}
+
+/** Toggles: stable per-line style (assigned before filtering) + the real
+ *  line pattern (solid / dotted / dashed) so legend and plot agree. */
 function SeriesToggles({
   lines,
   visible,
@@ -23,13 +134,13 @@ function SeriesToggles({
   onToggle: (id: string) => void;
   styleMap: Record<string, SeriesChartStyle>;
 }) {
-  const visibleCount = lines.filter((line) => visible[line.id] !== false).length;
   return (
     <div>
       <div className="flex flex-wrap gap-x-4 gap-y-1">
         {lines.map((line) => {
           const on = visible[line.id] !== false;
           const style = styleMap[line.id] ?? seriesStyle(0);
+          const borderStyle = style.style === 0 ? "solid" : style.style === 1 ? "dotted" : "dashed";
           return (
             <label
               key={line.id}
@@ -38,18 +149,16 @@ function SeriesToggles({
               <input
                 type="checkbox"
                 checked={on}
-                onChange={() => {
-                  // Maximum three visible series per chart (§4.6): selection,
-                  // not a multicolor palette.
-                  if (!on && visibleCount >= 3) return;
-                  onToggle(line.id);
-                }}
+                onChange={() => onToggle(line.id)}
                 className="h-3.5 w-3.5 accent-[#24543d]"
               />
               <span
                 aria-hidden
-                className="inline-block h-0.5 w-4"
-                style={{ background: on ? style.color : "var(--color-line-strong)" }}
+                className="inline-block w-4 border-t-2"
+                style={{
+                  borderTopStyle: borderStyle,
+                  borderTopColor: on ? style.color : "var(--color-line-strong)",
+                }}
               />
               {line.label}
             </label>
@@ -125,7 +234,10 @@ export default function MarketsScreen() {
   const episodesQuery = useQuery({ queryKey: ["episodes"], queryFn: api.episodes });
   const episodes = episodesQuery.data?.episodes ?? [];
   const [episodeId, setEpisodeId] = useState<string>("");
-  const activeId = episodeId || episodes[0]?.id || "";
+  // The jury episode is rsETH when it exists (§4.6), else the first one.
+  const activeId =
+    episodeId || episodes.find((episode) => episode.id.includes("rseth"))?.id ||
+    episodes[0]?.id || "";
   const seriesQuery = useQuery({
     queryKey: ["episode-series", activeId],
     queryFn: () => api.episodeSeries(activeId),
@@ -136,44 +248,74 @@ export default function MarketsScreen() {
 
   const series = seriesQuery.data;
 
-  // Stable style per line.id — computed from the FULL lists, before filtering.
+  const groups = useMemo(
+    () => buildGroups(series?.lines ?? []),
+    [series],
+  );
+
+  // Styles assigned per line.id INSIDE each group (before any filtering):
+  // three visible series always get three distinct style/color pairs.
   const styleMap = useMemo(() => {
     const map: Record<string, SeriesChartStyle> = {};
-    let index = 0;
-    for (const line of [...(series?.lines ?? []), ...(series?.bars ?? [])]) {
+    for (const group of groups) {
+      group.lines.forEach((line, index) => {
+        map[line.id] = seriesStyle(index);
+      });
+    }
+    (series?.bars ?? []).forEach((line, index) => {
       map[line.id] = seriesStyle(index);
-      index += 1;
-    }
+    });
     return map;
-  }, [series]);
+  }, [groups, series]);
 
-  // One chart per unit — price (USD) and discount (bps) never share an axis.
-  const unitGroups = useMemo(() => {
-    const map = new Map<string, SeriesLine[]>();
-    for (const line of series?.lines ?? []) {
-      const key = line.unit || line.kind;
-      if (!map.has(key)) map.set(key, []);
-      map.get(key)!.push(line);
-    }
-    return [...map.entries()];
+  // New episode → explicit default selection (≤3 per chart), reset events.
+  useEffect(() => {
+    if (!series) return;
+    const initial = defaultVisibleFor(groups);
+    for (const bar of series.bars ?? []) initial[bar.id] = true;
+    setVisible(initial);
+    setShowAllEvents(false);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [series]);
-  const bars = series?.bars ?? [];
 
   const toggle = (id: string) =>
-    setVisible((prev) => ({ ...prev, [id]: prev[id] === false }));
+    setVisible((prev) => {
+      const turningOn = prev[id] === false;
+      if (turningOn) {
+        const group = groups.find((entry) => entry.lines.some((line) => line.id === id));
+        const count = group
+          ? group.lines.filter((line) => prev[line.id] !== false).length
+          : 0;
+        if (count >= 3) return prev; // maximum three visible series per chart
+      }
+      return { ...prev, [id]: turningOn };
+    });
 
+  const bars = series?.bars ?? [];
   const facts = useMemo(() => headlineFacts(series?.headline ?? {}), [series]);
   const episodeIndex = episodes.find((episode) => episode.id === activeId);
   const events = series?.events ?? [];
   const shownEvents = showAllEvents ? events : events.slice(0, 3);
+  const isEth = activeId.includes("rseth") || activeId.includes("steth");
+  const evidenceValue = `Historical evidence · ${isEth ? "Ethereum" : "archived venues"}`;
+  const subtitle = `${activeId.startsWith("rseth") ? "rsETH / April 2026 · " : ""}${evidenceValue} · measured series (RPC + venues)`;
+
+  const limitations = [...(series?.limitations ?? [])];
+  if (activeId.includes("rseth")) {
+    // Authorized copy (Astra-3 §2.3D): the freeze bit does not prove that
+    // withdrawals were blocked — say exactly that, visibly.
+    limitations.push(
+      "Reserve freeze observed. Withdrawal availability was not established.",
+    );
+  }
 
   return (
     <ScreenShell
       title="Market evidence"
-      subtitle="Measured series (RPC + venues) · one chart per unit · milestones with their sources"
+      subtitle={subtitle}
       context={[
         { label: "Episode", value: activeId || "—" },
-        { label: "Evidence", value: "Historical evidence · archived series" },
+        { label: "Evidence", value: evidenceValue },
       ]}
       actions={
         <>
@@ -185,7 +327,6 @@ export default function MarketsScreen() {
               value={activeId}
               onChange={(event) => {
                 setEpisodeId(event.target.value);
-                setVisible({});
                 setShowAllEvents(false);
               }}
             >
@@ -200,7 +341,20 @@ export default function MarketsScreen() {
         </>
       }
     >
-      {!series ? (
+      {seriesQuery.isError && !series ? (
+        <div className="border border-line bg-surface px-4 py-8 text-center">
+          <div className="text-body text-ink">
+            Series unavailable — the API did not answer.
+          </div>
+          <Button
+            variant="secondary"
+            className="mt-3"
+            onClick={() => seriesQuery.refetch()}
+          >
+            Retry
+          </Button>
+        </div>
+      ) : !series ? (
         <div className="p-8 text-center text-meta text-muted">Loading series…</div>
       ) : (
         <div className="space-y-4">
@@ -255,38 +409,45 @@ export default function MarketsScreen() {
 
           <div className="grid grid-cols-1 gap-4 xl:grid-cols-[minmax(0,1fr)_320px]">
             <div className="space-y-4">
-              {unitGroups.map(([unit, lines], groupIndex) => {
-                const shown = lines.filter((line) => visible[line.id] !== false);
-                if (shown.length === 0) return null;
+              {groups.map((group, groupIndex) => {
+                const shown = group.lines.filter((line) => visible[line.id] !== false);
                 return (
-                  <Card key={unit}>
+                  <Card key={group.key}>
                     <CardHeader>
-                      <CardTitle>
-                        {groupIndex === 0 ? "Primary series" : "Comparison"} · {unit}
-                      </CardTitle>
+                      <CardTitle>{group.title}</CardTitle>
                       <Badge variant="neutral">
-                        {shown.length} / {lines.length} series · {unit}
+                        {shown.length} / {group.lines.length} series · {group.unit}
                       </Badge>
                     </CardHeader>
                     <CardContent className="space-y-2">
                       <SeriesToggles
-                        lines={lines}
+                        lines={group.lines}
                         visible={visible}
                         onToggle={toggle}
                         styleMap={styleMap}
                       />
-                      <PriceChart
-                        series={shown}
-                        height={groupIndex === 0 ? 280 : 160}
-                        styles={styleMap}
-                      />
-                      <div className="text-meta text-muted">Time (UTC)</div>
+                      {shown.length === 0 ? (
+                        <div className="flex h-24 items-center justify-center border border-line text-meta text-muted">
+                          No series selected — check one above.
+                        </div>
+                      ) : (
+                        <PriceChart
+                          key={group.key}
+                          series={shown}
+                          unit={group.unit}
+                          height={groupIndex === 0 ? 280 : 160}
+                          styles={styleMap}
+                        />
+                      )}
+                      <div className="text-meta text-muted">
+                        Time (UTC) · Sampled observations; lines connect available points.
+                      </div>
                     </CardContent>
                   </Card>
                 );
               })}
 
-              {bars.filter((line) => visible[line.id] !== false).length > 0 ? (
+              {bars.length > 0 ? (
                 <Card>
                   <CardHeader>
                     <CardTitle>Signal histogram · {bars[0]?.unit ?? "—"}</CardTitle>
@@ -298,32 +459,47 @@ export default function MarketsScreen() {
                       onToggle={toggle}
                       styleMap={styleMap}
                     />
-                    <PriceChart
-                      series={bars.filter((line) => visible[line.id] !== false)}
-                      variant="histogram"
-                      height={150}
-                      styles={styleMap}
-                      valueFormat={(value) => fmtBps(value)}
-                    />
+                    {bars.filter((line) => visible[line.id] !== false).length === 0 ? (
+                      <div className="flex h-24 items-center justify-center border border-line text-meta text-muted">
+                        No series selected — check one above.
+                      </div>
+                    ) : (
+                      <PriceChart
+                        key="histogram"
+                        series={bars.filter((line) => visible[line.id] !== false)}
+                        variant="histogram"
+                        unit="bps"
+                        height={150}
+                        styles={styleMap}
+                        valueFormat={(value) => fmtBps(value)}
+                      />
+                    )}
                   </CardContent>
                 </Card>
               ) : null}
             </div>
 
             <div className="space-y-4">
+              {activeId.includes("rseth") ? (
+                <DisclosureBlock
+                  title="Documented market quote: $1,686"
+                  body="Not an archived market series. Not time-aligned with the oracle reading."
+                  sources={["fixtures/raw_w2b/defillama_rseth_apr2026.json"]}
+                />
+              ) : null}
+
               {/* Limitations that can change the verdict stay visible (§4.6). */}
               <Card>
                 <CardHeader>
                   <CardTitle>Evidence limits</CardTitle>
-                  <Badge variant="warn">declared honestly</Badge>
                 </CardHeader>
                 <CardContent className="space-y-1.5">
-                  {series.limitations.map((limitation, index) => (
+                  {limitations.map((limitation, index) => (
                     <div key={index} className="text-body leading-5 text-ink">
                       • {limitation}
                     </div>
                   ))}
-                  {series.limitations.length === 0 ? (
+                  {limitations.length === 0 ? (
                     <div className="text-meta text-muted">No limitation declared.</div>
                   ) : null}
                 </CardContent>

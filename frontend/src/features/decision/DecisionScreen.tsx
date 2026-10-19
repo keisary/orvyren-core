@@ -178,11 +178,14 @@ export default function DecisionScreen() {
   const policyQuery = useQuery({ queryKey: ["policy"], queryFn: api.policyVerdicts });
   const intentsQuery = useQuery({ queryKey: ["intents"], queryFn: api.executionIntents });
   const receiptsQuery = useQuery({ queryKey: ["receipts"], queryFn: api.executionReceipts });
-  const [view, setView] = useState<"scenario" | "pilot" | "receipts">("pilot");
+  const [view, setView] = useState<"scenario" | "pilot" | "receipts">("scenario");
   const [selectedCase, setSelectedCase] = useState("I1");
   const [caseTab, setCaseTab] = useState("rules");
 
   const decision = (decisionQuery.data ?? {}) as DecisionRecord;
+  // Absent is not zero and not a verdict (Astra-4 P1-1): without a record,
+  // every cell says so instead of inventing a value.
+  const hasRecord = decisionQuery.data != null && !decisionQuery.isError;
   const axes = (decision.axes ?? {}) as Record<string, unknown>;
   const rdof = (decision.rdof ?? {}) as Record<string, unknown>;
   const priceConvention = (decision.price_convention ?? {}) as Record<string, unknown>;
@@ -209,11 +212,24 @@ export default function DecisionScreen() {
     <ScreenShell
       title="Decision & Policy"
       subtitle="Three axes kept separate · discriminative checks · 14-rule policy lock · intents → receipts"
-      context={[
-        { label: "Case", value: String(decision.case ?? "usdc-2023-03") },
-        { label: "Catalog", value: String(decision.action_catalog_version ?? "—") },
-        { label: "Evidence", value: "Recorded replay" },
-      ]}
+      context={
+        view === "scenario"
+          ? [
+              { label: "Case", value: "rseth-2026-04" },
+              { label: "Evidence", value: "Scenario evidence unavailable" },
+            ]
+          : view === "receipts"
+            ? [
+                { label: "Case", value: "Testnet demonstration" },
+                { label: "Chain", value: "Base Sepolia" },
+                { label: "Evidence", value: "Recorded receipts" },
+              ]
+            : [
+                { label: "Case", value: String(decision.case ?? "usdc-2023-03") },
+                { label: "Catalog", value: String(decision.action_catalog_version ?? "—") },
+                { label: "Evidence", value: "Recorded replay" },
+              ]
+      }
     >
       <div className="space-y-4">
         <Tabs value={view} onValueChange={(value) => setView(value as typeof view)}>
@@ -239,43 +255,74 @@ export default function DecisionScreen() {
 
           <TabsContent value="pilot">
             <div className="space-y-4">
+              <div className="border border-line bg-surface2 px-4 py-2 text-body text-ink">
+                USDC pilot — mechanism demonstration
+                <span className="text-muted">
+                  {" "}
+                  · source: evidence/decision_usdc-2023-03.json · mode: recorded replay
+                </span>
+              </div>
               {/* Summary strip: three cells, one surface (§4.7). */}
               <div className="grid grid-cols-1 gap-px border border-line bg-line lg:grid-cols-3">
                 <StripCell
                   label="Evidence assessment"
-                  value={String(axes.epistemic_verdict ?? "—")}
-                  variant={verdictVariant(axes.epistemic_verdict)}
-                  detail={`axis 1 — evidence question · supported hypotheses: ${supported}`}
+                  value={hasRecord ? String(axes.epistemic_verdict ?? "—") : "Not available"}
+                  variant={hasRecord ? verdictVariant(axes.epistemic_verdict) : "neutral"}
+                  detail={
+                    hasRecord
+                      ? `axis 1 — evidence question · supported hypotheses: ${supported}`
+                      : "The decision record has not been loaded."
+                  }
                 />
                 <StripCell
                   label="Proposed action"
-                  value={action}
-                  variant={axes.economic_action ? "info" : "neutral"}
+                  value={
+                    !hasRecord
+                      ? "Not available"
+                      : axes.economic_action
+                        ? String(axes.economic_action)
+                        : "No action proposed"
+                  }
+                  variant={
+                    !hasRecord ? "neutral" : axes.economic_action ? "info" : "neutral"
+                  }
                   detail={
-                    axes.economic_action
-                      ? `axis 2 — economic sizing · size x* = ${fmtNumber(axes.x_star_usdc ?? 0, 2)} USDC test (demonstration parameters)`
-                      : "axis 2 — economic sizing · no transfer proposed by this record"
+                    !hasRecord
+                      ? ""
+                      : axes.economic_action
+                        ? `axis 2 — economic sizing · size x* = ${fmtNumber(axes.x_star_usdc ?? 0, 2)} USDC test (demonstration parameters)`
+                        : "axis 2 — economic sizing · no transfer proposed by this record"
                   }
                 />
                 <StripCell
                   label="Agent escalation"
-                  value={authVerdict ?? "Not evaluated"}
+                  value={
+                    !hasRecord
+                      ? "Not available"
+                      : authVerdict
+                        ? authVerdict
+                        : "Not evaluated"
+                  }
                   variant={
-                    authVerdict
-                      ? verdictVariant(authVerdict)
-                      : "neutral"
+                    !hasRecord
+                      ? "neutral"
+                      : authVerdict
+                        ? verdictVariant(authVerdict)
+                        : "neutral"
                   }
                   detail={
-                    authVerdict
-                      ? truncate(
-                          String(
-                            (axes.authorization_detail as Record<string, unknown>)?.note ??
-                              axes.separation_note ??
-                              "",
-                          ),
-                          180,
-                        )
-                      : String(axes.separation_note ?? "Authorization needs a configured recipient.")
+                    !hasRecord
+                      ? ""
+                      : authVerdict
+                        ? truncate(
+                            String(
+                              (axes.authorization_detail as Record<string, unknown>)?.note ??
+                                axes.separation_note ??
+                                "",
+                            ),
+                            180,
+                          )
+                        : String(axes.separation_note ?? "Authorization needs a configured recipient.")
                   }
                 />
               </div>
@@ -394,8 +441,20 @@ export default function DecisionScreen() {
                 <Card>
                   <CardHeader>
                     <CardTitle>Hypothesis verdicts & price convention</CardTitle>
-                    <Badge variant={conventions.ambiguous ? "warn" : "ok"}>
-                      {conventions.ambiguous ? "gap between conventions" : "concordant"}
+                    <Badge
+                      variant={
+                        conventions.ambiguous === true
+                          ? "warn"
+                          : conventions.ambiguous === false
+                            ? "ok"
+                            : "neutral"
+                      }
+                    >
+                      {conventions.ambiguous === true
+                        ? "gap between conventions"
+                        : conventions.ambiguous === false
+                          ? "concordant"
+                          : "Not available"}
                     </Badge>
                   </CardHeader>
                   <CardContent className="space-y-2.5">
@@ -466,7 +525,11 @@ export default function DecisionScreen() {
                     {String((policyQuery.data?.policy ?? {}).version ?? "")} · hash{" "}
                     {fmtHash(String((policyQuery.data?.policy ?? {}).policy_hash ?? ""), 12)}{" "}
                     · agent holds the key:{" "}
-                    {policyQuery.data?.agent_holds_key ? "YES" : "no"}
+                    {policyQuery.data?.agent_holds_key === true
+                      ? "YES"
+                      : policyQuery.data?.agent_holds_key === false
+                        ? "no"
+                        : "unknown"}
                   </div>
                 </CardHeader>
                 <CardContent className="space-y-3">
