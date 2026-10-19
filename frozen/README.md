@@ -34,7 +34,7 @@ python scripts/freeze_sprint0.py --out /tmp/frozen_recalc
 
 * **FROZEN**: the six documents, their fingerprints, the 9 DEV forecasts (chained hash) and their
   deterministic resolutions ;
-* **VALIDATED / SIGNED on 2026-10-17**: G4 (persona thresholds, validated) and G6 (economic
+* **VALIDATED / SIGNED on 2026-10-19**: G4 (persona thresholds, validated) and G6 (economic
   assumptions, signed by **AKUE-BITCHI Adote Jovanny**) — the EVAL can be claimed from this package ;
 * **NOT DONE (never invented)**: 2025–2026 CALM EVAL windows (B7 Q6) and `Depth_ε` —
   see `G3_fenetres.md` §4 ; the previously missing G6 assumptions are now
@@ -47,9 +47,9 @@ python scripts/freeze_sprint0.py --out /tmp/frozen_recalc
 | `G1.sha256` | `712f4f81d505f436c6b76c54816a324e6bdde6cb7fbb13918f6dc24fed56205e` |
 | `G2.sha256` | `feecba6c7011143d7972e2bdb2dd9c9c74ad4c5ad950d444e303b3f43fd64bf7` |
 | `G3.sha256` | `cc7d6ec166a18e176078357764a5cd946c0a873723c5ec7ce1a4cfa3076be263` |
-| `G4.sha256` | `4ad8d81035f7a8e12e7140f991b48689d158f6d5c7784ced473ee6f669b31d57` |
+| `G4.sha256` | `5d4656ddc7f420bb4c265c808d9d73d516e481f010d547daef7ef63724d47380` |
 | `G5.sha256` | `0d6aee1dbed0f47dc150230620cb5be0fce15d240a791185c77cc3d9e50325cc` |
-| `G6.sha256` | `b82e2ab3796c39100bd6824a2c69a3f3d858ee70a1af8c211f53ecde2c74f8ea` |
+| `G6.sha256` | `acbdc6a7ffea93505e3dfccca8a1b2848f875ab7c84e3cd08d521cb177533709` |
 
 *Note: `README.md` and `FORECASTS_DEV.md` do not appear in the Gx manifests (they are not
 frozen documents in the sense of the protocol) ; their fingerprints are verified by `verify_frozen.py`

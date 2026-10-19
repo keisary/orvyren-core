@@ -1,7 +1,7 @@
 # G6 — Economic assumptions (freeze v1, status SIGNED)
 
-**Status: SIGNED — electronic validation by the team lead on 2026-10-17.** 2026-10-16T00:00:00Z.
-Signatory: **AKUE-BITCHI Adote Jovanny** — electronic validation by the team lead — explicit authorisation in the Hermes session of 2026-10-17 ; a scanned handwritten copy may be attached to the submission. The sheet
+**Status: SIGNED — electronic validation by the team lead on 2026-10-19.** 2026-10-16T00:00:00Z.
+Signatory: **AKUE-BITCHI Adote Jovanny** — re-sealed after translation + sensitivity, no parameter changed, before first EVAL — electronic validation by the team lead, explicit authorisation in the Hermes session of 2026-10-19. The sheet
 `G6_FEUILLE_DE_SIGNATURE.md` carries the validation ; the values below are
 those on which the first EVAL runs.
 Sources: W2-D §B.3/B.4, §E.2, §(f) 1–7 and 11–12 ; B7 §b.5, §e.3/e.4, Q1 ; FREEZE_V2 §C7.
@@ -33,6 +33,6 @@ sign of `E[perte évitée]` to `P(obligation)`: the switch value is exactly comp
 
 ## 4. Signature
 
-Validated by **AKUE-BITCHI Adote Jovanny** on **2026-10-17** — electronic validation by the team lead — explicit authorisation in the Hermes session of 2026-10-17 ; a scanned handwritten copy may be attached to the submission.
+Validated by **AKUE-BITCHI Adote Jovanny** on **2026-10-19** — re-sealed after translation + sensitivity, no parameter changed, before first EVAL — electronic validation by the team lead, explicit authorisation in the Hermes session of 2026-10-19.
 A scanned handwritten copy may be attached to the submission ; the reference
 electronic validation is this document and `G6_FEUILLE_DE_SIGNATURE.md`.

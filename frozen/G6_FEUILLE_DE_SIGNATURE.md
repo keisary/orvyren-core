@@ -1,8 +1,8 @@
 # G6 — Signature sheet for the economic assumptions
 
-**Overall status: SIGNED — validated on 2026-10-17.** 2026-10-16T00:00:00Z.
+**Overall status: SIGNED — validated on 2026-10-19.** 2026-10-16T00:00:00Z.
 Protocol: FREEZE_V2 §C7 (« G6 signed by the team lead (default) + published sensitivity »).
-Signatory: **AKUE-BITCHI Adote Jovanny** — electronic validation by the team lead — explicit authorisation in the Hermes session of 2026-10-17 ; a scanned handwritten copy may be attached to the submission.
+Signatory: **AKUE-BITCHI Adote Jovanny** — re-sealed after translation + sensitivity, no parameter changed, before first EVAL — electronic validation by the team lead, explicit authorisation in the Hermes session of 2026-10-19.
 
 Instructions: the signatory ticks each validated parameter, fills in the values
 marked `NOT DONE`, dates and signs. The values below are those of the
@@ -35,7 +35,7 @@ and re-labelling.
 
 | Role | Name | Date (UTC) | Signature / hash of the signing commit |
 |---|---|---|---|
-| Team lead (default, FREEZE_V2 §C7) | AKUE-BITCHI Adote Jovanny | 2026-10-17 | electronic validation by the team lead — explicit authorisation in the Hermes session of 2026-10-17 ; a scanned handwritten copy may be attached to the submission |
+| Team lead (default, FREEZE_V2 §C7) | AKUE-BITCHI Adote Jovanny | 2026-10-19 | re-sealed after translation + sensitivity, no parameter changed, before first EVAL — electronic validation by the team lead, explicit authorisation in the Hermes session of 2026-10-19 |
 | Witness (optional) | | | |
 
 **Embargo reminder**: after the first EVAL run, any modification of these

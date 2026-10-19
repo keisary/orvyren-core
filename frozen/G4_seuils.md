@@ -1,7 +1,7 @@
 # G4 — Per-persona thresholds (freeze v1, status VALIDATED)
 
-**Status: VALIDATED — electronic validation by the team lead on 2026-10-17.** 2026-10-16T00:00:00Z.
-Signatory: **AKUE-BITCHI Adote Jovanny** — electronic validation by the team lead — explicit authorisation in the Hermes session of 2026-10-17 ; a scanned handwritten copy may be attached to the submission. Sources: W2-D §C.4.1 (DAO), §C.4.2 (desk),
+**Status: VALIDATED — electronic validation by the team lead on 2026-10-19.** 2026-10-16T00:00:00Z.
+Signatory: **AKUE-BITCHI Adote Jovanny** — re-sealed after translation + sensitivity, no parameter changed, before first EVAL — electronic validation by the team lead, explicit authorisation in the Hermes session of 2026-10-19. Sources: W2-D §C.4.1 (DAO), §C.4.2 (desk),
 B7 §e.3/e.4 (metrics). The values below are **taken as is**
 from the source documents and **validated**; they are not measured facts.
 

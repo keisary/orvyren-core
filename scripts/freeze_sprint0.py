@@ -55,11 +55,11 @@ from orvyren.evaluation import windows as windows_mod  # noqa: E402
 GEL_AT_UTC = "2026-10-16T00:00:00Z"
 RUN_ID = "freeze-sprint0-2026-10-16"
 # Signature électronique du chef d'équipe (validation explicite du 2026-10-17).
-G6_SIGNED_AT = "2026-10-17"
+G6_SIGNED_AT = "2026-10-19"
 G6_SIGNER = "AKUE-BITCHI Adote Jovanny"
-G6_SIGNATURE_NOTE = ("electronic validation by the team lead — explicit authorisation "
-                     "in the Hermes session of 2026-10-17 ; a scanned handwritten copy "
-                     "may be attached to the submission")
+G6_SIGNATURE_NOTE = ("re-sealed after translation + sensitivity, no parameter changed, "
+                     "before first EVAL — electronic validation by the team lead, "
+                     "explicit authorisation in the Hermes session of 2026-10-19")
 SIGNED_BY = {"role": "gel-g6", "name": G6_SIGNER}
 
 #: Chemins POSIX (stables entre plateformes — ils entrent dans le hash des records).
