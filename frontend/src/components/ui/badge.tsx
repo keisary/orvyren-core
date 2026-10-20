@@ -9,7 +9,7 @@ import { cn } from "@/lib/cn";
  */
 const badgeVariants = cva(
   "inline-flex items-center gap-1 rounded-[2px] border px-1.5 py-0.5 " +
-    "text-meta font-semibold leading-4",
+    "text-[12px] font-semibold leading-4",
   {
     variants: {
       variant: {
