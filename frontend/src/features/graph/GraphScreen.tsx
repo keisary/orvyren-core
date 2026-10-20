@@ -1,384 +1,704 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { api } from "@/lib/api";
-import type { GraphQueryResult } from "@/lib/types";
-import { fmtCompact, fmtHash, fmtNumber, shortAddress, truncate } from "@/lib/format";
-import { toneForClass } from "@/lib/graph-theme";
+import type { GraphPayload, GraphQueryResult } from "@/lib/types";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input, Label, Select } from "@/components/ui/input";
-import { Table, TBody, TD, TH, THead, TR } from "@/components/ui/table";
-import { ScreenShell } from "@/components/ScreenShell";
-import SigmaGraph from "./SigmaGraph";
+import { cn } from "@/lib/cn";
+import { toneForClass } from "@/lib/graph-theme";
+import SigmaGraph, { type GraphCameraApi } from "./SigmaGraph";
+import {
+  QueryResultBlock,
+  RailSection,
+  SelectionRail,
+  statusMeaning,
+  Field,
+} from "./Rail";
+import {
+  buildSubgraph,
+  classCounts,
+  displayName,
+  indexGraph,
+  kindLabel,
+  pickDefaultRoot,
+  recount,
+  resolveNodeId,
+  topNodes,
+  type LabelMode,
+} from "./subgraph";
 
-/** Demonstration values = `evidence/ui_snapshot.json` (real graph run). */
-const DEFAULTS: Record<string, string> = {
-  holder: "addr:eip155:8453:0xbe00a0de23a02a85d7fb7451ab9b69d84fd61fe3",
+/**
+ * Graph — the dedicated full-screen route (ART_DIRECTION §2.3).
+ *
+ * One question per screen: *what is this exposure, and what justifies it?*
+ *  - the canvas is the page (≥ 70 vh), with no control painted over it;
+ *  - the query bar asks the question, the view bar bounds the picture
+ *    (depth, label kind, camera), the legend filters, the right rail explains;
+ *  - the canvas only ever draws a bounded subgraph (`subgraph.ts`), never the
+ *    16 174-node world.
+ */
+
+type FieldKey =
+  | "node"
+  | "holder"
+  | "src"
+  | "dst"
+  | "subject"
+  | "asset"
+  | "relation_id"
+  | "as_of"
+  | "as_of_block"
+  | "kinds";
+
+interface FieldDef {
+  label: string;
+  kind: "node" | "text";
+  width: string;
+  placeholder?: string;
+}
+
+const FIELDS: Record<FieldKey, FieldDef> = {
+  node: { label: "Start node", kind: "node", width: "w-[236px]" },
+  holder: { label: "Holder", kind: "node", width: "w-[236px]" },
+  src: { label: "Source", kind: "node", width: "w-[236px]" },
+  dst: { label: "Target", kind: "node", width: "w-[236px]" },
+  subject: { label: "Subject", kind: "node", width: "w-[236px]" },
+  asset: { label: "Asset / market", kind: "node", width: "w-[236px]" },
+  relation_id: {
+    label: "Relation id",
+    kind: "text",
+    width: "w-[236px]",
+    placeholder: "relation id",
+  },
+  as_of: { label: "As of (ISO)", kind: "text", width: "w-[170px]", placeholder: "2026-04-18T19:03:59Z" },
+  as_of_block: { label: "Block", kind: "text", width: "w-[120px]", placeholder: "52723115" },
+  kinds: { label: "Relation kinds", kind: "text", width: "w-[170px]", placeholder: "DEPOSITED_IN,…" },
+};
+
+type QuestionKey =
+  | "neighbourhood"
+  | "q1"
+  | "q2"
+  | "q8"
+  | "q3"
+  | "q4"
+  | "q5"
+  | "q6"
+  | "q7"
+  | "snapshot";
+
+interface Question {
+  label: string;
+  api: string | null;
+  group: "subgraph" | "records";
+  fields: FieldKey[];
+  rootField?: FieldKey;
+  answers: string;
+}
+
+const QUESTIONS: Record<QuestionKey, Question> = {
+  neighbourhood: {
+    label: "Neighbourhood of a node",
+    api: null,
+    group: "subgraph",
+    fields: ["node"],
+    rootField: "node",
+    answers: "Who is this node connected to, and through which relations?",
+  },
+  q1: {
+    label: "Q1 — exposure of a holder",
+    api: "q1",
+    group: "subgraph",
+    fields: ["holder", "as_of", "as_of_block"],
+    rootField: "holder",
+    answers: "What does this holder own, directly and through deposits?",
+  },
+  q2: {
+    label: "Q2 — signed dependency path",
+    api: "q2",
+    group: "subgraph",
+    fields: ["src", "dst", "kinds", "as_of"],
+    rootField: "src",
+    answers: "Which signed dependency path links two nodes?",
+  },
+  q8: {
+    label: "Q8 — permissions of a subject",
+    api: "q8",
+    group: "subgraph",
+    fields: ["subject", "as_of", "as_of_block"],
+    rootField: "subject",
+    answers: "What can this subject do — roles and allowances?",
+  },
+  q4: {
+    label: "Q4 — state at a block",
+    api: "q4",
+    group: "records",
+    fields: ["as_of", "as_of_block"],
+    answers: "Which relations were valid at this point in time?",
+  },
+  q5: {
+    label: "Q5 — event timeline",
+    api: "q5",
+    group: "records",
+    fields: ["as_of", "as_of_block"],
+    answers: "Which first-class events were observable up to this instant?",
+  },
+  q6: {
+    label: "Q6 — provenance of a relation",
+    api: "q6",
+    group: "records",
+    fields: ["relation_id"],
+    answers: "Which source refs justify this relation?",
+  },
+  q7: {
+    label: "Q7 — counterparty concentration",
+    api: "q7",
+    group: "records",
+    fields: ["asset", "as_of"],
+    answers: "How concentrated is this asset's counterparty set (HHI)?",
+  },
+  q3: {
+    label: "Q3 — open contradictions",
+    api: "q3",
+    group: "records",
+    fields: [],
+    answers: "Which contradiction pairs are still unresolved?",
+  },
+  snapshot: {
+    label: "Snapshot — deterministic hash",
+    api: "snapshot",
+    group: "records",
+    fields: ["as_of", "as_of_block"],
+    answers: "What is the content hash of the graph at this instant?",
+  },
+};
+
+const DEMO = "addr:eip155:8453:0xbe00a0de23a02a85d7fb7451ab9b69d84fd61fe3";
+
+const DEFAULTS: Record<FieldKey, string> = {
+  node: DEMO,
+  holder: DEMO,
   src: "addr:eip155:8453:0x2b8ce2c87c166d8e24e186e7e4253c11fc805427",
   dst: "asset:eip155:8453:0x4200000000000000000000000000000000000006",
-  asset: "debt:eip155:8453:0xa238dd80c259a72e81d7e4664a9801593f98d1c5:0x4200000000000000000000000000000000000006",
   subject: "addr:eip155:8453:0x2b8ce2c87c166d8e24e186e7e4253c11fc805427",
+  asset: "asset:eip155:8453:0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
   relation_id: "struct:constrains:0xecac9c5f704e954931349da37f60e39f515c11c1",
-  as_of_block: "52723115",
-  max_depth: "3",
-  limit: "25",
-  kinds: "",
   as_of: "",
+  as_of_block: "",
+  kinds: "",
 };
 
-interface QueryDef {
-  label: string;
-  fields: (keyof typeof DEFAULTS)[];
-}
+const LABEL_MODES: { key: LabelMode; label: string; hint: string }[] = [
+  { key: "node", label: "Node", hint: "Node names only" },
+  { key: "relation", label: "Relation", hint: "Relation kinds only" },
+  { key: "none", label: "None", hint: "No labels — shape and tone only" },
+];
 
-const QUERIES: Record<string, QueryDef> = {
-  q1: { label: "Q1 — consolidated exposure (direct + indirect)", fields: ["holder", "as_of", "as_of_block", "max_depth"] },
-  q2: { label: "Q2 — signed dependency paths", fields: ["src", "dst", "kinds", "max_depth", "as_of", "as_of_block"] },
-  q3: { label: "Q3 — open contradictions", fields: [] },
-  q4: { label: "Q4 — point-in-time state", fields: ["as_of", "as_of_block", "limit"] },
-  q5: { label: "Q5 — event timeline", fields: ["as_of", "as_of_block", "limit"] },
-  q6: { label: "Q6 — relation provenance", fields: ["relation_id"] },
-  q7: { label: "Q7 — counterparty concentration (HHI)", fields: ["asset", "as_of", "as_of_block"] },
-  q8: { label: "Q8 — permissions (roles, allowances)", fields: ["subject", "as_of", "as_of_block"] },
-  snapshot: { label: "Snapshot — deterministic graph hash", fields: ["as_of", "as_of_block"] },
-};
-
-function formatCell(value: unknown): string {
-  if (value === null || value === undefined) return "—";
-  if (typeof value === "number") return fmtNumber(value, 4);
-  if (typeof value === "object") return truncate(JSON.stringify(value), 90);
-  return String(value);
-}
-
-function ResultTable({ result }: { result: GraphQueryResult }) {
-  const rows = result.rows ?? [];
-  const columns = useMemo(() => {
-    const keys: string[] = [];
-    for (const row of rows.slice(0, 25)) {
-      for (const key of Object.keys(row)) {
-        if (!keys.includes(key)) keys.push(key);
-      }
-    }
-    return keys;
-  }, [rows]);
-  return (
-    <Table>
-      <THead>
-        <TR>
-          {columns.map((column) => (
-            <TH key={column}>{column}</TH>
-          ))}
-        </TR>
-      </THead>
-      <TBody>
-        {rows.slice(0, 25).map((row, index) => (
-          <TR key={index}>
-            {columns.map((column) => (
-              <TD
-                key={column}
-                className={`max-w-[260px] break-all ${
-                  typeof row[column] === "number" ? "text-right" : ""
-                }`}
-              >
-                {formatCell(row[column])}
-              </TD>
-            ))}
-          </TR>
-        ))}
-      </TBody>
-    </Table>
-  );
-}
-
-/** Written meaning for non-OK statuses (§4.8): a status word alone is not an
- *  explanation. */
-function StatusExplanation({ status }: { status: string }) {
-  if (status === "NO_PATH") {
-    return (
-      <div className="space-y-0.5 text-meta text-muted">
-        <div>NO_PATH — no dependency path was found in this dataset.</div>
-        <div>Dependency edges are not populated in the demonstrated slice.</div>
-      </div>
-    );
-  }
-  if (status === "NOT_INGESTED") {
-    return (
-      <div className="text-meta text-muted">
-        NOT_INGESTED — this id does not exist in the demonstrated dataset.
-      </div>
-    );
-  }
-  if (status === "OK") {
-    return (
-      <div className="text-meta text-muted">OK — the query returned no row for these parameters.</div>
-    );
-  }
-  return <div className="text-meta text-muted">{status} — see the runbook for this status.</div>;
+function nf(value: number): string {
+  return value.toLocaleString("en-GB");
 }
 
 export default function GraphScreen() {
-  const graphQuery = useQuery({ queryKey: ["graph-full"], queryFn: api.graphFull, staleTime: 300_000 });
-  const [selected, setSelected] = useState<string | null>(null);
-  const [queryName, setQueryName] = useState("q1");
-  const [params, setParams] = useState<Record<string, string>>({ ...DEFAULTS });
-  const [layoutState, setLayoutState] = useState<"cached" | "computing" | "done" | "">("");
-  const [ran, setRan] = useState<GraphQueryResult | null>(null);
-  const [ranParams, setRanParams] = useState<string>("");
-
-  const runQuery = useQuery({
-    queryKey: ["graph-query", queryName, params],
-    queryFn: () => api.graphQuery(queryName, params),
-    enabled: false,
+  const graphQuery = useQuery({
+    queryKey: ["graph-full"],
+    queryFn: api.graphFull,
+    staleTime: 300_000,
   });
+  const payload: GraphPayload | undefined = graphQuery.data;
+  const index = useMemo(() => (payload ? indexGraph(payload) : null), [payload]);
+
+  const [question, setQuestion] = useState<QuestionKey>("neighbourhood");
+  const [params, setParams] = useState<Record<FieldKey, string>>({ ...DEFAULTS });
+  const [root, setRoot] = useState<string>("");
+  const [rootError, setRootError] = useState<string | null>(null);
+  const [depth, setDepth] = useState(2);
+  const [labelMode, setLabelMode] = useState<LabelMode>("node");
+  const [hiddenClasses, setHiddenClasses] = useState<Set<string>>(new Set());
+  const [selected, setSelected] = useState<string | null>(null);
+  const [relationId, setRelationId] = useState<string | null>(null);
+  const [result, setResult] = useState<GraphQueryResult | null>(null);
+  const [resultSig, setResultSig] = useState<string>("");
+  const [running, setRunning] = useState(false);
+  const [runError, setRunError] = useState(false);
+  const cameraRef = useRef<GraphCameraApi | null>(null);
+
+  const definition = QUESTIONS[question];
+
+  // First payload sets the seed: the demo holder when it exists, else the
+  // most connected node. Never a synthetic id.
+  useEffect(() => {
+    if (!index || root) return;
+    const seed = pickDefaultRoot(index) ?? "";
+    if (seed) {
+      setRoot(seed);
+      setParams((previous) => ({ ...previous, node: seed }));
+    }
+  }, [index, root, params.node]);
+
+  const subgraph = useMemo(
+    () => (index && root ? buildSubgraph(index, root, depth) : null),
+    [index, root, depth],
+  );
+  const counts = useMemo(
+    () => (subgraph ? recount(subgraph, hiddenClasses) : null),
+    [subgraph, hiddenClasses],
+  );
+  const classes = useMemo(() => (subgraph ? classCounts(subgraph) : []), [subgraph]);
 
   const detailQuery = useQuery({
     queryKey: ["graph-node", selected],
     queryFn: () => api.graphNode(selected!),
     enabled: Boolean(selected),
+    staleTime: 60_000,
+  });
+  const provenanceQuery = useQuery({
+    queryKey: ["graph-q6", relationId],
+    queryFn: () => api.graphQuery("q6", { relation_id: relationId ?? "" }),
+    enabled: Boolean(relationId),
+    staleTime: 60_000,
   });
 
-  const payload = graphQuery.data;
-  const def = QUERIES[queryName];
-  const paramsSignature = JSON.stringify(params);
-  const isPreviousResult = ran !== null && ranParams !== paramsSignature;
+  const selectedNode = useMemo(
+    () => subgraph?.nodes.find((node) => node.id === selected) ?? null,
+    [subgraph, selected],
+  );
+
+  const top = useMemo(() => (index ? topNodes(index, 40) : []), [index]);
+  const nodeOptions = useMemo(() => {
+    const options = top.map((node) => ({ id: node.id, label: displayName(node), kind: node.kind }));
+    for (const field of definition.fields) {
+      if (FIELDS[field].kind !== "node") continue;
+      const value = params[field];
+      if (!value || options.some((option) => option.id === value)) continue;
+      const node = index?.nodeById.get(value);
+      options.unshift({
+        id: value,
+        label: node ? displayName(node) : value,
+        kind: node?.kind ?? "",
+      });
+    }
+    return options;
+  }, [top, definition.fields, params, index]);
+
+  const sig = JSON.stringify(params);
+  const isStaleResult = result !== null && resultSig !== sig;
+
+  const selectNode = (id: string | null) => {
+    setSelected(id);
+    const node = id && subgraph ? subgraph.nodes.find((item) => item.id === id) : null;
+    setRelationId(node?.via?.relationId ?? null);
+  };
+
+  const run = async () => {
+    setRunError(false);
+    if (!definition.api) {
+      const resolved = index ? resolveNodeId(index, params.node) : null;
+      if (!resolved) {
+        setRootError(`No node in this dataset matches “${params.node}”.`);
+        return;
+      }
+      setRootError(null);
+      setRoot(resolved);
+      setResult(null);
+      setResultSig("");
+      selectNode(null);
+      return;
+    }
+    setRunning(true);
+    try {
+      const data = await api.graphQuery(definition.api, params);
+      setResult(data);
+      setResultSig(sig);
+      if (definition.rootField && index) {
+        const resolved = resolveNodeId(index, params[definition.rootField]);
+        if (resolved) {
+          setRoot(resolved);
+          setRootError(null);
+          selectNode(null);
+        } else {
+          setRootError(
+            `“${params[definition.rootField]}” is not in this dataset — the canvas keeps its previous root.`,
+          );
+        }
+      }
+    } catch {
+      setRunError(true);
+      setResult(null);
+    } finally {
+      setRunning(false);
+    }
+  };
+
+  const toggleClass = (cls: string) => {
+    setHiddenClasses((previous) => {
+      const next = new Set(previous);
+      if (next.has(cls)) next.delete(cls);
+      else next.add(cls);
+      return next;
+    });
+  };
+
   const legacy = payload?.schema === "legacy";
-  const dbShort = payload?.db ? (payload.db.split(/[\\/]/).pop() ?? payload.db) : "—";
-  const relations = ((detailQuery.data?.relations as Record<string, unknown>[]) ?? []).slice(0, 25);
-  const relationsTruncated =
-    detailQuery.data?.relations_truncated === true || relations.length >= 25;
+  const dbShort = payload?.db ? (payload.db.split(/[\\/]/).pop() ?? payload.db) : "";
 
   return (
-    <ScreenShell
-      title="Risk graph"
-      subtitle={
-        payload
-          ? `${payload.counts.nodes.toLocaleString("en-GB")} nodes · ${payload.counts.edges.toLocaleString("en-GB")} relations · read-only queries Q1–Q8`
-          : "Loading the graph dataset…"
-      }
-      context={[
-        {
-          label: "Dataset",
-          value: payload ? (legacy ? "Repository snapshot" : "Aave v3 / Base") : "—",
-        },
-        {
-          label: "Nodes",
-          value: payload ? payload.counts.nodes.toLocaleString("en-GB") : "—",
-        },
-        {
-          label: "Edges",
-          value: payload ? payload.counts.edges.toLocaleString("en-GB") : "—",
-        },
-        { label: "Database", value: dbShort },
-        { label: "Schema", value: payload ? String(payload.schema) : "—" },
-        { label: "Version", value: payload ? String(payload.graph_version) : "—" },
-      ]}
-      actions={<Badge variant="info">Q1–Q8 · read contract</Badge>}
-    >
-      <div className="grid h-full min-h-0 grid-cols-1 gap-4 xl:grid-cols-[minmax(0,1fr)_440px]">
-        <Card className="flex min-h-[600px] flex-col overflow-hidden">
-          <CardHeader>
-            <CardTitle>Visualization</CardTitle>
-            <div className="flex flex-wrap items-center gap-1.5">
-              {payload
-                ? Object.entries(payload.classes)
-                    .sort((a, b) => b[1] - a[1])
-                    .slice(0, 8)
-                    .map(([cls, count]) => (
-                      <span key={cls} className="inline-flex items-center gap-1.5 border border-line bg-surface px-1.5 py-0.5 text-meta text-muted"
-                        title={legacy ? "Repository snapshot · legacy schema" : undefined}
-                      >
-                        <span
-                          aria-hidden
-                          className="inline-block h-2.5 w-2.5"
-                          style={{ background: toneForClass(cls) }}
-                        />
-                        <span className="text-ink">{cls}</span>
-                        <span className="tnum">{count.toLocaleString("en-GB")}</span>
-                      </span>
-                    ))
-                : null}
-            </div>
-          </CardHeader>
-          <div className="relative min-h-0 flex-1 bg-surface">
-            {payload ? (
-              <SigmaGraph
-                payload={payload}
-                selected={selected}
-                onSelect={setSelected}
-                onLayout={setLayoutState}
-              />
-            ) : (
-              <div className="flex h-full items-center justify-center text-meta text-muted">
-                {graphQuery.isError ? "Graph database unavailable." : "Loading graph…"}
-              </div>
-            )}
-            <div className="pointer-events-none absolute bottom-2 left-2 max-w-[440px] border border-line bg-surface px-2.5 py-1.5 text-meta text-muted">
-              <div>Click a node for details · wheel to zoom · click empty space to deselect.</div>
-              <div>
-                Dataset overview
-                {layoutState === "computing" ? " · layout computing…" : ""}
-                {layoutState === "done" ? " · layout computed and cached" : ""}
-                {layoutState === "cached" ? " · layout pre-computed" : ""}
-                . Point-in-time filters apply to query results.
-              </div>
-            </div>
-          </div>
-        </Card>
+    <div className="flex h-full min-h-0 flex-col overflow-y-auto bg-background">
+      {/* ---- one title zone: the only place the dataset totals are written --- */}
+      <header className="flex shrink-0 flex-wrap items-end justify-between gap-x-6 gap-y-2 border-b border-line bg-surface px-6 py-2">
+        <div className="min-w-0">
+          <h1 className="text-page-title font-semibold tracking-[-0.02em] text-ink">Graph</h1>
+          <p className="mt-0.5 text-meta text-muted">
+            The canvas draws the subgraph one question returns — never the whole graph.
+          </p>
+        </div>
+        <div className="flex flex-wrap items-center gap-x-5 gap-y-1 text-meta text-muted">
+          <span>{legacy ? "Repository snapshot" : "Aave v3 · Base"}</span>
+          <span className="font-mono text-code text-ink tnum">
+            {payload ? `${nf(payload.counts.nodes)} nodes · ${nf(payload.counts.edges)} relations` : "—"}
+          </span>
+          <Badge variant="neutral">{payload ? `schema ${payload.schema}` : "loading"}</Badge>
+          {dbShort ? (
+            <span className="font-mono text-code" title={payload?.db}>
+              {dbShort}
+            </span>
+          ) : null}
+        </div>
+      </header>
 
-        <div className="flex min-h-0 flex-col gap-4">
-          <Card>
-            <CardHeader>
-              <CardTitle>Queries Q1–Q8</CardTitle>
-              {isPreviousResult ? (
-                <Badge variant="neutral">Previous query result</Badge>
-              ) : null}
-            </CardHeader>
-            <CardContent className="space-y-2.5">
-              <Select value={queryName} onChange={(e) => setQueryName(e.target.value)}>
-                {Object.entries(QUERIES).map(([key, value]) => (
+      {/* ---- query bar: the question lives here, never on the canvas -------- */}
+      <div className="flex shrink-0 flex-wrap items-end gap-x-3 gap-y-2 border-b border-line bg-surface px-6 py-1.5">
+        <div className="w-[268px]">
+          <Label htmlFor="graph-question">Question</Label>
+          <Select
+            id="graph-question"
+            value={question}
+            onChange={(event) => setQuestion(event.target.value as QuestionKey)}
+          >
+            <optgroup label="Subgraph">
+              {Object.entries(QUESTIONS)
+                .filter(([, item]) => item.group === "subgraph")
+                .map(([key, item]) => (
                   <option key={key} value={key}>
-                    {value.label}
+                    {item.label}
                   </option>
                 ))}
-              </Select>
-              <div className="grid grid-cols-2 gap-2">
-                {def.fields.map((field) => (
-                  <div key={field} className={field === "as_of" || field === "kinds" ? "col-span-2" : ""}>
-                    <Label>{field}</Label>
-                    <Input
-                      value={params[field] ?? ""}
-                      onChange={(e) => setParams((prev) => ({ ...prev, [field]: e.target.value }))}
-                      placeholder="(empty)"
-                    />
-                  </div>
+            </optgroup>
+            <optgroup label="Records — answer in the rail, canvas unchanged">
+              {Object.entries(QUESTIONS)
+                .filter(([, item]) => item.group === "records")
+                .map(([key, item]) => (
+                  <option key={key} value={key}>
+                    {item.label}
+                  </option>
                 ))}
-              </div>
-              <div className="flex flex-wrap items-center gap-2">
-                <Button
-                  onClick={() => {
-                    runQuery.refetch().then(({ data }) => {
-                      setRan(data ?? null);
-                      setRanParams(JSON.stringify(params));
-                    });
-                  }}
-                >
-                  Run query
-                </Button>
-                <Button
-                  variant="secondary"
-                  size="sm"
-                  onClick={() => setParams({ ...DEFAULTS })}
-                >
-                  Load example parameters
-                </Button>
-              </div>
-              <div className="text-meta text-muted">
-                Example parameters from the archived Aave Base snapshot.
-              </div>
-              {runQuery.isFetching ? <div className="text-meta text-muted">Running…</div> : null}
-              {ran ? (
-                <div className="space-y-2">
-                  <div className="flex flex-wrap gap-1.5">
-                    <Badge variant={ran.status && ran.status !== "OK" ? "warn" : "ok"}>
-                      {ran.status ?? "OK"}
-                    </Badge>
-                    {ran.count !== undefined ? (
-                      <Badge variant="neutral">count {ran.count}</Badge>
-                    ) : null}
-                    {ran.latency_ms !== undefined ? (
-                      <Badge variant="neutral">{fmtNumber(ran.latency_ms, 1)} ms (this response)</Badge>
-                    ) : null}
-                    {typeof ran.hhi === "number" ? (
-                      <Badge variant="info">HHI {fmtNumber(ran.hhi, 4)}</Badge>
-                    ) : null}
-                    {typeof ran.counterparties === "number" ? (
-                      <Badge variant="neutral">{ran.counterparties} counterparties</Badge>
-                    ) : null}
-                    {ran.graph_hash ? (
-                      <Badge variant="neutral">hash {fmtHash(String(ran.graph_hash), 10)}</Badge>
-                    ) : null}
-                  </div>
-                  {ran.status && ran.status !== "OK" ? (
-                    <StatusExplanation status={String(ran.status)} />
-                  ) : null}
-                  {(ran.rows ?? []).length > 0 ? (
-                    <div className="text-meta text-muted">
-                      Showing {Math.min(25, (ran.rows ?? []).length)} of{" "}
-                      {ran.count ?? (ran.rows ?? []).length} rows
-                    </div>
-                  ) : null}
-                  <div className="max-h-64 overflow-auto border border-line">
-                    <ResultTable result={ran} />
-                  </div>
-                </div>
-              ) : null}
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle>Selected node</CardTitle>
-              {selected ? <Badge variant="info">{shortAddress(selected)}</Badge> : null}
-            </CardHeader>
-            <CardContent>
-              {!selected ? (
-                <div className="text-body text-muted">
-                  Select a node to inspect its identity and relations.
-                </div>
-              ) : detailQuery.data ? (
-                <div className="space-y-2">
-                  <div className="break-all font-mono text-code text-ink">{selected}</div>
-                  <div className="flex flex-wrap gap-1.5">
-                    <Badge variant="neutral">kind {String(detailQuery.data.kind ?? "?")}</Badge>
-                    <Badge variant="neutral">
-                      class {String(detailQuery.data.node_class ?? detailQuery.data.kind ?? "?")}
-                    </Badge>
-                    <Badge variant="info">{String(detailQuery.data.relation_count ?? 0)} relations</Badge>
-                  </div>
-                  {detailQuery.data.address ? (
-                    <div className="font-mono text-code text-muted">
-                      address {String(detailQuery.data.address)}
-                    </div>
-                  ) : null}
-                  <div className="max-h-52 overflow-auto border border-line">
-                    <Table>
-                      <THead>
-                        <TR>
-                          <TH>Relation</TH>
-                          <TH>Kind</TH>
-                          <TH>Src → dst</TH>
-                        </TR>
-                      </THead>
-                      <TBody>
-                        {relations.map((relation, index) => (
-                          <TR key={index}>
-                            <TD>{fmtHash(String(relation.relation_id), 10)}</TD>
-                            <TD>
-                              <Badge variant="neutral">{String(relation.kind)}</Badge>
-                            </TD>
-                            <TD className="max-w-[220px] text-muted">
-                              {shortAddress(relation.src)} → {shortAddress(relation.dst)}
-                            </TD>
-                          </TR>
-                        ))}
-                      </TBody>
-                    </Table>
-                  </div>
-                  {relationsTruncated ? (
-                    <div className="text-meta text-muted">
-                      Showing the first {relations.length} of{" "}
-                      {String(detailQuery.data.relation_count ?? relations.length)} relations.
-                    </div>
-                  ) : null}
-                </div>
-              ) : (
-                <div className="text-meta text-muted">Loading…</div>
-              )}
-            </CardContent>
-          </Card>
+            </optgroup>
+          </Select>
         </div>
+
+        {definition.fields.map((fieldKey) => {
+          const field = FIELDS[fieldKey];
+          return (
+            <div key={fieldKey} className={cn(field.width, "shrink-0")}>
+              <Label htmlFor={`graph-field-${fieldKey}`}>{field.label}</Label>
+              {field.kind === "node" ? (
+                <Select
+                  id={`graph-field-${fieldKey}`}
+                  value={params[fieldKey]}
+                  onChange={(event) =>
+                    setParams((previous) => ({ ...previous, [fieldKey]: event.target.value }))
+                  }
+                >
+                  {nodeOptions.map((option) => (
+                    <option key={option.id} value={option.id}>
+                      {option.label}
+                    </option>
+                  ))}
+                </Select>
+              ) : (
+                <Input
+                  id={`graph-field-${fieldKey}`}
+                  value={params[fieldKey]}
+                  placeholder={field.placeholder}
+                  onChange={(event) =>
+                    setParams((previous) => ({ ...previous, [fieldKey]: event.target.value }))
+                  }
+                />
+              )}
+            </div>
+          );
+        })}
+
+        <Button className="shrink-0" onClick={run} disabled={running || !payload}>
+          {running ? "Running…" : "Run"}
+        </Button>
       </div>
-    </ScreenShell>
+
+      {/* ---- view bar: depth / label kind / camera / subgraph-vs-total ------ */}
+      <div className="flex shrink-0 flex-wrap items-center gap-x-6 gap-y-2 border-b border-line bg-surface2 px-6 py-1">
+        <div className="flex items-center gap-2">
+          <span className="text-meta text-muted">Depth</span>
+          <span className="font-mono text-code text-ink tnum">{depth}</span>
+          <div className="flex items-center">
+            <button
+              type="button"
+              className={STEP}
+              onClick={() => setDepth((value) => Math.max(1, value - 1))}
+              disabled={depth <= 1}
+              aria-label="One hop less"
+              title="One hop less"
+            >
+              −
+            </button>
+            <button
+              type="button"
+              className={cn(STEP, "w-auto px-2 text-meta")}
+              onClick={() => setDepth((value) => Math.min(3, value + 1))}
+              disabled={depth >= 3}
+              title="Expand the query by one hop"
+            >
+              +1 hop
+            </button>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-2">
+          <span className="text-meta text-muted">Labels</span>
+          <div className="flex border border-line-strong">
+            {LABEL_MODES.map((mode) => (
+              <button
+                key={mode.key}
+                type="button"
+                title={mode.hint}
+                aria-pressed={labelMode === mode.key}
+                onClick={() => setLabelMode(mode.key)}
+                className={cn(
+                  "h-7 px-2.5 text-meta transition-colors duration-100",
+                  labelMode === mode.key
+                    ? "bg-ink text-on-accent"
+                    : "bg-surface text-muted hover:bg-surface2 hover:text-ink",
+                )}
+              >
+                {mode.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div className="flex items-center gap-2">
+          <span className="text-meta text-muted">View</span>
+          <div className="flex">
+            <button
+              type="button"
+              className={STEP}
+              onClick={() => cameraRef.current?.zoomOut()}
+              aria-label="Zoom out"
+              title="Zoom out"
+            >
+              −
+            </button>
+            <button
+              type="button"
+              className={cn(STEP, "w-auto px-2 text-meta")}
+              onClick={() => cameraRef.current?.resetView()}
+            >
+              Reset
+            </button>
+            <button
+              type="button"
+              className={STEP}
+              onClick={() => cameraRef.current?.zoomIn()}
+              aria-label="Zoom in"
+              title="Zoom in"
+            >
+              +
+            </button>
+          </div>
+        </div>
+
+        {subgraph && counts ? (
+          <div className="ml-auto flex flex-wrap items-center gap-1.5">
+            <span className="font-mono text-code text-ink tnum">
+              {nf(subgraph.nodes.length)} / {nf(subgraph.totals.nodes)} nodes
+            </span>
+            <span className="text-meta text-muted">·</span>
+            <span className="font-mono text-code text-ink tnum">
+              {nf(subgraph.edges.length)} edges
+            </span>
+            {subgraph.mergedRelations > 0 ? (
+              <Badge variant="neutral" title="Parallel relations collapsed into one line per node pair">
+                {nf(subgraph.mergedRelations)} merged
+              </Badge>
+            ) : null}
+            {subgraph.aggregatedNodes > 0 ? (
+              <Badge
+                variant="neutral"
+                title="High-degree contracts drawn once, carrying their relation count"
+              >
+                {subgraph.aggregatedNodes} aggregated
+              </Badge>
+            ) : null}
+            {subgraph.hiddenNodes > 0 ? (
+              <Badge
+                variant="warn"
+                title={`Budget: ${depth} hop${depth > 1 ? "s" : ""}, 40 nodes max. Raise the depth or pick a narrower root to see more.`}
+              >
+                +{nf(subgraph.hiddenNodes)} not shown
+              </Badge>
+            ) : null}
+          </div>
+        ) : null}
+      </div>
+
+      {/* ---- canvas + provenance rail -------------------------------------- */}
+      <div className="flex min-h-0 flex-1">
+        <div className="flex min-h-0 min-w-0 flex-1 flex-col">
+          <div className="relative min-h-[70vh] flex-1 bg-surface">
+            {graphQuery.isPending ? (
+              <Quiet title="Loading the graph dataset…" />
+            ) : graphQuery.isError || !payload || !index ? (
+              <Quiet
+                title="Graph database unavailable."
+                detail="The API answered without a readable graph payload. Nothing is drawn rather than drawn wrong."
+              />
+            ) : rootError ? (
+              <Quiet title="No subgraph to draw." detail={rootError} />
+            ) : !subgraph || subgraph.status !== "OK" ? (
+              <Quiet
+                title="This dataset has no such node."
+                detail="Pick another start node — the canvas never invents a node to fill the frame."
+              />
+            ) : subgraph.nodes.length === 0 ? (
+              <Quiet title="Nothing to draw." detail="This node has no neighbour at this depth." />
+            ) : subgraph ? (
+              <SigmaGraph
+                nodes={subgraph.nodes}
+                edges={subgraph.edges}
+                classes={payload.classes}
+                selected={selected}
+                onSelect={selectNode}
+                labelMode={labelMode}
+                hiddenClasses={hiddenClasses}
+                onCamera={(camera) => {
+                  cameraRef.current = camera;
+                }}
+              />
+            ) : null}
+          </div>
+
+          {/* legend = filter: hidden classes go grey AND leave the counts */}
+          <div className="flex shrink-0 flex-wrap items-center gap-x-2 gap-y-2 border-t border-line bg-surface px-6 py-1">
+            <span className="text-meta text-muted">Classes</span>
+            {classes.length === 0 ? (
+              <span className="text-meta text-muted">—</span>
+            ) : (
+              classes.map(({ cls, count }) => {
+                const hidden = hiddenClasses.has(cls);
+                return (
+                  <button
+                    key={cls}
+                    type="button"
+                    onClick={() => toggleClass(cls)}
+                    aria-pressed={!hidden}
+                    title={hidden ? `Show ${cls} again` : `Grey out ${cls}`}
+                    className={cn(
+                      "inline-flex h-7 items-center gap-1.5 border px-2 text-meta transition-colors duration-100",
+                      hidden
+                        ? "border-line bg-surface text-muted"
+                        : "border-line-strong bg-surface2 text-ink",
+                    )}
+                  >
+                    <span
+                      aria-hidden
+                      className="inline-block h-2.5 w-2.5"
+                      style={{ background: hidden ? "var(--color-graph-dim)" : toneForClass(cls) }}
+                    />
+                    <span className={hidden ? "line-through decoration-line-strong" : ""}>
+                      {kindLabel(cls)}
+                    </span>
+                    <span className="tnum">{hidden ? "hidden" : nf(count)}</span>
+                  </button>
+                );
+              })
+            )}
+            <span className="ml-auto text-meta text-muted">
+              {counts && subgraph
+                ? `Visible: ${nf(counts.nodes)} of ${nf(subgraph.nodes.length)} nodes · ${nf(
+                    counts.relations,
+                  )} relations${hiddenClasses.size > 0 ? ` · ${hiddenClasses.size} class${
+                    hiddenClasses.size === 1 ? "" : "es"
+                  } greyed` : ""}`
+                : "Wheel to zoom · drag to pan · click a node for its provenance"}
+            </span>
+          </div>
+        </div>
+
+        <aside
+          aria-label="Provenance"
+          className="flex w-[372px] shrink-0 flex-col overflow-auto border-l border-line bg-surface"
+        >
+          {selectedNode ? (
+            <SelectionRail
+              node={selectedNode}
+              detail={detailQuery.data ?? null}
+              detailLoading={detailQuery.isFetching}
+              detailError={detailQuery.isError}
+              relationId={relationId}
+              onPickRelation={setRelationId}
+              provenance={provenanceQuery.data ?? null}
+              provenanceLoading={provenanceQuery.isFetching}
+              provenanceError={provenanceQuery.isError}
+              onClear={() => selectNode(null)}
+            />
+          ) : (
+            <>
+              <div className="border-b border-line px-5 py-4">
+                <h2 className="text-section-title font-semibold text-ink">Query</h2>
+                <p className="mt-1 text-meta text-muted">{definition.answers}</p>
+              </div>
+              <RailSection
+                title="Result"
+                meta={isStaleResult ? "parameters changed — re-run" : undefined}
+              >
+                <QueryResultBlock
+                  result={result}
+                  isFetching={running}
+                  error={runError}
+                />
+                {result && result.status && result.status !== "OK" && statusMeaning(result.status) === "" ? (
+                  <p className="mt-2 text-meta text-muted">
+                    {result.status} — see the runbook for this status.
+                  </p>
+                ) : null}
+              </RailSection>
+              <RailSection title="Selection">
+                <p className="text-meta text-muted">
+                  Click a node on the canvas to read why it is there: the query that
+                  returned it, the relation that reached it, and the provenance refs of
+                  that relation. Depth and labels are set in the bar above the canvas.
+                </p>
+              </RailSection>
+            </>
+          )}
+        </aside>
+      </div>
+    </div>
+  );
+}
+
+const STEP =
+  "flex h-7 w-7 items-center justify-center border border-line-strong bg-surface " +
+  "font-mono text-[13px] leading-none text-ink transition-colors duration-100 " +
+  "hover:bg-surface2 disabled:pointer-events-none disabled:border-line disabled:text-muted " +
+  "focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-accent";
+
+function Quiet({ title, detail }: { title: string; detail?: string }) {
+  return (
+    <div className="flex h-full min-h-[200px] items-center justify-center p-8">
+      <div className="max-w-[420px] text-center">
+        <p className="text-body font-medium text-ink">{title}</p>
+        {detail ? <p className="mt-1 text-meta text-muted">{detail}</p> : null}
+      </div>
+    </div>
   );
 }

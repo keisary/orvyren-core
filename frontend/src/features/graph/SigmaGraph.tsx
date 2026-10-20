@@ -1,141 +1,184 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import Graph from "graphology";
 import Sigma from "sigma";
-import type { GraphPayload } from "@/lib/types";
 import { colorsForClasses, cssVar, FALLBACK } from "@/lib/graph-theme";
+import type { LabelMode, SubgraphEdge, SubgraphNode } from "./subgraph";
 
-/** Sigma.js v3 canvas (WebGL) — a single WebGL context on screen.
+/**
+ * Sigma.js v3 canvas — the drawing surface ONLY.
  *
- *  Fixes vs the previous version (§4.8):
- *  - tones come from the class NAME (stable across payloads), never from a
- *    sort index that silently reassigns colors;
- *  - node events enabled — hover focus actually works now;
- *  - no camera animation on selection (the view never jumps by itself);
- *  - zoom controls are explicit buttons, labels at 12px ink on ivory.
+ * Discipline fixed here (ART_DIRECTION §2):
+ *  - no control is painted on the canvas: zoom / labels / depth live in the
+ *    toolbars above and below it, so nothing covers a node;
+ *  - ONE label kind at a time (`node` | `relation` | `none`), never both;
+ *  - the graph is built from the bounded query subgraph, never from the full
+ *    payload (the screen does not have the budget to pass it 16k nodes);
+ *  - layout positions come from the subgraph module (deterministic rings):
+ *    no ForceAtlas2 run, so a re-run paints the same picture and the camera
+ *    never jumps;
+ *  - selection never moves the camera; hover only dims non-neighbours.
  */
 
-function layoutKey(version: string) {
-  return `orvyren:layout:${version}`;
+export interface GraphCameraApi {
+  zoomIn: () => void;
+  zoomOut: () => void;
+  resetView: () => void;
 }
 
 interface Props {
-  payload: GraphPayload;
+  nodes: SubgraphNode[];
+  edges: SubgraphEdge[];
+  classes: Record<string, number>;
   selected: string | null;
   onSelect: (id: string | null) => void;
-  onLayout?: (state: "cached" | "computing" | "done") => void;
+  labelMode: LabelMode;
+  hiddenClasses: Set<string>;
+  onCamera?: (api: GraphCameraApi) => void;
 }
 
-export default function SigmaGraph({ payload, selected, onSelect, onLayout }: Props) {
+function edgeLabel(edge: SubgraphEdge, mode: LabelMode): string {
+  if (mode !== "relation") return "";
+  const kind = edge.kind || "relation";
+  return edge.count > 1 ? `${kind} ×${edge.count}` : kind;
+}
+
+export default function SigmaGraph({
+  nodes,
+  edges,
+  classes,
+  selected,
+  onSelect,
+  labelMode,
+  hiddenClasses,
+  onCamera,
+}: Props) {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const sigmaRef = useRef<Sigma | null>(null);
-  const workerRef = useRef<Worker | null>(null);
-  const [hovered, setHovered] = useState<string | null>(null);
-  // Reducers are built ONCE per payload: they must read the focus through a
-  // ref, otherwise they keep the ``selected``/``hovered`` of the build render
-  // and the dim/highlight never reacts to clicks and hovers.
+  const modeRef = useRef<LabelMode>(labelMode);
+  const hiddenRef = useRef<Set<string>>(hiddenClasses);
   const focusRef = useRef<string | null>(null);
+  const selectionRef = useRef<string | null>(selected);
+  const selectRef = useRef(onSelect);
+  selectRef.current = onSelect;
 
-  const colors = useMemo(() => colorsForClasses(payload.classes), [payload]);
+  const colors = useMemo(() => colorsForClasses(classes), [classes]);
 
   const adjacency = useMemo(() => {
     const map: Record<string, Set<string>> = {};
-    for (const edge of payload.edges) {
+    for (const edge of edges) {
       (map[edge.source] ??= new Set()).add(edge.target);
       (map[edge.target] ??= new Set()).add(edge.source);
     }
     return map;
-  }, [payload]);
+  }, [edges]);
 
-  // Build + render
+  // Build + mount: one Sigma instance per subgraph (the subgraph is tiny, and
+  // a rebuild is what guarantees the reducers see the new node set).
   useEffect(() => {
     const container = containerRef.current;
     if (!container) return;
 
-    const surface = cssVar("--color-surface", FALLBACK.surface);
     const ink = cssVar("--color-ink", FALLBACK.ink);
+    const muted = cssVar("--color-muted", FALLBACK.muted);
     const dim = cssVar("--color-graph-dim", FALLBACK.graphDim);
     const edgeDim = cssVar("--color-graph-edge", FALLBACK.graphEdge);
     const accent = cssVar("--color-accent", FALLBACK.accent);
     const fallbackNode = cssVar("--color-graph-node", FALLBACK.graphNode);
 
-    const cached = window.localStorage.getItem(layoutKey(payload.graph_version));
-    let positions: Record<string, [number, number]> | null = null;
-    if (cached) {
-      try {
-        positions = JSON.parse(cached) as Record<string, [number, number]>;
-        onLayout?.("cached");
-      } catch {
-        positions = null;
-      }
-    }
-    if (!positions) onLayout?.("computing");
-
     const graph = new Graph({ multi: true, type: "directed" });
-    for (const node of payload.nodes) {
-      const position = positions?.[node.id];
+    for (const node of nodes) {
       graph.addNode(node.id, {
-        x: position ? position[0] : node.x,
-        y: position ? position[1] : node.y,
+        x: node.x,
+        y: node.y,
         size: node.size,
         color: colors[node.cls] ?? fallbackNode,
         label: node.label,
       });
     }
-    for (const [index, edge] of payload.edges.entries()) {
-      if (graph.hasNode(edge.source) && graph.hasNode(edge.target)) {
-        // graphology keys must be unique: a repeated relation id (revisions)
-        // gets a suffixed key instead of throwing and killing the canvas.
-        const key = graph.hasEdge(edge.id) ? `${edge.id}#${index}` : edge.id;
-        graph.addEdgeWithKey(key, edge.source, edge.target, {
-          size: 0.6,
-          color: edgeDim,
-          hidden: false,
-        });
-      }
+    for (const [index, edge] of edges.entries()) {
+      if (!graph.hasNode(edge.source) || !graph.hasNode(edge.target)) continue;
+      graph.addEdgeWithKey(`e${index}:${edge.id}`, edge.source, edge.target, {
+        size: edge.count > 1 ? 1.2 : 0.8,
+        color: edgeDim,
+        label: edge.count > 1 ? `${edge.kind} ×${edge.count}` : edge.kind,
+      });
     }
 
-    // Sigma perf settings (16k nodes): minimal primitives (edge "line"),
-    // no edge events (avoids a second picking render pass), full colours
-    // (never opacity < 1), reduced anti-aliasing. Node events ARE enabled —
-    // without them enterNode/leaveNode never fire and hover focus is dead.
     const settings = {
-      renderEdgeLabels: false,
+      renderEdgeLabels: modeRef.current === "relation",
       enableEdgeEvents: false,
       enableNodeEvents: true,
       antialiasEdges: false,
       defaultEdgeType: "line",
       antiAliasingFeather: 0.5,
-      labelFont: 'Consolas, "Cascadia Mono", monospace',
-      labelSize: 12,
+      labelFont: 'Arial, "Helvetica Neue", Helvetica, sans-serif',
+      labelSize: 11,
+      labelWeight: "500",
       labelColor: { color: ink },
-      labelDensity: 0.1,
-      labelGridCellSize: 120,
-      labelRenderedSizeThreshold: 7,
-      stagePadding: 40,
-      minCameraRatio: 0.03,
+      edgeLabelFont: '"Cascadia Mono", Consolas, monospace',
+      edgeLabelSize: 10,
+      edgeLabelColor: { color: muted },
+      labelDensity: 1,
+      labelGridCellSize: 132,
+      labelRenderedSizeThreshold: 0,
+      stagePadding: 56,
+      minCameraRatio: 0.05,
       maxCameraRatio: 4,
       nodeReducer: (node: string, attrs: Record<string, unknown>) => {
+        const mode = modeRef.current;
+        const hidden = hiddenRef.current;
         const focus = focusRef.current;
-        if (!focus) return attrs;
-        const visible = node === focus || (adjacency[focus]?.has(node) ?? false);
+        const data = nodes.find((item) => item.id === node);
+        const cls = data?.cls ?? "";
+        const isSelected = selectionRef.current === node;
+
+        // Legend = filter: a hidden class stays drawn (the picture keeps its
+        // shape) but goes grey, loses its label and its size.
+        if (hidden.has(cls)) {
+          return {
+            ...attrs,
+            color: dim,
+            label: "",
+            size: Math.max(2.5, Number(attrs.size ?? 4) * 0.55),
+            zIndex: 0,
+          };
+        }
+        const visible = !focus || node === focus || (adjacency[focus]?.has(node) ?? false);
+        const label =
+          mode === "node" && (visible || isSelected) ? String(attrs.label ?? "") : "";
         return {
           ...attrs,
-          color: visible ? attrs.color : dim,
-          label: visible ? attrs.label : "",
-          zIndex: visible ? 1 : 0,
+          color: isSelected ? accent : visible ? attrs.color : dim,
+          label,
+          // An aggregated contract must never lose its badge to the label
+          // grid: its count is the reason it is drawn instead of 1 672 lines.
+          forceLabel: label !== "" && Boolean(data?.aggregated),
+          size: isSelected ? Number(attrs.size ?? 4) * 1.25 : attrs.size,
+          zIndex: isSelected ? 3 : data?.aggregated ? 2 : visible ? 1 : 0,
         };
       },
       edgeReducer: (edge: string, attrs: Record<string, unknown>) => {
+        const mode = modeRef.current;
         const focus = focusRef.current;
-        if (!focus) return { ...attrs, color: edgeDim };
         const source = graph.source(edge);
         const target = graph.target(edge);
-        const visible = source === focus || target === focus;
+        const sourceNode = nodes.find((item) => item.id === source);
+        const targetNode = nodes.find((item) => item.id === target);
+        const hidden =
+          hiddenRef.current.has(sourceNode?.cls ?? "") ||
+          hiddenRef.current.has(targetNode?.cls ?? "");
+        const label = mode === "relation" ? String(attrs.label ?? "") : "";
+        if (hidden) {
+          return { ...attrs, color: dim, label: "", size: 0.5, zIndex: 0 };
+        }
+        if (!focus) return { ...attrs, label, color: edgeDim };
+        const inFocus = source === focus || target === focus;
         return {
           ...attrs,
-          color: visible ? accent : edgeDim,
-          size: visible ? 1.4 : 0.4,
-          zIndex: visible ? 2 : 0,
+          label: inFocus ? label : "",
+          color: inFocus ? accent : edgeDim,
+          size: inFocus ? 1.5 : 0.5,
+          zIndex: inFocus ? 2 : 0,
         };
       },
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -144,116 +187,65 @@ export default function SigmaGraph({ payload, selected, onSelect, onLayout }: Pr
     const sigma = new Sigma(graph, container, settings);
     sigmaRef.current = sigma;
 
-    sigma.on("clickNode", ({ node }) => onSelect(node));
-    sigma.on("clickStage", () => onSelect(null));
-    sigma.on("enterNode", ({ node }) => setHovered(node));
-    sigma.on("leaveNode", () => setHovered(null));
+    // One repaint once the browser has laid the flexbox out: Sigma measures
+    // its container at construction, and a first frame at 0×0 would leave the
+    // subgraph unpainted. `refresh()` only redraws — `resize()` rebuilds the
+    // label layer and silently loses the labels, so it is never called here.
+    const frame = window.requestAnimationFrame(() => sigma.refresh());
 
-    // FA2 layout in a worker (once), positions persisted per graph_version.
-    if (!positions) {
-      const worker = new Worker(new URL("./fa2.worker.ts", import.meta.url), {
-        type: "module",
-      });
-      workerRef.current = worker;
-      worker.onmessage = (event: MessageEvent<{ positions: Record<string, [number, number]> }>) => {
-        const computed = event.data.positions;
-        for (const node of payload.nodes) {
-          const position = computed[node.id];
-          if (position) {
-            graph.setNodeAttribute(node.id, "x", position[0]);
-            graph.setNodeAttribute(node.id, "y", position[1]);
-          }
-        }
-        try {
-          window.localStorage.setItem(
-            layoutKey(payload.graph_version),
-            JSON.stringify(computed),
-          );
-        } catch {
-          // quota exceeded: the layout stays unpersisted, not blocking
-        }
-        onLayout?.("done");
-        worker.terminate();
-        workerRef.current = null;
-      };
-      // If the worker fails, fall back to the served coordinates — never get
-      // stuck on "computing" (the hint must keep telling the truth).
-      worker.onerror = () => {
-        onLayout?.("done");
-        worker.terminate();
-        workerRef.current = null;
-      };
-      worker.postMessage({
-        nodes: payload.nodes.map((n) => ({ id: n.id, x: n.x, y: n.y })),
-        edges: payload.edges.map((e) => ({ id: e.id, source: e.source, target: e.target })),
-        iterations: 120,
-      });
-    }
+    sigma.on("clickNode", ({ node }) => selectRef.current(node));
+    sigma.on("clickStage", () => selectRef.current(null));
+
+    onCamera?.({
+      zoomIn: () => {
+        const camera = sigma.getCamera();
+        const state = camera.getState();
+        const ratio = Math.max(0.05, state.ratio * 0.8);
+        if (prefersReducedMotion()) camera.setState({ ...state, ratio });
+        else camera.animate({ ...state, ratio }, { duration: 180 });
+      },
+      zoomOut: () => {
+        const camera = sigma.getCamera();
+        const state = camera.getState();
+        const ratio = Math.min(4, state.ratio * 1.25);
+        if (prefersReducedMotion()) camera.setState({ ...state, ratio });
+        else camera.animate({ ...state, ratio }, { duration: 180 });
+      },
+      resetView: () => {
+        const target = { x: 0.5, y: 0.5, ratio: 1 };
+        if (prefersReducedMotion()) sigma.getCamera().setState(target);
+        else sigma.getCamera().animate(target, { duration: 220 });
+      },
+    });
 
     return () => {
-      workerRef.current?.terminate();
-      workerRef.current = null;
+      window.cancelAnimationFrame(frame);
       sigma.kill();
       sigmaRef.current = null;
     };
+    // Rebuild only when the node/edge sets change; label/filter changes are
+    // repainted through the reducers below.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [payload, colors, adjacency, onSelect]);
+  }, [nodes, edges, colors, adjacency]);
 
-  // Focus changes must repaint through the reducers (they read ``focusRef``).
-  // Selection never moves the camera by itself (§4.8) — only the buttons do.
+  // Repaint on any presentation change (labels, filter, selection) without
+  // touching the camera or the layout.
   useEffect(() => {
-    focusRef.current = hovered ?? selected;
-    sigmaRef.current?.refresh();
-  }, [hovered, selected]);
-
-  const reducedMotion = () =>
-    typeof window !== "undefined" &&
-    window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-
-  const zoom = (factor: number) => {
+    modeRef.current = labelMode;
+    hiddenRef.current = hiddenClasses;
+    selectionRef.current = selected;
     const sigma = sigmaRef.current;
     if (!sigma) return;
-    const camera = sigma.getCamera();
-    const current = camera.getState();
-    const ratio = Math.min(4, Math.max(0.03, current.ratio * factor));
-    if (reducedMotion()) camera.setState({ ...current, ratio });
-    else camera.animate({ ...current, ratio }, { duration: 200 });
-  };
+    sigma.setSetting("renderEdgeLabels", labelMode === "relation");
+    sigma.refresh();
+  }, [labelMode, hiddenClasses, selected]);
 
-  const resetView = () => {
-    const sigma = sigmaRef.current;
-    if (!sigma) return;
-    const target = { x: 0.5, y: 0.5, ratio: 1 };
-    if (reducedMotion()) sigma.getCamera().setState(target);
-    else sigma.getCamera().animate(target, { duration: 250 });
-  };
+  return <div ref={containerRef} className="h-full w-full" />;
+}
 
-  const controlClass =
-    "flex h-8 w-8 items-center justify-center border border-line bg-surface " +
-    "font-mono text-[14px] leading-none text-ink transition-colors duration-100 " +
-    "hover:border-line-strong hover:bg-surface2 " +
-    "focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-accent";
-
+function prefersReducedMotion(): boolean {
   return (
-    <div className="relative h-full w-full">
-      <div ref={containerRef} className="h-full w-full" />
-      <div className="absolute right-2 top-2 flex flex-col gap-1">
-        <button type="button" className={controlClass} onClick={() => zoom(0.8)} aria-label="Zoom in" title="Zoom in">
-          +
-        </button>
-        <button type="button" className={controlClass} onClick={() => zoom(1.25)} aria-label="Zoom out" title="Zoom out">
-          −
-        </button>
-        <button
-          type="button"
-          className={controlClass}
-          onClick={resetView}
-          aria-label="Reset view"
-          title="Reset view"
-        >
-          ⤾
-        </button>
-      </div>
-    </div>
+    typeof window !== "undefined" &&
+    window.matchMedia("(prefers-reduced-motion: reduce)").matches
   );
 }

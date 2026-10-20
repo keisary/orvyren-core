@@ -398,12 +398,12 @@ class VerifierZipSafetyTest(_TempRootTest):
         self.assertIn("unsafe archive member", error)
 
     def test_manifest_path_escape_is_not_read(self):
-        outside = os.path.join(os.path.dirname(self.root), "outside_manifest.md")
+        outside = os.path.join(os.path.dirname(self.root), "outside_manifest_%d.md" % os.getpid())
         with open(outside, "w", encoding="utf-8", newline="\n") as handle:
             handle.write("outside")
         try:
             checks = engine_mod.check_a2_dossier(
-                self.root, {"dossier": {"md": "../outside_manifest.md"}})
+                self.root, {"dossier": {"md": "../outside_manifest_%d.md" % os.getpid()}})
             self.assertFalse(checks[0]["ok"])
             self.assertEqual(checks[0]["detail"].get("reason"), "unsafe dossier path")
         finally:
