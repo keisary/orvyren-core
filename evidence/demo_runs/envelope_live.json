@@ -1,11 +1,11 @@
 {
   "schema": "orvyren-envelope/v1",
-  "captured_at": "2026-10-16T10:52:31Z",
+  "captured_at": "2026-10-20T10:09:30Z",
   "chain_id": 84532,
-  "block_number": 48189829,
+  "block_number": 48361339,
   "gas": {
     "gas_price_baseline_wei": 6000000,
-    "captured_at_utc": "2026-10-16T10:52:31Z"
+    "captured_at_utc": "2026-10-20T10:09:30Z"
   },
   "contracts": {
     "module_roles_officiel": {
@@ -100,7 +100,7 @@
     }
   },
   "probes": [],
-  "note": "enveloppe capturée par lecture seule — `role` (cibles/conditions/allowances) et `probes` (calldata des getters) restent à confirmer sur le contrat déployé (B4 §d.3, annexe 4)",
+  "note": "envelope captured by read-only calls — `role` (targets/conditions/allowances) and `probes` (getter calldata) remain to be confirmed on the deployed contract (B4 §d.3, annex 4)",
   "module": {
     "address": "0x7e2b7798ab4b4db837b30107f0d2a3ffb24e95e8",
     "code_size_expected": 45,
@@ -110,11 +110,11 @@
   },
   "avatar": {
     "address": "0x000e11a54daadf202542a0136f974f24d7c38be0",
-    "label": "Safe de démonstration"
+    "label": "demo Safe"
   },
   "agent": {
     "address": "0xe1039e345fa2ad9ecceab7bb160fd5e53f58f01c",
-    "label": "EOA jetable membre du rôle AGENT"
+    "label": "throwaway EOA member of the AGENT role"
   },
   "assets": {
     "usdc_circle": "0x036cbd53842c5426634e7929541ec2318f3dcf7e",
@@ -124,7 +124,9 @@
   "session_env_keys": [
     "ORVYREN_AGENT_ADDRESS",
     "ORVYREN_CHAIN_ID",
+    "ORVYREN_DEEPSEEK_API_KEY",
     "ORVYREN_K0_PAUSED",
+    "ORVYREN_MIMO_API_KEY",
     "ORVYREN_MODULE_ADDRESS",
     "ORVYREN_PRIVATE_KEY",
     "ORVYREN_RECIPIENT_B",

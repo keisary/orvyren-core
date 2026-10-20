@@ -1,0 +1,129 @@
+{
+  "run": "B",
+  "criteria": [
+    {
+      "id": "B.1",
+      "description": "signature counter unchanged across the whole run",
+      "status": "met",
+      "detail": {
+        "before": 1,
+        "after": 1
+      }
+    },
+    {
+      "id": "B.2",
+      "description": "agent nonce unchanged",
+      "status": "met",
+      "detail": {
+        "before": 15,
+        "after": 15
+      }
+    },
+    {
+      "id": "B.3",
+      "description": "no tx_hash emitted during the run (no SUBMIT)",
+      "status": "met",
+      "detail": {
+        "submits_before": 1,
+        "submits_after": 1,
+        "intents_du_run": [
+          "01M5CCNPWSRMERHGXP0YFBPDFW",
+          "01M5CCPAQNT5YT4A6BP1A39DH9",
+          "01M5CCPAQNT5YT4A6BP1A39DHA",
+          "01M5CCPAQNT5YT4A6BP1A39DHC"
+        ]
+      }
+    },
+    {
+      "id": "B.4",
+      "description": "4 cases B1-B4 with exact verdicts and codes",
+      "status": "met",
+      "detail": [
+        {
+          "case": "B1",
+          "attempt": 1,
+          "label": "transfer 150 USDC (per-transaction cap)",
+          "verdict": "DENY",
+          "reasons": [
+            "AMOUNT_ABOVE_TX_CAP"
+          ],
+          "expected_verdict": "DENY",
+          "expected_codes": [
+            "AMOUNT_ABOVE_TX_CAP"
+          ],
+          "ok": true
+        },
+        {
+          "case": "B2",
+          "attempt": 1,
+          "label": "unlisted recipient (20 USDC)",
+          "verdict": "DENY",
+          "reasons": [
+            "RECIPIENT_NOT_ALLOWED"
+          ],
+          "expected_verdict": "DENY",
+          "expected_codes": [
+            "RECIPIENT_NOT_ALLOWED"
+          ],
+          "ok": true
+        },
+        {
+          "case": "B3",
+          "attempt": 1,
+          "label": "replay of the same intent (×3, idempotency)",
+          "verdict": "DENY",
+          "reasons": [
+            "INTENT_ALREADY_PROCESSED"
+          ],
+          "expected_verdict": "DENY",
+          "expected_codes": [
+            "INTENT_ALREADY_PROCESSED"
+          ],
+          "ok": true
+        },
+        {
+          "case": "B3",
+          "attempt": 2,
+          "label": "replay of the same intent (×3, idempotency)",
+          "verdict": "DENY",
+          "reasons": [
+            "INTENT_ALREADY_PROCESSED"
+          ],
+          "expected_verdict": "DENY",
+          "expected_codes": [
+            "INTENT_ALREADY_PROCESSED"
+          ],
+          "ok": true
+        },
+        {
+          "case": "B3",
+          "attempt": 3,
+          "label": "replay of the same intent (×3, idempotency)",
+          "verdict": "DENY",
+          "reasons": [
+            "INTENT_ALREADY_PROCESSED"
+          ],
+          "expected_verdict": "DENY",
+          "expected_codes": [
+            "INTENT_ALREADY_PROCESSED"
+          ],
+          "ok": true
+        },
+        {
+          "case": "B4",
+          "attempt": 1,
+          "label": "change_policy (never autonomous)",
+          "verdict": "REQUIRE_APPROVAL",
+          "reasons": [
+            "ACTION_NEEDS_HUMAN_APPROVAL"
+          ],
+          "expected_verdict": "REQUIRE_APPROVAL",
+          "expected_codes": [
+            "ACTION_NEEDS_HUMAN_APPROVAL"
+          ],
+          "ok": true
+        }
+      ]
+    }
+  ]
+}

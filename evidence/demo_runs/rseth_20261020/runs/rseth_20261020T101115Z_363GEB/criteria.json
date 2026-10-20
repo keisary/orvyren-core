@@ -1,0 +1,52 @@
+{
+  "run": "C",
+  "criteria": [
+    {
+      "id": "C.1",
+      "description": "forced calldatas built and decoded (C1-C4)",
+      "status": "met",
+      "detail": [
+        "C1",
+        "C2",
+        "C3a",
+        "C3b",
+        "C4"
+      ]
+    },
+    {
+      "id": "C.2",
+      "description": "C1/C2/C4: expected revert, selector captured, gas recorded",
+      "status": "met",
+      "detail": null
+    },
+    {
+      "id": "C.3",
+      "description": "C3: the agent has no administrative rights (both calls revert)",
+      "status": "met",
+      "detail": null
+    },
+    {
+      "id": "C.4",
+      "description": "C5: 2 chain executions + 1 off-chain refusal demonstrated",
+      "status": "met",
+      "detail": {
+        "case": "C5",
+        "label": "period boundary: 2 spends of 100 USDC straddling the boundary",
+        "first": {
+          "verdict": "ALLOW",
+          "reasons": [],
+          "cumulative_before": 150.0
+        },
+        "second": {
+          "verdict": "DENY",
+          "reasons": [
+            "AMOUNT_ABOVE_PERIOD_CAP"
+          ],
+          "cumulative_before": 250.0
+        },
+        "expect": "both pass on-chain (accepted limit, burst of maxRefill+refill) but the off-chain rolling counter refuses the second one",
+        "ok": true
+      }
+    }
+  ]
+}

@@ -1,34 +1,32 @@
 {
   "v": 1,
   "schema": "orvyren-preflight/v1",
-  "generated_at_utc": "2026-10-16T10:54:27Z",
+  "generated_at_utc": "2026-10-20T10:10:31Z",
   "mode": "rpc",
   "rpc_masked": "https://sepolia.base.org",
   "chain_id": 84532,
   "policy_version": "v1.0",
   "role_key": "0x4147454e54000000000000000000000000000000000000000000000000000000",
   "verdict": "PASS",
-  "safe_mode": true,
-  "safe_mode_reasons": [
-    "ENVELOPE_UNVERIFIED:D10"
-  ],
-  "safe_mode_required_when_live": true,
-  "blocking": true,
+  "safe_mode": false,
+  "safe_mode_reasons": [],
+  "safe_mode_required_when_live": false,
+  "blocking": false,
   "checks": [
     {
       "id": "P1",
       "family": "preflight",
-      "name": "verdict de politique ALLOW tracé",
+      "name": "traced ALLOW policy verdict",
       "status": "UNKNOWN",
       "ok": null,
       "detail": {
-        "reason": "aucun intent fourni"
+        "reason": "no intent provided"
       }
     },
     {
       "id": "P10",
       "family": "preflight",
-      "name": "prix du gaz dans les bornes",
+      "name": "gas price within bounds",
       "status": "PASS",
       "ok": true,
       "detail": {
@@ -40,27 +38,27 @@
     {
       "id": "P11",
       "family": "preflight",
-      "name": "simulation eth_call depuis l'agent",
+      "name": "eth_call simulation from the agent",
       "status": "UNKNOWN",
       "ok": null,
       "detail": {
-        "reason": "calldata ou adresse d'agent indisponible"
+        "reason": "calldata or agent address unavailable"
       }
     },
     {
       "id": "P12",
       "family": "preflight",
-      "name": "estimation de gaz (1,25×)",
+      "name": "gas estimate (1.25×)",
       "status": "UNKNOWN",
       "ok": null,
       "detail": {
-        "reason": "calldata ou adresse d'agent indisponible"
+        "reason": "calldata or agent address unavailable"
       }
     },
     {
       "id": "P2",
       "family": "preflight",
-      "name": "chaîne épinglée (eth_chainId)",
+      "name": "pinned chain (eth_chainId)",
       "status": "PASS",
       "ok": true,
       "detail": {
@@ -72,27 +70,27 @@
     {
       "id": "P3",
       "family": "preflight",
-      "name": "expiry de l'intent non dépassée",
+      "name": "intent expiry not passed",
       "status": "UNKNOWN",
       "ok": null,
       "detail": {
-        "reason": "aucun intent fourni"
+        "reason": "no intent provided"
       }
     },
     {
       "id": "P4",
       "family": "preflight",
-      "name": "idempotence (registre append-only)",
+      "name": "idempotency (append-only registry)",
       "status": "UNKNOWN",
       "ok": null,
       "detail": {
-        "reason": "aucun intent fourni"
+        "reason": "no intent provided"
       }
     },
     {
       "id": "P5",
       "family": "preflight",
-      "name": "pause K0 (kill switch hors chaîne)",
+      "name": "K0 pause (off-chain kill switch)",
       "status": "PASS",
       "ok": true,
       "detail": {
@@ -103,7 +101,7 @@
     {
       "id": "P6",
       "family": "preflight",
-      "name": "politique on-chain = attendue (module)",
+      "name": "on-chain policy = expected (module)",
       "status": "PASS",
       "ok": true,
       "detail": {
@@ -116,7 +114,7 @@
     {
       "id": "P7",
       "family": "preflight",
-      "name": "adresses cibles re-vérifiées (eth_getCode)",
+      "name": "target addresses re-verified (eth_getCode)",
       "status": "PASS",
       "ok": true,
       "detail": {
@@ -139,29 +137,29 @@
     {
       "id": "P8",
       "family": "preflight",
-      "name": "nonce (sérialisation stricte)",
+      "name": "nonce (strict serialization)",
       "status": "PASS",
       "ok": true,
       "detail": {
         "agent": "0xe1039e345fa2ad9ecceab7bb160fd5e53f58f01c",
-        "pending_nonce": 0,
-        "note": "une seule transaction en vol : le service signataire sérialise"
+        "pending_nonce": 14,
+        "note": "a single transaction in flight: the signer service serializes"
       }
     },
     {
       "id": "P9",
       "family": "preflight",
-      "name": "soldes (gaz + jeton)",
+      "name": "balances (gas + token)",
       "status": "UNKNOWN",
       "ok": null,
       "detail": {
-        "reason": "aucun intent fourni"
+        "reason": "no intent provided"
       }
     },
     {
       "id": "D1",
       "family": "drift",
-      "name": "chaîne (eth_chainId)",
+      "name": "chain (eth_chainId)",
       "status": "PASS",
       "ok": true,
       "detail": {
@@ -174,21 +172,19 @@
     {
       "id": "D10",
       "family": "drift",
-      "name": "version du module / avis de sécurité",
-      "status": "UNKNOWN",
-      "ok": null,
+      "name": "module version / security advisory",
+      "status": "PASS",
+      "ok": true,
       "detail": {
-        "version": null,
-        "advisory_clear": null,
-        "codehash_pinned": true,
-        "reason": "version du module non suivie ou avis de sécurité non déclaré clair (post-mortems 2026 : ERC-1271 v2.1.0→v2.1.1, padding MultiSend)",
-        "code": "ENVELOPE_UNVERIFIED"
+        "version": "v2.1.1",
+        "advisory_clear": true,
+        "codehash_pinned": true
       }
     },
     {
       "id": "D2",
       "family": "drift",
-      "name": "module (code + codehash épinglé)",
+      "name": "module (code + pinned codehash)",
       "status": "PASS",
       "ok": true,
       "detail": {
@@ -202,7 +198,7 @@
     {
       "id": "D3",
       "family": "drift",
-      "name": "membres du rôle AGENT",
+      "name": "AGENT role members",
       "status": "PASS",
       "ok": true,
       "detail": {
@@ -223,7 +219,7 @@
     {
       "id": "D4",
       "family": "drift",
-      "name": "cibles du rôle (clearance)",
+      "name": "role targets (clearance)",
       "status": "PASS",
       "ok": true,
       "detail": {
@@ -244,7 +240,7 @@
     {
       "id": "D5",
       "family": "drift",
-      "name": "fonctions scopées",
+      "name": "scoped functions",
       "status": "PASS",
       "ok": true,
       "detail": {
@@ -274,7 +270,7 @@
     {
       "id": "D6",
       "family": "drift",
-      "name": "conditions (destinataire, montant)",
+      "name": "conditions (recipient, amount)",
       "status": "PASS",
       "ok": true,
       "detail": {
@@ -329,7 +325,7 @@
     {
       "id": "D8",
       "family": "drift",
-      "name": "quota d'appels (CallWithinAllowance)",
+      "name": "call quota (CallWithinAllowance)",
       "status": "PASS",
       "ok": true,
       "detail": {
@@ -345,12 +341,12 @@
     {
       "id": "D9",
       "family": "drift",
-      "name": "expiration / révocation planifiée",
+      "name": "expiration / scheduled revocation",
       "status": "PASS",
       "ok": true,
       "detail": {
         "revocation_scheduled_at": "2026-11-15T23:59:59Z",
-        "note": "Allowance Zodiac n'a aucun champ d'expiration (B4 P8) : une révocation planifiée est exigée"
+        "note": "Zodiac Allowance has no expiration field (B4 P8): a scheduled revocation is required"
       }
     }
   ],
@@ -362,10 +358,10 @@
       "UNKNOWN": 6
     },
     "drift": {
-      "PASS": 9,
+      "PASS": 10,
       "FAIL": 0,
       "SKIPPED": 0,
-      "UNKNOWN": 1
+      "UNKNOWN": 0
     },
     "failed": []
   }

@@ -1,0 +1,60 @@
+{
+  "keys": {
+    "0x5f07a624cea1d9cc32c105920f32cc380d80f4e306d95e64d5b275604da6249d": {
+      "intent_id": "01M5CCNPWSRMERHGXP0YFBPDFW",
+      "idempotency_key": "0x5f07a624cea1d9cc32c105920f32cc380d80f4e306d95e64d5b275604da6249d",
+      "status": "REGISTERED",
+      "note": "B3 replay (already recorded)",
+      "ts_utc": "2026-10-20T10:11:12Z"
+    },
+    "0x96c5d03241aeeea0c42798b0b521975c07b8af0eff8ac7e1736cc224ef17bf32": {
+      "intent_id": "01M5CCPAQNT5YT4A6BP1A39DHC",
+      "idempotency_key": "0x96c5d03241aeeea0c42798b0b521975c07b8af0eff8ac7e1736cc224ef17bf32",
+      "status": "REQUIRE_APPROVAL",
+      "note": "change_policy",
+      "ts_utc": "2026-10-20T10:11:12Z"
+    },
+    "0xefbe8bfd275af62f17d3144845fea4c4df39248a2c9f737cad4de6281383098e": {
+      "intent_id": "01M5CCR79MZM7K8964DG78HG2N",
+      "idempotency_key": "0xefbe8bfd275af62f17d3144845fea4c4df39248a2c9f737cad4de6281383098e",
+      "status": "PREPARED",
+      "note": "RUN D — intent not sent (kill switch)",
+      "ts_utc": "2026-10-20T10:12:14Z"
+    }
+  },
+  "intent_ids": [
+    "01M5CCNPWSRMERHGXP0YFBPDFW",
+    "01M5CCPAQNT5YT4A6BP1A39DHC",
+    "01M5CCR79MZM7K8964DG78HG2N"
+  ],
+  "entries": [
+    {
+      "intent_id": "01M5CCNPWSRMERHGXP0YFBPDFW",
+      "idempotency_key": "0x5f07a624cea1d9cc32c105920f32cc380d80f4e306d95e64d5b275604da6249d",
+      "status": "RESERVED",
+      "note": "run A — preflight passed, signature imminent",
+      "ts_utc": "2026-10-20T10:10:56Z"
+    },
+    {
+      "intent_id": "01M5CCNPWSRMERHGXP0YFBPDFW",
+      "idempotency_key": "0x5f07a624cea1d9cc32c105920f32cc380d80f4e306d95e64d5b275604da6249d",
+      "status": "REGISTERED",
+      "note": "B3 replay (already recorded)",
+      "ts_utc": "2026-10-20T10:11:12Z"
+    },
+    {
+      "intent_id": "01M5CCPAQNT5YT4A6BP1A39DHC",
+      "idempotency_key": "0x96c5d03241aeeea0c42798b0b521975c07b8af0eff8ac7e1736cc224ef17bf32",
+      "status": "REQUIRE_APPROVAL",
+      "note": "change_policy",
+      "ts_utc": "2026-10-20T10:11:12Z"
+    },
+    {
+      "intent_id": "01M5CCR79MZM7K8964DG78HG2N",
+      "idempotency_key": "0xefbe8bfd275af62f17d3144845fea4c4df39248a2c9f737cad4de6281383098e",
+      "status": "PREPARED",
+      "note": "RUN D — intent not sent (kill switch)",
+      "ts_utc": "2026-10-20T10:12:14Z"
+    }
+  ]
+}

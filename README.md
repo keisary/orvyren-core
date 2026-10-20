@@ -48,10 +48,10 @@ verdict. That run is the honest unit of work — it is shipped, byte-identical, 
 python -m unittest discover -s tests          # 1549 tests, OK (skipped=3) — measured 2026-10-19
 python scripts/verify_frozen.py               # pre-registered evaluation protocol: COMPLIANT
 PYTHONPATH=src python -m orvyren.decide --case usdc-2023-03 --replay    # full decision, offline
-python run_verify.py evidence/audit_packets/audit_packet_rseth_20261016-2340_01M526YS.zip
-                                              # measured 2026-10-19T13:42Z: FAIL — 16 checks, 2 failed
-                                              # (A4 dossier re-render). Packet rebuild required before
-                                              # any OFFLINE_PASS claim — docs/CLOSURE_CHECKLIST.md item 8
+python run_verify.py evidence/audit_packets/audit_packet_rseth_20261020-1012_01M5CCNN.zip
+                                              # OFFLINE_PASS — 16 checks, 0 failed (re-measured 2026-10-20T10:12Z)
+                                              # --mutate-test → mutations 6/6; zip sha256 63f4cefd905047ec…
+                                              # runs A→E of 2026-10-20, 10 receipts (1 success, 9 chain refusals)
 ```
 
 Dashboard (offline, real state, no external resource):
@@ -69,7 +69,7 @@ A single runbook, with the expected output of every step:
 | What | Command | Result |
 |---|---|---|
 | Test suite | `python -m unittest discover -s tests` | 1549 tests, OK (3 skipped) — measured 2026-10-19 |
-| Third-party audit packet | `python run_verify.py <packet>.zip` | **measured 2026-10-19T13:42Z: `FAIL` — 16 checks, 2 failed** (`A4.dossier.rerender.md/.html`, caused by `src/orvyren/audit/dossier.py` changing after the packet was built). The shipped 16/10 packet must be rebuilt before the `OFFLINE_PASS` claim is made — `docs/CLOSURE_CHECKLIST.md` item 8 |
+| Third-party audit packet | `python run_verify.py audit_packet_rseth_20261020-1012_01M5CCNN.zip [--mutate-test]` | **measured 2026-10-20T10:12Z: `OFFLINE_PASS — 16 checks, 0 failed`, mutations 6/6**; the same result from the verifier shipped inside the zip; `--rpc` `PASS — 26 checks, 0 failed` (10 receipts re-read). zip sha256 `63f4cefd905047eca2f71b4fa0c99fb05fb4cdb38bcc661919583f0c7592b83f` |
 | Frozen evaluation protocol | `python scripts/verify_frozen.py` | `COMPLIANT` (byte-identical recalculation) |
 | Policy | `policy_v1.yaml` + `src/orvyren/policy/` | 14 deterministic rules, production mode fail-closed |
 | Execution preflight | `src/orvyren/execution/preflight.py` | 10 controls, stop at the first failure |

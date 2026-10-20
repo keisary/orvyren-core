@@ -1,0 +1,252 @@
+{
+  "run": "C",
+  "mode": "execute",
+  "cases": [
+    {
+      "case": "C1",
+      "label": "transfer 500 USDC through the module (above the maxRefill allowance)",
+      "expect": "revert (allowance exceeded); tx included with status 0x0, gas wasted",
+      "sent": true,
+      "offline_checks": [
+        {
+          "description": "amount 500 000 000 > maxRefill 300000000",
+          "ok": true
+        },
+        {
+          "description": "calldata round-trip (exec → transfer) consistent",
+          "ok": true
+        }
+      ],
+      "decoded": {
+        "target": "0x036cbd53842c5426634e7929541ec2318f3dcf7e",
+        "role_key": "0x4147454e54000000000000000000000000000000000000000000000000000000",
+        "inner_to": "0x37877f6ffb6656e752bf4807b9c3c7b761a953a3",
+        "inner_value": 500000000,
+        "operation": 0
+      },
+      "sends": [
+        {
+          "tx_hash": "0x2f5c69d5cc5c7d570a24e5e495680ae86a0aa0389a7eb7f119b9be8d074ee10b",
+          "sent": true,
+          "nonce": 15,
+          "status": "0x0",
+          "gas_used": 84180,
+          "gas_cost_wei": 925980000000,
+          "revert": {
+            "status": "REVERT",
+            "revert_selector": "0xd0a9bf58",
+            "error_message": "execution reverted",
+            "data": "0xd0a9bf580000000000000000000000000000000000000000000000000000000000000011757364635f6461696c7900000000000000000000000000000000000000000000"
+          }
+        }
+      ]
+    },
+    {
+      "case": "C2",
+      "label": "transfer 1 USDC to an unlisted recipient through the module",
+      "expect": "revert (recipient condition); no Transfer log",
+      "sent": true,
+      "offline_checks": [
+        {
+          "description": "recipient outside the allowlist",
+          "ok": true
+        },
+        {
+          "description": "calldata round-trip (exec → transfer) consistent",
+          "ok": true
+        }
+      ],
+      "decoded": {
+        "target": "0x036cbd53842c5426634e7929541ec2318f3dcf7e",
+        "role_key": "0x4147454e54000000000000000000000000000000000000000000000000000000",
+        "inner_to": "0xd959b95e70005208e0654b849ad635c67d3da689",
+        "inner_value": 1000000,
+        "operation": 0
+      },
+      "sends": [
+        {
+          "tx_hash": "0xf9d67562590df9fff5f907886dbe0ae767f5c56f49d2a49f86ca0edbbfca8670",
+          "sent": true,
+          "nonce": 16,
+          "status": "0x0",
+          "gas_used": 83516,
+          "gas_cost_wei": 918676000000,
+          "revert": {
+            "status": "REVERT",
+            "revert_selector": "0xd0a9bf58",
+            "error_message": "execution reverted",
+            "data": "0xd0a9bf5800000000000000000000000000000000000000000000000000000000000000050000000000000000000000000000000000000000000000000000000000000000"
+          }
+        }
+      ]
+    },
+    {
+      "case": "C3a",
+      "label": "the agent attempts allowTarget (self-widening of its own target)",
+      "expect": "revert onlyOwner (no administrative rights — attack #7)",
+      "sent": true,
+      "offline_checks": [
+        {
+          "description": "allowTarget selector verified 0x7b0da5b2",
+          "ok": true
+        },
+        {
+          "description": "complete allowTarget calldata (selector + 3 words)",
+          "ok": true
+        }
+      ],
+      "sends": [
+        {
+          "tx_hash": "0x977342d5b06964292e91d2eeda24c528a28e14dba06d3e338e516330fd1a5455",
+          "sent": true,
+          "nonce": 17,
+          "status": "0x0",
+          "gas_used": 27228,
+          "gas_cost_wei": 299508000000,
+          "revert": {
+            "status": "REVERT",
+            "revert_selector": "0x118cdaa7",
+            "error_message": "execution reverted",
+            "data": "0x118cdaa7000000000000000000000000e1039e345fa2ad9ecceab7bb160fd5e53f58f01c"
+          }
+        }
+      ]
+    },
+    {
+      "case": "C3b",
+      "label": "the agent attempts Safe.enableModule (the module has full powers over the Safe)",
+      "expect": "revert GS* (the only owner is the Safe itself)",
+      "sent": true,
+      "offline_checks": [
+        {
+          "description": "enableModule(address) selector computed locally",
+          "ok": true
+        },
+        {
+          "description": "complete enableModule calldata",
+          "ok": true
+        }
+      ],
+      "sends": [
+        {
+          "tx_hash": "0x23749217d1f641e9c737a9888931f478a95126e69e67be6cba989aa7f178d1af",
+          "sent": true,
+          "nonce": 18,
+          "status": "0x0",
+          "gas_used": 26760,
+          "gas_cost_wei": 294360000000,
+          "revert": {
+            "status": "REVERT",
+            "revert_selector": "0x08c379a0",
+            "error_message": "execution reverted: GS031",
+            "data": "0x08c379a0000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000054753303331000000000000000000000000000000000000000000000000000000"
+          }
+        }
+      ]
+    },
+    {
+      "case": "C4",
+      "label": "loop 100 + 100 + 100 + 100 (on-chain accumulation)",
+      "expect": "the first 3 pass; the 4th reverts (cumulative overrun, attack #8)",
+      "sent": true,
+      "offline_checks": [
+        {
+          "description": "100+100+100 = 300 000 000 ≤ maxRefill",
+          "ok": true
+        },
+        {
+          "description": "100+100+100+100 = 400 000 000 > maxRefill",
+          "ok": true
+        },
+        {
+          "description": "calldata round-trip (exec → transfer) consistent",
+          "ok": true
+        }
+      ],
+      "decoded": {
+        "target": "0x036cbd53842c5426634e7929541ec2318f3dcf7e",
+        "role_key": "0x4147454e54000000000000000000000000000000000000000000000000000000",
+        "inner_to": "0x37877f6ffb6656e752bf4807b9c3c7b761a953a3",
+        "inner_value": 100000000,
+        "operation": 0
+      },
+      "sends": [
+        {
+          "tx_hash": "0x3ac44fe8e571e01275e229dd9cd8a0f4fb6f976d344aaa79d9080b8dbf410aec",
+          "sent": true,
+          "nonce": 19,
+          "status": "0x0",
+          "gas_used": 118259,
+          "gas_cost_wei": 1300849000000,
+          "revert": {
+            "status": "REVERT",
+            "revert_selector": "0xd27b44a9",
+            "error_message": "execution reverted",
+            "data": "0xd27b44a9"
+          }
+        },
+        {
+          "tx_hash": "0x841cee455539a3e7cf196875ac55dc48f727af66e4e1b32e6b8019f30163e92a",
+          "sent": true,
+          "nonce": 20,
+          "status": "0x0",
+          "gas_used": 118259,
+          "gas_cost_wei": 1300849000000,
+          "revert": {
+            "status": "REVERT",
+            "revert_selector": "0xd27b44a9",
+            "error_message": "execution reverted",
+            "data": "0xd27b44a9"
+          }
+        },
+        {
+          "tx_hash": "0xc6c2bde904648042b58944016194a7893236082f0575459fe303d5bb99478faa",
+          "sent": true,
+          "nonce": 21,
+          "status": "0x0",
+          "gas_used": 118259,
+          "gas_cost_wei": 1300849000000,
+          "revert": {
+            "status": "REVERT",
+            "revert_selector": "0xd27b44a9",
+            "error_message": "execution reverted",
+            "data": "0xd27b44a9"
+          }
+        },
+        {
+          "tx_hash": "0x8a5a95c96851a4118d4643bcedf2fdeca1c44e787eedc42858aed46eebb41708",
+          "sent": true,
+          "nonce": 22,
+          "status": "0x0",
+          "gas_used": 118259,
+          "gas_cost_wei": 1300849000000,
+          "revert": {
+            "status": "REVERT",
+            "revert_selector": "0xd27b44a9",
+            "error_message": "execution reverted",
+            "data": "0xd27b44a9"
+          }
+        }
+      ]
+    }
+  ],
+  "boundary": {
+    "case": "C5",
+    "label": "period boundary: 2 spends of 100 USDC straddling the boundary",
+    "first": {
+      "verdict": "ALLOW",
+      "reasons": [],
+      "cumulative_before": 150.0
+    },
+    "second": {
+      "verdict": "DENY",
+      "reasons": [
+        "AMOUNT_ABOVE_PERIOD_CAP"
+      ],
+      "cumulative_before": 250.0
+    },
+    "expect": "both pass on-chain (accepted limit, burst of maxRefill+refill) but the off-chain rolling counter refuses the second one",
+    "ok": true
+  },
+  "status": "EXECUTED"
+}

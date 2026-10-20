@@ -6,7 +6,7 @@
 | --- | --- |
 | Case | usdc-2023-03 |
 | Window | 2023-03-09T00:00:00+00:00 → 2023-03-15T00:00:00+00:00 |
-| Generated (UTC) | 2026-10-19T01:13:52Z |
+| Generated (UTC) | 2026-10-20T09:13:41Z |
 | Engine | ORVYREN-Core 0.1 |
 
 ## Decision
@@ -872,10 +872,10 @@ Control signals (0):
 | baseline_report | evidence/baseline_report.json | `fa68d11f36232719f5400b5aab1d1cfab19b7808aaeb3e01297bd7bf4f868ae8` |
 | policy_execution_demo | evidence/policy_execution_demo.json | `5d6b64e04a04056acdb8dd7ab1f57368328677b82b73f8bd6b55e29bda14ffae` |
 | quality_report | evidence/quality_report.json | `3422567ea2de3ee1ac54fa7a72b84c3f7fbd94eca76b72fb11b7ba19bff82730` |
-| dossier (self, md) | evidence/dossier_usdc-2023-03.md | `9f784c3b642dff2f0c9f7d26ca96464305dcddcd06aff7b454347d48b718ae3d` |
+| dossier (self, md) | evidence/dossier_usdc-2023-03.md | `c3251ad6bc019fdc3f69869c009c3d72c6aa63cbf8b0c51a2b27834bf488bca0` |
 
 Self-hash rule: the `dossier (self, md)` row is the SHA-256 of this Markdown file computed with its own 64-hex-character self-hash field zeroed (64 `0` characters). It is reproducible with any SHA-256 tool: replace that field with zeros and hash the file. With identical inputs and build time this dossier is byte-identical.
 
 ---
 
-produced by ORVYREN-Core v0.1 — deterministic engine, no human edit · ORVYREN-Core v0.1 · generated 2026-10-19T01:13:52Z (UTC)
+produced by ORVYREN-Core v0.1 — deterministic engine, no human edit · ORVYREN-Core v0.1 · generated 2026-10-20T09:13:41Z (UTC)

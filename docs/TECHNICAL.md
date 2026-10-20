@@ -689,8 +689,8 @@ in `SUPERSEDED_NOTE.md` — no figure may be quoted from it.
 **How to verify**
 
 ```bash
-python run_verify.py evidence/audit_packets/audit_packet_rseth_20261016-2340_01M526YS.zip --mutate-test | tail -7
-(cd evidence/audit_packets && sha256sum -c audit_packet_rseth_20261016-2340_01M526YS.zip.sha256)
+python run_verify.py evidence/audit_packets/audit_packet_rseth_20261020-1012_01M5CCNN.zip --mutate-test | tail -7
+(cd evidence/audit_packets && sha256sum -c audit_packet_rseth_20261020-1012_01M5CCNN.zip.sha256)
 (cd evidence/demo_chain/rseth && sha256sum -c MANIFEST.sha256 | tail -1)
 python scripts/verify_frozen.py | tail -1
 test -f evidence/eval_run.lock && echo "EVAL lock present (burned)"
@@ -759,7 +759,7 @@ different hardware may change timings, never counts.
 |---|---|---|---|
 | 1 | Test suite | `python -m unittest discover -s tests -q` | `Ran 1549 tests in 73.427s` — `OK (skipped=3)` — measured 2026-10-19T13:49Z |
 | 2 | Frozen protocol | `python scripts/verify_frozen.py` | `COMPLIANT` (20 files, 1.10 s) |
-| 3 | Audit packet + tamper test | `run_verify.py …01M526YS.zip [--mutate-test]`; `sha256sum -c` on its sidecar | **2026-10-18**: `OFFLINE_PASS — 16 checks, 0 failed` · `mutations 6/6` · zip `a0c4562050a6c4…` `OK`. **Re-measured 2026-10-19T13:42Z: `FAIL — 16 checks, 2 failed`** (`A4.dossier.rerender.md/.html` — `audit/dossier.py` changed after the packet was built); packet rebuild required |
+| 3 | Audit packet + tamper test | `run_verify.py …20261020-1012_01M5CCNN.zip [--mutate-test]`; `sha256sum -c` on its sidecar | **2026-10-20T10:12Z** (packet rebuilt from a fresh session, 10 receipts): `OFFLINE_PASS — 16 checks, 0 failed` · `mutations 6/6` · `--rpc` `PASS — 26 checks, 0 failed` (10 `REVERIFIED`) · zip `63f4cefd905047eca2f71b4fa0c99fb05fb4cdb38bcc661919583f0c7592b83f` `OK`. The previous packet (`…20261016-2340_01M526YS.zip`, `a0c4562050a6c4…`) failed `A4.dossier.rerender` because `audit/dossier.py` changed after it was sealed; it is archived out of the repository, its own embedded verifier still prints `OFFLINE_PASS` |
 | 4 | Testnet receipts | count over `evidence/demo_chain/rseth/receipts/*.json`; `sha256sum -c MANIFEST.sha256` | 13 files (`0x1` ×1, `0x0` ×12); manifest 16 files `OK` |
 | 5 | Relation catalogue | `catalog.catalog_stats()` | 35 kinds — 8 / 16 / 3 / 8 |
 | 6 | Relation record | `len(RELATION_RECORD_FIELD_GROUPS)` | 17 groups / 30 fields |

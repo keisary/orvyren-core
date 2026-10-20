@@ -1,0 +1,35 @@
+{
+  "schema": "orvyren-policy-demo/v1",
+  "policy_version": "v1.0",
+  "note": "Demo off-chain policy (lock 1). The parameters come from W2C §g.1 / B5 §e.0; the semantics come from the code (orvyren.policy, rules R1-R8). The code = source of truth for the semantics; this file = source of truth for the parameters.",
+  "chain_id": 84532,
+  "asset": "0x036CbD53842c5426634e7929541eC2318f3dCF7e",
+  "asset_symbol": "USDC (test, Circle)",
+  "asset_decimals": 6,
+  "max_per_tx": "100.0",
+  "max_cumulative_24h": "300.0",
+  "max_calls_24h": 10,
+  "recipients": [
+    "B",
+    "C"
+  ],
+  "allowed_actions": [
+    "transfer"
+  ],
+  "approval_actions": [
+    "swap",
+    "approve",
+    "change_policy",
+    "revoke"
+  ],
+  "ttl_intent_minutes": 15,
+  "ttl_approval_hours": 2,
+  "permission_ttl_hours": 24,
+  "allowance_refill_base_units": 300000000,
+  "allowance_max_refill_base_units": 300000000,
+  "allowance_period_seconds": 86400,
+  "role_key": "0x4147454e54000000000000000000000000000000000000000000000000000000",
+  "revocation_scheduled_at": "2026-11-15T23:59:59Z",
+  "note_revocation": "Target date for the scheduled revocation of the AGENT role (task K1) — TO BE ADAPTED on setup day. Zodiac Allowance has NO expiration field (B4 P8): this off-chain deadline is the only one that exists, and the drift test (D9) requires it to be filled in.",
+  "note_usdc": "Transfers = Circle USDC (Circle faucet). Aave's USDC (0xba50Cd2A20f6DA35D788639E581bca8d0B5d4D5f) is ANOTHER token (Aave faucet) — never interchangeable (B5 §b.2)."
+}

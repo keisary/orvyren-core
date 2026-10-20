@@ -1,0 +1,77 @@
+{
+  "run": "A",
+  "criteria": [
+    {
+      "id": "A.1",
+      "description": "receipt.status == 0x1",
+      "status": "met",
+      "detail": []
+    },
+    {
+      "id": "A.2",
+      "description": "exactly one exactly matching Transfer log",
+      "status": "met",
+      "detail": {
+        "token_transfer_logs": 1,
+        "exact_matches": 1
+      }
+    },
+    {
+      "id": "A.3",
+      "description": "Δ Safe balance = −100000000 and Δ B balance = +100000000",
+      "status": "met",
+      "detail": {
+        "before": {
+          "safe": 100000000,
+          "B": 40000000
+        },
+        "after": {
+          "safe": 0,
+          "B": 140000000
+        }
+      }
+    },
+    {
+      "id": "A.4",
+      "description": "signature counter = +1 (simulated ones included in dry-run)",
+      "status": "met",
+      "detail": {
+        "before": 0,
+        "after": 1
+      }
+    },
+    {
+      "id": "A.5",
+      "description": "the 7 journal kind values present for intent_id",
+      "status": "met",
+      "detail": [
+        "INTENT",
+        "OUTCOME",
+        "POLICY",
+        "RECEIPT",
+        "SIMULATION",
+        "SUBMIT",
+        "VERIFY"
+      ]
+    },
+    {
+      "id": "A.6",
+      "description": "blockHash stable after 2 blocks",
+      "status": "met",
+      "detail": {
+        "tx_hash": "0x50140cad14bb41a27c77f57cbcbb30b3cae9ff3aa6184b4e9b69de6949d92622",
+        "confirmation_blocks": 2,
+        "block_number": 48361387,
+        "block_hash": "0x6075079872218dd59ec2588f707b9ffa46114b086c4f192011dcab9d9adaf494",
+        "confirmations": 4,
+        "status": "CONFIRMED",
+        "view_updated": {
+          "consigned_block_hash": "0x0000000000000000000000000000000000000000000000000000000000000000",
+          "final_block_hash": "0x6075079872218dd59ec2588f707b9ffa46114b086c4f192011dcab9d9adaf494",
+          "note": "initial receipt view differed (testnet micro-fork) — re-read stabilized"
+        },
+        "waited_seconds": 8.39
+      }
+    }
+  ]
+}

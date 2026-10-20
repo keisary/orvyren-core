@@ -1,0 +1,95 @@
+{
+  "run": "B",
+  "mode": "execute",
+  "cases": [
+    {
+      "case": "B1",
+      "attempt": 1,
+      "label": "transfer 150 USDC (per-transaction cap)",
+      "verdict": "DENY",
+      "reasons": [
+        "AMOUNT_ABOVE_TX_CAP"
+      ],
+      "expected_verdict": "DENY",
+      "expected_codes": [
+        "AMOUNT_ABOVE_TX_CAP"
+      ],
+      "ok": true
+    },
+    {
+      "case": "B2",
+      "attempt": 1,
+      "label": "unlisted recipient (20 USDC)",
+      "verdict": "DENY",
+      "reasons": [
+        "RECIPIENT_NOT_ALLOWED"
+      ],
+      "expected_verdict": "DENY",
+      "expected_codes": [
+        "RECIPIENT_NOT_ALLOWED"
+      ],
+      "ok": true
+    },
+    {
+      "case": "B3",
+      "attempt": 1,
+      "label": "replay of the same intent (×3, idempotency)",
+      "verdict": "DENY",
+      "reasons": [
+        "INTENT_ALREADY_PROCESSED"
+      ],
+      "expected_verdict": "DENY",
+      "expected_codes": [
+        "INTENT_ALREADY_PROCESSED"
+      ],
+      "ok": true
+    },
+    {
+      "case": "B3",
+      "attempt": 2,
+      "label": "replay of the same intent (×3, idempotency)",
+      "verdict": "DENY",
+      "reasons": [
+        "INTENT_ALREADY_PROCESSED"
+      ],
+      "expected_verdict": "DENY",
+      "expected_codes": [
+        "INTENT_ALREADY_PROCESSED"
+      ],
+      "ok": true
+    },
+    {
+      "case": "B3",
+      "attempt": 3,
+      "label": "replay of the same intent (×3, idempotency)",
+      "verdict": "DENY",
+      "reasons": [
+        "INTENT_ALREADY_PROCESSED"
+      ],
+      "expected_verdict": "DENY",
+      "expected_codes": [
+        "INTENT_ALREADY_PROCESSED"
+      ],
+      "ok": true
+    },
+    {
+      "case": "B4",
+      "attempt": 1,
+      "label": "change_policy (never autonomous)",
+      "verdict": "REQUIRE_APPROVAL",
+      "reasons": [
+        "ACTION_NEEDS_HUMAN_APPROVAL"
+      ],
+      "expected_verdict": "REQUIRE_APPROVAL",
+      "expected_codes": [
+        "ACTION_NEEDS_HUMAN_APPROVAL"
+      ],
+      "ok": true
+    }
+  ],
+  "status": "DENIED",
+  "signatures_before": 1,
+  "signatures_after": 1,
+  "nonce_before": 15,
+  "nonce_after": 15
+}

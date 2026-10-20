@@ -1,0 +1,106 @@
+{
+  "run": "A",
+  "mode": "execute",
+  "intent_id": "01M5CCNPWSRMERHGXP0YFBPDFW",
+  "verdict": "ALLOW",
+  "policy": {
+    "decision_id": "01M5CCNPWXFWB097F9R2Q3WMHA",
+    "verdict": "ALLOW",
+    "reasons": [],
+    "rules_evaluated": [
+      {
+        "rule": "P1-chain",
+        "result": "OK",
+        "note": "84532"
+      },
+      {
+        "rule": "P2-asset",
+        "result": "OK",
+        "note": ""
+      },
+      {
+        "rule": "P3-recipient",
+        "result": "OK",
+        "note": ""
+      },
+      {
+        "rule": "P4-function",
+        "result": "SKIPPED",
+        "note": "function registry not configured (legacy)"
+      },
+      {
+        "rule": "P5-amount",
+        "result": "OK",
+        "note": "100.0 <= 100.0"
+      },
+      {
+        "rule": "P6-cumulative",
+        "result": "OK",
+        "note": "100.0 <= 300.0"
+      },
+      {
+        "rule": "P7-exposure",
+        "result": "SKIPPED",
+        "note": "state not supplied — simulation mode (declared)"
+      },
+      {
+        "rule": "P8-permission",
+        "result": "OK",
+        "note": "2026-10-21T10:10:51.933146+00:00"
+      },
+      {
+        "rule": "P9-freshness",
+        "result": "SKIPPED",
+        "note": "intent TTL not configured (legacy)"
+      },
+      {
+        "rule": "P10-idempotency",
+        "result": "OK",
+        "note": ""
+      },
+      {
+        "rule": "P11-pause",
+        "result": "SKIPPED",
+        "note": "state not supplied — simulation mode (declared)"
+      },
+      {
+        "rule": "P12-envelope",
+        "result": "SKIPPED",
+        "note": "state not supplied — simulation mode (declared)"
+      },
+      {
+        "rule": "P14-budget",
+        "result": "SKIPPED",
+        "note": "state not supplied — simulation mode (declared)"
+      },
+      {
+        "rule": "P13-action",
+        "result": "OK",
+        "note": "transfer"
+      }
+    ],
+    "evaluator": "orvyren-policy v0.1 (deterministic, off-LLM)",
+    "decided_at": "2026-10-20T10:10:51Z",
+    "intent_id": "01M5CCNPWSRMERHGXP0YFBPDFW",
+    "intent_hash": "0x5f07a624cea1d9cc32c105920f32cc380d80f4e306d95e64d5b275604da6249d",
+    "policy_version": "v1.0",
+    "policy_chain_id": 84532,
+    "context_used": {
+      "placeholders": []
+    }
+  },
+  "expected": {
+    "receipt_status": "0x1",
+    "transfer_base_units": 100000000
+  },
+  "tx": {
+    "mode": "execute",
+    "tx_hash": "0x50140cad14bb41a27c77f57cbcbb30b3cae9ff3aa6184b4e9b69de6949d92622",
+    "simulated": false,
+    "sent": true,
+    "nonce": 14,
+    "gas": 191880,
+    "raw_signed": "0x02f901b283014a340e835b8d8083b71b008302ed88947e2b7798ab4b4db837b30107f0d2a3ffb24e95e880b90144c6fe8747000000000000000000000000036cbd53842c5426634e7929541ec2318f3dcf7e000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000c000000000000000000000000000000000000000000000000000000000000000004147454e5400000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000010000000000000000000000000000000000000000000000000000000000000044a9059cbb00000000000000000000000037877f6ffb6656e752bf4807b9c3c7b761a953a30000000000000000000000000000000000000000000000000000000005f5e10000000000000000000000000000000000000000000000000000000000c001a031671291d20e6e3fa19d32f411eafa36a6240471e0efbea6cbc07029f3ac26a5a039afad8e6be8c23157cef8694bef6b55a2e29e5c9afeac49dd2b9e6d0c4da705"
+  },
+  "status": "VERIFIED_OK"
+}

@@ -200,8 +200,21 @@ with `status 0x1`**. The tree re-verifies: `sha256sum -c MANIFEST.sha256` → **
 | `forced-C4` — cumulative-cap loop | 6 | `0x0` | the Roles module |
 
 Independent re-verification against the live chain:
-`python run_verify.py evidence/audit_packets/audit_packet_rseth_20261016-2340_01M526YS.zip --rpc https://sepolia.base.org`
-→ `VERDICT: PASS — 29 checks, 0 failed` (13 receipts `REVERIFIED`).
+`python run_verify.py evidence/audit_packets/audit_packet_rseth_20261020-1012_01M5CCNN.zip --rpc https://sepolia.base.org`
+→ `VERDICT: PASS — 26 checks, 0 failed` (10 receipts `REVERIFIED`).
+
+**Re-measured 2026-10-20 — refreshed reference packet.** A second session
+(`01M5CCNNTXNSC3YEVEPAJFBWWH`, 2026-10-20, Safe funded at 100 USDC) replayed the same five
+runs end to end on Base Sepolia: **10 receipts — 1 `0x1` (run A's 100 USDC transfer) and
+9 `0x0` chain refusals** — and 64 run journal entries. Its packet is
+`evidence/audit_packets/audit_packet_rseth_20261020-1012_01M5CCNN.zip`, sha256
+`63f4cefd905047eca2f71b4fa0c99fb05fb4cdb38bcc661919583f0c7592b83f`, `bundle_digest`
+`dd8511cd…`: `OFFLINE_PASS — 16 checks, 0 failed`, `--mutate-test` **6/6**, and `--rpc`
+`PASS — 26 checks, 0 failed`. The 16/10 packet was moved out of the repository
+(`D:/orvyren_internal_2026-10-18/audit_packets_superseded/` + `SUPERSEDED_NOTE.md`) because
+`A4.dossier.rerender` re-renders the dossier with the **current** code and
+`src/orvyren/audit/dossier.py` changed after it was sealed — not because its evidence was
+wrong: its own embedded verifier still prints `OFFLINE_PASS`.
 
 **What this proves.** The envelope is real: a forced instruction set was broadcast against
 the deployed module and the chain rejected 12 of 13 attempts while the one legitimate
@@ -224,8 +237,8 @@ inside the caps is still allowed.
 | Bandit 1.9.4 | `python -m bandit -r src -f txt` | **40 findings, 0 High** (28 Medium, 12 Low) over 26 774 LOC, 0 `#nosec`: 22 × B608, 5 × B310, 5 × B110, 4 × B105, 2 × B311, 1 × B104, 1 × B101 — same 40 as the previous pass, on 514 more lines |
 | Ruff 0.16.5 | `python -m ruff check src scripts run_*.py` | `All checks passed!` (wider scope than the previous `src`-only run) |
 | Mypy 2.4.0 | `python -m mypy src --ignore-missing-imports` | `Found 101 errors in 24 files (checked 91 source files)` — untriaged, this is G-11; **+1 error in +1 file** versus the previous pass |
-| Third-party verifier | `python run_verify.py <packet.zip> --mutate-test` | **re-measured 2026-10-19T13:42Z: `VERDICT: FAIL — 16 checks, 2 failed`** (`A4.dossier.rerender.md/.html`: `src/orvyren/audit/dossier.py` postdates the 16/10 packet). The earlier `OFFLINE_PASS — 16 checks, 0 failed, mutations 6/6` holds only for a **rebuilt** packet and is not reproducible from the shipped one |
-| Chain re-check | `… --rpc https://sepolia.base.org` | `PASS — 29 checks, 0 failed` |
+| Third-party verifier | `python run_verify.py <packet.zip> --mutate-test` | **re-measured 2026-10-20T10:12Z on `audit_packet_rseth_20261020-1012_01M5CCNN.zip`: `OFFLINE_PASS — 16 checks, 0 failed, mutations 6/6`** (packet rebuilt from the fresh 2026-10-20 session, so it re-renders with the current `audit/dossier.py`); the verifier shipped inside the zip prints the same. `--rpc` → `PASS — 26 checks, 0 failed` (10 receipts `REVERIFIED`) |
+| Chain re-check | `… --rpc https://sepolia.base.org` | `PASS — 26 checks, 0 failed` (2026-10-20 packet, 10 receipts) |
 | Secret hygiene | `python scripts/demo/check_env_hygiene.py` | `VERDICT: OK` (H4 skipped: Windows) |
 | Dependency inventory | AST walk over `src/**/*.py` | 31 stdlib modules; outside the stdlib only `fastapi` + `uvicorn` (lazy API boundary) and two in-repo scripts imported on the execution/replay paths |
 
@@ -279,8 +292,8 @@ python -m unittest tests.test_env_hygiene tests.test_verify_engine -q           
 # 2. the policy hash actually carried by decisions
 PYTHONPATH=src python -c "from orvyren.policy import load_policy; b=load_policy('policy_v1.yaml', recipients={'B':'0x37877f6ffb6656e752bf4807b9c3c7b761a953a3','C':'0x9f59adcdea0341e258e3ac98e7f9c57a2277760e'}); print(b.config.policy_hash)"
 # 3. audit packet: offline, mutations, live receipts
-python run_verify.py evidence/audit_packets/audit_packet_rseth_20261016-2340_01M526YS.zip --mutate-test
-python run_verify.py evidence/audit_packets/audit_packet_rseth_20261016-2340_01M526YS.zip --rpc https://sepolia.base.org
+python run_verify.py evidence/audit_packets/audit_packet_rseth_20261020-1012_01M5CCNN.zip --mutate-test
+python run_verify.py evidence/audit_packets/audit_packet_rseth_20261020-1012_01M5CCNN.zip --rpc https://sepolia.base.org
 # 4. demo receipts and their manifest
 python -c "import json,glob,collections; g=glob.glob('evidence/demo_chain/rseth/receipts/*.json'); c=collections.Counter(json.load(open(f))['status'] for f in g); print(len(g),dict(c))"
 (cd evidence/demo_chain/rseth && sha256sum -c MANIFEST.sha256)

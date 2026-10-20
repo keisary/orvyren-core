@@ -98,10 +98,10 @@ The commands in §3 are copy-pasteable as written; nothing needs editing on came
 
 ```bash
 cd ~ && rm -rf orvyren_audit && mkdir orvyren_audit && cd orvyren_audit
-unzip -q D:/orvyren_core/evidence/audit_packets/audit_packet_rseth_20261016-2340_01M526YS.zip
+unzip -q D:/orvyren_core/evidence/audit_packets/audit_packet_rseth_20261020-1012_01M5CCNN.zip
 ```
 
-Result: `~/orvyren_audit/audit_packet_rseth_20261016-2340_01M526YS/`.
+Result: `~/orvyren_audit/audit_packet_rseth_20261020-1012_01M5CCNN/`.
 
 **2.8 — recording.** 60 fps, cursor visible, notifications off (Windows Focus
 Assist → Alarms only), microphone armed, and a clock visible off-screen for the
@@ -362,13 +362,13 @@ trail, not clutter. Do not delete them on camera.
 **Screen.** Route `/audit`, URL `http://127.0.0.1:8321/audit`. Expand
 **"Verify without the repository"** before recording: it prints the exact command
 `python verify/orvyren_verify.py .`, which is what you then type. The panel
-**Offline audit packet** shows 47 files · 208.8 kB and the published sha256
-`a0c4562050a6c468ab8a2adea4a858acdd8e76154640b5f42b1be94ecc0a669e`.
+**Offline audit packet** shows 45 files · 224.4 kB and the published sha256
+`63f4cefd905047eca2f71b4fa0c99fb05fb4cdb38bcc661919583f0c7592b83f`.
 
 **Command (four lines, typed at 3:48).**
 
 ```bash
-cd ~/orvyren_audit/audit_packet_rseth_20261016-2340_01M526YS
+cd ~/orvyren_audit/audit_packet_rseth_20261020-1012_01M5CCNN
 python verify/orvyren_verify.py .
 ```
 
@@ -429,14 +429,17 @@ panel and the sha256 stay on screen). The `N = 1` sentence is spoken to the
 "not run in this view, and that is written on the badge".
 
 **Gate — read this before shooting.** From the repository,
-`python run_verify.py evidence/audit_packets/audit_packet_rseth_20261016-2340_01M526YS.zip`
-prints **`VERDICT: FAIL — 16 checks, 2 failed`** today (`A4.dossier.rerender.md`
-and `.html`: `src/orvyren/audit/dossier.py` changed after the packet was built).
-That is `docs/CLOSURE_CHECKLIST.md` item 8. **The video never shows that command
-as a pass.** Two honest ways out, both measured today:
+`python run_verify.py evidence/audit_packets/audit_packet_rseth_20261020-1012_01M5CCNN.zip`
+prints **`VERDICT: OFFLINE_PASS — 16 checks, 0 failed`** (measured 2026-10-20T10:12Z),
+and `--mutate-test` prints `mutations 6/6`. The packet was rebuilt on 2026-10-20 from a
+fresh testnet session (`evidence/demo_runs/rseth_20261020/`, runs A→E, 10 receipts: 1
+success + 9 chain refusals), so it is re-rendered by the current
+`src/orvyren/audit/dossier.py` and both verifiers agree. The earlier 16/10 packet failed
+`A4.dossier.rerender` for a renderer change and is archived out of the repository
+(`SUPERSEDED_NOTE.md`). Two honest ways to shoot the block:
 
-*Option A — rebuild the packet (4 s, recommended).* It adds one zip and changes
-the published sha256, so it is the owner's call:
+*Option A — rebuild the packet (4 s, recommended).* It produces a new zip with a new
+sha256, so it is the owner's call:
 
 ```bash
 cd D:/orvyren_core
@@ -445,10 +448,10 @@ python scripts/build_audit_packet.py --session evidence/demo_chain/rseth --case 
 
 ```text
 ORVYREN — audit packet v2 assembled
-  packet        : C:\Users\User\AppData\Local\Temp\pkt2\audit_packet_rseth_20261020-0910_01M526YS (45 files)
-  zip           : C:\Users\User\AppData\Local\Temp\pkt2\audit_packet_rseth_20261020-0910_01M526YS.zip
-  zip sha256    : 8e7197e2aeaa855a7823f20e017135a974776a94c4a312df0ef7924b154b3dae
-  bundle_digest : 61a3dae17432a6a64fc1ef99745eb3b3115f5a67ad44b117e92532be4d7a5f31
+  packet        : D:\orvyren_core\dist\audit_packets\audit_packet_rseth_20261020-1012_01M5CCNN (45 files)
+  zip           : D:\orvyren_core\dist\audit_packets\audit_packet_rseth_20261020-1012_01M5CCNN.zip
+  zip sha256    : 63f4cefd905047eca2f71b4fa0c99fb05fb4cdb38bcc661919583f0c7592b83f
+  bundle_digest : dd8511cdb521c77447427008a2c6449e5c62fd1f42e5c12d7208b327be942748
   verification  : OFFLINE_PASS (16 checks), mutations 6/6
 ```
 
@@ -961,9 +964,10 @@ including what we have not done.
    −33.27 % / −32.93 %), no "97 % accuracy", no "N > 1", no "superiority", no
    "production-ready". The only performance claim permitted is the one measured:
    a brake that works, on one episode.
-4. **`python run_verify.py <shipped packet>` presented as passing.** It prints
-   `FAIL — 16 checks, 2 failed` today. Either rebuild first (Option A, §3.5) or use
-   the in-packet verifier and say which one you ran.
+4. **Presenting the wrong packet as passing.** The reference packet
+   (`audit_packet_rseth_20261020-1012_01M5CCNN.zip`) prints `OFFLINE_PASS — 16 checks,
+   0 failed` from the repository (measured 2026-10-20T10:12Z) **and** from its own
+   embedded verifier. If you show any other zip, say which verifier you ran.
 5. **A recorded run passed off as live.** The `/live` chip must stay visible:
    "Recorded agent run · single source: run outcome".
 6. **The 13 demo transactions presented as this run's.** They belong to the 16/10
@@ -995,7 +999,7 @@ including what we have not done.
 | 8 | `python run_agents.py --case usdc-2023-03 --replay journal` | `ARRET-1`, `FRAGILE`, 5/30, 2/12, $0.0018, 1.07 s | §4.1 |
 | 9 | `python scripts/build_audit_packet.py --session evidence/demo_chain/rseth --case rseth --out-dir <scratch>` | 45 files, `OFFLINE_PASS (16 checks), mutations 6/6`, 3.9 s | §3.5 |
 | 10 | `python run_verify.py <rebuilt zip>` | `OFFLINE_PASS — 16 checks, 0 failed` | §3.5 |
-| 11 | `python run_verify.py <shipped zip>` | **`FAIL — 16 checks, 2 failed`** (A4) — the reason for Option A/B | §3.5 |
+| 11 | `python run_verify.py evidence/audit_packets/audit_packet_rseth_20261020-1012_01M5CCNN.zip` | `OFFLINE_PASS — 16 checks, 0 failed` (2026-10-20T10:12Z; same as the in-packet verifier) | §3.5 |
 | 12 | `python run_agents.py --case rseth-2026-04 --replay journal` | **not replayable**: `E_LLM_NOT_RECORDED` on the critic call (no recorded store for this case) — see `run_inputs.json` note | §4.1 |
 | 13 | `PYTHONPATH=src python run_audit.py --serve --port 8399` | HTTP 200, dossier page | §4.2 |
 | 14 | `python scripts/run_scenario_rseth.py --agents-run $RUN` (one-command chain) | `DecisionRecord … INCONCLUSIVE · REQUIRE_APPROVAL (intent null)` / `abstention ESCALATE — action null (5 what_would_change entries)` / `verification PASS`, 1.6 s | §3.4 (alternative) |
