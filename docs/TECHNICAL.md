@@ -121,7 +121,7 @@ python -m unittest tests.test_agents_mab tests.test_policy tests.test_executor -
 | `execution/` | intents, guard, 10-control preflight, bounded loop, ledger, receipt verification | `run_executor.py`, `run_execution_demo.py`; `tests/test_execution_preflight.py`, `test_executor.py` |
 | `chain/` | `RunChain`: hash-chained events, sha256 artifact manifest, `run_id`/`parent_run_id`, fail-closed handoffs | `tests/test_chain_run_id.py`; `chain.verify_ok=true` in every executor run (§8.5) |
 | `audit/` | one-page dossier (Markdown + self-contained HTML), every input hashed | `evidence/dossier_usdc-2023-03.md`; A2/A4 checks §9.4 |
-| `verify/` | T10 third-party verifier + 6-mutation self-test | `run_verify.py` → `OFFLINE_PASS`, 16 checks, 6/6 (§9) |
+| `verify/` | T10 third-party verifier + 6-mutation self-test | `run_verify.py` → `OFFLINE_PASS`, 16 checks, 6/6 — **transcript of 2026-10-18; the shipped packet currently FAILs A4, see the dated note in §9.4** |
 | `replay/` | strict PIT clock, journal replay, archive replay (refuses without key), corpus manifest | `run_replay.py inspect|journal|archive|verify` |
 | `evaluation/` | frozen protocol G1–G6, loss/comparators/calibration, harness with `eval_run.lock` + embargo | `verify_frozen.py` → `COMPLIANT`; `evidence/eval_run.lock` (§9.6) |
 | `ui/` | stdlib fallback UI, 12 screens, banner per screen, no JS, no external asset | `run_audit.py --serve` → `/ui`; `tests/test_ui_routes.py` |
@@ -641,7 +641,7 @@ strict one: the packet's own dossier must re-render byte-identical from its inpu
 which is why re-staging uses the same display root as the build.
 
 **9.4 Measured: the reference packet.** 47 files; zip sha256
-`a0c4562050a6c468ab8a2adea4a858acdd8e76154940b5f42b1be94ecc0a669e`, matching its
+`a0c4562050a6c468ab8a2adea4a858acdd8e76154640b5f42b1be94ecc0a669e`, matching its
 published sidecar (`sha256sum -c` → `OK`). The run prints every check
 (`CHECK A1.exec.chain RECOMPUTED ok` … `CHECK C2.refs.resolve COVERED ok`), with
 `B1.chain.rpc` reported `SKIPPED` offline, and ends
@@ -798,7 +798,7 @@ G-18), with the per-finding ledger in [`ECARTS_REGISTRE.md`](ECARTS_REGISTRE.md)
 | **G-4** | Q2 `NO_PATH` on the Aave slice; Q8 `NOT_INGESTED` | dependency and permission questions answered "unknown", not fabricated |
 | **G-2 / G-7** | no archived rsETH market series; realisable value of frozen collateral unreadable | the −31 % divergence is a documented point, not a measured series — the critic raises it as blocking |
 | **G-3 / G-6** | no recorded response store for `rseth-2026-04`; the sealed seed's critic cites one unobserved ref | offline replay of that case unavailable; the strict critic-side ref gate is deferred (re-seeding is the fix) |
-| **G-13** | the packaged scenario report still drives the corpus leg for execution | code-level closure exists (`--decision-source agents`); the report is to be regenerated |
+| **G-13** | ~~the packaged scenario report drives the corpus leg for execution~~ **Closed 2026-10-19** | the packaged scenario (`scenario-rseth-2026-04-20261019T134804Z`) consumes the sealed agents decision (`--decision-source agents`); it carries no intent, so the tick is `NO_ACTION` — no pilot substitution. The legacy corpus leg survives only behind an explicit `--decision-source corpus` |
 
 Contract and data limits: **Q7 `debt_backed`** (fixture implementation) sums all
 visible `OWES` rows without an asset filter — pinned by a frozen test, never an

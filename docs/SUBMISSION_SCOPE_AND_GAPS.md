@@ -17,8 +17,9 @@ Research reports are research, not capability.
 
 ## Delivered (each with its executable proof)
 
-All figures measured at commit `b8f8bd3` (2026-10-18); re-measure with the
-commands below before quoting anywhere else.
+All figures measured at commit `b8f8bd3` (2026-10-18); the test counter and the
+EVAL report were re-measured on 2026-10-19 (dates given on each line). Re-measure
+with the commands below before quoting anywhere else.
 
 1. **Provenance-gated agent reasoning (P0-6).** A claim may only cite
    references the run really observed; invented references are rejected
@@ -72,7 +73,10 @@ commands below before quoting anywhere else.
 11. **Real SPA dashboard + API.** Five screens on real system state (live runs
     over WebSocket, WebGL graph on 16,174 nodes with Q1–Q8 panel, stress-episode
     charts, decision/policy/execution views, audit chains recomputed), offline
-    build served by FastAPI, zero external resources.
+    build served by FastAPI, zero external resources. (The 16,174-node base is the
+    **local v3 artifact, not shipped** — G-14; the delivered scenario ran on the
+    520-observation `evidence/graph.sqlite`, where Q2 is `NO_PATH`, Q7 `debt_backed`
+    is unfiltered and Q8 is `NOT_INGESTED`.)
     Proof: `python -m unittest discover -s tests -p "test_api*.py"`;
     `cd frontend && npm run build`.
 12. **Measured performance work.** PIT indexes (Q1 −91 %, Q5 −90 % on the real

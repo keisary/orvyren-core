@@ -29,7 +29,8 @@ observe ──▶ verify ──▶ graph ──▶ hypotheses ──▶ discrimi
 
 rsETH / KelpDAO, April 2026. The protocol's oracle still valued rsETH at
 **2 526,76 USD** at the exploit instant while the market price dropped to
-**1 686 USD** (documented divergence **-31 %**; the market series itself is not
+**1 686 USD** (documented divergence **-31 %**; those two prints imply **-33 %** —
+the -31 % is the documented figure, the series itself is not
 archived — see the limits register). The reserve had saturated its supply cap
 (**99,999 %**) and was frozen at block **24 908 723**, with utilisation at
 **≈ 0,008 %** — the mechanism was a freeze, not the “100 % utilisation” of the

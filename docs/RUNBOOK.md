@@ -172,6 +172,13 @@ VERDICT: OFFLINE_PASS — 16 checks, 0 failed, mutations n/a      (exit 0, 1.1 s
 `B1` is `SKIPPED` by design (no network offline). Prove the verifier still sees tampering: add `--mutate-test`
 → `MUTATION M1 … M6 detected (…)` for all six, then `VERDICT: OFFLINE_PASS — 16 checks, 0 failed, mutations 6/6` (3.3 s).
 
+> **Not true of the shipped packet today.** Re-measured **2026-10-19T13:42Z** on
+> `audit_packet_rseth_20261016-2340_01M526YS.zip`: `VERDICT: FAIL — 16 checks, 2 failed`
+> (`A4.dossier.rerender.md`, `A4.dossier.rerender.html` — `src/orvyren/audit/dossier.py`
+> changed after the packet was built). The transcript above is the 2026-10-18 state of a
+> rebuilt packet; rebuild (`scripts/build_audit_packet.py`) and re-run this step before
+> quoting it — `docs/CLOSURE_CHECKLIST.md` item 8.
+
 **If it fails** with `OFFLINE_FAIL`, do not present the packet. The verifier is the frozen copy shipped
 inside the packet: no repository, no API, no trust in us.
 

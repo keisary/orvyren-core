@@ -168,7 +168,7 @@ plus a `sha256` manifest per artifact, verified at every decision→policy→exe
 a mismatch raises `ChainContractError` and stops the run. Real execution without an explicit
 `--run-id` is refused with `E_CHAIN_RUN_ID_REQUIRED` (process code 4) before any tick.
 Measured: `RunChain(...).verify() → (True, '')` on
-`evidence/scenario_rseth/execution/chain/scenario-rseth-2026-04-20261018T110722Z` (2
+`evidence/scenario_rseth/execution/chain/scenario-rseth-2026-04-20261019T134804Z` (2
 artifacts, `parent_run_id` = the agents run). Tests: `tests.test_chain_run_id` (35), incl.
 `test_real_mode_without_run_id_is_refused_fail_closed` and
 `test_artifact_carries_its_provenance_envelope`.
@@ -224,7 +224,7 @@ inside the caps is still allowed.
 | Bandit 1.9.4 | `python -m bandit -r src -f txt` | **40 findings, 0 High** (28 Medium, 12 Low) over 26 774 LOC, 0 `#nosec`: 22 × B608, 5 × B310, 5 × B110, 4 × B105, 2 × B311, 1 × B104, 1 × B101 — same 40 as the previous pass, on 514 more lines |
 | Ruff 0.16.5 | `python -m ruff check src scripts run_*.py` | `All checks passed!` (wider scope than the previous `src`-only run) |
 | Mypy 2.4.0 | `python -m mypy src --ignore-missing-imports` | `Found 101 errors in 24 files (checked 91 source files)` — untriaged, this is G-11; **+1 error in +1 file** versus the previous pass |
-| Third-party verifier | `python run_verify.py <packet.zip> --mutate-test` | `OFFLINE_PASS — 16 checks, 0 failed, mutations 6/6` |
+| Third-party verifier | `python run_verify.py <packet.zip> --mutate-test` | **re-measured 2026-10-19T13:42Z: `VERDICT: FAIL — 16 checks, 2 failed`** (`A4.dossier.rerender.md/.html`: `src/orvyren/audit/dossier.py` postdates the 16/10 packet). The earlier `OFFLINE_PASS — 16 checks, 0 failed, mutations 6/6` holds only for a **rebuilt** packet and is not reproducible from the shipped one |
 | Chain re-check | `… --rpc https://sepolia.base.org` | `PASS — 29 checks, 0 failed` |
 | Secret hygiene | `python scripts/demo/check_env_hygiene.py` | `VERDICT: OK` (H4 skipped: Windows) |
 | Dependency inventory | AST walk over `src/**/*.py` | 31 stdlib modules; outside the stdlib only `fastapi` + `uvicorn` (lazy API boundary) and two in-repo scripts imported on the execution/replay paths |
@@ -285,7 +285,7 @@ python run_verify.py evidence/audit_packets/audit_packet_rseth_20261016-2340_01M
 python -c "import json,glob,collections; g=glob.glob('evidence/demo_chain/rseth/receipts/*.json'); c=collections.Counter(json.load(open(f))['status'] for f in g); print(len(g),dict(c))"
 (cd evidence/demo_chain/rseth && sha256sum -c MANIFEST.sha256)
 # 5. run-chain integrity of the packaged scenario
-PYTHONPATH=src python -c "from orvyren.chain import RunChain; c=RunChain('scenario-rseth-2026-04-20261018T110722Z','usdc-2023-03',parent_run_id='rseth-2026-04_live_20261018T110722Z',root_dir='evidence/scenario_rseth/execution/chain/scenario-rseth-2026-04-20261018T110722Z'); print(c.verify())"
+PYTHONPATH=src python -c "from orvyren.chain import RunChain; c=RunChain('scenario-rseth-2026-04-20261019T134804Z','rseth-2026-04',parent_run_id='rseth-2026-04_live_20261018T200027592497Z',root_dir='evidence/scenario_rseth/execution/chain/scenario-rseth-2026-04-20261019T134804Z'); print(c.verify())"
 # 6. secret hygiene and static analysis
 python scripts/demo/check_env_hygiene.py
 python scripts/inspect_env_masked.py        # names and lengths only
