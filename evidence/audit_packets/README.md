@@ -12,9 +12,15 @@ D (kill switch) · E (audit) — exécutés le **2026-10-20** sur Base Sepolia, 
   zéro `__pycache__`. **Les deux vérificateurs concordent** : `python run_verify.py <zip>`
   depuis ce dépôt *et* le vérificateur embarqué (`unzip` puis
   `python verify/orvyren_verify.py .`) rendent le même `OFFLINE_PASS`.
-- **v1 — historique** : `audit_packet_rseth_01M526YS.zip` — 28 fichiers : journal chaîné
-  SHA-256 (`audit.jsonl`), **13 reçus réels**, politique effective + signatures, `report.md`,
-  manifeste, `HASHES.txt`, `verify/verify_hashes.py`.
+- **v1 — historique, sorti du dépôt le 2026-10-20** : `audit_packet_rseth_01M526YS.zip`,
+  **déplacé hors dépôt** vers `D:/orvyren_internal_2026-10-18/audit_packets_superseded/`
+  avec `SUPERSEDED_NOTE.md`. 28 fichiers, 13 reçus réels, journal chaîné SHA-256
+  (`audit.jsonl`, 84 enregistrements), politique effective + signatures, `report.md`,
+  manifeste, `HASHES.txt`, vérificateur v1 (`verify/verify_hashes.py`). Format **v1** :
+  son propre vérificateur rend toujours `OFFLINE_PASS`, mais le vérificateur v2 du dépôt
+  le refuse par construction (`FAIL — 15 checks, 7 failed` :
+  `manifest.fixtures.corpus / manifest.decision.path` absents). Un seul paquet v2 reste
+  donc dans ce répertoire — celui du 20261020.
 - **ancien paquet v2 du 16/10** — `audit_packet_rseth_20261016-2340_01M526YS.zip` :
   **déplacé hors dépôt** le 2026-10-20 vers
   `D:/orvyren_internal_2026-10-18/audit_packets_superseded/` avec `SUPERSEDED_NOTE.md`.
@@ -37,7 +43,7 @@ D (kill switch) · E (audit) — exécutés le **2026-10-20** sur Base Sepolia, 
 | paquet | sha256 du zip | `bundle_digest` interne |
 |---|---|---|
 | **référence 20261020-1012** | `63f4cefd905047eca2f71b4fa0c99fb05fb4cdb38bcc661919583f0c7592b83f` | `dd8511cdb521c77447427008a2c6449e5c62fd1f42e5c12d7208b327be942748` |
-| v1 (historique) | `7ecea5ec6e77228c167321858fe67e02fe4bb7e7eaa8335bfa534070b2f32a36` | `f5409d23d7124652148c5620550c74de8b977746b1ecf003986b83737cde9229` |
+| v1 (historique, sorti du dépôt le 2026-10-20) | `7ecea5ec6e77228c167321858fe67e02fe4bb7e7eaa8335bfa534070b2f32a36` | `f5409d23d7124652148c5620550c74de8b977746b1ecf003986b83737cde9229` |
 | v2 du 16/10 (supersédé) | `a0c4562050a6c468ab8a2adea4a858acdd8e76154640b5f42b1be94ecc0a669e` | `658428691e4a68279dc1d57ee694fbd05258137a17c735028c7424d05269981f` |
 
 - `bundle_digest` : scellé dans le zip (`BUNDLE_DIGEST.txt`), recalculé par le contrôle A3 du
