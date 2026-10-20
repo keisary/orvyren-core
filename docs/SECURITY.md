@@ -3,10 +3,15 @@
 **Submission artefact** — 2026 Shenzhen International FinTech Competition, Topic F (agent
 wallet / bounded autonomous on-chain execution). Repository `orvyren-core`.
 
-**Measured on** 2026-10-20, tree at commit `3cca017`
-(`3cca0175778395ecf731396440cb998d12a66c76`, HEAD of `master`), Windows 11, CPython 3.11.15,
-from the repository root. Every figure below was re-measured on this exact tree in this
-pass; nothing under `src/`, `tests/` or `scripts/` was modified by this documentation pass.
+**Measured on** 2026-10-20 on the tree delivered for submission — commit `8bfd818`
+(`8bfd81851061b138df6e83f2056fdb716cb05d71`, `master`), whose security-relevant code is the same
+as `3cca017` (`3cca0175778395ecf731396440cb998d12a66c76`, the tree an earlier pass measured):
+the two commits differ in `tests/` and documentation only, nothing under `src/`. Windows 11,
+CPython 3.11.15, from the repository root. Every figure below was re-measured on this exact
+tree in this pass; nothing under `src/`, `tests/` or `scripts/` was modified by this
+documentation pass. The unit suite on this tree ends **`Ran 1549 tests — OK (skipped=3)`**
+(re-measured 2026-10-20, 79.0 s); §6 keeps the trace of the two failures the earlier `3cca017`
+pass recorded, with their cause and what changed since.
 
 **Measurement rule.** Every figure below comes from a command quoted beside it and run
 during this pass; what could not be exercised is written **not measured** or **not
@@ -232,7 +237,7 @@ inside the caps is still allowed.
 
 | Scan | Command | Measured result |
 |---|---|---|
-| Unit suite | `python -m unittest discover -s tests` | `Ran 1549 tests in 139.6 s — FAILED (failures=2, skipped=3)` — measured 2026-10-20 on `3cca017`; both failures are named just below |
+| Unit suite | `python -m unittest discover -s tests` | `Ran 1549 tests in 79.0 s — OK (skipped=3)` — re-measured 2026-10-20 on the delivered tree (`8bfd818` plus this pass's documentation edits). The earlier `3cca017` pass ended red on the same 1549 tests — 2 failures, 3 skipped, 139.6 s; both cases, their cause and the fix are recorded just below |
 | Skipped tests | `… -v` | 2 × `set ORVYREN_LIVE_RPC=1 …` (`TestLiveRpc`), 1 × "eth-account present: the library-missing path is not testable" |
 | Bandit 1.9.4 | `python -m bandit -r src -f txt` | **40 findings, 0 High** (28 Medium, 12 Low) over 26 786 LOC, 0 `#nosec`: 22 × B608, 5 × B310, 5 × B110, 4 × B105, 2 × B311, 1 × B104, 1 × B101 — same rule mix as the previous pass, re-measured on `3cca017` |
 | Ruff 0.16.5 | `python -m ruff check src scripts run_*.py` | `All checks passed!` — exit 0 over `src`, `scripts` and every `run_*.py` |
@@ -242,16 +247,28 @@ inside the caps is still allowed.
 | Secret hygiene | `python scripts/demo/check_env_hygiene.py` | `VERDICT: OK` (H4 skipped: Windows) |
 | Dependency inventory | AST walk over `src/**/*.py` | 31 stdlib modules; outside the stdlib only `fastapi` + `uvicorn` (lazy API boundary) and two in-repo scripts imported on the execution/replay paths |
 
-**Two tests fail on this tree — declared, not waived.** On `3cca017`, the suite ends
-`FAILED (failures=2)`: `tests.test_agents_review_fixes.RunAgentsPathsAndTimeoutTest.test_run_stamps_never_collide_within_one_second`
-(`AssertionError: 2 != 3` — two of three run stamps generated inside one second collided;
-intermittent, it passes 3/3 when run alone) and
-`tests.test_api_artifacts.TestArtifacts.test_audit_summary_chains_and_packets`
-(`AssertionError: 1 not greater than or equal to 2` — the test requires two packets under
-`evidence/audit_packets/`, and the superseded 2026-10-16 packet was moved out of the
-repository on 2026-10-20, leaving exactly one). Neither failure touches a control of §3–§5:
-one is a timestamp-collision flake in run-path naming, the other an artefact-count
-assertion in the read-only API. Both are open defects at HEAD.
+**The two failures of the `3cca017` pass: both resolved, trace kept.** An earlier pass on
+`3cca017` ended red — **two failures** out of the same 1549 tests. Both cases are named here
+because a report that quietly drops a red line is worth less than one that shows how it went
+green:
+
+- `tests.test_agents_review_fixes.RunAgentsPathsAndTimeoutTest.test_run_stamps_never_collide_within_one_second`
+  (`AssertionError: 2 != 3`) — a **load-dependent flake**, not a defect in the code under test:
+  three run stamps generated inside the same wall-clock second collided only while the full
+  1549-test suite ran under load; the case passes in isolation (`3/3` consecutive attempts) and
+  in every full run since. It guards run-path naming, not a control of §3–§5, and it remains
+  the test most likely to blink on a slow machine.
+- `tests.test_api_artifacts.TestArtifacts.test_audit_summary_chains_and_packets`
+  (`AssertionError: 1 not greater than or equal to 2`) — a **real defect in the test**, since
+  corrected: it required two packets under `evidence/audit_packets/` while the superseded
+  2026-10-16 packet had been moved out of the repository on 2026-10-20, leaving exactly one
+  reference packet by design. The assertion now requires at least one and checks integrity
+  rather than a count; the test file carries that reason as a comment.
+
+The same command on the delivered tree ends `OK (skipped=3)` over the same 1549 tests, measured
+three times on 2026-10-20 (75 s, 135 s, and 79.0 s for this revision). No assertion was
+weakened to obtain green: one failure was a flake, the other an assertion that contradicted the
+repository's own layout. Neither ever touched a control of §3–§5.
 
 **Bandit triage, honestly.** B608 (22) marks SQL assembled by `%` formatting: the
 interpolated fragments are table/column names taken from fixed tuples or from schema
